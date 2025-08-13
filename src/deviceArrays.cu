@@ -2,7 +2,7 @@
  * @file deviceArrays.cu
  * @brief Templated classes for managing 1D and 2D arrays on a CUDA device in column-major order.
  */
-
+#include "deviceArrays.h"
 #include <vector>
 #include <numeric>
 #include <iostream>
@@ -11,640 +11,387 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <fstream>
+#include <algorithm>
 
-/**
- * @brief Base class for file transfer helpers. Manages chunking logic.
- */
+// --- CuFileHelper Definitions ---
 template <typename T>
-class CuFileHelper {
-protected:    
-    
-    size_t _colsProcessed; // Number of bytes already processed
-    
-    std::vector<T> _hostBuffer; // Host buffer to hold the current chunk of data
-
-public:
-
-    const size_t _totalCols; // Total number of bytes to process
-    const size_t _maxColsPerChunk; 
-    const size_t _rows;
-
-    /**
-     * @brief Constructor for CuFileHelper.
-     * @param rows Number of rows in the array.
-     * @param cols Number of columns in the array.
-     */
-    CuFileHelper(size_t rows, size_t cols)
-        : _totalCols(cols), 
-        _colsProcessed(0), 
-        _maxColsPerChunk(std::max(size_t(1), 1024*1024/(rows * sizeof(T)))),
-        _hostBuffer(_maxColsPerChunk * rows),
-        _rows(rows) {}
-
-    virtual ~CuFileHelper() = default;
-
-    /**
-     * @brief Checks if there are more chunks to process.
-     * @return True if more data can be transferred, false otherwise.
-     */
-    bool hasNext() const {
-        return _colsProcessed < _totalCols;
+CuFileHelper<T>::CuFileHelper(size_t rows, size_t cols)
+    : _totalCols(cols),
+    _colsProcessed(0),
+    _maxColsPerChunk(std::clamp(size_t((32ull * 1024ull * 1024ull) / (rows * sizeof(T))), size_t(1), size_t(cols))),
+    _hostBuffer(_maxColsPerChunk * rows),    
+    _rows(rows) {
+        std::cout << "In CuFileHelper constructor, deviceArrays.cu we have CuFileHelper created with rows: " << rows << ", cols: " << cols
+                  << ", maxColsPerChunk: " << _maxColsPerChunk << std::endl;
     }
 
-    /**
-     * @brief Gets the number of bytes in the next chunk.
-     * @return The size of the next chunk in bytes.
-     */
-    size_t getNextChunkColNumber() const {
-        return std::min(_maxColsPerChunk, _totalCols - _colsProcessed);
-    }
-    
-    /**
-     * @brief Gets a pointer to the host buffer to be used for the current chunk.
-     * @return Pointer to the host buffer.
-     */
-    T* getHostBuffer() {
-        return _hostBuffer.data();
-    }
-
-    /**
-     * @brief Updates the processed byte count after a successful chunk transfer.
-     * @param bytes_transferred The number of bytes transferred in the last chunk.
-     */
-    void updateProgress() {
-        _colsProcessed += getNextChunkColNumber();
-    }
-
-    /**
-     * @brief Gets the number of columns processed so far.
-     * @return The number of columns processed.
-     */
-    size_t getColsProcessed() const {
-        return _colsProcessed;
-    }
-};
-
-/**
- * @brief Helper class to read chunks from a file and provide them for device transfer.
- */
 template <typename T>
-class SetFromFile : public CuFileHelper<T> {
-private:
-    std::istream& _input_stream;
+CuFileHelper<T>::~CuFileHelper() = default;
 
-public:
-    /**
-     * @brief Constructor for CuSetFromFileHelper.
-     * @param array The CudaArray to set data into.
-     * @param input_stream The input stream to read from.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    SetFromFile(size_t rows, size_t cols, std::istream& input_stream)
-        : CuFileHelper<T>(rows, cols), _input_stream(input_stream) {}
-
-    /**
-     * @brief Reads the next chunk of data from the file into the internal host buffer.
-     */
-    void readNextChunk() {
-        size_t current_chunk_bytes = this->getNextChunkColNumber() * this->_rows * sizeof(T);
-        if (current_chunk_bytes > 0) {
-            this->_input_stream.read(reinterpret_cast<char*>(this->_hostBuffer.data()), current_chunk_bytes);
-            if (!this->_input_stream) throw std::runtime_error("Stream read error or premature end of stream.");
-            
-        }
-    }
-};
-
-/**
- * @brief Helper class to get chunks from the device and write them to a file.
- */
 template <typename T>
-class GetToFile : public CuFileHelper<T> {
-private:
-    std::ostream& _output_stream;
+bool CuFileHelper<T>::hasNext() const {
+    return _colsProcessed < _totalCols;
+}
 
-public:
-    /**
-     * @brief Constructor for GetToFile.
-     * @param array The CudaArray to read from.
-     * @param output_stream The output stream to write to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    GetToFile(size_t rows, size_t cols, std::ostream& output_stream)
-        : CuFileHelper<T>(rows, cols), _output_stream(output_stream) {}
+template <typename T>
+size_t CuFileHelper<T>::getNextChunkColNumber() const {
+    return std::min(_maxColsPerChunk, _totalCols - _colsProcessed);
+}
 
-    /**
-     * @brief Writes the next chunk of data from the internal host buffer to the file.
-     * @param current_chunk_bytes The size of the chunk to write.
-     */
-    void writeNextChunkToFile() {
-        size_t current_chunk_bytes = this->getNextChunkColNumber() * this->_rows * sizeof(T);
-        if (current_chunk_bytes > 0) {
-            this->_output_stream.write(reinterpret_cast<const char*>(this->_hostBuffer.data()), current_chunk_bytes);
-            if (!this->_output_stream) throw std::runtime_error("Stream write error.");
-        }
+template <typename T>
+T* CuFileHelper<T>::getHostBuffer() {
+    return _hostBuffer.data();
+}
+
+template <typename T>
+void CuFileHelper<T>::updateProgress() {
+    _colsProcessed += getNextChunkColNumber();
+}
+
+template <typename T>
+size_t CuFileHelper<T>::getColsProcessed() const {
+    return _colsProcessed;
+}
+
+// --- SetFromFile Definitions ---
+template <typename T>
+SetFromFile<T>::SetFromFile(size_t rows, size_t cols, std::istream& input_stream)
+    : CuFileHelper<T>(rows, cols), _input_stream(input_stream) {}
+
+template <typename T>
+void SetFromFile<T>::readNextChunk() {
+    size_t current_chunk_bytes = this->getNextChunkColNumber() * this->_rows * sizeof(T);
+    if (current_chunk_bytes > 0) {
+        this->_input_stream.read(reinterpret_cast<char*>(this->_hostBuffer.data()), current_chunk_bytes);
+        if (!this->_input_stream) throw std::runtime_error("Stream read error or premature end of stream.");
     }
-};
+}
 
+// --- GetToFile Definitions ---
+template <typename T>
+GetToFile<T>::GetToFile(size_t rows, size_t cols, std::ostream& output_stream)
+    : CuFileHelper<T>(rows, cols), _output_stream(output_stream) {}
 
-/**
- * @enum IndexType
- * @brief Indicates whether to index by row or by column.
- */
-enum class IndexType {
-    Row,    /**< Row index */
-    Column  /**< Column index */
-};
+template <typename T>
+void GetToFile<T>::writeNextChunkToFile() {
+    size_t current_chunk_bytes = this->getNextChunkColNumber() * this->_rows * sizeof(T);
+    if (current_chunk_bytes > 0) {
+        this->_output_stream.write(reinterpret_cast<const char*>(this->_hostBuffer.data()), current_chunk_bytes);
+        if (!this->_output_stream) throw std::runtime_error("Stream write error.");
+    }
+}
 
-/**
- * @brief CUDA device memory deleter function for std::shared_ptr.
- * @param ptr Pointer to CUDA device memory to free.
- */
-inline void cudaFreeDeleter(void* ptr) {
+// --- CuArray Definitions ---
+void cudaFreeDeleter(void* ptr) {
     if (ptr) cudaFree(ptr);
 }
 
-/**
- * @brief Abstract base template for CUDA array types.
- */
 template <typename T>
-class CuArray {
+CuArray<T>::CuArray(size_t rows, size_t cols, size_t ld)
+    : _rows(rows), _cols(cols), _ld(ld){}
 
-public:
-    /** Number of rows (const). */
-    const size_t _rows;
-
-    /** Number of columns (const). */
-    const size_t _cols;
-
-
-protected:
-    /** Pointer to the device memory (shared pointer). */
-    std::shared_ptr<void> _ptr;
-    /** Leading dimension (stride) in elements (const). */
-    size_t _ld;
-
-    /**
-     * @brief Protected constructor for CudaArray.
-     * @param rows Number of rows in the array.
-     * @param cols Number of columns in the array.
-     * @param ld Leading dimension (stride) in elements.
-     */
-    CuArray(size_t rows, size_t cols, size_t ld)
-        : _rows(rows), _cols(cols), _ld(ld){}
-
-public:
-    /**
-     * @brief Default destructor for CudaArray.
-     * Cleans up the device memory automatically.
-     */
-    virtual ~CuArray() = default;
-
-    /**
-     * @brief Get the number of elements in the array.
-     * @return Total number of elements in the array.
-     * @note This is a pure virtual function, must be implemented by derived classes.
-     * @return size_t Total number of elements in the array.
-     */
-    virtual size_t size() const = 0;
-    /**
-     * @brief Get the size of the array in bytes.
-     * @return Total size in bytes of the array.
-     * @note This is a pure virtual function, must be implemented by derived classes.
-     */
-    virtual size_t bytes() const = 0;  
-
-    /**
-     * @brief Set the array data from host memory.
-     * @param hostData Pointer to the host data to copy from.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     * @note This is a pure virtual function, must be implemented by derived classes.
-     */
-    virtual void set(const T* hostData, cudaStream_t stream = 0) = 0;
-
-    /**
-     * @brief Get the array data to host memory.
-     * @param hostData Pointer to the host memory to copy to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     * @note This is a pure virtual function, must be implemented by derived classes.
-     */
-    virtual void get(T* hostData, cudaStream_t stream = 0) const = 0;
-    
-    /**
-     * @brief Set the array data from another CudaArray.
-     * @param src Source CudaArray to copy from.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     * @note This is a pure virtual function, must be implemented by derived classes.
-     */
-    virtual void set(const CuArray<T>& src, cudaStream_t stream = 0) = 0;
-
-    /**
-     * @brief Get the array data to another CudaArray.
-     * @param dst Destination CudaArray to copy to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     * @note This is a pure virtual function, must be implemented by derived classes.
-     */
-    virtual void get(CuArray<T>& dst, cudaStream_t stream = 0) const = 0;
-
-        /**
-     * @brief Sets the array data from an input stream.
-     * @param input_stream The input stream to read from.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    virtual void set(std::istream& input_stream, cudaStream_t stream = 0) = 0;
-
-    /**
-     * @brief Gets the array data to an output stream.
-     * @param output_stream The output stream to write to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    virtual void get(std::ostream& output_stream, cudaStream_t stream = 0) const = 0;
-
-
-    /**
-     * @brief Get the raw pointer to the device memory.
-     * @return Pointer to the device memory.
-     */
-    T* data() { return static_cast<T*>(_ptr.get()); }
-
-    /**
-     * @brief Get the raw pointer to the device memory (const version).
-     * @return Pointer to the device memory.
-     */
-    const T* data() const { return static_cast<const T*>(_ptr.get()); }
-
-    /**
-     * @brief Get the leading dimension (stride) in elements.
-     * @return Leading dimension in elements.
-     */
-    size_t getLD() const { return _ld; }
-
-    /**
-     * @brief Get the shared pointer to the device memory.
-     * @return Shared pointer to the device memory.
-     */
-    std::shared_ptr<void> getPtr() const{ return _ptr; }
-        
-};
-
-/**
- * @brief CUDA 2D array view, column-major storage.
- *
- * Storage layout: columns are contiguous with stride _ld.
- */
 template <typename T>
-class CuArray2D : public CuArray<T> {
-public:
-    /**
-     * @brief Constructor for CudaArray2D.
-     * Allocates device memory for a 2D array with given rows and columns.
-     * @param rows Number of rows in the array.
-     * @param cols Number of columns in the array.
-     * @throws std::runtime_error if cudaMallocPitch fails.
-     * @note The pitch (leading dimension) is automatically calculated based on the column size.
-     */
-    CuArray2D(size_t rows, size_t cols): CuArray<T>(rows, cols, 0) {
-        void* rawPtr = nullptr;
-        size_t pitch = 0;
-        cudaError_t err = cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols);
-        if (err != cudaSuccess) 
-            throw std::runtime_error("cudaMallocPitch failed");
-        
-        this->_ptr = std::shared_ptr<void>(rawPtr, cudaFreeDeleter);
-        this->_ld = pitch / sizeof(T);  // leading dimension in elements
-    }
+CuArray<T>::~CuArray() = default;
 
-    /**
-     * @brief Constructor for CudaArray2D that creates a subarray view.
-     * @param superArray The parent CudaArray2D to create a subarray from.
-     * @param startRow Starting row index in the parent array.
-     * @param startCol Starting column index in the parent array.
-     * @param height Height of the subarray.
-     * @param width Width of the subarray.
-     */
-    CuArray2D(const CuArray2D<T>& superArray, size_t startRow, size_t startCol, size_t height, size_t width)
-        : CuArray<T>(height, width, superArray.getLD()) {
-        size_t offset = startCol * superArray.getLD() + startRow; // column-major: col offset first, then row offset
-        this->_ptr = std::shared_ptr<void>(
-            superArray._ptr,
-            static_cast<void*>(static_cast<char*>(superArray._ptr.get()) + offset * sizeof(T))
+template <typename T>
+T* CuArray<T>::data() { return static_cast<T*>(_ptr.get()); }
+
+template <typename T>
+const T* CuArray<T>::data() const { return static_cast<const T*>(_ptr.get()); }
+
+template <typename T>
+size_t CuArray<T>::getLD() const { return _ld; }
+
+template <typename T>
+std::shared_ptr<void> CuArray<T>::getPtr() const{ return _ptr; }
+
+// --- CuArray2D Definitions ---
+template <typename T>
+CuArray2D<T>::CuArray2D(size_t rows, size_t cols): CuArray<T>(rows, cols, 0) {
+    void* rawPtr = nullptr;
+    size_t pitch = 0;
+    cudaError_t err = cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols);
+    if (err != cudaSuccess)
+        throw std::runtime_error("cudaMallocPitch failed");
+
+    this->_ptr = std::shared_ptr<void>(rawPtr, cudaFreeDeleter);
+    this->_ld = pitch / sizeof(T);
+}
+
+template <typename T>
+CuArray2D<T>::CuArray2D(const CuArray2D<T>& superArray, size_t startRow, size_t startCol, size_t height, size_t width)
+    : CuArray<T>(height, width, superArray.getLD()) {
+    size_t offset = startCol * superArray.getLD() + startRow;
+    this->_ptr = std::shared_ptr<void>(
+        superArray._ptr,
+        static_cast<void*>(static_cast<char*>(superArray._ptr.get()) + offset * sizeof(T))
+    );
+}
+
+template <typename T>
+size_t CuArray2D<T>::size() const {
+    return this->_rows * this->_cols;
+}
+
+template <typename T>
+size_t CuArray2D<T>::bytes() const {
+    return this->_cols * this->_ld * sizeof(T);
+}
+
+template <typename T>
+void CuArray2D<T>::set(const T* src, cudaStream_t stream) {
+    cudaMemcpy2DAsync(
+        this->_ptr.get(), this->_ld * sizeof(T),
+        src, this->_rows * sizeof(T),
+        this->_rows * sizeof(T), this->_cols,
+        cudaMemcpyHostToDevice, stream
+    );
+}
+
+template <typename T>
+void CuArray2D<T>::get(T* dst, cudaStream_t stream) const {
+    cudaMemcpy2DAsync(
+        dst, this->_rows * sizeof(T),
+        this->_ptr.get(), this->_ld * sizeof(T),
+        this->_rows * sizeof(T), this->_cols,
+        cudaMemcpyDeviceToHost, stream
+    );
+}
+
+template <typename T>
+void CuArray2D<T>::set(const CuArray<T>& src, cudaStream_t stream) {
+    cudaMemcpy2DAsync(
+        this->_ptr.get(), this->_ld * sizeof(T),
+        src.data(), src.getLD() * sizeof(T),
+        this->_rows * sizeof(T), this->_cols,
+        cudaMemcpyDeviceToDevice, stream
+    );
+}
+
+template <typename T>
+void CuArray2D<T>::get(CuArray<T>& dst, cudaStream_t cuStream) const {
+    cudaMemcpy2DAsync(
+        dst.data(), dst.getLD() * sizeof(T),
+        this->_ptr.get(), this->_ld * sizeof(T),
+        this->_rows * sizeof(T), this->_cols,
+        cudaMemcpyDeviceToDevice, cuStream
+    );
+}
+
+template <typename T>
+void CuArray2D<T>::set(std::istream& input_stream, cudaStream_t cuStream) {
+
+    SetFromFile<T> helper(this->_rows, this->_cols, input_stream);
+
+    while (helper.hasNext()) {
+        helper.readNextChunk();
+        CuArray2D<T> subArray(
+            *this,
+            0,
+            helper.getColsProcessed(),
+            this->_rows,
+            helper.getNextChunkColNumber()
         );
-    }
 
-    /**
-     * @brief The numver of elements in the array.
-     * @return Total number of elements in the array (rows * cols).
-     */
-    size_t size() const override {
-        return this->_rows * this->_cols;
-    }
+        subArray.set(helper.getHostBuffer(), cuStream);
 
-    /**
-     * @brief Get the size of the array in bytes.
-     * @return Total size in bytes of the array (rows * ld * sizeof(T)).
-     */
-    size_t bytes() const override {
-        return this->_cols * this->_ld * sizeof(T);
-    }
+        CHECK_CUDA_ERROR(cudaDeviceSynchronize());//TODO: this might be avoidable with multi threading
 
-    /**
-     * @brief Set the array data from host memory.
-     * @param src Pointer to the host data to copy from.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void set(const T* src, cudaStream_t stream = 0) override {
-        cudaMemcpy2DAsync(
+        helper.updateProgress();
+    }
+}
+
+template <typename T>
+void CuArray2D<T>::get(std::ostream& output_stream, cudaStream_t stream) const {
+
+    GetToFile<T> helper(this->_rows, this->_cols, output_stream);
+
+    while (helper.hasNext()) {
+        CuArray2D<T> subArray(
+            *this,
+            0,
+            helper.getColsProcessed(),
+            this->_rows,
+            helper.getNextChunkColNumber()
+        );
+
+        subArray.get(helper.getHostBuffer(), stream);
+        CHECK_CUDA_ERROR(cudaDeviceSynchronize());//TODO: this might be avoidable with multi threading
+
+        helper.writeNextChunkToFile();
+        helper.updateProgress();
+    }
+}
+
+// --- CuArray1D Definitions ---
+template <typename T>
+CuArray1D<T>::CuArray1D(size_t length)
+    : CuArray<T>(1, length, 1) {
+    void* rawPtr = nullptr;
+    cudaMalloc(&rawPtr, length * sizeof(T));
+    this->_ptr = std::shared_ptr<void>(rawPtr, cudaFreeDeleter);
+}
+
+template <typename T>
+CuArray1D<T>::CuArray1D(const CuArray1D<T>& superArray, size_t offset, size_t length, size_t stride)
+    : CuArray<T>(1, length, stride * superArray.getLD()) {
+    this->_ptr = std::shared_ptr<void>(
+        superArray._ptr,
+        static_cast<void*>(static_cast<char*>(superArray._ptr.get()) + offset * superArray.getLD() * sizeof(T))
+    );
+}
+
+template <typename T>
+CuArray1D<T>::CuArray1D(const CuArray2D<T>& extractFrom, int index, IndexType indexType):
+CuArray<T>(
+    1,
+    indexType == IndexType::Row ? extractFrom._cols : extractFrom._rows,
+    indexType == IndexType::Row ? extractFrom.getLD() : 1
+) {
+    if ((indexType == IndexType::Column && static_cast<size_t>(index) >= extractFrom._cols) || (indexType == IndexType::Row && static_cast<size_t>(index) >= extractFrom._rows))
+        throw std::out_of_range("Out of range");
+    size_t offset = indexType == IndexType::Row ? static_cast<size_t>(index) : static_cast<size_t>(index) * extractFrom.getLD();
+    this->_ptr = std::shared_ptr<void>(
+        extractFrom.getPtr(),
+        const_cast<void*>(reinterpret_cast<const void*>(reinterpret_cast<const char*>(extractFrom.data()) + offset * sizeof(T)))
+    );
+}
+
+template <typename T>
+size_t CuArray1D<T>::size() const {
+    return this->_cols;
+}
+
+template <typename T>
+size_t CuArray1D<T>::bytes() const {
+    return this->_cols * this->_ld * sizeof(T);
+}
+
+template <typename T>
+void CuArray1D<T>::set(const T* hostData, cudaStream_t stream) {
+    if (this->_ld == 1) cudaMemcpyAsync(this->_ptr.get(), hostData, bytes(), cudaMemcpyHostToDevice, stream);
+    else cudaMemcpy2DAsync(
             this->_ptr.get(), this->_ld * sizeof(T),
-            src, this->_rows * sizeof(T),
-            this->_rows * sizeof(T), this->_cols,
+            hostData, sizeof(T),
+            sizeof(T), this->_cols,
             cudaMemcpyHostToDevice, stream
         );
-    }
+}
 
-    /**
-     * @brief Get the array data to host memory.
-     * @param dst Pointer to the host memory to copy to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void get(T* dst, cudaStream_t stream = 0) const override {
-        cudaMemcpy2DAsync(
-            dst, this->_rows * sizeof(T),
+template <typename T>
+void CuArray1D<T>::get(T* hostData, cudaStream_t stream) const {
+    if (this->_ld == 1)
+        cudaMemcpyAsync(hostData, this->_ptr.get(), bytes(), cudaMemcpyDeviceToHost, stream);
+    else cudaMemcpy2DAsync(
+            hostData, sizeof(T),
             this->_ptr.get(), this->_ld * sizeof(T),
-            this->_rows * sizeof(T), this->_cols,
+            sizeof(T), this->_cols,
             cudaMemcpyDeviceToHost, stream
         );
-    }
+}
 
-    /**
-     * @brief Set the array data from another CudaArray.
-     * @param src Source CudaArray to copy from.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void set(const CuArray<T>& src, cudaStream_t stream = 0) override {
+template <typename T>
+void CuArray1D<T>::set(const CuArray<T>& src, cudaStream_t stream) {
+    if (this->_ld == 1 && src.getLD() == 1) {
+        cudaMemcpyAsync(this->_ptr.get(), src.data(), bytes(), cudaMemcpyDeviceToDevice, stream);
+    } else {
         cudaMemcpy2DAsync(
             this->_ptr.get(), this->_ld * sizeof(T),
             src.data(), src.getLD() * sizeof(T),
-            this->_rows * sizeof(T), this->_cols,
+            sizeof(T), this->_cols,
             cudaMemcpyDeviceToDevice, stream
         );
     }
+}
 
-    /**
-     * @brief Get the array data to another CudaArray.
-     * @param dst Destination CudaArray to copy to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void get(CuArray<T>& dst, cudaStream_t stream = 0) const override {
+template <typename T>
+void CuArray1D<T>::get(CuArray<T>& dst, cudaStream_t stream) const {
+    if (this->_ld == 1 && dst.getLD() == 1) {
+        cudaMemcpyAsync(dst.data(), this->_ptr.get(), bytes(), cudaMemcpyDeviceToDevice, stream);
+    } else {
         cudaMemcpy2DAsync(
             dst.data(), dst.getLD() * sizeof(T),
             this->_ptr.get(), this->_ld * sizeof(T),
-            this->_rows * sizeof(T), this->_cols,
+            sizeof(T), this->_cols,
             cudaMemcpyDeviceToDevice, stream
         );
     }
-/**
-     * @brief Sets the array data from an input stream.
-     * @param input_stream The input stream to read from.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void set(std::istream& input_stream, cudaStream_t stream = 0) override {
-        SetFromFile<T> helper(this->_rows, this->_cols, input_stream);
-        while (helper.hasNext()) {
-            helper.readNextChunk();
-            CuArray2D<T> subArray(
-                *this, 
-                0, 
-                helper.getColsProcessed(),
-                helper.getNextChunkColNumber(),
-                this->_rows
-            );
-            
-            subArray.set(helper.getHostBuffer(), stream);
-            helper.updateProgress();
-        }
-    }
+}
 
-    /**
-     * @brief Gets the array data to an output stream.
-     * @param output_stream The output stream to write to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void get(std::ostream& output_stream, cudaStream_t stream = 0) const override {
-        GetToFile<T> helper(this->_rows, this->_cols, output_stream);
-        while (helper.hasNext()) {
-            CuArray2D<T> subArray(
-                *this, 
-                0, 
-                helper.getColsProcessed(),
-                helper.getNextChunkColNumber(),
-                this->_rows
-            );            
-            subArray.get(helper.getHostBuffer(), stream);
-            helper.writeNextChunkToFile();
-            helper.updateProgress();
-        }
-    }
-};
-
-/**
- * @brief CUDA 1D array view, representing either a vector or a single column/row slice.
- *
- * Note: For column-major data,
- *   - _rows = 1
- *   - _cols = length of vector
- *   - _ld = stride between elements (in elements)
- */
 template <typename T>
-class CuArray1D : public CuArray<T> {
-public:
-    /**
-     * @brief Constructor for CudaArray1D.
-     * Allocates device memory for a 1D array with given length.
-     * @param length Length of the 1D array.
-     * @throws std::runtime_error if cudaMalloc fails.
-     */
-    explicit CuArray1D(size_t length)
-        : CuArray<T>(1, length, 1) {
-        void* rawPtr = nullptr;
-        cudaMalloc(&rawPtr, length * sizeof(T));
-        this->_ptr = std::shared_ptr<void>(rawPtr, cudaFreeDeleter);
-    }
-
-    /**
-     * @brief Constructor for CudaArray1D that creates a subarray view.
-     * @param superArray The parent CudaArray1D to create a subarray from.
-     * @param offset Starting index in the parent array.
-     * @param length Length of the subarray.
-     * @param ld Leading dimension (stride) in elements for the subarray.
-     * @throws std::out_of_range if offset + length exceeds the parent array size.
-     * @note The leading dimension is used to calculate the offset correctly.
-     */ 
-    CuArray1D(const CuArray1D<T>& superArray, size_t offset, size_t length, size_t stride = 1)
-        : CuArray<T>(1, length, stride * superArray.getLD()) {
-        this->_ptr = std::shared_ptr<void>(
-            superArray._ptr,
-            static_cast<void*>(static_cast<char*>(superArray._ptr.get()) + offset * this->_ld * sizeof(T))
+void CuArray1D<T>::set(std::istream& input_stream, cudaStream_t stream) {
+    SetFromFile<T> helper(this->_rows, this->_cols, input_stream);
+    while (helper.hasNext()) {
+        helper.readNextChunk();
+        CuArray1D<T> subArray(
+            *this,
+            helper.getColsProcessed(),
+            helper.getNextChunkColNumber()
         );
+        subArray.set(helper.getHostBuffer(), stream);
+        helper.updateProgress();
     }
+}
 
-    /**
-     * @brief Constructor for CudaArray1D that extracts a row or column from a CudaArray2D.
-     * @param extractFrom The parent CudaArray2D to extract from.
-     * @param index The row or column index to extract.
-     * @param indexType Specify whether to extract a row or a column (IndexType::Row or IndexType::Column).
-     * @throws std::out_of_range if index is out of bounds.
-     */
-    CuArray1D(const CuArray2D<T>& extractFrom, int index, IndexType indexType):  
-    CuArray<T>(
-        1, 
-        indexType == IndexType::Row ? extractFrom._cols : extractFrom._rows, 
-        indexType == IndexType::Row ? extractFrom.getLD() : 1
-    ) {
-        
-        if ((indexType == IndexType::Column && static_cast<size_t>(index) >= extractFrom._cols) || (indexType == IndexType::Row && static_cast<size_t>(index) >= extractFrom._rows))
-            throw std::out_of_range("Out of range");
-        
-        size_t offset = indexType == IndexType::Row ? static_cast<size_t>(index) : static_cast<size_t>(index) * extractFrom.getLD();
-       
-        this->_ptr = std::shared_ptr<void>(
-            extractFrom.getPtr(),
-            const_cast<void*>(reinterpret_cast<const void*>(reinterpret_cast<const char*>(extractFrom.data()) + offset * sizeof(T)))
+template <typename T>
+void CuArray1D<T>::get(std::ostream& output_stream, cudaStream_t stream) const {
+    GetToFile<T> helper(this->_rows, this->_cols, output_stream);
+    while (helper.hasNext()) {
+        CuArray1D<T> subArray(
+            *this,
+            helper.getColsProcessed(),
+            helper.getNextChunkColNumber()
         );
+        subArray.get(helper.getHostBuffer(), stream);
+        helper.writeNextChunkToFile();
+        helper.updateProgress();
     }
+}
 
-    /**
-     * @brief Get the number of elements in the array.
-     * @return Total number of elements in the array (cols).
-     */
-    size_t size() const override {
-        return this->_cols;
+// ---- Stream operators (forward to your get/set) ----
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const CuArray1D<T>& arr) {
+    try {
+        arr.get(os);            // uses your CuArray1D<T>::get(std::ostream&, cudaStream_t=0)
+    } catch (...) {
+        os.setstate(std::ios::badbit);
     }
+    return os;
+}
 
-    /**
-     * @brief Get the size of the array in bytes.
-     * @return Total size in bytes of the array (cols * ld * sizeof(T)).
-     */
-    size_t bytes() const override {        
-        return this->_cols * this->_ld * sizeof(T);
+template <typename T>
+std::istream& operator>>(std::istream& is, CuArray1D<T>& arr) {
+    try {
+        arr.set(is);            // uses your CuArray1D<T>::set(std::istream&, cudaStream_t=0)
+    } catch (...) {
+        is.setstate(std::ios::badbit);
     }
+    return is;
+}
 
-    /**
-     * @brief Set the array data from host memory.
-     * @param hostData Pointer to the host data to copy from.
-     * @param stream CUDA strethis->bytes()am for asynchronous operations (default is 0).
-     */
-    void set(const T* hostData, cudaStream_t stream = 0) override {
-        
-        if (this->_ld == 1) cudaMemcpyAsync(this->_ptr.get(), hostData, bytes(), cudaMemcpyHostToDevice, stream);
-        else cudaMemcpy2DAsync(
-                this->_ptr.get(), this->_ld * sizeof(T),
-                hostData, sizeof(T),
-                sizeof(T), this->_cols,
-                cudaMemcpyHostToDevice, stream
-            );
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const CuArray2D<T>& arr) {
+    try {
+        arr.get(os);            // uses your CuArray2D<T>::get(std::ostream&, cudaStream_t=0)
+    } catch (...) {
+        os.setstate(std::ios::badbit);
     }
+    return os;
+}
 
-    /**
-     * @brief Get the array data to host memory.
-     * @param hostData Pointer to the host memory to copy to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void get(T* hostData, cudaStream_t stream = 0) const override {
-        if (this->_ld == 1)
-            cudaMemcpyAsync(hostData, this->_ptr.get(), bytes(), cudaMemcpyDeviceToHost, stream);
-        else cudaMemcpy2DAsync(
-                hostData, sizeof(T),
-                this->_ptr.get(), this->_ld * sizeof(T),
-                sizeof(T), this->_cols,
-                cudaMemcpyDeviceToHost, stream
-            );
+template <typename T>
+std::istream& operator>>(std::istream& is, CuArray2D<T>& arr) {
+    try {
+        arr.set(is);            // uses your CuArray2D<T>::set(std::istream&, cudaStream_t=0)
+    } catch (...) {
+        is.setstate(std::ios::badbit);
     }
+    return is;
+}
 
-    /**
-     * @brief Set the array data from another CudaArray.
-     * @param src Source CudaArray to copy from.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void set(const CuArray<T>& src, cudaStream_t stream = 0) override {
-        if (this->_ld == 1 && src.getLD() == 1) {
-            cudaMemcpyAsync(this->_ptr.get(), src.data(), bytes(), cudaMemcpyDeviceToDevice, stream);
-        } else {
-            cudaMemcpy2DAsync(
-                this->_ptr.get(), this->_ld * sizeof(T),
-                src.data(), src.getLD() * sizeof(T),
-                sizeof(T), this->_cols,
-                cudaMemcpyDeviceToDevice, stream
-            );
-        }
-    }
 
-    /**
-     * @brief Get the array data to another CudaArray.
-     * @param dst Destination CudaArray to copy to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void get(CuArray<T>& dst, cudaStream_t stream = 0) const override {
-        if (this->_ld == 1 && dst.getLD() == 1) {
-            cudaMemcpyAsync(dst.data(), this->_ptr.get(), bytes(), cudaMemcpyDeviceToDevice, stream);
-        } else {
-            cudaMemcpy2DAsync(
-                dst.data(), dst.getLD() * sizeof(T),
-                this->_ptr.get(), this->_ld * sizeof(T),
-                sizeof(T), this->_cols,
-                cudaMemcpyDeviceToDevice, stream
-            );
-        }
-    }
-
-    
-    /**
-     * @brief Sets the array data from an input stream.
-     * @param input_stream The input stream to read from.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void set(std::istream& input_stream, cudaStream_t stream = 0) override {
-        SetFromFile<T> helper(this->_rows, this->_cols, input_stream);
-        while (helper.hasNext()) {
-            helper.readNextChunk();
-            CuArray1D<T> subArray(
-                *this,
-                helper.getColsProcessed(),
-                helper.getNextChunkColNumber()
-            );
-            
-            subArray.set(helper.getHostBuffer(), stream);
-            helper.updateProgress();
-        }
-    }
-
-    /**
-     * @brief Gets the array data to an output stream.
-     * @param output_stream The output stream to write to.
-     * @param stream CUDA stream for asynchronous operations (default is 0).
-     */
-    void get(std::ostream& output_stream, cudaStream_t stream = 0) const override {
-        GetToFile<T> helper(this->_rows, this->_cols, output_stream);
-        while (helper.hasNext()) {
-            CuArray1D<T> subArray(
-                *this, 
-                helper.getColsProcessed(),
-                helper.getNextChunkColNumber()
-            );            
-            subArray.get(helper.getHostBuffer(), stream);
-            helper.writeNextChunkToFile();
-            helper.updateProgress();
-        }
-    }
-};
-
-// --- Helper Functions and Macros for Testing ---
-
-/**
- * @brief Helper function to check for CUDA errors and exit on failure.
- * @param err The cudaError_t value to check.
- * @param file The file name where the error occurred.
- * @param line The line number where the error occurred.
- */
+// --- Helper Functions and Macros Definitions ---
 void checkCudaErrors(cudaError_t err, const char* file, int line) {
     if (err != cudaSuccess) {
         std::cerr << "CUDA Error: " << cudaGetErrorString(err) << " at " << file << ":" << line << std::endl;
@@ -652,18 +399,6 @@ void checkCudaErrors(cudaError_t err, const char* file, int line) {
     }
 }
 
-/**
- * @brief Macro to wrap CUDA function calls for easy error checking.
- */
-#define CHECK_CUDA_ERROR(err) checkCudaErrors(err, __FILE__, __LINE__)
-
-/**
- * @brief A helper function to verify if two vectors are identical.
- * @tparam T The data type of the vectors.
- * @param expected The vector containing the expected values.
- * @param result The vector containing the test results.
- * @param test_name A string to identify the test.
- */
 template <typename T>
 void verifyVectors(const std::vector<T>& expected, const std::vector<T>& result, const std::string& test_name) {
     if (expected == result) {
@@ -674,10 +409,6 @@ void verifyVectors(const std::vector<T>& expected, const std::vector<T>& result,
     }
 }
 
-/**
- * @brief Runs all tests for a specific data type.
- * @tparam T The data type to test (e.g., int, float).
- */
 template <typename T>
 void runTests() {
     std::cout << "--- Running tests for type " << typeid(T).name() << " ---" << std::endl;
@@ -694,7 +425,7 @@ void runTests() {
         std::cout << "CudaArray2D created with dimensions " << device_array_2d._rows << "x" << device_array_2d._cols << ", LD: " << device_array_2d.getLD() << std::endl;
         device_array_2d.set(host_data_2d.data());
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        
+
         std::vector<T> host_result_2d(rows_2d * cols_2d);
         device_array_2d.get(host_result_2d.data());
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());
@@ -715,7 +446,7 @@ void runTests() {
         const size_t subHeight = 2;
         const size_t subWidth = 2;
         CuArray2D<T> subArray(parent_array, startRow, startCol, subHeight, subWidth);
-        
+
         std::vector<T> retrievedSubArray(subHeight * subWidth);
         subArray.get(retrievedSubArray.data());
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());
@@ -768,7 +499,7 @@ void runTests() {
             expected_col.push_back(host_data_2d[col_index * rows_2d + r]);
         }
         verifyVectors(expected_col, host_col_result, "CudaArray1D extraction of a column");
-        
+
         // Test row extraction
         int row_index = 1;
         CuArray1D<T> extracted_row(parent_2d, row_index, IndexType::Row);
@@ -785,35 +516,31 @@ void runTests() {
     }
 }
 
-/**
- * @brief Runs tests for file I/O operations using streams.
- * @tparam T The data type to test.
- */
 template <typename T>
 void runFileIOTests() {
     std::cout << "\n--- Running File I/O tests for type " << typeid(T).name() << " ---" << std::endl;
-    
+
     const size_t rows = 1000;
     const size_t cols = 2000;
     const size_t large_array_size = rows * cols;
-    
+
     std::string test_filename = "test_array.bin";
-    
+
     try {
         // Create a large host array
         std::vector<T> host_source_data(large_array_size);
         std::iota(host_source_data.begin(), host_source_data.end(), static_cast<T>(1));
         
-        // Create a device array and copy data to it
-        CuArray2D<T> device_source_array(rows, cols);
-        device_source_array.set(host_source_data.data());
+        CuArray2D<T> device_array(rows, cols);
+        device_array.set(host_source_data.data());
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        
+
         // Write the device array to a file using the stream method
         std::cout << "Writing device array to file: " << test_filename << std::endl;
         std::ofstream outfile(test_filename, std::ios::binary);
         if (!outfile) throw std::runtime_error("Could not open file for writing.");
-        device_source_array.get(outfile);
+
+        device_array.get(outfile);
         outfile.close();
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 
@@ -825,15 +552,15 @@ void runFileIOTests() {
         device_dest_array.set(infile);
         infile.close();
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        
+
         // Copy the second device array back to host memory for verification
         std::vector<T> host_dest_data(large_array_size);
         device_dest_array.get(host_dest_data.data());
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        
+
         // Verify that the data is identical
         verifyVectors(host_source_data, host_dest_data, "File I/O Test");
-        
+
         // Clean up the test file
         std::remove(test_filename.c_str());
 
@@ -843,38 +570,55 @@ void runFileIOTests() {
     }
 }
 
-int main() {
-    // Check for CUDA device
+void checkForDevice(){
     int deviceCount = 0;
-    CHECK_CUDA_ERROR(cudaGetDeviceCount(&deviceCount));
+    cudaGetDeviceCount(&deviceCount);
     if (deviceCount == 0) {
         std::cerr << "No CUDA devices found. Exiting." << std::endl;
-        return 1;
+        exit(EXIT_FAILURE);
     }
-    
-    std::cout << "Starting thorough testing of CudaArray classes..." << std::endl;
+    std::cout << "CUDA device count: " << deviceCount << std::endl;
+}
 
+void multiTest(){
+
+    checkForDevice();
+
+    std::cout << "Starting thorough testing of CudaArray classes..." << std::endl;
     // Run tests for different data types
     runTests<int>();
     std::cout << "\n========================================\n" << std::endl;
     runTests<float>();
     std::cout << "\n========================================\n" << std::endl;
-    runTests<double>();
-
-
-    // Run file I/O tests
     runFileIOTests<int>();
     std::cout << "\n========================================\n" << std::endl;
     runFileIOTests<float>();
-    std::cout << "\n========================================\n" << std::endl;
-    runFileIOTests<double>();
-    
-    std::cout << "\nAll tests complete." << std::endl;
-    
-    CHECK_CUDA_ERROR(cudaDeviceReset());
-    return 0;
 }
 
-
-
-
+// Explicit template instantiation to avoid linker errors.
+template class CuArray<int>;
+template class CuArray<float>;
+template class CuArray2D<int>;
+template class CuArray2D<float>;
+template class CuArray1D<int>;
+template class CuArray1D<float>;
+template class CuFileHelper<int>;
+template class CuFileHelper<float>;
+template class SetFromFile<int>;
+template class SetFromFile<float>;
+template class GetToFile<int>;
+template class GetToFile<float>;
+template void verifyVectors<int>(const std::vector<int>&, const std::vector<int>&, const std::string&);
+template void verifyVectors<float>(const std::vector<float>&, const std::vector<float>&, const std::string&);
+template void runTests<int>();
+template void runTests<float>();
+template void runFileIOTests<int>();
+template void runFileIOTests<float>();
+template std::ostream& operator<< <int>(std::ostream&, const CuArray1D<int>&);
+template std::istream& operator>> <int>(std::istream&, CuArray1D<int>&);
+template std::ostream& operator<< <float>(std::ostream&, const CuArray1D<float>&);
+template std::istream& operator>> <float>(std::istream&, CuArray1D<float>&);
+template std::ostream& operator<< <int>(std::ostream&, const CuArray2D<int>&);
+template std::istream& operator>> <int>(std::istream&, CuArray2D<int>&);
+template std::ostream& operator<< <float>(std::ostream&, const CuArray2D<float>&);
+template std::istream& operator>> <float>(std::istream&, CuArray2D<float>&);
