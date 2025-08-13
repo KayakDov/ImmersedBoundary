@@ -20,10 +20,7 @@ CuFileHelper<T>::CuFileHelper(size_t rows, size_t cols)
     _colsProcessed(0),
     _maxColsPerChunk(std::clamp(size_t((32ull * 1024ull * 1024ull) / (rows * sizeof(T))), size_t(1), size_t(cols))),
     _hostBuffer(_maxColsPerChunk * rows),    
-    _rows(rows) {
-        std::cout << "In CuFileHelper constructor, deviceArrays.cu we have CuFileHelper created with rows: " << rows << ", cols: " << cols
-                  << ", maxColsPerChunk: " << _maxColsPerChunk << std::endl;
-    }
+    _rows(rows) {}
 
 template <typename T>
 CuFileHelper<T>::~CuFileHelper() = default;
@@ -346,48 +343,6 @@ void CuArray1D<T>::get(std::ostream& output_stream, cudaStream_t stream) const {
         helper.writeNextChunkToFile();
         helper.updateProgress();
     }
-}
-
-// ---- Stream operators (forward to your get/set) ----
-
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const CuArray1D<T>& arr) {
-    try {
-        arr.get(os);            // uses your CuArray1D<T>::get(std::ostream&, cudaStream_t=0)
-    } catch (...) {
-        os.setstate(std::ios::badbit);
-    }
-    return os;
-}
-
-template <typename T>
-std::istream& operator>>(std::istream& is, CuArray1D<T>& arr) {
-    try {
-        arr.set(is);            // uses your CuArray1D<T>::set(std::istream&, cudaStream_t=0)
-    } catch (...) {
-        is.setstate(std::ios::badbit);
-    }
-    return is;
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const CuArray2D<T>& arr) {
-    try {
-        arr.get(os);            // uses your CuArray2D<T>::get(std::ostream&, cudaStream_t=0)
-    } catch (...) {
-        os.setstate(std::ios::badbit);
-    }
-    return os;
-}
-
-template <typename T>
-std::istream& operator>>(std::istream& is, CuArray2D<T>& arr) {
-    try {
-        arr.set(is);            // uses your CuArray2D<T>::set(std::istream&, cudaStream_t=0)
-    } catch (...) {
-        is.setstate(std::ios::badbit);
-    }
-    return is;
 }
 
 

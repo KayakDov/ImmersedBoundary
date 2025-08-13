@@ -146,4 +146,88 @@ public:
     void get(std::ostream& output_stream, cudaStream_t stream = 0) const override;
 };
 
+/**
+ * @brief Output CuArray1D<T> to a stream in formatted text (space-separated values).
+ * @tparam T Element type
+ * @param os Output stream
+ * @param arr Array to print
+ * @return Output stream
+ */
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const CuArray1D<T>& arr) {
+    std::vector<T> hostData(arr.size());
+    arr.get(hostData.data());
+    for (size_t i = 0; i < hostData.size(); ++i) {
+        os << hostData[i];
+        if (i + 1 < hostData.size()) os << " ";
+    }
+    return os;
+}
+
+/**
+ * @brief Input formatted data (space-separated values) into CuArray1D<T> from a stream.
+ * @tparam T Element type
+ * @param is Input stream
+ * @param arr Array to fill
+ * @return Input stream
+ */
+template <typename T>
+std::istream& operator>>(std::istream& is, CuArray1D<T>& arr) {
+    std::vector<T> hostData(arr.size());
+    for (size_t i = 0; i < hostData.size(); ++i) {
+        is >> hostData[i];
+        if (!is) {
+            is.setstate(std::ios::badbit);
+            break;
+        }
+    }
+    arr.set(hostData.data());
+    return is;
+}
+
+/**
+ * @brief Output CuArray2D<T> to a stream in formatted text (rows of space-separated values).
+ * @tparam T Element type
+ * @param os Output stream
+ * @param arr Array to print
+ * @return Output stream
+ */
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const CuArray2D<T>& arr) {
+    std::vector<T> hostData(arr._rows * arr._cols);
+    arr.get(hostData.data());
+    for (size_t r = 0; r < arr._rows; ++r) {
+        for (size_t c = 0; c < arr._cols; ++c) {
+            os << hostData[c * arr._rows + r];
+            if (c + 1 < arr._cols) os << " ";
+        }
+        os << "\n";
+    }
+    return os;
+}
+
+/**
+ * @brief Input formatted data (rows of space-separated values) into CuArray2D<T> from a stream.
+ * @tparam T Element type
+ * @param is Input stream
+ * @param arr Array to fill
+ * @return Input stream
+ */
+template <typename T>
+std::istream& operator>>(std::istream& is, CuArray2D<T>& arr) {
+    std::vector<T> hostData(arr._rows * arr._cols);
+    for (size_t r = 0; r < arr._rows; ++r) {
+        for (size_t c = 0; c < arr._cols; ++c) {
+            is >> hostData[c * arr._rows + r];
+            if (!is) {
+                is.setstate(std::ios::badbit);
+                break;
+            }
+        }
+    }
+    arr.set(hostData.data());
+    return is;
+}
+
+
 #endif // DEVICEARRAYS_H
