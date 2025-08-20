@@ -1,6 +1,7 @@
 #include "deviceArrays.h"
 #include <cmath>
 
+//TODO: test random number generation, test this method here, write multipliation for sparse matrices
 
 template<typename T>
 CuArray1D<T> unpreconditionedBiCGSTAB(
@@ -59,9 +60,6 @@ CuArray1D<T> unpreconditionedBiCGSTAB(
         p.add(r, beta, &handle); // p = r + beta * p
         p.sub(v, beta * omega, &handle); // p = p - beta * omega * v        
     }
-
-
-    //code here
 
     return result;
 }
