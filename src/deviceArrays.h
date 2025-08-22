@@ -4,16 +4,17 @@
 #ifndef DEVICEARRAYS_H
 #define DEVICEARRAYS_H
 
-#include <vector>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <cuda_runtime.h>
-#include <cuda_runtime_api.h>
-#include <fstream>
-#include <string>
-#include <cublas_v2.h>
-#include <curand_kernel.h>
+#include <vector> // For std::vector
+#include <iostream> // For std::cerr
+#include <memory> // For std::shared_ptr
+#include <stdexcept> // For std::runtime_error
+#include <cuda_runtime.h> // For CUDA runtime API
+#include <cuda_runtime_api.h> // For cudaFree
+#include <fstream> // For file I/O
+#include <string> // For std::string
+#include <cublas_v2.h> // For cuBLAS
+#include <curand_kernel.h> // For cuRAND
+#include <iomanip> // For formatted output
 
 template <typename T> class CuArray;
 template <typename T> class CuArray1D;
@@ -183,7 +184,7 @@ public:
      * @return A new CuArray1D containing the result of the multiplication.
      */
     CuArray1D<double> diagMult(const int* diags, const CuArray1D<double>& x, CuArray1D<double>* result = nullptr, Handle* handle = nullptr, const double alpha = 1.0, const double beta = 0.0) const;
-    CuArray1D<float> diagMult(const int* diags, const CuArray1D<float>& x, CuArray1D<float>* result = nullptr, Handle* handle = nullptr, const float alpha = 1.0, const float beta = 0.0) const;
+    CuArray1D<float> diagMult(const int* diags, const CuArray1D<float>& x, CuArray1D<float>* result = nullptr, Handle* handle = nullptr, const float alpha = 1.0f, const float beta = 0.0f) const;
 
 };
 
@@ -226,23 +227,6 @@ public:
     void fillRandom(Handle* handle = nullptr);
 };
 
-/**
- * @brief Output CuArray1D<T> to a stream in formatted text (space-separated values).
- * @tparam T Element type
- * @param os Output stream
- * @param arr Array to print
- * @return Output stream
- */
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const CuArray1D<T>& arr) {
-    std::vector<T> hostData(arr.size());
-    arr.get(hostData.data());
-    for (size_t i = 0; i < hostData.size(); ++i) {
-        os << hostData[i];
-        if (i + 1 < hostData.size()) os << " ";
-    }
-    return os;
-}
 
 /**
  * @brief Input formatted data (space-separated values) into CuArray1D<T> from a stream.
@@ -266,28 +250,66 @@ std::istream& operator>>(std::istream& is, CuArray1D<T>& arr) {
 }
 
 /**
- * @brief Output CuArray2D<T> to a stream in formatted text (rows of space-separated values).
+ * @brief Prints a CuArray1D<T> to a stream.
  * @tparam T Element type
  * @param os Output stream
- * @param arr Array to print
+ * @param arr The CuArray1D to print
+ * @return Output stream
+ */
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const CuArray1D<T>& arr) {
+    std::vector<T> hostData(arr.size());
+    arr.get(hostData.data());
+    
+    os << std::fixed << std::setprecision(4);
+    
+    for (size_t i = 0; i < hostData.size(); ++i) {
+        os << hostData[i];
+        if (i + 1 < hostData.size()) {
+            os << " ";
+        }
+    }
+    os << "\n";
+    return os;
+}
+
+/**
+ * @brief Prints a CuArray2D<T> to a stream with improved formatting.
+ *
+ * This operator assumes a column-major memory layout and prints the matrix
+ * row by row for a more readable output. It uses iomanip to format the
+ * floating-point numbers to a fixed precision and set width.
+ *
+ * @tparam T Element type
+ * @param os Output stream
+ * @param arr The CuArray2D to print
  * @return Output stream
  */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const CuArray2D<T>& arr) {
-    std::vector<T> hostData(arr._rows * arr._cols);
+    std::vector<T> hostData(arr.size());
     arr.get(hostData.data());
+
+    // Set formatting for prettier output
+    os << std::fixed << std::setprecision(4);
+
     for (size_t r = 0; r < arr._rows; ++r) {
         for (size_t c = 0; c < arr._cols; ++c) {
-            os << hostData[c * arr._rows + r];
-            if (c + 1 < arr._cols) os << " ";
+            // Contiguous column-major access
+            os << std::setw(12) << hostData[c * arr._rows + r] << " ";
         }
         os << "\n";
     }
     return os;
 }
 
+
 /**
- * @brief Input formatted data (rows of space-separated values) into CuArray2D<T> from a stream.
+ * @brief Reads formatted data (column by column) into CuArray2D<T> from a stream.
+ *
+ * This operator assumes the input stream is formatted in column-major order,
+ * meaning it will read all elements of the first column, then the second, and so on.
+ *
  * @tparam T Element type
  * @param is Input stream
  * @param arr Array to fill
@@ -295,18 +317,23 @@ std::ostream& operator<<(std::ostream& os, const CuArray2D<T>& arr) {
  */
 template <typename T>
 std::istream& operator>>(std::istream& is, CuArray2D<T>& arr) {
-    std::vector<T> hostData(arr._rows * arr._cols);
-    for (size_t r = 0; r < arr._rows; ++r) {
-        for (size_t c = 0; c < arr._cols; ++c) {
-            is >> hostData[c * arr._rows + r];
+    std::vector<T> hostData(arr.size());
+    size_t ld = arr.getLD();
+
+    for (size_t c = 0; c < arr._cols; ++c) {
+        for (size_t r = 0; r < arr._rows; ++r) {
+            // Reading data in column-major order from the stream
+            is >> hostData[c * ld + r];
             if (!is) {
                 is.setstate(std::ios::badbit);
-                break;
+                return is;
             }
         }
     }
+
     arr.set(hostData.data());
     return is;
 }
+
 
 #endif // DEVICEARRAYS_H

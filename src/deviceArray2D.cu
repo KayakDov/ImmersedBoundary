@@ -634,8 +634,8 @@ __global__ void diagMatVecFloatKernel(
     int rowX = blockIdx.x;
     int idx = threadIdx.x;
     bool isValid = rowX < height && idx * 2 < numDiags;
-    if (isValid){        
-        
+    if (isValid){
+
         int d = diags[2 * idx]; // First diagonal index
         int i = (d >= 0) ? rowX : rowX + d; // Row index for first diagonal
         sharedData[idx] = 0 <= i && i < height - abs(d) ? A[i*ld + 2 * idx] * x[(rowX + d) * strideX] : 0;
@@ -690,7 +690,7 @@ CuArray1D<double> CuArray2D<double>::diagMult(
     if (this->_rows > 64)
         throw std::invalid_argument("height must be <= 32 for this kernel");
 
-    CuArray1D<double>* resPtr = result ? result : new CuArray1D<double>(this->_rows);
+    CuArray1D<double>* resPtr = result ? result : new CuArray1D<double>(this->_cols);
     Handle* h = handle ? handle : new Handle();
 
     CuArray1D<int> d_diags(this->_rows);
@@ -698,7 +698,7 @@ CuArray1D<double> CuArray2D<double>::diagMult(
     
     int sharedMemSize = sizeof(double) * this->_rows;
     
-    diagMatVecDoubleKernel<<<this->_rows, (this->_rows + 1) / 2, sharedMemSize, h->stream>>>(
+    diagMatVecDoubleKernel<<<this->_cols, (this->_cols + 1) / 2, sharedMemSize, h->stream>>>(
         this->data(), this->_cols, this->getLD(),
         d_diags.data(), this->_rows,
         x.data(), x.getLD(),
@@ -746,7 +746,7 @@ CuArray1D<float> CuArray2D<float>::diagMult(
     if (this->_rows > 64)
         throw std::invalid_argument("height must be <= 32 for this kernel");
 
-    CuArray1D<float>* resPtr = result ? result : new CuArray1D<float>(this->_rows);
+    CuArray1D<float>* resPtr = result ? result : new CuArray1D<float>(this->_cols);
     Handle* h = handle ? handle : new Handle();
 
     CuArray1D<int> d_diags(this->_rows);
@@ -754,7 +754,7 @@ CuArray1D<float> CuArray2D<float>::diagMult(
     
     int sharedMemSize = sizeof(float) * this->_rows;
     
-    diagMatVecFloatKernel<<<this->_rows, (this->_rows + 1) / 2, sharedMemSize, h->stream>>>(
+    diagMatVecFloatKernel<<<this->_cols, (this->_cols + 1) / 2, sharedMemSize, h->stream>>>(
         this->data(), this->_cols, this->getLD(),
         d_diags.data(), this->_rows,
         x.data(), x.getLD(),
