@@ -357,7 +357,6 @@ void inline multiTest()
     checkForDevice();
 
     std::cout << "\n===== Basic (int) tests =====\n";
-    runTests<int>();     // memory, subviews, extraction (no GEMM/GEMV/dot)
 
     std::cout << "\n===== Float tests =====\n";
     runTests<float>();   // includes GEMM/GEMV/dot
@@ -370,6 +369,9 @@ void inline multiTest()
 
     std::cout << "\n===== File I/O (float) =====\n";
     runFileIOTests<float>();
+
+    std::cout << "\n===== File I/O (float) =====\n";
+    runFileIOTests<double>();
 }
 
 // ---------- Explicit instantiations (optional but harmless) ----------

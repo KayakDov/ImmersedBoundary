@@ -1,3 +1,4 @@
+//TODO: When reading in the diagonals of A, allow for different lengths.
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -16,6 +17,42 @@ void processCommandLineArgs(int argc, char const* argv[], string& a_file, int& n
 void readInputData(const string& a_file, int numDiags, int width, CuArray2D<float>& A, const string& diags_file, vector<int>& diags_vec, const string& b_file, CuArray1D<float>& b);
 void solveAndWriteOutput(CuArray2D<float>& A, const vector<int>& diags_vec, CuArray1D<float>& b, const string& x_dest_file);
 
+void runAllTests() {
+    // Check if a CUDA device is available.
+    checkForDevice();
+    
+    multiTest();
+
+    CuArray2D<float> A(3, 3);
+    CuArray1D<float> b(3);
+    CuArray1D<float> x(3);
+
+    float dataA[] = {1.0f, 2.0f, 3.0f,
+                     4.0f, 5.0f, 6.0f,
+                     0.0f, 8.0f, 0.0f};
+    A.set(dataA);
+
+    cout << "A:\n" << A << endl;
+
+    float data_b[] = {1.0f, 2.0f, 3.0f};
+    b.set(data_b);
+
+    cout << "b:\n" << b << endl;
+
+    const int diags[] = {-1, 0, 1};
+    
+    unpreconditionedBiCGSTAB(A, diags, b, &x, 20, 1e-6f);
+
+    cout << "x:\n" << x << endl;
+    cout << "Expected: 2.7500 -1.5000 1.1250 "<< endl;
+
+    cout << "testing multiplication:" << endl;
+    float data_x[] = {2.7500f, -1.5000f, 1.1250f};   
+    x.set(data_x);
+    A.diagMult(diags, x, &b);
+    cout << "A*x:\n" << b << "Expected: 1 2 3" << endl;
+}
+
 /**
  * @file main.cpp
  * @brief This program solves a linear system Ax = b using the unpreconditioned
@@ -26,12 +63,12 @@ void solveAndWriteOutput(CuArray2D<float>& A, const vector<int>& diags_vec, CuAr
  * is then written to an output file.
  */
 int main(int argc, char const* argv[]) {
-    if (argc > 1 && string(argv[1]) == "-h") {
-        showHelp();
+    if (argc == 2) {
+        if(string(argv[1]) == "-h")  showHelp();
+        if(string(argv[1]) == "-t")  runAllTests();
         return 0;
     }
-
-    if (argc != 7) {
+    else if (argc != 7) {
         cerr << "Error: Incorrect number of arguments.\n";
         showHelp();
         return 1;
@@ -71,13 +108,14 @@ void showHelp() {
     cout << "Usage: ./unpreconditionedBiCGSTAB [options] <A_file> <num_diags> <matrix_width> <diags_file> <b_file> <x_dest_file>\n";
     cout << "Options:\n";
     cout << "  -h  Show this help message.\n\n";
+    cout << "  -t  Run tests.\n\n";
     cout << "Arguments:\n";
-    cout << "  <A_file>        (1) Path to a file containing the diagonals of the sparse matrix A.\n";
-    cout << "  <num_diags>     (2) The number of diagonals, which is the height of the matrix A.\n";
-    cout << "  <matrix_width>  (3) The width of the original sparse matrix (and the height of b).\n";
-    cout << "  <diags_file>    (4) Path to a file containing the indices of the diagonals (space-separated integers).\n";
+    cout << "  <A_file>        (1) Path to a file containing the non-zero diagonals of the sparse square matrix 'A'.  This file should have a matrix in column major order, where each row is a non 0 diagonal of A.  For diagonals shorter than the primary diagonal, padding is required so that they be the same length.";//TODO: make this better.  Matrix A should have a column be a diagonal of A, and shorter diagonals should be padded with 0s to be the same length as the primary diagonal.\n";
+    cout << "  <num_diags>     (2) The number of non 0 diagonals.\n";
+    cout << "  <matrix_width>  (3) The height and width of 'A' and the height of b.\n";
+    cout << "  <diags_file>    (4) Path to a file containing the indices of the diagonals (space-separated integers).  THe first value should be the index of the first diagonal in the diagonal file, the second value should be the index of the second diagonal, and so on.  Use negative values for sub indices, 0 for the primary diagonal, and positive integer values for the super diagonals. For example, an index of 1 is the superdiagonaladjacent to the primary diagonal.\n";
     cout << "  <b_file>        (5) Path to a file containing the right-hand side vector b.\n";
-    cout << "  <x_dest_file>   (6) Path to a destination file for the solution vector x.\n\n";
+    cout << "  <x_dest_file>   (6) Path to a destination file for the solution vector x\n\n";
     cout << "Constraints:\n";
     cout << "  - The files for A, b, and x should contain space-separated floating-point numbers.\n";
     cout << "  - The file for diagonals should contain space-separated integers.\n";
@@ -129,7 +167,7 @@ void readInputData(const string& a_file, int numDiags, int width, CuArray2D<floa
     if (!a_fs.is_open()) {
         throw runtime_error("Could not open file: " + a_file);
     }
-    a_fs >> A;
+    A.set(a_fs);
     a_fs.close();
 
     ifstream diags_fs(diags_file);
@@ -147,7 +185,7 @@ void readInputData(const string& a_file, int numDiags, int width, CuArray2D<floa
     if (!b_fs.is_open()) {
         throw runtime_error("Could not open file: " + b_file);
     }
-    b_fs >> b;
+    b.set(b_fs);
     b_fs.close();
 }
 
@@ -171,6 +209,6 @@ void solveAndWriteOutput(CuArray2D<float>& A, const vector<int>& diags_vec, CuAr
     if (!x_fs.is_open()) {
         throw runtime_error("Could not open destination file: " + x_dest_file);
     }
-    x_fs << x;
+    x.get(x_fs);
     x_fs.close();
 }

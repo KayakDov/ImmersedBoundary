@@ -19,9 +19,9 @@
 template <typename T> class CuArray;
 template <typename T> class CuArray1D;
 template <typename T> class CuArray2D;
-template <typename T> class CuFileHelper;
-template <typename T> class SetFromFile;
-template <typename T> class GetToFile;
+template <typename T> class StreamHelper;
+template <typename T> class StreamSet;
+template <typename T> class StreamGet;
 
 
 
@@ -34,7 +34,7 @@ inline void cudaFreeDeleter(void* ptr) {
 }
 
 template <typename T>
-class CuFileHelper {
+class StreamHelper {
 public:
     const size_t _totalCols;
     const size_t _maxColsPerChunk; 
@@ -44,8 +44,8 @@ protected:
     std::vector<T> _hostBuffer;
 public:
     
-    CuFileHelper(size_t rows, size_t cols);
-    virtual ~CuFileHelper();
+    StreamHelper(size_t rows, size_t cols);
+    virtual ~StreamHelper();
     bool hasNext() const;
     size_t getNextChunkColNumber() const;
     T* getHostBuffer();
@@ -54,21 +54,21 @@ public:
 };
 
 template <typename T>
-class SetFromFile : public CuFileHelper<T> {
+class StreamSet : public StreamHelper<T> {
 private:
     std::istream& _input_stream;
 public:
-    SetFromFile(size_t rows, size_t cols, std::istream& input_stream);
-    void readNextChunk();
+    StreamSet(size_t rows, size_t cols, std::istream& input_stream);
+    void readChunk();
 };
 
 template <typename T>
-class GetToFile : public CuFileHelper<T> {
+class StreamGet : public StreamHelper<T> {
 private:
     std::ostream& _output_stream;
 public:
-    GetToFile(size_t rows, size_t cols, std::ostream& output_stream);
-    void writeNextChunkToFile();
+    StreamGet(size_t rows, size_t cols, std::ostream& output_stream);
+    void writeChunk();
 };
 
 
@@ -97,8 +97,8 @@ protected:
     size_t _ld;
     CuArray(size_t rows, size_t cols, size_t ld);
 
-    void mult(const CuArray<float>& other, CuArray<float>* result, Handle* handle = nullptr, float alpha = 1.0f, float beta = 0.0f, bool transposeA = false, bool transposeB = false) const;
-    void mult(const CuArray<double>& other, CuArray<double>* result, Handle* handle = nullptr, double alpha = 1.0, double beta = 0.0, bool transposeA = false, bool transposeB = false) const;
+    virtual void mult(const CuArray<float>& other, CuArray<float>* result, Handle* handle = nullptr, float alpha = 1.0f, float beta = 0.0f, bool transposeA = false, bool transposeB = false) const;
+    virtual void mult(const CuArray<double>& other, CuArray<double>* result, Handle* handle = nullptr, double alpha = 1.0, double beta = 0.0, bool transposeA = false, bool transposeB = false) const;
 public:
     virtual ~CuArray();
     virtual size_t size() const = 0;
@@ -183,8 +183,7 @@ public:
      * @param stride Stride for the input vector x.
      * @return A new CuArray1D containing the result of the multiplication.
      */
-    CuArray1D<double> diagMult(const int* diags, const CuArray1D<double>& x, CuArray1D<double>* result = nullptr, Handle* handle = nullptr, const double alpha = 1.0, const double beta = 0.0) const;
-    CuArray1D<float> diagMult(const int* diags, const CuArray1D<float>& x, CuArray1D<float>* result = nullptr, Handle* handle = nullptr, const float alpha = 1.0f, const float beta = 0.0f) const;
+    CuArray1D<T> diagMult(const int* diags, const CuArray1D<T>& x, CuArray1D<T>* result = nullptr, Handle* handle = nullptr, const T alpha = 1.0, const T beta = 0.0) const;
 
 };
 
@@ -237,6 +236,9 @@ public:
  */
 template <typename T>
 std::istream& operator>>(std::istream& is, CuArray1D<T>& arr) {
+
+    
+
     std::vector<T> hostData(arr.size());
     for (size_t i = 0; i < hostData.size(); ++i) {
         is >> hostData[i];
@@ -287,6 +289,7 @@ std::ostream& operator<<(std::ostream& os, const CuArray1D<T>& arr) {
  */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const CuArray2D<T>& arr) {
+    cudaDeviceSynchronize();
     std::vector<T> hostData(arr.size());
     arr.get(hostData.data());
 

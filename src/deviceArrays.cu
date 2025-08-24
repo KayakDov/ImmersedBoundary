@@ -16,7 +16,7 @@
 
 // --- CuFileHelper Definitions ---
 template <typename T>
-CuFileHelper<T>::CuFileHelper(size_t rows, size_t cols)
+StreamHelper<T>::StreamHelper(size_t rows, size_t cols)
     : _totalCols(cols),
     _colsProcessed(0),
     _maxColsPerChunk(std::clamp(size_t((32ull * 1024ull * 1024ull) / (rows * sizeof(T))), size_t(1), size_t(cols))),
@@ -24,40 +24,40 @@ CuFileHelper<T>::CuFileHelper(size_t rows, size_t cols)
     _rows(rows) {}
 
 template <typename T>
-CuFileHelper<T>::~CuFileHelper() = default;
+StreamHelper<T>::~StreamHelper() = default;
 
 template <typename T>
-bool CuFileHelper<T>::hasNext() const {
+bool StreamHelper<T>::hasNext() const {
     return _colsProcessed < _totalCols;
 }
 
 template <typename T>
-size_t CuFileHelper<T>::getNextChunkColNumber() const {
+size_t StreamHelper<T>::getNextChunkColNumber() const {
     return std::min(_maxColsPerChunk, _totalCols - _colsProcessed);
 }
 
 template <typename T>
-T* CuFileHelper<T>::getHostBuffer() {
+T* StreamHelper<T>::getHostBuffer() {
     return _hostBuffer.data();
 }
 
 template <typename T>
-void CuFileHelper<T>::updateProgress() {
+void StreamHelper<T>::updateProgress() {
     _colsProcessed += getNextChunkColNumber();
 }
 
 template <typename T>
-size_t CuFileHelper<T>::getColsProcessed() const {
+size_t StreamHelper<T>::getColsProcessed() const {
     return _colsProcessed;
 }
 
 // --- SetFromFile Definitions ---
 template <typename T>
-SetFromFile<T>::SetFromFile(size_t rows, size_t cols, std::istream& input_stream)
-    : CuFileHelper<T>(rows, cols), _input_stream(input_stream) {}
+StreamSet<T>::StreamSet(size_t rows, size_t cols, std::istream& input_stream)
+    : StreamHelper<T>(rows, cols), _input_stream(input_stream) {}
 
 template <typename T>
-void SetFromFile<T>::readNextChunk() {
+void StreamSet<T>::readChunk() {
     size_t current_chunk_bytes = this->getNextChunkColNumber() * this->_rows * sizeof(T);
     if (current_chunk_bytes > 0) {
         this->_input_stream.read(reinterpret_cast<char*>(this->_hostBuffer.data()), current_chunk_bytes);
@@ -67,11 +67,11 @@ void SetFromFile<T>::readNextChunk() {
 
 // --- GetToFile Definitions ---
 template <typename T>
-GetToFile<T>::GetToFile(size_t rows, size_t cols, std::ostream& output_stream)
-    : CuFileHelper<T>(rows, cols), _output_stream(output_stream) {}
+StreamGet<T>::StreamGet(size_t rows, size_t cols, std::ostream& output_stream)
+    : StreamHelper<T>(rows, cols), _output_stream(output_stream) {cudaDeviceSynchronize();}
 
 template <typename T>
-void GetToFile<T>::writeNextChunkToFile() {
+void StreamGet<T>::writeChunk() {
     size_t current_chunk_bytes = this->getNextChunkColNumber() * this->_rows * sizeof(T);
     if (current_chunk_bytes > 0) {
         this->_output_stream.write(reinterpret_cast<const char*>(this->_hostBuffer.data()), current_chunk_bytes);
@@ -242,19 +242,19 @@ void CuArray<double>::mult(
 // Explicit template instantiations to satisfy the linker
 
 // CuFileHelper
-template class CuFileHelper<int>;
-template class CuFileHelper<float>;
-template class CuFileHelper<double>;
+template class StreamHelper<int>;
+template class StreamHelper<float>;
+template class StreamHelper<double>;
 
 // SetFromFile
-template class SetFromFile<int>;
-template class SetFromFile<float>;
-template class SetFromFile<double>;
+template class StreamSet<int>;
+template class StreamSet<float>;
+template class StreamSet<double>;
 
 // GetToFile
-template class GetToFile<int>;
-template class GetToFile<float>;
-template class GetToFile<double>;
+template class StreamGet<int>;
+template class StreamGet<float>;
+template class StreamGet<double>;
 
 // CuArray
 template class CuArray<int>;

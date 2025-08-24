@@ -220,10 +220,10 @@ void CuArray2D<T>::get(CuArray<T>& dst, cudaStream_t cuStream) const {
 template <typename T>
 void CuArray2D<T>::set(std::istream& input_stream, cudaStream_t cuStream) {
 
-    SetFromFile<T> helper(this->_rows, this->_cols, input_stream);
+    StreamSet<T> helper(this->_rows, this->_cols, input_stream);
 
     while (helper.hasNext()) {
-        helper.readNextChunk();
+        helper.readChunk();
         CuArray2D<T> subArray(
             *this,
             0,
@@ -243,7 +243,7 @@ void CuArray2D<T>::set(std::istream& input_stream, cudaStream_t cuStream) {
 template <typename T>
 void CuArray2D<T>::get(std::ostream& output_stream, cudaStream_t stream) const {
 
-    GetToFile<T> helper(this->_rows, this->_cols, output_stream);
+    StreamGet<T> helper(this->_rows, this->_cols, output_stream);
 
     while (helper.hasNext()) {
         CuArray2D<T> subArray(
@@ -257,7 +257,7 @@ void CuArray2D<T>::get(std::ostream& output_stream, cudaStream_t stream) const {
         subArray.get(helper.getHostBuffer(), stream);
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());//TODO: this might be avoidable with multi threading
 
-        helper.writeNextChunkToFile();
+        helper.writeChunk();
         helper.updateProgress();
     }
 }
@@ -534,6 +534,7 @@ CuArray1D<double> CuArray2D<double>::bandedMult(
 }
 
 
+
 /**
  * Kernel for sparse diagonal matrix-vector multiplication.
  * 
@@ -554,23 +555,26 @@ CuArray1D<double> CuArray2D<double>::bandedMult(
  * @param alpha Scalar multiplier for the matrix-vector product.
  * @param beta Scalar multiplier for the existing values in the result vector.
  */
-__global__ void diagMatVecDoubleKernel(
-    const double* __restrict__ A, // packed diagonals
+template <typename T>
+__global__ void diagMatVecKernel(
+    const T* __restrict__ A, // packed diagonals
     const int height, const int ld,
     
     const int* __restrict__ diags, // which diagonals
     const int numDiags,
 
-    const double* __restrict__ x,      // input vector
+    const T* __restrict__ x,      // input vector
     const int strideX,
     
-    double* __restrict__ result,       // output vecto
+    T* __restrict__ result,       // output vecto
     const int strideR,
 
-    const double alpha,
-    const double beta
+    const T alpha,
+    const T beta
 ){
-    extern __shared__ double sData[]; // Shared memory for the diagonals
+    extern __shared__ __align__(sizeof(T)) unsigned char sharedMem[];
+    T *sData = reinterpret_cast<T *>(sharedMem);
+    
     int rowX = blockIdx.x;
     int idx = threadIdx.x;
     bool isValid = rowX < height && idx * 2 < numDiags;
@@ -594,66 +598,6 @@ __global__ void diagMatVecDoubleKernel(
     
     if(isValid && idx == 0) result[rowX * strideR] = alpha * sData[0] + beta * result[rowX * strideR]; // Write the result for this row
 }
-/**
- * Kernel for sparse diagonal matrix-vector multiplication.
- * 
- * When calling this kernel, <<<numberOfBlocks, threadsPerBlock, sharedMemorySize, stream>>>,  Number of blocks should be the number of rows in the solution vector.  
- * Threads per block should be numDiags/2.  Shared memory size should be sizeof(T) * numDiags, where numDiags is the number of diagonals in the packed matrix.
- * 
- * @param A Packed diagonals of the matrix.  Trailing values are not read.  Each row is a diagonal, and the matrix is stored in column-major order.
- * @param height Number of rows in the greater matrix, not the packed matrix.  This is also the number of columns in the greater matrix and the number of rows in x.
- * @param ld Leading dimension of the packed diagonals.
- * @param diags Indices of the diagonals.  Negative indices indicate sub-diagonals. 
- * Positive indices indicate super-diagonals. 
- * For example, diags = {-1, 0, 1} means the first diagonal is the sub-diagonal, the second is the main diagonal, and the third is the super-diagonal.
- * @param numDiags Number of nonzero diagonals.  This number must be less than or eqaul to 64.
- * @param x Input vector.
- * @param stride Stride for the input vector x.
- * @param result Output vector.
- * @param strideR Stride for the output vector result.
- * @param alpha Scalar multiplier for the matrix-vector product.
- * @param beta Scalar multiplier for the existing values in the result vector.
- */
-__global__ void diagMatVecFloatKernel(
-    const float* __restrict__ A, // packed diagonals
-    const int height, const int ld,
-    
-    const int* __restrict__ diags, // which diagonals
-    const int numDiags,
-
-    const float* __restrict__ x,      // input vector
-    const int strideX,
-    
-    float* __restrict__ result,       // output vecto
-    const int strideR,
-
-    const float alpha,
-    const float beta
-){
-    extern __shared__ float sharedData[]; // Shared memory for the diagonals
-    int rowX = blockIdx.x;
-    int idx = threadIdx.x;
-    bool isValid = rowX < height && idx * 2 < numDiags;
-    if (isValid){
-
-        int d = diags[2 * idx]; // First diagonal index
-        int i = (d >= 0) ? rowX : rowX + d; // Row index for first diagonal
-        sharedData[idx] = 0 <= i && i < height - abs(d) ? A[i*ld + 2 * idx] * x[(rowX + d) * strideX] : 0;
-        
-        if(2 * idx + 1 < numDiags) {
-            d = diags[2 * idx + 1]; // Second diagonal index
-            i = (d >= 0) ? rowX : rowX + d; // Row index for second diagonal
-            sharedData[idx] += 0 <= i && i < height - abs(d) ? A[i*ld + 2 * idx + 1] * x[(rowX + d) * strideX] : 0;
-        }
-    }
-
-    for(int s = 1; s < blockDim.x; s *= 2) {
-        __syncthreads(); 
-        if(idx % (s * 2) == 0 && isValid && (idx + s) * 2 < numDiags) sharedData[idx] += sharedData[idx + s];
-    }
-    
-    if(isValid && idx == 0) result[rowX * strideR] = alpha * sharedData[0] + beta * result[rowX * strideR]; // Write the result for this row
-}
 
 //TODO: delete  this code
     // T sum = 0;
@@ -668,63 +612,7 @@ __global__ void diagMatVecFloatKernel(
 
     // result[rowX] = sum;
 
-/**
- * Multiplies a sparse diagonal matrix (stored in packed diagonal format) with a 1D vector.
- * 
- * @param diags Array of diagonal indices (negative=sub-diagonal, 0=main, positive=super-diagonal)
- * @param x Input vector.
- * @param result Optional pointer to an existing 1D array to store the result.
- * @param handle Optional Cuda handle for stream/context management.
- * @param alpha Scalar multiplier for the matrix-vector product.
- * @param beta Scalar multiplier for the existing values in the result array.
- * @return A new CuArray1D containing the result.
- */
-template <>
-CuArray1D<double> CuArray2D<double>::diagMult(
-    const int* diags,
-    const CuArray1D<double>& x,
-    CuArray1D<double>* result,
-    Handle* handle,
-    const double alpha,
-    const double beta    
-) const {
-    if (this->_rows > 64)
-        throw std::invalid_argument("height must be <= 32 for this kernel");
-
-    CuArray1D<double>* resPtr = result ? result : new CuArray1D<double>(this->_cols);
-    Handle* h = handle ? handle : new Handle();
-
-    CuArray1D<int> d_diags(this->_rows);
-    d_diags.set(diags, h->stream);
-    
-    int sharedMemSize = sizeof(double) * this->_rows;
-    
-    diagMatVecDoubleKernel<<<this->_cols, (this->_cols + 1) / 2, sharedMemSize, h->stream>>>(
-        this->data(), this->_cols, this->getLD(),
-        d_diags.data(), this->_rows,
-        x.data(), x.getLD(),
-        resPtr->data(),
-        resPtr->getLD(),
-        alpha, beta
-    );
-
-    CHECK_CUDA_ERROR(cudaGetLastError());
-
-    if (!result) {
-        CuArray1D<double> temp = *resPtr;
-        if (!handle) CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        delete resPtr;
-        if (!handle) delete h;
-        return temp;
-    }
-
-    if (!handle) {
-        CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        delete h;
-    }
-
-    return *resPtr;
-}
+// 
 /**
  * Multiplies a sparse diagonal matrix (stored in packed diagonal format) with a 1D vector.
  * 
@@ -735,27 +623,27 @@ CuArray1D<double> CuArray2D<double>::diagMult(
  * @param stride Stride for input vector x
  * @return A new CuArray1D containing the result.
  */
-template <>
-CuArray1D<float> CuArray2D<float>::diagMult(
+template <typename T>
+CuArray1D<T> CuArray2D<T>::diagMult(
     const int* diags,
-    const CuArray1D<float>& x,
-    CuArray1D<float>* result,
+    const CuArray1D<T>& x,
+    CuArray1D<T>* result,
     Handle* handle,
-    const float alpha,
-    const float beta    
+    const T alpha,
+    const T beta    
 ) const {
     if (this->_rows > 64)
         throw std::invalid_argument("height must be <= 32 for this kernel");
 
-    CuArray1D<float>* resPtr = result ? result : new CuArray1D<float>(this->_cols);
+    CuArray1D<T>* resPtr = result ? result : new CuArray1D<T>(this->_cols);
     Handle* h = handle ? handle : new Handle();
 
     CuArray1D<int> d_diags(this->_rows);
     d_diags.set(diags, h->stream);
     
-    int sharedMemSize = sizeof(float) * this->_rows;
+    int sharedMemSize = sizeof(T) * this->_rows;
     
-    diagMatVecFloatKernel<<<this->_cols, (this->_cols + 1) / 2, sharedMemSize, h->stream>>>(
+    diagMatVecKernel<<<this->_cols, (this->_cols + 1) / 2, sharedMemSize, h->stream>>>(
         this->data(), this->_cols, this->getLD(),
         d_diags.data(), this->_rows,
         x.data(), x.getLD(),
@@ -767,7 +655,7 @@ CuArray1D<float> CuArray2D<float>::diagMult(
     CHECK_CUDA_ERROR(cudaGetLastError());
 
     if (!result) {
-        CuArray1D<float> temp = *resPtr;
+        CuArray1D<T> temp = *resPtr;
         if (!handle) CHECK_CUDA_ERROR(cudaDeviceSynchronize());
         delete resPtr;
         if (!handle) delete h;
