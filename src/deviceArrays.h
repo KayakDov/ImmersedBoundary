@@ -61,7 +61,7 @@ private:
     std::istream& _input_stream;
 public:
     StreamSet(size_t rows, size_t cols, std::istream& input_stream);
-    void readChunk();
+    void readChunk(bool isText);
 };
 
 template <typename T>
@@ -70,7 +70,7 @@ private:
     std::ostream& _output_stream;
 public:
     StreamGet(size_t rows, size_t cols, std::ostream& output_stream);
-    void writeChunk();
+    void writeChunk(bool isText);
 };
 
 
@@ -83,10 +83,16 @@ class Handle {
 public:
     cublasHandle_t handle;
     cudaStream_t stream;
-
     Handle();
+    
+    explicit Handle(cudaStream_t user_stream);
+
     ~Handle();
+
+private:
+    bool isOwner = false; // Flag to indicate if the class owns the stream and should destroy it.
 };
+
 
 
 template <typename T>
@@ -109,8 +115,8 @@ public:
     virtual void get(T* hostData, cudaStream_t stream = 0) const = 0;
     virtual void set(const CuArray<T>& src, cudaStream_t stream = 0) = 0;
     virtual void get(CuArray<T>& dst, cudaStream_t stream = 0) const = 0;
-    virtual void set(std::istream& input_stream, cudaStream_t stream = 0) = 0;
-    virtual void get(std::ostream& output_stream, cudaStream_t stream = 0) const = 0;
+    virtual void set(std::istream& input_stream, bool isText = false, bool isColMjr = true, cudaStream_t stream = 0) = 0;
+    virtual void get(std::ostream& output_stream, bool isText = false, bool isColMjr = true, cudaStream_t stream = 0) const = 0;
     T* data();
     const T* data() const;
     size_t getLD() const;
@@ -147,8 +153,8 @@ public:
     void get(T* dst, cudaStream_t stream = 0) const override;
     void set(const CuArray<T>& src, cudaStream_t stream = 0) override;
     void get(CuArray<T>& dst, cudaStream_t stream = 0) const override;
-    void set(std::istream& input_stream, cudaStream_t stream = 0) override;
-    void get(std::ostream& output_stream, cudaStream_t stream = 0) const override;
+    void set(std::istream& input_stream, bool isText= false, bool readColMjr = true, cudaStream_t stream = 0);
+    void get(std::ostream& output_stream, bool isText = false, bool printColMjr = true, cudaStream_t stream = 0) const;
     
     CuArray2D<float> mult(const CuArray2D<float>& other, CuArray2D<float>* result = nullptr, Handle* handle = nullptr, float alpha = 1.0f, float beta = 0.0f, bool transposeA = false, bool transposeB = false) const;
     CuArray2D<double> mult(const CuArray2D<double>& other, CuArray2D<double>* result = nullptr, Handle* handle = nullptr, double alpha = 1.0, double beta = 0.0, bool transposeA = false, bool transposeB = false) const;
@@ -187,6 +193,11 @@ public:
      */
     CuArray1D<T> diagMult(const CuArray1D<int>& diags, const CuArray1D<T>& x, CuArray1D<T>* result = nullptr, Handle* handle = nullptr, const T alpha = 1.0, const T beta = 0.0) const;
 
+
+    void transpose(CuArray2D<T>& result, Handle* handle = nullptr) const;
+    void transpose(Handle* handle = nullptr, CuArray2D<T>* preAlocatedMem = nullptr);
+    
+
 };
 
 template <typename T>
@@ -202,8 +213,8 @@ public:
     void get(T* hostData, cudaStream_t stream = 0) const override;
     void set(const CuArray<T>& src, cudaStream_t stream = 0) override;
     void get(CuArray<T>& dst, cudaStream_t stream = 0) const override;
-    void set(std::istream& input_stream, cudaStream_t stream = 0) override;
-    void get(std::ostream& output_stream, cudaStream_t stream = 0) const override;
+    void set(std::istream& input_stream, bool isText = false, bool isColMjr = true, cudaStream_t stream = 0) override;
+    void get(std::ostream& output_stream, bool isText = false, bool isColMjr = true, cudaStream_t stream = 0) const override;
 
     CuArray1D<float> mult(const CuArray2D<float>& other, CuArray1D<float>* result = nullptr, Handle* handle = nullptr, float alpha = 1.0f, float beta = 0.0f, bool transpose = false) const;
     CuArray1D<double> mult(const CuArray2D<double>& other, CuArray1D<double>* result = nullptr, Handle* handle = nullptr, double alpha = 1.0, double beta = 0.0, bool transpose = false) const;

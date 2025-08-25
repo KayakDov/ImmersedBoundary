@@ -57,10 +57,16 @@ StreamSet<T>::StreamSet(size_t rows, size_t cols, std::istream& input_stream)
     : StreamHelper<T>(rows, cols), _input_stream(input_stream) {}
 
 template <typename T>
-void StreamSet<T>::readChunk() {
-    size_t current_chunk_bytes = this->getChunkWidth() * this->_rows * sizeof(T);
+void StreamSet<T>::readChunk(bool isText) {
     
-    this->_input_stream.read(reinterpret_cast<char*>(this->_hostBuffer.data()), current_chunk_bytes);
+    size_t num_elements = this->getChunkWidth() * this->_rows;
+    size_t current_chunk_bytes = num_elements * sizeof(T);
+    
+    if(isText) {
+        for (size_t i = 0; i < num_elements; ++i) 
+            if (!(this->_input_stream >> this->_hostBuffer[i]))
+                throw std::runtime_error("Failed to read enough elements. Failed at index " + i);
+    } else this->_input_stream.read(reinterpret_cast<char*>(this->_hostBuffer.data()), current_chunk_bytes);
 
     if (!this->_input_stream) throw std::runtime_error("Stream read error or premature end of stream.");
     
@@ -72,10 +78,21 @@ StreamGet<T>::StreamGet(size_t rows, size_t cols, std::ostream& output_stream)
     : StreamHelper<T>(rows, cols), _output_stream(output_stream) {cudaDeviceSynchronize();}
 
 template <typename T>
-void StreamGet<T>::writeChunk() {
-    size_t current_chunk_bytes = this->getChunkWidth() * this->_rows * sizeof(T);
+void StreamGet<T>::writeChunk(bool isText) {
+    size_t num_elements = this->getChunkWidth() * this->_rows;
+    size_t current_chunk_bytes = num_elements * sizeof(T);
+
     if (current_chunk_bytes > 0) {
-        this->_output_stream.write(reinterpret_cast<const char*>(this->_hostBuffer.data()), current_chunk_bytes);
+        if(isText){
+            for (size_t i = 0; i < this->getChunkWidth(); ++i) {
+                for(size_t j = 0; j < this->_rows; ++j)
+                    if (!(this->_output_stream << this->_hostBuffer[i * this->_rows + j] << '\t')) 
+                        throw std::runtime_error("Failed to write enough elements");
+                this->_output_stream << '\n';
+            }                
+                
+        } 
+        else this->_output_stream.write(reinterpret_cast<const char*>(this->_hostBuffer.data()), current_chunk_bytes);
         if (!this->_output_stream) throw std::runtime_error("Stream write error.");
     }
 }
@@ -189,27 +206,34 @@ void checkCudaErrors(cudaError_t err, const char* file, int line) {
     }
 }
 
-Handle::Handle() {
-    // Create the CUBLAS handle
-    if (cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS) {
-        throw std::runtime_error("Failed to create cuBLAS handle");
+Handle::Handle(cudaStream_t user_stream) {
+    if (cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS) throw std::runtime_error("Failed to create cuBLAS handle");    
+
+    if (user_stream == nullptr) {
+        if (cudaStreamCreate(&stream) != cudaSuccess) {
+            cublasDestroy(handle);
+            throw std::runtime_error("Failed to create CUDA stream");
+        }
+        this->isOwner = true;
+    } else {
+        this->isOwner = false;
+        this->stream = user_stream;
     }
-    // Create a new stream and set it for the handle
-    if (cudaStreamCreate(&stream) != cudaSuccess) {
+
+    if (cublasSetStream(handle, this->stream) != CUBLAS_STATUS_SUCCESS) {
         cublasDestroy(handle);
-        throw std::runtime_error("Failed to create CUDA stream");
-    }
-    if (cublasSetStream(handle, stream) != CUBLAS_STATUS_SUCCESS) {
-        cublasDestroy(handle);
-        cudaStreamDestroy(stream);
+        if (this->isOwner) cudaStreamDestroy(this->stream);
         throw std::runtime_error("Failed to set CUBLAS stream");
     }
 }
 
-// Corrected destructor to clean up both the handle and the stream
+Handle::Handle() : Handle(nullptr) {}
+
 Handle::~Handle() {
     cublasDestroy(handle);
-    cudaStreamDestroy(stream);
+    if (this->isOwner) {
+        cudaStreamDestroy(stream);
+    }
 }
 
 // Disallow mixed-type multiplication for float/double

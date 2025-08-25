@@ -217,13 +217,16 @@ void CuArray2D<T>::get(CuArray<T>& dst, cudaStream_t cuStream) const {
     );
 }
 
+/**
+ * Note, if set from text will read data as row major and is much slower.  If set from binary data, will read as column major and is fast.
+ */
 template <typename T>
-void CuArray2D<T>::set(std::istream& input_stream, cudaStream_t cuStream) {
+void CuArray2D<T>::set(std::istream& input_stream, bool isText, bool readColMajor, cudaStream_t cuStream) {
 
     StreamSet<T> helper(this->_rows, this->_cols, input_stream);
 
     while (helper.hasNext()) {
-        helper.readChunk();
+        helper.readChunk(isText);
         CuArray2D<T> subArray(
             *this,
             0,
@@ -234,17 +237,30 @@ void CuArray2D<T>::set(std::istream& input_stream, cudaStream_t cuStream) {
 
         subArray.set(helper.getBuffer().data(), cuStream);
 
+        if(!readColMajor) this->transpose();
+
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());//TODO: this might be avoidable with multi threading
 
         helper.updateProgress();
     }
 }
 
+/**
+ * Note, if gets to text, will print data as row major and is much slower.  If gets to binary data, will write as column major and is fast.
+ */
 template <typename T>
-void CuArray2D<T>::get(std::ostream& output_stream, cudaStream_t stream) const {
+void CuArray2D<T>::get(std::ostream& output_stream, bool isText, bool printColMajor, cudaStream_t stream) const {
 
     StreamGet<T> helper(this->_rows, this->_cols, output_stream);
-
+    
+    if(!printColMajor) {
+        CuArray2D<T> mat(this->_rows, this->_cols);
+        Handle handle(stream);
+        this -> transpose(mat, &handle);
+        mat.get(output_stream, isText, true, stream);
+        return;        
+    }
+    
     while (helper.hasNext()) {
         CuArray2D<T> subArray(
             *this,
@@ -257,7 +273,7 @@ void CuArray2D<T>::get(std::ostream& output_stream, cudaStream_t stream) const {
         subArray.get(helper.getBuffer().data(), stream);
         CHECK_CUDA_ERROR(cudaDeviceSynchronize());//TODO: this might be avoidable with multi threading
 
-        helper.writeChunk();
+        helper.writeChunk(isText);
         helper.updateProgress();
     }
 }
@@ -555,6 +571,7 @@ CuArray1D<double> CuArray2D<double>::bandedMult(
  * @param alpha Scalar multiplier for the matrix-vector product.
  * @param beta Scalar multiplier for the existing values in the result vector.
  */
+#pragma diag_suppress 1886
 template <typename T>
 __global__ void diagMatVecKernel(
     const T* __restrict__ A, // packed diagonals
@@ -599,20 +616,6 @@ __global__ void diagMatVecKernel(
     if(isValid && idx == 0) result[rowX * strideR] = alpha * sData[0] + beta * result[rowX * strideR]; // Write the result for this row
 }
 
-//TODO: delete  this code
-    // T sum = 0;
-
-    // // Loop over diagonals
-    // for (int k = 0; k < numDiags; k++) {
-    //     int d = diags[k];
-    //     int i = (d >= 0) ? rowX : rowX + d;
-    //     if(0 <= i && i < height - fabs(d)) 
-    //         sum += A[i*ld + k] * x[(rowX + d) * stride];
-    // }
-
-    // result[rowX] = sum;
-
-// 
 /**
  * Multiplies a sparse diagonal matrix (stored in packed diagonal format) with a 1D vector.
  * 
@@ -665,6 +668,88 @@ CuArray1D<T> CuArray2D<T>::diagMult(
     }
 
     return *resPtr;
+}
+
+
+
+/**
+ * Transposes the matrix. This method creates and returns a new CuArray2D
+ * object with transposed dimensions.
+ * @param result Optional pointer to an existing CuArray2D to store the result.
+ * @param handle Optional Cuda handle for stream/context management.
+ * @return A new CuArray2D object containing the transposed matrix.
+ */
+template <typename T>
+void CuArray2D<T>::transpose(
+    CuArray2D<T>& result,
+    Handle* handle
+) const {    
+    
+    Handle* h = handle ? handle : new Handle();
+
+    if constexpr (std::is_same_v<T, float>) {
+        float alpha = 1.0f;
+        float beta = 0.0f;
+        cublasSgeam(
+            h->handle, 
+            CUBLAS_OP_T, // Transpose A
+            CUBLAS_OP_N, // Don't transpose B (it's not used)
+            this->_cols, // Result rows
+            this->_rows, // Result columns
+            &alpha, 
+            this->data(), this->getLD(),
+            &beta, nullptr, this->getLD(), // B is not referenced since beta=0
+            result.data(), result.getLD()
+        );
+    } else if constexpr (std::is_same_v<T, double>) {
+        double alpha = 1.0;
+        double beta = 0.0;
+        cublasDgeam(
+            h->handle, 
+            CUBLAS_OP_T, 
+            CUBLAS_OP_N,
+            this->_cols,
+            this->_rows,
+            &alpha, 
+            this->data(), this->getLD(),
+            &beta, nullptr, this->getLD(),
+            result.data(), result.getLD()
+        );
+    }
+
+    if (!handle) {
+        CHECK_CUDA_ERROR(cudaDeviceSynchronize());
+        delete h;
+    }
+}
+
+/**
+ * @brief Performs an in-place transpose of the matrix. This method modifies the
+ * existing CuArray2D object by creating and using a temporary buffer.
+ *
+ * @param temp Optional pre-allocated temporary matrix to use for the transpose operation.  It should be the same size as this matrix.
+ * If nullptr, a new temporary matrix will be created.
+ * @param handle Optional Cuda handle for stream/context management.
+ */
+template <typename T>
+void CuArray2D<T>::transpose(Handle* handle, CuArray2D<T>* temp) {
+    if (this->_rows == 0 || this->_cols == 0) return;
+    if(this->_rows != this->_cols)
+        throw std::runtime_error("In-place transpose is only supported for square matrices. For non-square matrices, use the out-of-place version.");
+    
+    CuArray2D<T>* temp_ptr = temp;
+    
+    if (!temp) temp_ptr =  new CuArray2D<T>(this->_rows, this->_cols);
+        
+     else if (temp_ptr->_rows != this->_cols || temp_ptr->_cols != this->_rows)
+        throw std::invalid_argument("Provided temporary matrix has incorrect dimensions for transpose.");
+    
+    this->transpose(*temp_ptr, handle);
+
+    this->set(*temp_ptr);
+
+    if(!temp) delete(temp_ptr);
+
 }
 
 

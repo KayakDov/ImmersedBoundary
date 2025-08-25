@@ -205,10 +205,10 @@ void CuArray1D<T>::get(CuArray<T>& dst, cudaStream_t stream) const {
 }
 
 template <typename T>
-void CuArray1D<T>::set(std::istream& input_stream, cudaStream_t stream) {
+void CuArray1D<T>::set(std::istream& input_stream, bool isText, bool, cudaStream_t stream) {
     StreamSet<T> helper(this->_rows, this->_cols, input_stream);
     while (helper.hasNext()) {
-        helper.readChunk();
+        helper.readChunk(isText);
         CuArray1D<T> subArray(
             *this,
             helper.getColsProcessed(),
@@ -220,7 +220,7 @@ void CuArray1D<T>::set(std::istream& input_stream, cudaStream_t stream) {
 }
 
 template <typename T>
-void CuArray1D<T>::get(std::ostream& output_stream, cudaStream_t stream) const {
+void CuArray1D<T>::get(std::ostream& output_stream, bool isText, bool, cudaStream_t stream) const {
     StreamGet<T> helper(this->_rows, this->_cols, output_stream);
     while (helper.hasNext()) {
         CuArray1D<T> subArray(
@@ -229,7 +229,7 @@ void CuArray1D<T>::get(std::ostream& output_stream, cudaStream_t stream) const {
             helper.getChunkWidth()
         );
         subArray.get(helper.getBuffer().data(), stream);
-        helper.writeChunk();
+        helper.writeChunk(isText);
         helper.updateProgress();
     }
 }

@@ -6,23 +6,17 @@
 
 using namespace std;
 
-// Function prototypes
-void showHelp();
-void processCommandLineArgs(int argc, char const* argv[], string& a_file, int& numDiags, int& width, string& diags_file, string& b_file, string& x_dest_file);
-void readInputData(const string& a_file, int numDiags, int width, CuArray2D<float>& A, const string& diags_file, vector<int>& diags_vec, const string& b_file, CuArray1D<float>& b);
-void solveAndWriteOutput(CuArray2D<float>& A, const CuArray1D<int>& diags, CuArray1D<float>& b, const string& x_dest_file);
-
 /**
  * @brief Read a file into a device array and print an update for the command line.
  * 
  * 
  */
 template <typename T>
-void readAndPrint(CuArray<T>& array, const string& fileName){
+void readAndPrint(CuArray<T>& array, const string& fileName, const bool isText){
     ifstream reader(fileName);
     if(!reader.is_open()) throw runtime_error("Could not open " + fileName);
 
-    array.set(reader);
+    array.set(reader, isText, !isText);
     reader.close();
 
     cout << "Read matrix "<< fileName <<" from file." << endl;
@@ -69,53 +63,6 @@ void runAllTests() {
     cout << "A*x:\n" << b << "Expected: 1 2 3" << endl;
 }
 
-/**
- * @file main.cpp
- * @brief This program solves a linear system Ax = b using the unpreconditioned
- * BiCGSTAB method on a CUDA device.
- *
- * It takes the matrix A (stored as packed diagonals), a vector b, and diagonal
- * indices as input from files specified on the command line. The solution x
- * is then written to an output file.
- */
-int main(int argc, char const* argv[]) {
-    if (argc == 2) {
-        if(string(argv[1]) == "-h")  showHelp();
-        if(string(argv[1]) == "-t")  runAllTests();
-        return 0;
-    }
-    else if (argc != 7) {
-        cerr << "Error: Incorrect number of arguments.\n";
-        showHelp();
-        return 1;
-    }
-
-    checkForDevice();
-
-    try {
-        string a_file, diags_file, b_file, x_dest_file;
-        int numDiags, width;
-
-        processCommandLineArgs(argc, argv, a_file, numDiags, width, diags_file, b_file, x_dest_file);
-
-        CuArray2D<float> A(numDiags, width);
-        CuArray1D<float> b(width);
-        CuArray1D<int> diags(numDiags);
-
-        readAndPrint(A, a_file);
-        readAndPrint(diags, diags_file);
-        readAndPrint(b, b_file);
-
-        solveAndWriteOutput(A, diags, b, x_dest_file);
-
-    } catch (const exception& e) {
-        cerr << "An error occurred: " << e.what() << endl;
-        return 1;
-    }
-
-    return 0;
-}
-
 // Helper function to display the help message.
 /**
  * @brief Displays the command-line usage and help information.
@@ -129,12 +76,13 @@ void showHelp() {
     cout << "  -h  Show this help message.\n\n";
     cout << "  -t  Run tests.\n\n";
     cout << "Arguments:\n";
-    cout << "  <A_file>        (1) Path to a file containing the non-zero diagonals of the sparse square matrix 'A'.  This file should have a matrix in column major order, where each row is a non 0 diagonal of A.  For diagonals shorter than the primary diagonal, padding is required so that they be the same length.\n";//TODO: make this better.  Matrix A should have a column be a diagonal of A, and shorter diagonals should be padded with 0s to be the same length as the primary diagonal.\n";
-    cout << "  <diag_indices>     (2) The number of non 0 diagonals.\n";
-    cout << "  <matrix_width>  (3) The height and width of 'A' and the height of b.\n";
-    cout << "  <diags_file>    (4) Path to a file containing the indices of the diagonals (space-separated integers).  THe first value should be the index of the first diagonal in the diagonal file, the second value should be the index of the second diagonal, and so on.  Use negative values for sub indices, 0 for the primary diagonal, and positive integer values for the super diagonals. For example, an index of 1 is the superdiagonaladjacent to the primary diagonal.\n";
-    cout << "  <b_file>        (5) Path to a file containing the right-hand side vector b.\n";
-    cout << "  <x_dest_file>   (6) Path to a destination file for the solution vector x\n\n";
+    cout << "  <A_file>         (1) Path to a file containing the non-zero diagonals of the sparse square matrix 'A'.  This file should have a matrix in column major order, where each row is a non 0 diagonal of A.  For diagonals shorter than the primary diagonal, padding is required so that they be the same length.\n";//TODO: make this better.  Matrix A should have a column be a diagonal of A, and shorter diagonals should be padded with 0s to be the same length as the primary diagonal.\n";
+    cout << "  <diag_indices>   (2) The number of non 0 diagonals.\n";
+    cout << "  <matrix_width>   (3) The height and width of 'A' and the height of b.\n";
+    cout << "  <diags_file>     (4) Path to a file containing the indices of the diagonals (space-separated integers).  THe first value should be the index of the first diagonal in the diagonal file, the second value should be the index of the second diagonal, and so on.  Use negative values for sub indices, 0 for the primary diagonal, and positive integer values for the super diagonals. For example, an index of 1 is the superdiagonaladjacent to the primary diagonal.\n";
+    cout << "  <b_file>         (5) Path to a file containing the right-hand side vector b.\n";
+    cout << "  <x_dest_file>    (6) Path to a destination file for the solution vector x\n";
+    cout << "  <optional -text>     Include '-t' as a final optional argument to say that all files are text and not binary files.  If this option is selected, input and output will be row major, and slow.  If this option is not selected, input and output will be column major and faster.\n\n";
     cout << "Constraints:\n";
     cout << "  - The files for A, b, and x should contain space-separated floating-point numbers.\n";
     cout << "  - The file for diagonals should contain space-separated integers.\n";
@@ -156,17 +104,17 @@ void showHelp() {
  * @param x_dest_file Reference to a string to store the path to the solution x file.
  * @throws std::runtime_error if numDiags or width are not positive.
  */
-void processCommandLineArgs(int argc, char const* argv[], string& a_file, int& numDiags, int& width, string& diags_file, string& b_file, string& x_dest_file) {
+void processCommandLineArgs(int argc, char const* argv[], string& a_file, int& numDiags, int& width, string& diags_file, string& b_file, string& x_dest_file, bool& isText) {
     a_file = argv[1];
     numDiags = stoi(argv[2]);
     width = stoi(argv[3]);
     diags_file = argv[4];
     b_file = argv[5];
     x_dest_file = argv[6];
+    isText = argc == 8 && !strcmp(argv[7], "-text");
 
-    if (numDiags <= 0 || width <= 0) {
-        throw runtime_error("Number of diagonals and matrix width must be positive.");
-    }
+    if (numDiags <= 0 || width <= 0) 
+        throw runtime_error("Number of diagonals and matrix width must be positive.");    
 }
 
 /**
@@ -181,7 +129,7 @@ void processCommandLineArgs(int argc, char const* argv[], string& a_file, int& n
  * @param x_dest_file The path to the output file for the solution vector x.
  * @throws std::runtime_error if the output file cannot be opened.
  */
-void solveAndWriteOutput(CuArray2D<float>& A, const CuArray1D<int>& diags, CuArray1D<float>& b, const string& x_dest_file) {
+void solveAndWriteOutput(CuArray2D<float>& A, const CuArray1D<int>& diags, CuArray1D<float>& b, const string& x_dest_file, const bool isText) {
     CuArray1D<float> x(b.size());
     unpreconditionedBiCGSTAB(A, diags, b, &x, 20, 1e-6f);
 
@@ -189,10 +137,58 @@ void solveAndWriteOutput(CuArray2D<float>& A, const CuArray1D<int>& diags, CuArr
     if (!x_fs.is_open()) {
         throw runtime_error("Could not open destination file: " + x_dest_file);
     }
-    x.get(x_fs);
+    x.get(x_fs, isText, !isText);
     x_fs.close();
     cout << "Wrote solution vector x to file: " << x_dest_file << endl;
     if(x.size() < 1000) cout << "x:\n" << x << endl;
     else cout << "x is too large to display." << endl;
 
+}
+
+/**
+ * @file main.cpp
+ * @brief This program solves a linear system Ax = b using the unpreconditioned
+ * BiCGSTAB method on a CUDA device.
+ *
+ * It takes the matrix A (stored as packed diagonals), a vector b, and diagonal
+ * indices as input from files specified on the command line. The solution x
+ * is then written to an output file.
+ */
+int main(int argc, char const* argv[]) {
+    if (argc == 2) {
+        if(string(argv[1]) == "-h")  showHelp();
+        if(string(argv[1]) == "-t")  runAllTests();
+        return 0;
+    }
+    else if (argc < 7 || argc > 8) {
+        cerr << "Error: Incorrect number of arguments.\n";
+        showHelp();
+        return 1;
+    }
+
+    checkForDevice();
+
+    try {
+        string a_file, diags_file, b_file, x_dest_file;
+        int numDiags, width;
+        bool isText;
+
+        processCommandLineArgs(argc, argv, a_file, numDiags, width, diags_file, b_file, x_dest_file, isText);
+
+        CuArray2D<float> A(numDiags, width);
+        CuArray1D<float> b(width);
+        CuArray1D<int> diags(numDiags);
+
+        readAndPrint(A, a_file, isText);
+        readAndPrint(diags, diags_file, isText);
+        readAndPrint(b, b_file, isText);
+
+        solveAndWriteOutput(A, diags, b, x_dest_file, isText);
+
+    } catch (const exception& e) {
+        cerr << "An error occurred: " << e.what() << endl;
+        return 1;
+    }
+
+    return 0;
 }
