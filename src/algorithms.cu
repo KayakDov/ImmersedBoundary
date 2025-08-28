@@ -37,7 +37,6 @@ Vec<T> unpreconditionedBiCGSTAB(
     Vec<T> paV(6); 
     Singleton<T> rho(paV, 0), alpha(paV, 1), omega(paV, 2), rho_new(paV, 3), beta(paV, 4), temp(paV, 5);
 
-//TODO: add synchrnonize chomands for each stream after it waits.
     Vec<T> result = x ? *x : Vec<T>(b.size());
     xReady.record(handle[0]);
     
@@ -59,6 +58,8 @@ Vec<T> unpreconditionedBiCGSTAB(
         alpha.EBEPow(rho, T(-1), handle[0].stream); //alpha = rho / (r_tilde * v)
         alphaReady.record(handle[0]);
 
+        cudaStreamSynchronize(handle[1].stream);
+        omegaReady.renew();
         alphaReady.wait(handle[1]);
         
         pReady.wait(handle[1]);
@@ -100,10 +101,7 @@ Vec<T> unpreconditionedBiCGSTAB(
 
         omegaReady.wait(handle[1]);
         result.add(s, omega.get(handle[1].stream), handle + 1); // x = h + omega * s
-        xReady.record(handle[1]);
-        cudaStreamSynchronize(handle[1].stream);
-        omegaReady.renew();
-        
+        xReady.record(handle[1]);        
         
         r.set(s, handle[0].stream);
         r.sub(t, omega.get(handle[0].stream), handle); // r = s - omega * t
