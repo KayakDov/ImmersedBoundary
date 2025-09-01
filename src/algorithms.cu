@@ -25,7 +25,7 @@ Vec<T> unpreconditionedBiCGSTAB(
     T tolerance = std::is_same<T,double>::value ? T(1e-12) : T(1e-6),
     Mat<T>* preAlocated = nullptr
 ){
-    if(maxIterations == (size_t)-1) maxIterations = b.size();
+    if(maxIterations == (size_t)-1) maxIterations = b.size()*10000;
     static_assert(std::is_same<T,float>::value || std::is_same<T,double>::value,
               "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
     Handle handle[3]{};
@@ -51,7 +51,9 @@ Vec<T> unpreconditionedBiCGSTAB(
     r_tilde.mult(r, &rho, handle);    
     
     xReady.wait(handle[1]);
-    for(int i = 0; i < maxIterations; i++) {
+
+    int i = 0;
+    for(;i < maxIterations; i++) {
        
         A.diagMult(diags, p, &v, handle, T(1), T(0)); // v = A * p
 
@@ -130,8 +132,9 @@ Vec<T> unpreconditionedBiCGSTAB(
         p.add(r, T(1), handle); // p = r + beta * p
         p.sub(v, beta.get(handle[0].stream) * omega.get(handle[0].stream), handle); // p = p - beta * omega * v
         pReady.record(handle[0]);
-
     }
+
+    std::cout << "algorithms.cu unpreconditionedBiCGSTAB Number of iterations:" << i << std::endl;
     
     return result;
 }
