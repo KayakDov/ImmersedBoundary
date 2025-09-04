@@ -192,48 +192,7 @@ int useCommandLineArgs(int argc, char const* argv[]){
 }
 
 
-void testDiag32MatVecKernelShort() {
-    std::cout << "Testing diag32MatVecKernel (short version)\n";
-
-    // Define a tiny matrix (2 diagonals, 4x4 matrix)
-    Mat<float> A(2, 4); // 2 diagonals, 4 columns
-    std::vector<float> h_A = {
-        1, 2, 3, 4,   // first diagonal (sub-diagonal, -1)
-        10, 11, 0, 13 // second diagonal (main diagonal, 0)
-    };
-    A.set(h_A.data());
-
-    // Input vector x
-    Vec<float> x(4);
-    std::vector<float> h_x = {1, 2, 3, 4};
-    x.set(h_x.data());
-
-    // Diagonal indices
-    Vec<int> diags(2);
-    int diagIndices[2] = {-1, 0};
-    diags.set(diagIndices);
-    cout << "diaonal indices" << diags;
-
-
-    // Output vector
-    Vec<float> result(4);
-
-    // Multiply
-    result = A.diagMult(diags, x);
-
-    // Print
-    std::cout << "Matrix A (packed diagonals):\n" << A;
-    
-    std::cout << "\nVector x: " <<  x;
-    
-    std::cout << "\nResult from kernel: " << result;
-}
-
-
-
 int main(int argc, char const* argv[]) {
     return useCommandLineArgs(argc, argv);
-    
-    // testDiag32MatVecKernelShort();
 
 }

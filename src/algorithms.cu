@@ -28,8 +28,8 @@ Vec<T> unpreconditionedBiCGSTAB(
     if(maxIterations == (size_t)-1) maxIterations = b.size()*10000;
     static_assert(std::is_same<T,float>::value || std::is_same<T,double>::value,
               "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
-    Handle handle[3]{};
-    Event pReady, alphaReady, sReady, hReady, omegaReady, rReady, xReady;
+    Handle handle[4]{};
+    Event alphaReady, sReady, hReady, omegaReady, rReady, xReady, prodTS;
 
     const Mat<T>& paM = preAlocated ? *preAlocated : Mat<T>(b.size(), 7);
     Vec<T> r(paM, 0, IndexType::Column), r_tilde(paM, 1, IndexType::Column), p(paM, 2, IndexType::Column), 
@@ -46,7 +46,6 @@ Vec<T> unpreconditionedBiCGSTAB(
     A.diagMult(diags, result, &r, handle, T(-1), T(1)); // r = b - A * x    
     
     p.set(r, handle[0].stream);
-    pReady.record(handle[0]);
        
     r_tilde.mult(r, &rho, handle);    
     
@@ -65,13 +64,11 @@ Vec<T> unpreconditionedBiCGSTAB(
         omegaReady.renew();
         alphaReady.wait(handle[1]);
         
-        pReady.wait(handle[1]);
-        pReady.renew();
+        
         h.set(result, handle[1].stream);
         cudaStreamSynchronize(handle[1].stream);
         alphaReady.renew();
         xReady.renew();
-        pReady.renew();
         h.add(p, alpha.get(handle[1].stream), handle + 1); // h = x + alpha * p
 
         s.set(r, handle[0].stream);
@@ -92,11 +89,13 @@ Vec<T> unpreconditionedBiCGSTAB(
 
         A.diagMult(diags, s, &t, handle); // t = A * s
 
+        t.mult(s, &temp, handle + 3);
+        prodTS.record(handle[3]);
         t.mult(t, &omega, handle);
-
-        t.mult(s, &temp, handle);
-
+        prodTS.wait(handle[0]);
         omega.EBEPow(temp, T(-1), handle[0].stream); //omega = t * s / t * t;
+        cudaStreamSynchronize(handle[0].stream);
+        prodTS.renew();
 
         omegaReady.record(handle[0]);
 
@@ -120,18 +119,17 @@ Vec<T> unpreconditionedBiCGSTAB(
 
         r_tilde.mult(r, &rho_new, handle);
 
-        temp.set(static_cast<const Vec<T>&>(rho), handle[0].stream);
+        temp.set(rho, handle[0].stream);
         temp.EBEPow(rho_new, T(-1), handle[0].stream);
         
-        beta.set(static_cast<const Vec<T>&>(omega), handle[0].stream);
+        beta.set(omega, handle[0].stream);
         beta.EBEPow(alpha, T(-1), handle[0].stream);
         beta.EBEPow(temp, T(1), handle[0].stream); // beta = (rho_new / rho) * (alpha / omega);
-        rho.set(static_cast<const Vec<T>&>(rho_new), handle[0].stream);
+        rho.set(rho_new, handle[0].stream);
 
         p.mult(beta.get(handle[0].stream), handle);
         p.add(r, T(1), handle); // p = r + beta * p
-        p.sub(v, beta.get(handle[0].stream) * omega.get(handle[0].stream), handle); // p = p - beta * omega * v
-        pReady.record(handle[0]);
+        p.sub(v, beta.get(handle[0].stream) * omega.get(handle[0].stream), handle); // p = p - beta * omega * v        
     }
 
     std::cout << "algorithms.cu unpreconditionedBiCGSTAB Number of iterations:" << i << std::endl;
