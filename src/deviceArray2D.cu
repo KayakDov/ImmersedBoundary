@@ -10,24 +10,11 @@ Mat<T> Mat<T>::mult(
     T beta,
     bool transposeA,
     bool transposeB
-) const {
-    
-    std::unique_ptr<Mat<T>> resPtr;
-    Mat<T>* targetPtr;
-    if (!result) {
-        resPtr = std::make_unique<Mat<T>>(this->_rows, other._cols);
-        targetPtr = resPtr.get();
-    } else targetPtr = result;
-    
-    
+) const {    
+    std::unique_ptr<Mat<T>> temp_res_ptr;
+    Mat<T>* resPtr = _get_or_create_target(this->_rows, other._cols, result, temp_res_ptr);        
     
     gpuArray<T>::mult(other, resPtr, handle, alpha, beta, transposeA, transposeB);
-
-    if (!result) {
-        Mat<T> temp = *resPtr;
-        delete resPtr;
-        return temp;
-    }
     
     return *resPtr;
 }
@@ -42,10 +29,10 @@ Vec<T> Mat<T>::mult(
     T beta,
     bool transpose
     
-) const {//TODO: use the new pointer methods everywhere possible.
-    std::unique_ptr<Vec<T>> temp_res_ptr;
-    Vec<T>* resPtr = _get_or_create_target(this->_rows, result, temp_res_ptr);
+) const {
     
+    std::unique_ptr<Vec<T>> temp_res_ptr;
+    Vec<T>* resPtr = _get_or_create_target(this->_rows, result, temp_res_ptr);    
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
@@ -55,7 +42,7 @@ Vec<T> Mat<T>::mult(
         cublasDgemv(h->handle, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, &alpha, this->data(), this->getLD(), other.data(), other.getLD(), &beta, resPtr->data(), resPtr->getLD());
     else static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Vec::add unsupported type.");
         
-    return *(result? result : resPtr);
+    return *resPtr;
 }
 
 
@@ -122,7 +109,7 @@ void Mat<T>::get(T* dst, cudaStream_t stream) const {
 }
 
 template <typename T>
-void Mat<T>::set(const gpuArray<T>& src, cudaStream_t stream) {
+void Mat<T>::set(const GpuArray<T>& src, cudaStream_t stream) {
     cudaMemcpy2DAsync(
         this->_ptr.get(), this->_ld * sizeof(T),
         src.data(), src.getLD() * sizeof(T),
@@ -132,7 +119,7 @@ void Mat<T>::set(const gpuArray<T>& src, cudaStream_t stream) {
 }
 
 template <typename T>
-void Mat<T>::get(gpuArray<T>& dst, cudaStream_t cuStream) const {
+void Mat<T>::get(GpuArray<T>& dst, cudaStream_t cuStream) const {
     cudaMemcpy2DAsync(
         dst.data(), dst.getLD() * sizeof(T),
         this->_ptr.get(), this->_ld * sizeof(T),
@@ -218,14 +205,13 @@ Mat<T> Mat<T>::plus(
     bool transposeB,
     Handle* handle
 ) {
-    if (this->_rows != x._rows || this->_cols != x._cols) {
+    if (this->_rows != x._rows || this->_cols != x._cols)
         throw std::invalid_argument("Matrix dimensions do not match for add.");
-    }
     
-    // Determine the result pointer, creating a new one if necessary
-    Mat<T>* resPtr = result ? result : new Mat<T>(this->_rows, this->_cols);
-    
-    Handle* h = handle ? handle : new Handle();
+    std::unique_ptr<Mat<T>> temp_res_ptr;
+    Mat<T>* resPtr = _get_or_create_target(this->_rows, x._cols, result, temp_res_ptr);    
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
     
     if constexpr (std::is_same_v<T, float>)
         cublasSgeam(
@@ -249,17 +235,6 @@ Mat<T> Mat<T>::plus(
         );
     else static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Vec::add unsupported type.");
 
-    if (!handle) {
-        CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        delete h;
-    }
-    
-    if (!result) {
-        Mat<T> temp = *resPtr;
-        delete resPtr;
-        return temp;
-    }
-    
     return *resPtr;
 }
 
@@ -288,14 +263,10 @@ __global__ void scaleKernel(T* matrix, size_t rows, size_t cols, size_t ld, cons
 
 template <typename T>
 void Mat<T>::_scale_impl(T alpha, Handle* handle) {
-    if (this->_rows == 0 || this->_cols == 0) {
-        return;
-    }
+    if (this->_rows == 0 || this->_cols == 0) return;
     
-    Handle* h = handle;
-    if (!h) {
-        h = new Handle();
-    }
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
     dim3 threadsPerBlock(32, 32);
     dim3 numBlocks(
@@ -310,11 +281,6 @@ void Mat<T>::_scale_impl(T alpha, Handle* handle) {
         this->getLD(),
         alpha
     );
-
-    if (!handle) {
-        CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        delete h;
-    }
 }
 
 template <typename T>
@@ -337,14 +303,14 @@ Vec<T> Mat<T>::bandedMult(
     bool transpose
 ) const {
     if ((transpose && this->_rows != x._cols) ||
-        (!transpose && this->_cols != x._cols)) {
-        throw std::invalid_argument("Matrix/vector dimensions do not match for banded multiplication.");
-    }
+        (!transpose && this->_cols != x._cols)) 
+        throw std::invalid_argument("Matrix/vector dimensions do not match for banded multiplication.");    
 
-    Vec<T>* resPtr = result ? result : new Vec<T>(transpose ? this->_cols : this->_rows);
-
-    Handle* h = handle ? handle : new Handle();
-
+    std::unique_ptr<Vec<T>> temp_res_ptr;
+    Vec<T>* resPtr = _get_or_create_target(this->_rows, result, temp_res_ptr);    
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+    
     if constexpr (std::is_same_v<T, float>)
         cublasSgbmv(
             h->handle,
@@ -380,17 +346,6 @@ Vec<T> Mat<T>::bandedMult(
             resPtr->getLD()
         );
     else static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Vec::add unsupported type.");
-
-    if (!result) {
-        Vec<T> temp = *resPtr;
-        delete resPtr;
-        return temp;
-    }
-
-    if (!handle) {
-        CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        delete h;
-    }
 
     return *resPtr;
 }
@@ -476,8 +431,10 @@ Vec<T> Mat<T>::diagMult(
     if (this->_rows > 32)
         throw std::invalid_argument("height must be <= 32 for this kernel");
 
-    Vec<T>* resPtr = result ? result : new Vec<T>(this->_cols);
-    Handle* h = handle ? handle : new Handle();
+    std::unique_ptr<Vec<T>> temp_res_ptr;
+    Vec<T>* resPtr = _get_or_create_target(this->_rows, x._cols, result, temp_res_ptr);
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
     
     diag32MatVecKernel<<<this->_cols, 32, 0, h->stream>>>(
         this->data(), this->_cols, this->getLD(),
@@ -489,19 +446,6 @@ Vec<T> Mat<T>::diagMult(
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());
-
-    if (!result) {
-        Vec<T> temp = *resPtr;
-        if (!handle) CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        delete resPtr;
-        if (!handle) delete h;
-        return temp;
-    }
-
-    if (!handle) {
-        CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        delete h;
-    }
 
     return *resPtr;
 }
@@ -521,7 +465,8 @@ void Mat<T>::transpose(
     Handle* handle
 ) const {    
     
-    Handle* h = handle ? handle : new Handle();
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
     if constexpr (std::is_same_v<T, float>) {
         float alpha = 1.0f;
@@ -552,11 +497,6 @@ void Mat<T>::transpose(
             result.data(), result.getLD()
         );
     }
-
-    if (!handle) {
-        CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-        delete h;
-    }
 }
 
 /**
@@ -573,19 +513,15 @@ void Mat<T>::transpose(Handle* handle, Mat<T>* temp) {
     if(this->_rows != this->_cols)
         throw std::runtime_error("In-place transpose is only supported for square matrices. For non-square matrices, use the out-of-place version.");
     
-    Mat<T>* temp_ptr = temp;
+    std::unique_ptr<Mat<T>> temp_res_ptr;
+    Mat<T>* temp_ptr = _get_or_create_target(this->_cols, this->_rows, temp, temp_res_ptr);
     
-    if (!temp) temp_ptr =  new Mat<T>(this->_rows, this->_cols);
-        
-     else if (temp_ptr->_rows != this->_cols || temp_ptr->_cols != this->_rows)
+    if (temp_ptr->_rows != this->_cols || temp_ptr->_cols != this->_rows)
         throw std::invalid_argument("Provided temporary matrix has incorrect dimensions for transpose.");
     
     this->transpose(*temp_ptr, handle);
 
     this->set(*temp_ptr);
-
-    if(!temp) delete(temp_ptr);
-
 }
 
 
