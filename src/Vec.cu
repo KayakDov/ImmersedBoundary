@@ -13,9 +13,10 @@ Vec<T>::Vec(size_t length)
 template <typename T>
 Vec<T>::Vec(const Vec<T>& superArray, size_t offset, size_t length, size_t stride)
     : GpuArray<T>(1, length, stride * superArray.getLD()) {
+
     this->_ptr = std::shared_ptr<void>(
         superArray._ptr,
-        static_cast<char*>(superArray._ptr.get()) + offset * superArray.getLD() * sizeof(T)
+        static_cast<void*>(superArray.data() + offset * superArray.getLD() * stride)
     );
 }
 
@@ -57,7 +58,7 @@ T Vec<T>::mult(
     
     if constexpr (std::is_same_v<T, float>)
         cublasSdot(h->handle, this->_cols, this->data(), this->getLD(), other.data(), other.getLD(), resPtr->data());
-    else constexpr (std::is_same_v<T, double>)
+    else if constexpr (std::is_same_v<T, double>)
         cublasDdot(h->handle, this->_cols, this->data(), this->getLD(), other.data(), other.getLD(), resPtr->data());
     else static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Vec::add unsupported type.");
 
@@ -225,30 +226,23 @@ void Vec<T>::mult(const Singleton<T>& alpha, Handle* handle) {
 
 template <typename T>
 Vec<T>::Vec(size_t cols, size_t rows, size_t ld)
-    : GpuArray<T>(cols, rows, ld) {}
+    : GpuArray<T>(rows, cols, ld) {}
 
 extern "C" __global__ void setup_kernel_float(curandState* state, unsigned long long seed, size_t size, size_t stride) {
-    int id = blockIdx.x * blockDim.x + threadIdx.x;
-    if (id < size) {
-        curand_init(seed, id, 0, &state[id * stride]);
-    }
+    if (unsigned int id = blockIdx.x * blockDim.x + threadIdx.x; id < size) curand_init(seed, id, 0, &state[id * stride]);
 }
 
 extern "C" __global__ void setup_kernel_double(curandState* state, unsigned long long seed, size_t size, size_t stride) {
-    int id = blockIdx.x * blockDim.x + threadIdx.x;
-    if (id < size) {
-        curand_init(seed, id, 0, &state[id * stride]);
-    }
+    if (unsigned int id = blockIdx.x * blockDim.x + threadIdx.x; id < size) curand_init(seed, id, 0, &state[id * stride]);
+
 }
 
 __global__ void fillRandomKernel_float(float* array, size_t size, size_t stride, curandState* state) {
-    int id = blockIdx.x * blockDim.x + threadIdx.x;
-    if (id < size) array[id * stride] = curand_uniform(&state[id * stride]);    
+    if (unsigned int id = blockIdx.x * blockDim.x + threadIdx.x; id < size) array[id * stride] = curand_uniform(&state[id * stride]);
 }
 
 __global__ void fillRandomKernel_double(double* array, size_t size, size_t stride, curandState* state) {
-    int id = blockIdx.x * blockDim.x + threadIdx.x;
-    if (id < size) array[id * stride] = curand_uniform_double(&state[id * stride]);
+    if (unsigned int id = blockIdx.x * blockDim.x + threadIdx.x; id < size) array[id * stride] = curand_uniform_double(&state[id * stride]);
 }
 
 template <typename T>
@@ -307,7 +301,7 @@ void Vec<T>::setSum(const Vec& a, const Vec& b, Singleton<T>* alpha, Singleton<T
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
     std::unique_ptr<Singleton<T>> temp_a_ptr;
-    Singleton<T>* alph = _get_or_create_target(1, h, alpha, temp_b_ptr);
+    Singleton<T>* alph = _get_or_create_target(1, h, alpha, temp_a_ptr);
     std::unique_ptr<Singleton<T>> temp_b_ptr;
     Singleton<T>* bet = _get_or_create_target(0, h, beta, temp_b_ptr);
 
@@ -316,18 +310,6 @@ void Vec<T>::setSum(const Vec& a, const Vec& b, Singleton<T>* alpha, Singleton<T
     this->add(b, bet, handle);
 }
 
-template <typename T>
-void Vec<T>::mult(Singleton<T>& alpha, Handle* handle) {    
-
-    std::unique_ptr<Handle> temp_hand_ptr;
-    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-
-    if constexpr (std::is_same_v<T, float>)
-        cublasSscal(h->handle, this->_cols, alpha.data(), this->data(), this->getLD());
-    else if constexpr (std::is_same_v<T, double>)
-        cublasDscal(h->handle, this->_cols, alpha.data(), this->data(), this->getLD());
-    else static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Vec::add unsupported type.");
-}
 
 template class Vec<int>;
 template class Vec<float>;

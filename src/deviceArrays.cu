@@ -114,7 +114,7 @@ template <typename T>
 size_t GpuArray<T>::getLD() const { return _ld; }
 
 template <typename T>
-std::shared_ptr<void> GpuArray<T>::getPtr() const{ return _ptr; }
+std::shared_ptr<void> GpuArray<T>::getPtr() { return _ptr; }
 
 template <typename T>
 void GpuArray<T>::mult(

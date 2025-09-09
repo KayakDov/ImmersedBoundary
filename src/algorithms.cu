@@ -8,32 +8,34 @@ private:
     T tolerance;
     Handle handle[4]{};
     Event alphaReady, sReady, hReady, omegaReady, rReady, xReady, prodTS;
-    const Vec b;
+    const Vec<T> b;
     Mat<T> paM;
-    Vec<T> r(paM, 0, IndexType::Column), r_tilde(paM, 1, IndexType::Column), p(paM, 2, IndexType::Column), 
-            v(paM, 3, IndexType::Column), s(paM, 4, IndexType::Column), t(paM, 5, IndexType::Column), h(paM, 6, IndexType::Column);
-    Vec<T> paV(6); 
-    Singleton<T> rho(paV, 0), alpha(paV, 1), omega(paV, 2), rho_new(paV, 3), beta(paV, 4), temp(paV, 5);
-    Singleton<T> one(static_cast<T>(1)), zero(static_cast<T>(0)), minusOne(static_cast<T>(-1)); 
+    Vec<T> r, r_tilde, p, v, s, t, h;
+    Vec<T> paV;
+    Singleton<T> rho, alpha, omega, rho_new, beta, temp;
+
     size_t maxIterations;
 
-    void wait(size_t streamIndex, std::initializer_list<std::reference_wrapper<Event>> e) {
-        for (Event& e : evs) e.wait(handle[streamIndex]);
+    void wait(const size_t streamIndex, const std::initializer_list<std::reference_wrapper<Event>> evs) const{
+        for (auto& ref_e : evs)
+            ref_e.get().wait(handle[streamIndex]);
+
     }
 
-    void renew(std::initializer_list<std::reference_wrapper<Event>> e) {
-        for (Event& e : evs) e.renew();
+    static void renew(const std::initializer_list<std::reference_wrapper<Event>> evs) {
+        for (auto& ref_e : evs)
+            ref_e.get().renew();
     }
 
-    void record(size_t streamIndex, std::initializer_list<std::reference_wrapper<Event>> e) {
-        for (Event& e : evs) e.record(handle[streamIndex]);
+    void record(size_t streamIndex, Event e) const {
+        e.record(handle[streamIndex]);
     }
 
-    void synch(size_t streamInd){
+     void synch(const size_t streamInd) const{
         cudaStreamSynchronize(handle[streamInd].stream);        
     }
 
-    bool isSmall(const Vec& v, size_t streamInd){
+    bool isSmall(const Vec<T>& v, const size_t streamInd){
         Singleton<T> vSquared;
             v.mult(v, &vSquared, handle + streamInd);
             T vSq = vSquared.get(handle[streamInd].stream);
@@ -41,42 +43,34 @@ private:
             return vSq < tolerance;
     }
 
-    void set(Vec& dst, const Vec& src, size_t streamInd){
+    void set(Vec<T>& dst, const Vec<T>& src, const size_t streamInd){
         dst.set(src, handle[streamInd].stream);
     }
 
-    void setQuotient(Singleton& dst, const Singleton& numerator, const Singleton& denom, size_t streamInd){
+    void setQuotient(Singleton<T>& dst, const Singleton<T>& numerator, const Singleton<T>& denom, const size_t streamInd){
         dst.set(denom);
-        denom.EBEPow(numerator, minusOne, handle[streamInd].stream);
+        denom.EBEPow(numerator, Singleton<T>::MINUS_ONE, handle[streamInd].stream);
     }
 
 public:
     BiCGSTAB(
-        const Vec& b, 
-        T tolerance = std::is_same<T,double>::value ? T(1e-12) : T(1e-6),
-        size_t maxItertions = size_t(-1),
-        Mat<T>* preAlocated = nullptr        
-    ):b(b),
-      paM(preAlocated ? *preAlocated : Mat<T>(b.size(), 7)), 
-      tolerance(tolerance){
-            if(maxIterations == (size_t)-1) maxIterations = b.size()*5;
-            cudaDeviceSynchronize();
-            (cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_DEVICE),...);
-        }
+        const Vec<T>& b,
+        T tolerance = std::is_same_v<T,double> ? T(1e-12) : T(1e-6),
+        size_t maxIterations = size_t(-1),
+        Mat<T>* preAllocated = nullptr
+    ):tolerance(tolerance),
+      b(b),
+      paM(preAllocated ? *preAllocated : Mat<T>(b.size(), 7)),
+      r(paM, 0, IndexType::Column), r_tilde(paM, 1, IndexType::Column), p(paM, 2, IndexType::Column), v(paM, 3, IndexType::Column), s(paM, 4, IndexType::Column), t(paM, 5, IndexType::Column), h(paM, 6, IndexType::Column),
+      paV(6),
+      rho(paV, 0), alpha(paV, 1), omega(paV, 2), rho_new(paV, 3), beta(paV, 4), temp(paV, 5){
+        if(maxIterations == static_cast<size_t>(-1)) maxIterations = b.size()*5;
+        cudaDeviceSynchronize();
+        for (const auto& h : handle)
+            cublasSetPointerMode(h.handle, CUBLAS_POINTER_MODE_DEVICE);
 
-    /**
-     * Unpreconditioned BiCGSTAB algorithm to solve the linear system Ax = b.
-     * @param A The coefficient matrix (Mat).
-     * @param diags The diagonals of the matrix A.
-     * @param b The right-hand side vector (CuArray1D).
-     * @param preAlocated Optional pre-allocated memory for intermediate computations (Mat).  
-     * There should be 7 columns and b.size() rows.
-     * @param maxIterations Maximum number of iterations to perform. Default is
-     * the size of vector b.
-     * @param tolerance Convergence tolerance. Default is 1e-6 for float and 1e-12 for double.
-     * @return The solution vector x (CuArray1D).
-     * @throws std::runtime_error if T is not float or double.
-     */    
+    }
+
     Vec<T> unpreconditionedBiCGSTAB(
         const Mat<T>& A, 
         const Vec<int>& diags, 
@@ -91,7 +85,7 @@ public:
         r_tilde.fillRandom(&handle[0]); // set r_tilde randomly    
 
         set(r, b, 0);
-        A.diagMult(diags, result, &r, handle, &minusOne, &one); // r = b - A * x    
+        A.diagMult(diags, result, &r, handle, &Singleton<T>::MINUS_ONE, &Singleton<T>::ONE); // r = b - A * x
         
         set(p, r, 0);
         
@@ -102,10 +96,10 @@ public:
         int i = 0;
         for(;i < maxIterations; i++) {
         
-            A.diagMult(diags, p, &v, handle, &one, &zero); // v = A * p
+            A.diagMult(diags, p, &v, handle, &Singleton<T>::ONE, &Singleton<T>::ZERO); // v = A * p
 
             r_tilde.mult(v, &alpha, handle);        
-            alpha.EBEPow(rho, minusOne, handle[0].stream); //alpha = rho / (r_tilde * v)
+            alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, handle[0].stream); //alpha = rho / (r_tilde * v)
             record(0, {alphaReady});
 
             synch(1);
@@ -118,8 +112,8 @@ public:
             h.add(p, alpha, handle + 1); // h = x + alpha * p
 
             temp.set(alpha, handle[0].stream);
-            temp.mult(minusOne, handle);
-            s.setSum(r, v, one, temp, handle[0].stream); // s = r - alpha * v
+            temp.mult(Singleton<T>::MINUS_ONE, handle);
+            s.setSum(r, v, Singleton<T>::ONE, temp, handle[0].stream); // s = r - alpha * v
             record(0, {sReady});
             
             set(result, h, 1);
@@ -134,7 +128,7 @@ public:
             record(3, {prodTS});
             t.mult(t, &omega, handle);
             wait(0, {prodTS});
-            omega.EBEPow(temp, minusOne, handle[0].stream); //omega = t * s / t * t;
+            omega.EBEPow(temp, Singleton<T>::MINUS_ONE, handle[0].stream); //omega = t * s / t * t;
 
             record(0, {omegaReady});
 
@@ -145,7 +139,7 @@ public:
             synch(0);
             prodTS.renew();
             temp.set(omega, handle[0].stream);
-            temp.mult(minusOne, handle);
+            temp.mult(Singleton<T>::MINUS_ONE, handle);
             r.setSum(s, t, 1, temp, handle); // r = s - omega * t
             record(0, {rReady});
 
@@ -158,12 +152,12 @@ public:
 
             setQuotient(temp, rho_new, rho, 0);
             setQuotient(beta, alpha, omega, 0);
-            beta.EBEPow(temp, one, handle[0].stream); // beta = (rho_new / rho) * (alpha / omega);
+            beta.EBEPow(temp, Singleton<T>::ONE, handle[0].stream); // beta = (rho_new / rho) * (alpha / omega);
             
             set(rho, rho_new, 0);
 
             p.mult(beta, handle);
-            p.add(r, &one, handle); // p = r + beta * p
+            p.add(r, &Singleton<T>::ONE, handle); // p = r + beta * p
             temp.set(beta, handle[0].stream);
             temp.mult(omega, handle);
             p.sub(v, temp, handle); // p = p - beta * omega * v        

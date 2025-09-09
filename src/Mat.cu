@@ -55,7 +55,6 @@ Vec<T> Mat<T>::mult(
     return *resPtr;
 }
 
-
 template <typename T>
 Mat<T> Mat<T>::operator*(const Mat<T>& other) const {
     return this->mult(other);
@@ -324,7 +323,7 @@ void Mat<T>::mult(const Singleton<T>& alpha, Handle* handle) {
  * For example, diags = {-1, 0, 1} means the first diagonal is the sub-diagonal, the second is the main diagonal, and the third is the super-diagonal.
  * @param numDiags Number of nonzero diagonals.  This number must be less than or equal to 32.
  * @param x Input vector.
- * @param stride Stride for the input vector x.
+ * @param strideX Stride for the input vector x.
  * @param result Output vector.
  * @param strideR Stride for the output vector result.
  * @param alpha Scalar multiplier for the matrix-vector product.
@@ -344,15 +343,16 @@ __global__ void diagMatVecKernel(
     T* __restrict__ result,       // output vecto
     const int strideR,
 
-    const T alpha,
-    const T beta
+    const T* alpha,
+    const T* beta
 ){
-    int rowX = blockIdx.x;
-    int rowA = threadIdx.x;
-    bool isValid = rowX < height && rowA < numDiags;
+    const int rowX = blockIdx.x;
+    const int rowA = threadIdx.x;
+    const bool isValid = rowX < height && rowA < numDiags;
     T val;
     if (isValid){//TODO: this condition can be removed by requiring input matrices have exactly 32 rows, with extra rows having all 0's.  This may give a small speed boost.       
-        int d = diags[rowA], colA = rowX;
+        const int d = diags[rowA];
+        int colA = rowX;
         if(d < 0) colA += d;
         val = 0 <= colA && colA < height - abs(d) ? A[colA*ld + rowA] * x[(rowX + d) * strideX] : 0;
     } else val = 0;
@@ -362,7 +362,7 @@ __global__ void diagMatVecKernel(
     
     int indR = rowX * strideR;
 
-    if(isValid && rowA == 0) result[indR] = alpha * val + beta * result[indR];
+    if(isValid && rowA == 0) result[indR] = *alpha * val + *beta * result[indR];
 }
 
 /**
@@ -371,8 +371,9 @@ __global__ void diagMatVecKernel(
  * @param x Input vector.
  * @param result Optional pointer to an existing 1D array to store the result.
  * @param handle Optional Cuda handle for stream/context management.
+ * @param alpha Scalar multiplier for the matrix-vector product.
+ * @param beta Scalar multiplier for the existing values in the result vector.
  * @param diags Array of diagonal indices (negative=sub-diagonal, 0=main, positive=super-diagonal)
- * @param stride Stride for input vector x
  * @return A new CuArray1D containing the result.
  * 
  */
@@ -403,7 +404,7 @@ Vec<T> Mat<T>::diagMult(
         x.data(), x.getLD(),
         resPtr->data(),
         resPtr->getLD(),
-        alpha, beta
+        a->data(), b->data()
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());

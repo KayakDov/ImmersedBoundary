@@ -5,18 +5,12 @@
 #define DEVICEARRAYS_H
 
 #include <vector> // For std::vector
-#include <iostream> // For std::cerr
 #include <memory> // For std::shared_ptr
 #include <stdexcept> // For std::runtime_error
 #include <cuda_runtime.h> // For CUDA runtime API
-#include <cuda_runtime_api.h> // For cudaFree
 #include <fstream> // For file I/O
 #include <string> // For std::string
 #include <cublas_v2.h> // For cuBLAS
-#include <curand_kernel.h> // For cuRAND
-#include <iomanip> // For formatted output
-#include <typeinfo>
-#include <stdexcept>
 
 template <typename T> class GpuArray;
 template <typename T> class Vec;
@@ -24,7 +18,8 @@ template <typename T> class Mat;
 template <typename T> class StreamHelper;
 template <typename T> class StreamSet;
 template <typename T> class StreamGet;
-
+template <typename T> class Singleton;
+#include <curand_kernel.h>
 
 
 void checkCudaErrors(cudaError_t err, const char* file, int line);
@@ -48,10 +43,10 @@ public:
     
     StreamHelper(size_t rows, size_t cols);
     virtual ~StreamHelper();
-    bool hasNext() const;
-    size_t getChunkWidth() const;
+    [[nodiscard]] bool hasNext() const;
+    [[nodiscard]] size_t getChunkWidth() const;
     void updateProgress();
-    size_t getColsProcessed() const;
+    [[nodiscard]] size_t getColsProcessed() const;
     std::vector<T>& getBuffer();
 };
 
@@ -111,22 +106,22 @@ protected:
     Vec<T>* _get_or_create_target(size_t size, Vec<T>* result, std::unique_ptr<Vec<T>>& out_ptr_unique) const;
     Singleton<T>* _get_or_create_target(Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) const;
 
-    virtual void mult(const GpuArray<T>& other, GpuArray<T>* result, Handle* handle = nullptr, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false) const;
+    virtual void mult(const GpuArray<T>& other, GpuArray<T>* result, Handle* handle, Singleton<T>* alpha, Singleton<T>* beta, bool transposeA, bool transposeB) const;
     
 public:
     virtual ~GpuArray();
-    virtual size_t size() const = 0;
-    virtual size_t bytes() const = 0;
-    virtual void set(const T* hostData, cudaStream_t stream = 0) = 0;
-    virtual void get(T* hostData, cudaStream_t stream = 0) const = 0;
-    virtual void set(const GpuArray<T>& src, cudaStream_t stream = 0) = 0;
-    virtual void get(GpuArray<T>& dst, cudaStream_t stream = 0) const = 0;
-    virtual void set(std::istream& input_stream, bool isText = false, bool isColMjr = true, cudaStream_t stream = 0) = 0;
-    virtual void get(std::ostream& output_stream, bool isText = false, bool isColMjr = true, cudaStream_t stream = 0) const = 0;
+    [[nodiscard]] virtual size_t size() const = 0;
+    [[nodiscard]] virtual size_t bytes() const = 0;
+    virtual void set(const T* hostData, cudaStream_t stream) = 0;
+    virtual void get(T* hostData, cudaStream_t stream) const = 0;
+    virtual void set(const GpuArray<T>& src, cudaStream_t stream ) = 0;
+    virtual void get(GpuArray<T>& dst, cudaStream_t stream) const = 0;
+    virtual void set(std::istream& input_stream, bool isText, bool isColMjr, cudaStream_t stream) = 0;
+    virtual void get(std::ostream& output_stream, bool isText, bool isColMjr, cudaStream_t stream) const = 0;
     T* data();
     const T* data() const;
-    size_t getLD() const;
-    std::shared_ptr<void> getPtr() const;
+    [[nodiscard]] size_t getLD() const;
+    [[nodiscard]] std::shared_ptr<void> getPtr();
 
     GpuArray<T>& operator=(const GpuArray<T>& other) {
         if (this != &other) {
@@ -145,24 +140,20 @@ public:
 };
 
 template <typename T>
-class Singleton;
-
-
-template <typename T>
 class Mat : public GpuArray<T> {
     using GpuArray<T>::mult;
     
 public:
     Mat(size_t rows, size_t cols);
     Mat(const Mat<T>& superArray, size_t startRow, size_t startCol, size_t height, size_t width);
-    size_t size() const override;
-    size_t bytes() const override;
-    void set(const T* src, cudaStream_t stream = 0) override;
-    void get(T* dst, cudaStream_t stream = 0) const override;
-    void set(const GpuArray<T>& src, cudaStream_t stream = 0) override;
-    void get(GpuArray<T>& dst, cudaStream_t stream = 0) const override;
-    void set(std::istream& input_stream, bool isText= false, bool readColMjr = true, cudaStream_t stream = 0);
-    void get(std::ostream& output_stream, bool isText = false, bool printColMjr = true, cudaStream_t stream = 0) const;
+    [[nodiscard]] size_t size() const override;
+    [[nodiscard]] size_t bytes() const override;
+    void set(const T* src, cudaStream_t stream) override;
+    void get(T* dst, cudaStream_t stream) const override;
+    void set(const GpuArray<T>& src, cudaStream_t stream) override;
+    void get(GpuArray<T>& dst, cudaStream_t stream) const override;
+    void set(std::istream& input_stream, bool isText, bool readColMjr, cudaStream_t stream) override;
+    void get(std::ostream& output_stream, bool isText, bool printColMjr, cudaStream_t stream) const override;
     
     Mat<T> mult(const Mat<T>& other, Mat<T>* result = nullptr, Handle* handle = nullptr, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false) const;
 
@@ -176,18 +167,21 @@ public:
     
     Mat<T> minus(const Mat<T>& x, Mat<T>* result = nullptr, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr);    
 
-    void mult(Singleton<T>& alpha, Handle* handle = nullptr);    
+    void mult(const Singleton<T>& alpha, Handle* handle = nullptr);
 
     /**
      * Multiply a sparse diagonal matrix (packed diagonals) with a 1D vector.
      *
      * This matrix must have at most 64 rows, representing a sparse matrix with up to 64 non zero diagonals.
-     * 
+     *
+     * this <- alpha * A * x + beta * this
+     *
      * @param diags Array of diagonal indices (negative=sub-diagonal, 0=main, positive=super-diagonal).  Each row of this matrix is treated as a diagonal with the coresponding index.
      * @param x Input vector.
      * @param result Optional pointer to store the result. If nullptr, a new gpuArray1D is returned.
      * @param handle Optional Handle for managing CUDA streams/context.
-     * @param stride Stride for the input vector x.
+     * @param alpha Optional scalar multiplier.
+     * @param beta Optional scalar multiplier.
      * @return A new gpuArray1D containing the result of the multiplication.
      */
     Vec<T> diagMult(const Vec<int>& diags, const Vec<T>& x, Vec<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr) const;
@@ -208,14 +202,14 @@ public:
     explicit Vec(size_t length);
     Vec(const Vec<T>& superArray, size_t offset, size_t length, size_t stride = 1);
     Vec(const Mat<T>& extractFrom, int index, IndexType indexType);
-    size_t size() const override;
-    size_t bytes() const override;
-    void set(const T* hostData, cudaStream_t stream = 0) override;
-    void get(T* hostData, cudaStream_t stream = 0) const override;
-    void set(const GpuArray<T>& src, cudaStream_t stream = 0) override;
-    void get(GpuArray<T>& dst, cudaStream_t stream = 0) const override;
-    void set(std::istream& input_stream, bool isText = false, bool isColMjr = true, cudaStream_t stream = 0) override;
-    void get(std::ostream& output_stream, bool isText = false, bool isColMjr = true, cudaStream_t stream = 0) const override;
+    [[nodiscard]] size_t size() const override;
+    [[nodiscard]] size_t bytes() const override;
+    void set(const T* hostData, cudaStream_t stream) override;
+    void get(T* hostData, cudaStream_t stream) const override;
+    void set(const GpuArray<T>& src, cudaStream_t stream) override;
+    void get(GpuArray<T>& dst, cudaStream_t stream) const override;
+    void set(std::istream& input_stream, bool isText, bool isColMjr, cudaStream_t stream) override;
+    void get(std::ostream& output_stream, bool isText, bool isColMjr, cudaStream_t stream) const override;
 
     Vec<T> mult(const Mat<T>& other, Vec<T>* result = nullptr, Handle* handle = nullptr, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, bool transpose = false) const;
 
@@ -225,16 +219,16 @@ public:
     T operator*(const Vec<T>& other) const;
     
 
-    void add(const Vec<T>& x, Singleton<T>* alpha = nullptr, Handle* handle = nullptr);
-    void sub(const Vec<T>& x, Singleton<T>* alpha = nullptr, Handle* handle = nullptr);
+    void add(const Vec<T>& x, Singleton<T>* alpha, Handle* handle);
+    void sub(const Vec<T>& x, Singleton<T>* alpha, Handle* handle);
 
-    void mult(Singleton<T> alpha, Handle* handle = nullptr);
+    void mult(const Singleton<T>& alpha, Handle* handle = nullptr);
 
     void fillRandom(Handle* handle = nullptr);
 
-    void EBEPow(const Singleton<T>& t, Singleton<T>& n, cudaStream_t stream = 0);
+    void EBEPow(const Singleton<T>& t, const Singleton<T>& n, cudaStream_t stream);
 
-    void setSum(const Vec& a, const Vec& B, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, Handle* handle = nullptr);
+    void setSum(const Vec& a, const Vec& B, Singleton<T>* alpha, Singleton<T>* beta, Handle* handle);
 
 };
 
@@ -242,15 +236,18 @@ template <typename T>
 class Singleton : public Vec<T> {
     
 public:
+    static const Singleton<T> ONE, ZERO, MINUS_ONE;
+
     using Vec<T>::get;
     using Vec<T>::set;
 
     Singleton();
     Singleton(const Vec<T>& superVector, int index);
     Singleton(const Mat<T>& superMatrix, int row, int col);
+    explicit Singleton(T val, Handle *hand = nullptr);
 
     T get(cudaStream_t stream = nullptr) const;
-    void set(const T val, cudaStream_t stream = nullptr);
+    void set(T val, cudaStream_t stream) override;
 };
 /**
  * @brief Input formatted data (space-separated values) into gpuArray1D<T> from a stream.
@@ -285,9 +282,7 @@ template <typename T>
 std::ostream& operator<<(std::ostream& os, const Vec<T>& arr) {
     std::vector<T> hostData(arr.size());
     arr.get(hostData.data());
-    
-    os << std::fixed << std::setprecision(4);
-    
+
     for (size_t i = 0; i < hostData.size(); ++i) {
         os << hostData[i];
         if (i + 1 < hostData.size()) {
@@ -316,13 +311,10 @@ std::ostream& operator<<(std::ostream& os, const Mat<T>& arr) {
     std::vector<T> hostData(arr.size());
     arr.get(hostData.data());
 
-    // Set formatting for prettier output
-    os << std::fixed << std::setprecision(4);
-
     for (size_t r = 0; r < arr._rows; ++r) {
         for (size_t c = 0; c < arr._cols; ++c) {
             // Contiguous column-major access
-            os << std::setw(12) << hostData[c * arr._rows + r] << " ";
+            os << hostData[c * arr._rows + r] << " ";
         }
         os << "\n";
     }

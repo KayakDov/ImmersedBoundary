@@ -69,9 +69,12 @@ void showHelp() {
  * solution vector x and then saves it to the specified destination file.
  *
  * @param A A reference to the CuArray2D containing the matrix A.
- * @param diags_vec A constant reference to the vector of diagonal indices.
+ * @param diags A constant reference to the vector of diagonal indices.
  * @param b A reference to the CuArray1D containing the vector b.
  * @param x_dest_file The path to the output file for the solution vector x.
+ * @param isText True if the file is a text file, and false if it's a binary file.
+ * @param maxIter The maximum number of iterations.
+ * @param epsilon A threshold for completion.  How close must a number be to 0 to essentially be 0.
  * @throws std::runtime_error if the output file cannot be opened.
  */
 template <typename T>
@@ -121,7 +124,7 @@ void solveSystem(int argc, char const* argv[], bool isText, int maxIter, double 
 }
 
 /**
- * @file main.cpp
+ * @file main.cu
  * @brief This program solves a linear system Ax = b using the unpreconditioned
  * BiCGSTAB method on a CUDA device.
  *
