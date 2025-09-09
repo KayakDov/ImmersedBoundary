@@ -1,0 +1,3 @@
+/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles/BiCGSTAB.dir
+/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles/rebuild_cache.dir

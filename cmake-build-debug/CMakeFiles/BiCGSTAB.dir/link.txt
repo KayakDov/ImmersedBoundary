@@ -1,0 +1,1 @@
+/usr/bin/g++ @CMakeFiles/BiCGSTAB.dir/objects1.rsp CMakeFiles/BiCGSTAB.dir/cmake_device_link.o -o BiCGSTAB @CMakeFiles/BiCGSTAB.dir/linkLibs.rsp -L"/usr/local/cuda-12.9/targets/x86_64-linux/lib/stubs" -L"/usr/local/cuda-12.9/targets/x86_64-linux/lib"
