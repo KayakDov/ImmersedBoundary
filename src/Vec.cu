@@ -16,7 +16,7 @@ Vec<T>::Vec(const Vec<T>& superArray, size_t offset, size_t length, size_t strid
 
     this->_ptr = std::shared_ptr<void>(
         superArray._ptr,
-        static_cast<void*>(superArray._ptr.get() + offset * superArray.getLD() * stride)
+        static_cast<void*>(superArray._ptr.get() + offset * superArray.getLD() * stride * sizeof(T))
     );
 }
 
@@ -81,7 +81,7 @@ T Vec<T>::operator*(const Vec<T>& other) const {
 }
 
 template <typename T>
-Vec<T>::Vec(const Mat<T>& extractFrom, int index, IndexType indexType):
+Vec<T>::Vec(const Mat<T>& extractFrom, const size_t index, IndexType const indexType):
 GpuArray<T>(
     1,
     indexType == IndexType::Row ? extractFrom._cols : extractFrom._rows,
@@ -275,8 +275,8 @@ void Vec<T>::fillRandom(Handle* handle) {
 
 template <typename T>
 __global__ void EBEPowKernel(T* data, size_t size, size_t stride, const T* t, const T* n) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size) {
+
+    if (size_t idx = blockIdx.x * blockDim.x + threadIdx.x; idx < size) {
         size_t offset = idx * stride;
         data[offset] = (*t) * pow(data[offset], *n);
     }

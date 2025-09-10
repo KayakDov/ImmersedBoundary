@@ -19,7 +19,7 @@ template<typename T>
 Singleton<T>::Singleton(T val, Handle* hand) : Singleton<T>() {
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(hand, temp_hand_ptr);
-    set(val, hand->stream);
+    set(val, h->stream);
 }
 
 template <typename T>

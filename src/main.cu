@@ -27,7 +27,7 @@ inline void checkForDevice(){
  *
  */
 template <typename T>
-void readAndPrint(GpuArray<T>& array, const string& fileName, const bool isText, Handle hand) {
+void readAndPrint(GpuArray<T>& array, const string& fileName, const bool isText, Handle& hand) {
     ifstream reader(fileName);
     if(!reader.is_open())
         throw runtime_error("Could not open " + fileName);
@@ -113,12 +113,10 @@ void solveSystem(int argc, char const* argv[], bool isText, int maxIter, double 
     string b_file = argv[5];
     string x_dest_file = argv[6];
 
-    if (numDiags <= 0 || width <= 0)
-        throw runtime_error("Number of diagonals and matrix width must be positive.");
+    if (numDiags <= 0 || width <= 0) throw runtime_error("Number of diagonals and matrix width must be positive.");
 
     // Check if maxIter needs to be set to its default
-    if (maxIter == -1)
-        maxIter = width * 2;
+    if (maxIter == -1) maxIter = width * 2;
 
     Mat<T> A(numDiags, width);
     Vec<T> b(width);
@@ -162,7 +160,7 @@ int useCommandLineArgs(int argc, char const* argv[]){
         int maxIter = -1; // -1 indicates default max iterations
 
         // Parse optional flags
-        for (int i = 1; i < argc; ++i) {
+        for (size_t i = 1; i < argc; ++i) {
             if (strcmp(argv[i], "-float") == 0)
                 useFloat = true;
 

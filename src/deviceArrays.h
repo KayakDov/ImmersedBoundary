@@ -207,7 +207,7 @@ protected:
 public:
     explicit Vec(size_t length);
     Vec(const Vec<T>& superArray, size_t offset, size_t length, size_t stride = 1);
-    Vec(const Mat<T>& extractFrom, int index, IndexType indexType);
+    Vec(const Mat<T>& extractFrom, size_t index, IndexType indexType);
     [[nodiscard]] size_t size() const override;
     [[nodiscard]] size_t bytes() const override;
     void set(const T* hostData, cudaStream_t stream) override;
