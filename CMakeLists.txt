@@ -20,9 +20,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 find_package(CUDAToolkit REQUIRED)
 find_package(Threads REQUIRED)
 
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE
+target_link_libraries(BiCGSTAB
+        PRIVATE
         CUDA::cudart
-        Threads::Threads
+        CUDA::cublas
 )
+
+
 

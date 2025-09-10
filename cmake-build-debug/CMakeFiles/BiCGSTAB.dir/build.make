@@ -87,11 +87,26 @@ CMakeFiles/BiCGSTAB.dir/src/Event.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/BiCGSTAB.dir/src/Event.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
+CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o: CMakeFiles/BiCGSTAB.dir/flags.make
+CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o: CMakeFiles/BiCGSTAB.dir/includes_CUDA.rsp
+CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/Mat.cu
+CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o: CMakeFiles/BiCGSTAB.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o"
+	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o -MF CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/Mat.cu -o CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o
+
+CMakeFiles/BiCGSTAB.dir/src/Mat.cu.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CUDA source to CMakeFiles/BiCGSTAB.dir/src/Mat.cu.i"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
+
+CMakeFiles/BiCGSTAB.dir/src/Mat.cu.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/BiCGSTAB.dir/src/Mat.cu.s"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
+
 CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o: CMakeFiles/BiCGSTAB.dir/flags.make
 CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o: CMakeFiles/BiCGSTAB.dir/includes_CUDA.rsp
 CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/Singleton.cu
 CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o: CMakeFiles/BiCGSTAB.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o"
 	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o -MF CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/Singleton.cu -o CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o
 
 CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.i: cmake_force
@@ -102,11 +117,26 @@ CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
+CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o: CMakeFiles/BiCGSTAB.dir/flags.make
+CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o: CMakeFiles/BiCGSTAB.dir/includes_CUDA.rsp
+CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/Vec.cu
+CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o: CMakeFiles/BiCGSTAB.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o"
+	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o -MF CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/Vec.cu -o CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o
+
+CMakeFiles/BiCGSTAB.dir/src/Vec.cu.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CUDA source to CMakeFiles/BiCGSTAB.dir/src/Vec.cu.i"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
+
+CMakeFiles/BiCGSTAB.dir/src/Vec.cu.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/BiCGSTAB.dir/src/Vec.cu.s"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
+
 CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o: CMakeFiles/BiCGSTAB.dir/flags.make
 CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o: CMakeFiles/BiCGSTAB.dir/includes_CUDA.rsp
 CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/algorithms.cu
 CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o: CMakeFiles/BiCGSTAB.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o"
 	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o -MF CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/algorithms.cu -o CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o
 
 CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.i: cmake_force
@@ -115,36 +145,6 @@ CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.i: cmake_force
 
 CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.s"
-	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
-
-CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o: CMakeFiles/BiCGSTAB.dir/flags.make
-CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o: CMakeFiles/BiCGSTAB.dir/includes_CUDA.rsp
-CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArray1D.cu
-CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o: CMakeFiles/BiCGSTAB.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o"
-	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o -MF CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArray1D.cu -o CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o
-
-CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CUDA source to CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.i"
-	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
-
-CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.s"
-	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
-
-CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o: CMakeFiles/BiCGSTAB.dir/flags.make
-CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o: CMakeFiles/BiCGSTAB.dir/includes_CUDA.rsp
-CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArray2D.cu
-CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o: CMakeFiles/BiCGSTAB.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o"
-	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o -MF CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArray2D.cu -o CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o
-
-CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CUDA source to CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.i"
-	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
-
-CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays.cu.o: CMakeFiles/BiCGSTAB.dir/flags.make
@@ -195,10 +195,10 @@ CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.s: cmake_force
 # Object files for target BiCGSTAB
 BiCGSTAB_OBJECTS = \
 "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o" \
+"CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o" \
+"CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o" \
-"CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o" \
-"CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/main.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o"
@@ -207,16 +207,19 @@ BiCGSTAB_OBJECTS = \
 BiCGSTAB_EXTERNAL_OBJECTS =
 
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/Event.cu.o
+CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o
+CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o
-CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o
-CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/deviceArrays.cu.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/main.cu.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/build.make
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcudart.so
+CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcublas.so
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/librt.a
+CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcublasLt.so
+CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libculibos.a
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/deviceLinkLibs.rsp
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/deviceObjects1.rsp
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/dlink.txt
@@ -230,10 +233,10 @@ CMakeFiles/BiCGSTAB.dir/build: CMakeFiles/BiCGSTAB.dir/cmake_device_link.o
 # Object files for target BiCGSTAB
 BiCGSTAB_OBJECTS = \
 "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o" \
+"CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o" \
+"CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o" \
-"CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o" \
-"CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/main.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o"
@@ -242,16 +245,19 @@ BiCGSTAB_OBJECTS = \
 BiCGSTAB_EXTERNAL_OBJECTS =
 
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/Event.cu.o
+BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.o
+BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o
-BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o
-BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/deviceArrays.cu.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/main.cu.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/build.make
 BiCGSTAB: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcudart.so
+BiCGSTAB: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcublas.so
 BiCGSTAB: /usr/lib/x86_64-linux-gnu/librt.a
+BiCGSTAB: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcublasLt.so
+BiCGSTAB: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libculibos.a
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/cmake_device_link.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/linkLibs.rsp
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/objects1.rsp

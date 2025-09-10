@@ -153,6 +153,30 @@ src/Event.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Event.cu.s
 .PHONY : src/Event.cu.s
 
+src/Mat.o: src/Mat.cu.o
+.PHONY : src/Mat.o
+
+# target to build an object file
+src/Mat.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Mat.cu.o
+.PHONY : src/Mat.cu.o
+
+src/Mat.i: src/Mat.cu.i
+.PHONY : src/Mat.i
+
+# target to preprocess a source file
+src/Mat.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Mat.cu.i
+.PHONY : src/Mat.cu.i
+
+src/Mat.s: src/Mat.cu.s
+.PHONY : src/Mat.s
+
+# target to generate assembly for a file
+src/Mat.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Mat.cu.s
+.PHONY : src/Mat.cu.s
+
 src/Singleton.o: src/Singleton.cu.o
 .PHONY : src/Singleton.o
 
@@ -177,6 +201,30 @@ src/Singleton.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Singleton.cu.s
 .PHONY : src/Singleton.cu.s
 
+src/Vec.o: src/Vec.cu.o
+.PHONY : src/Vec.o
+
+# target to build an object file
+src/Vec.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Vec.cu.o
+.PHONY : src/Vec.cu.o
+
+src/Vec.i: src/Vec.cu.i
+.PHONY : src/Vec.i
+
+# target to preprocess a source file
+src/Vec.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Vec.cu.i
+.PHONY : src/Vec.cu.i
+
+src/Vec.s: src/Vec.cu.s
+.PHONY : src/Vec.s
+
+# target to generate assembly for a file
+src/Vec.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Vec.cu.s
+.PHONY : src/Vec.cu.s
+
 src/algorithms.o: src/algorithms.cu.o
 .PHONY : src/algorithms.o
 
@@ -200,54 +248,6 @@ src/algorithms.s: src/algorithms.cu.s
 src/algorithms.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.s
 .PHONY : src/algorithms.cu.s
-
-src/deviceArray1D.o: src/deviceArray1D.cu.o
-.PHONY : src/deviceArray1D.o
-
-# target to build an object file
-src/deviceArray1D.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.o
-.PHONY : src/deviceArray1D.cu.o
-
-src/deviceArray1D.i: src/deviceArray1D.cu.i
-.PHONY : src/deviceArray1D.i
-
-# target to preprocess a source file
-src/deviceArray1D.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.i
-.PHONY : src/deviceArray1D.cu.i
-
-src/deviceArray1D.s: src/deviceArray1D.cu.s
-.PHONY : src/deviceArray1D.s
-
-# target to generate assembly for a file
-src/deviceArray1D.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArray1D.cu.s
-.PHONY : src/deviceArray1D.cu.s
-
-src/deviceArray2D.o: src/deviceArray2D.cu.o
-.PHONY : src/deviceArray2D.o
-
-# target to build an object file
-src/deviceArray2D.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.o
-.PHONY : src/deviceArray2D.cu.o
-
-src/deviceArray2D.i: src/deviceArray2D.cu.i
-.PHONY : src/deviceArray2D.i
-
-# target to preprocess a source file
-src/deviceArray2D.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.i
-.PHONY : src/deviceArray2D.cu.i
-
-src/deviceArray2D.s: src/deviceArray2D.cu.s
-.PHONY : src/deviceArray2D.s
-
-# target to generate assembly for a file
-src/deviceArray2D.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArray2D.cu.s
-.PHONY : src/deviceArray2D.cu.s
 
 src/deviceArrays.o: src/deviceArrays.cu.o
 .PHONY : src/deviceArrays.o
@@ -333,18 +333,18 @@ help:
 	@echo "... src/Event.o"
 	@echo "... src/Event.i"
 	@echo "... src/Event.s"
+	@echo "... src/Mat.o"
+	@echo "... src/Mat.i"
+	@echo "... src/Mat.s"
 	@echo "... src/Singleton.o"
 	@echo "... src/Singleton.i"
 	@echo "... src/Singleton.s"
+	@echo "... src/Vec.o"
+	@echo "... src/Vec.i"
+	@echo "... src/Vec.s"
 	@echo "... src/algorithms.o"
 	@echo "... src/algorithms.i"
 	@echo "... src/algorithms.s"
-	@echo "... src/deviceArray1D.o"
-	@echo "... src/deviceArray1D.i"
-	@echo "... src/deviceArray1D.s"
-	@echo "... src/deviceArray2D.o"
-	@echo "... src/deviceArray2D.i"
-	@echo "... src/deviceArray2D.s"
 	@echo "... src/deviceArrays.o"
 	@echo "... src/deviceArrays.i"
 	@echo "... src/deviceArrays.s"

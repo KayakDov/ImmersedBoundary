@@ -10,8 +10,8 @@ template <typename T>
 Singleton<T>::Singleton(const Mat<T>& superMatrix, int row, int col):Vec<T>(1,1,1){
     const size_t offset = col * superMatrix.getLD() + row;
     this->_ptr = std::shared_ptr<void>(
-        superMatrix.getPtr(),
-        static_cast<char*>(superMatrix.getPtr().get()) + offset * sizeof(T)
+        superMatrix._ptr,
+        static_cast<char*>(superMatrix._ptr.get()) + offset * sizeof(T)
     );
 }
 

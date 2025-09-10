@@ -86,6 +86,8 @@ public:
 
     ~Handle();
 
+    void synch() const;
+
 private:
     bool isOwner = false; // Flag to indicate if the class owns the stream and should destroy it.
 };
@@ -98,17 +100,20 @@ public:
     const size_t _rows;
     const size_t _cols;
 protected:
-    std::shared_ptr<void> _ptr;
+
     size_t _ld;
     GpuArray(size_t rows, size_t cols, size_t ld);
 
     Mat<T>* _get_or_create_target(size_t rows, size_t cols, Mat<T>* result, std::unique_ptr<Mat<T>>& out_ptr_unique) const;
     Vec<T>* _get_or_create_target(size_t size, Vec<T>* result, std::unique_ptr<Vec<T>>& out_ptr_unique) const;
     Singleton<T>* _get_or_create_target(Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) const;
+    const Singleton<T>* _get_or_create_target(T defaultVal, Handle& hand, const Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) const;
 
-    virtual void mult(const GpuArray<T>& other, GpuArray<T>* result, Handle* handle, Singleton<T>* alpha, Singleton<T>* beta, bool transposeA, bool transposeB) const;
+    virtual void mult(const GpuArray<T>& other, GpuArray<T>* result, Handle* handle, const Singleton<T> *alpha, const Singleton<T> *beta, bool transposeA, bool transposeB) const;
     
 public:
+    std::shared_ptr<void> _ptr;
+
     virtual ~GpuArray();
     [[nodiscard]] virtual size_t size() const = 0;
     [[nodiscard]] virtual size_t bytes() const = 0;
@@ -121,7 +126,6 @@ public:
     T* data();
     const T* data() const;
     [[nodiscard]] size_t getLD() const;
-    [[nodiscard]] std::shared_ptr<void> getPtr();
 
     GpuArray<T>& operator=(const GpuArray<T>& other) {
         if (this != &other) {
@@ -155,17 +159,19 @@ public:
     void set(std::istream& input_stream, bool isText, bool readColMjr, cudaStream_t stream) override;
     void get(std::ostream& output_stream, bool isText, bool printColMjr, cudaStream_t stream) const override;
     
-    Mat<T> mult(const Mat<T>& other, Mat<T>* result = nullptr, Handle* handle = nullptr, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false) const;
+    Mat<T> mult(const Mat<T>& other, Mat<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T> *alpha = nullptr, const
+                Singleton<T> *beta = nullptr, bool transposeA = false, bool transposeB = false) const;
 
-    Vec<T> mult(const Vec<T>& other, Vec<T>* result = nullptr, Handle* handle = nullptr, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, bool transpose = false) const;    
+    Vec<T> mult(const Vec<T>& other, Vec<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T> *alpha = nullptr, const
+                Singleton<T> *beta = nullptr, bool transpose = false) const;
     
     Vec<T> operator*(const Vec<T>& other) const;    
 
     Mat<T> operator*(const Mat<T>& other) const;    
     
-    Mat<T> plus(const Mat<T>& x, Mat<T>* result = nullptr, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr);
+    Mat<T> plus(const Mat<T>& x, Mat<T>* result = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr);
     
-    Mat<T> minus(const Mat<T>& x, Mat<T>* result = nullptr, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr);    
+    Mat<T> minus(const Mat<T>& x, Mat<T>* result = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr);
 
     void mult(const Singleton<T>& alpha, Handle* handle = nullptr);
 
@@ -211,7 +217,7 @@ public:
     void set(std::istream& input_stream, bool isText, bool isColMjr, cudaStream_t stream) override;
     void get(std::ostream& output_stream, bool isText, bool isColMjr, cudaStream_t stream) const override;
 
-    Vec<T> mult(const Mat<T>& other, Vec<T>* result = nullptr, Handle* handle = nullptr, Singleton<T>* alpha = nullptr, Singleton<T>* beta = nullptr, bool transpose = false) const;
+    Vec<T> mult(const Mat<T>& other, Vec<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr, bool transpose = false) const;
 
     T mult(const Vec<T>& other, Singleton<T>* result = nullptr, Handle* handle = nullptr) const;    
 
@@ -219,8 +225,8 @@ public:
     T operator*(const Vec<T>& other) const;
     
 
-    void add(const Vec<T>& x, Singleton<T>* alpha, Handle* handle);
-    void sub(const Vec<T>& x, Singleton<T>* alpha, Handle* handle);
+    void add(const Vec<T>& x, const Singleton<T> *alpha, Handle* handle);
+    void sub(const Vec<T>& x, const Singleton<T>* alpha, Handle* handle);
 
     void mult(const Singleton<T>& alpha, Handle* handle = nullptr);
 
@@ -228,7 +234,7 @@ public:
 
     void EBEPow(const Singleton<T>& t, const Singleton<T>& n, cudaStream_t stream);
 
-    void setSum(const Vec& a, const Vec& B, Singleton<T>* alpha, Singleton<T>* beta, Handle* handle);
+    void setSum(const Vec& a, const Vec& B, const Singleton<T>* alpha, const Singleton<T>* beta, Handle* handle);
 
 };
 
@@ -247,7 +253,7 @@ public:
     explicit Singleton(T val, Handle *hand = nullptr);
 
     T get(cudaStream_t stream = nullptr) const;
-    void set(T val, cudaStream_t stream) override;
+    void set(T val, cudaStream_t stream);
 };
 /**
  * @brief Input formatted data (space-separated values) into gpuArray1D<T> from a stream.
@@ -281,7 +287,9 @@ std::istream& operator>>(std::istream& is, Vec<T>& arr) {
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Vec<T>& arr) {
     std::vector<T> hostData(arr.size());
-    arr.get(hostData.data());
+    Handle hand;
+    arr.get(hostData.data(), hand.stream);
+    hand.synch();
 
     for (size_t i = 0; i < hostData.size(); ++i) {
         os << hostData[i];
@@ -309,7 +317,10 @@ template <typename T>
 std::ostream& operator<<(std::ostream& os, const Mat<T>& arr) {
     cudaDeviceSynchronize();
     std::vector<T> hostData(arr.size());
-    arr.get(hostData.data());
+
+    Handle hand;
+    arr.get(hostData.data(), hand.stream);
+    hand.synch();
 
     for (size_t r = 0; r < arr._rows; ++r) {
         for (size_t c = 0; c < arr._cols; ++c) {

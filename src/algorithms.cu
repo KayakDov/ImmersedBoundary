@@ -1,6 +1,7 @@
 #include "deviceArrays.h"
 #include <cmath>
 #include "Event.h"
+#include <iostream>
 
 template <typename T>
 class BiCGSTAB{
@@ -27,12 +28,12 @@ private:
             ref_e.get().renew();
     }
 
-    void record(size_t streamIndex, Event e) const {
+    void record(size_t streamIndex, Event& e) const {
         e.record(handle[streamIndex]);
     }
 
      void synch(const size_t streamInd) const{
-        cudaStreamSynchronize(handle[streamInd].stream);        
+        handle[streamInd].synch();
     }
 
     bool isSmall(const Vec<T>& v, const size_t streamInd){
@@ -48,27 +49,30 @@ private:
     }
 
     void setQuotient(Singleton<T>& dst, const Singleton<T>& numerator, const Singleton<T>& denom, const size_t streamInd){
-        dst.set(denom);
-        denom.EBEPow(numerator, Singleton<T>::MINUS_ONE, handle[streamInd].stream);
+        dst.set(denom, handle[streamInd].stream);
+        dst.EBEPow(numerator, Singleton<T>::MINUS_ONE, handle[streamInd].stream);
     }
 
 public:
-    BiCGSTAB(
+    explicit BiCGSTAB(
         const Vec<T>& b,
         T tolerance = std::is_same_v<T,double> ? T(1e-12) : T(1e-6),
-        size_t maxIterations = size_t(-1),
+        size_t maxIterations = static_cast<size_t>(-1),
         Mat<T>* preAllocated = nullptr
     ):tolerance(tolerance),
       b(b),
       paM(preAllocated ? *preAllocated : Mat<T>(b.size(), 7)),
       r(paM, 0, IndexType::Column), r_tilde(paM, 1, IndexType::Column), p(paM, 2, IndexType::Column), v(paM, 3, IndexType::Column), s(paM, 4, IndexType::Column), t(paM, 5, IndexType::Column), h(paM, 6, IndexType::Column),
       paV(6),
-      rho(paV, 0), alpha(paV, 1), omega(paV, 2), rho_new(paV, 3), beta(paV, 4), temp(paV, 5){
+      rho(paV, 0), alpha(paV, 1), omega(paV, 2), rho_new(paV, 3), beta(paV, 4), temp(paV, 5),
+      maxIterations(maxIterations)
+    {
+        static_assert(std::is_same_v<T,float> || std::is_same_v<T,double>,
+                "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
         if(maxIterations == static_cast<size_t>(-1)) maxIterations = b.size()*5;
         cudaDeviceSynchronize();
         for (const auto& h : handle)
             cublasSetPointerMode(h.handle, CUBLAS_POINTER_MODE_DEVICE);
-
     }
 
     Vec<T> unpreconditionedBiCGSTAB(
@@ -76,11 +80,8 @@ public:
         const Vec<int>& diags, 
         Vec<T>* x = nullptr){
 
-        static_assert(std::is_same<T,float>::value || std::is_same<T,double>::value,
-                "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
-       
         Vec<T> result = x ? *x : Vec<T>(b.size());
-        record(0, {xReady});
+        record(0, xReady);
         
         r_tilde.fillRandom(&handle[0]); // set r_tilde randomly    
 
@@ -91,7 +92,7 @@ public:
         
         r_tilde.mult(r, &rho, handle);    
         
-        wait(1, xReady);
+        wait(1, {xReady});
 
         int i = 0;
         for(;i < maxIterations; i++) {
@@ -109,11 +110,11 @@ public:
             set(h, result, 1);
             synch(1);
             renew({alphaReady, xReady});
-            h.add(p, alpha, handle + 1); // h = x + alpha * p
+            h.add(p, &alpha, handle + 1); // h = x + alpha * p
 
             temp.set(alpha, handle[0].stream);
             temp.mult(Singleton<T>::MINUS_ONE, handle);
-            s.setSum(r, v, Singleton<T>::ONE, temp, handle[0].stream); // s = r - alpha * v
+            s.setSum(r, v, &Singleton<T>::ONE, &temp, handle); // s = r - alpha * v
             record(0, {sReady});
             
             set(result, h, 1);
@@ -133,14 +134,14 @@ public:
             record(0, {omegaReady});
 
             wait(1, {omegaReady});
-            result.add(s, omega, handle + 1); // x = h + omega * s
+            result.add(s, &omega, handle + 1); // x = h + omega * s
             record(1, {xReady});        
             
             synch(0);
             prodTS.renew();
             temp.set(omega, handle[0].stream);
             temp.mult(Singleton<T>::MINUS_ONE, handle);
-            r.setSum(s, t, 1, temp, handle); // r = s - omega * t
+            r.setSum(s, t, &Singleton<T>::ONE, &temp, handle); // r = s - omega * t
             record(0, {rReady});
 
             wait(2, {xReady, rReady});
@@ -160,7 +161,7 @@ public:
             p.add(r, &Singleton<T>::ONE, handle); // p = r + beta * p
             temp.set(beta, handle[0].stream);
             temp.mult(omega, handle);
-            p.sub(v, temp, handle); // p = p - beta * omega * v        
+            p.sub(v, &temp, handle); // p = p - beta * omega * v
         }
 
         std::cout << "algorithms.cu unpreconditionedBiCGSTAB Number of iterations:" << i << std::endl;

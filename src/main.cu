@@ -11,18 +11,28 @@
 
 using namespace std;
 
+inline void checkForDevice(){
+    int deviceCount = 0;
+    CHECK_CUDA_ERROR(cudaGetDeviceCount(&deviceCount));
+    if (deviceCount == 0) {
+        std::cerr << "No CUDA devices found. Exiting.\n";
+        std::exit(EXIT_FAILURE);
+    }
+    std::cout << "CUDA device count: " << deviceCount << "\n";
+}
+
 /**
  * @brief Read a file into a device array and print an update for the command line.
  *
  *
  */
 template <typename T>
-void readAndPrint(GpuArray<T>& array, const string& fileName, const bool isText) {
+void readAndPrint(GpuArray<T>& array, const string& fileName, const bool isText, Handle hand) {
     ifstream reader(fileName);
     if(!reader.is_open())
         throw runtime_error("Could not open " + fileName);
 
-    array.set(reader, isText, !isText);
+    array.set(reader, isText, !isText, hand.stream);
     reader.close();
 
     cout << "Read matrix "<< fileName <<" from file." << endl;
@@ -78,7 +88,7 @@ void showHelp() {
  * @throws std::runtime_error if the output file cannot be opened.
  */
 template <typename T>
-void solveAndWriteOutput(Mat<T>& A, const Vec<int>& diags, Vec<T>& b, const string& x_dest_file, const bool isText, int maxIter, double epsilon) {
+void solveAndWriteOutput(Mat<T>& A, const Vec<int>& diags, Vec<T>& b, const string& x_dest_file, const bool isText, int maxIter, double epsilon, Handle& handle) {
     Vec<T> x(b.size());
     BiCGSTAB setup(b, static_cast<T>(epsilon), maxIter);
     setup.unpreconditionedBiCGSTAB(A, diags, &x);
@@ -87,13 +97,11 @@ void solveAndWriteOutput(Mat<T>& A, const Vec<int>& diags, Vec<T>& b, const stri
     if (!x_fs.is_open())
         throw runtime_error("Could not open destination file: " + x_dest_file);
 
-    x.get(x_fs, isText, !isText);
+    x.get(x_fs, isText, !isText, handle.stream);
     x_fs.close();
     cout << "Wrote solution vector x to file: " << x_dest_file << endl;
-    if(x.size() < 1000)
-        cout << "x:\n" << x << endl;
-    else
-        cout << "x is too large to display." << endl;
+    if(x.size() < 1000) cout << "x:\n" << x << endl;
+    else cout << "x is too large to display." << endl;
 }
 
 template <typename T>
@@ -116,11 +124,12 @@ void solveSystem(int argc, char const* argv[], bool isText, int maxIter, double 
     Vec<T> b(width);
     Vec<int> diags(numDiags);
 
-    readAndPrint(A, a_file, isText);
-    readAndPrint(diags, diags_file, isText); 
-    readAndPrint(b, b_file, isText);
+    Handle hand;
+    readAndPrint(A, a_file, isText, hand);
+    readAndPrint(diags, diags_file, isText, hand);
+    readAndPrint(b, b_file, isText, hand);
 
-    solveAndWriteOutput(A, diags, b, x_dest_file, isText, maxIter, epsilon);
+    solveAndWriteOutput(A, diags, b, x_dest_file, isText, maxIter, epsilon, hand);
 }
 
 /**

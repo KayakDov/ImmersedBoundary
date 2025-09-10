@@ -114,27 +114,22 @@ template <typename T>
 size_t GpuArray<T>::getLD() const { return _ld; }
 
 template <typename T>
-std::shared_ptr<void> GpuArray<T>::getPtr() { return _ptr; }
-
-template <typename T>
 void GpuArray<T>::mult(
     const GpuArray<T>& other,
     GpuArray<T>* result,
     Handle* handle,
-    Singleton<T>* alpha,
-    Singleton<T>* beta,
+    const Singleton<T> *alpha,
+    const Singleton<T> *beta,
     bool transposeA,
     bool transposeB
 ) const {
     
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-
     std::unique_ptr<Singleton<T>> temp_a_ptr;
-    Singleton<T>* a = _get_or_create_target(1, h, alpha, temp_a_ptr);
-
+    const Singleton<T>* a = _get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
     std::unique_ptr<Singleton<T>> temp_b_ptr;
-    Singleton<T>* b = _get_or_create_target(0, h, beta, temp_b_ptr);
+    const Singleton<T>* b = _get_or_create_target(static_cast<T>(0), *h, beta, temp_b_ptr);
 
     if constexpr (std::is_same_v<T, float>)
         cublasSgemm(h->handle,
@@ -154,7 +149,7 @@ void GpuArray<T>::mult(
         other.data(), other.getLD(),
         b->data(),
         result->data(), result->getLD());
-    else static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Vec::add unsupported type.");
+    else throw std::invalid_argument("Unsupported type.");
 
     
 }
@@ -198,6 +193,10 @@ Handle::~Handle() {
     CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 }
 
+void Handle::synch() const {
+    CHECK_CUDA_ERROR(cudaStreamSynchronize(this->stream));
+}
+
 template <typename T>
 Mat<T>* GpuArray<T>::_get_or_create_target(size_t rows, size_t cols, Mat<T>* result, std::unique_ptr<Mat<T>>& out_ptr_unique) const {
     if (result) return result;
@@ -217,11 +216,11 @@ Singleton<T>* GpuArray<T>::_get_or_create_target(Singleton<T>* result, std::uniq
 }
 
 template <typename T>
-Singleton<T>* GpuArray<T>::_get_or_create_target(T defVal, Handle& hand, Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) const {
+const Singleton<T>* GpuArray<T>::_get_or_create_target(T defaultVal, Handle& hand, const Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) const {
     if (result) return result;
     else {
         out_ptr_unique = std::make_unique<Singleton<T>>();
-        out_ptr_unique->set(static_cast<T>(defVal), hand.stream);
+        out_ptr_unique->set(defaultVal, hand.stream);
         return out_ptr_unique.get();
     }
 }
