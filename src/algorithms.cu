@@ -75,7 +75,7 @@ public:
             cublasSetPointerMode(h.handle, CUBLAS_POINTER_MODE_DEVICE);
     }
 
-    Vec<T> unpreconditionedBiCGSTAB(
+    Vec<T> solveUnpreconditionedBiCGSTAB(
         const Mat<T>& A, 
         const Vec<int>& diags, 
         Vec<T>* x = nullptr){
