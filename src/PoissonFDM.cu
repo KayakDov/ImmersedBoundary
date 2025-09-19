@@ -18,6 +18,7 @@
  * @param[in] width The interior grid width (without boundary).
  * @param[in] depth The interior grid depth (without boundary).
  * @param[in] idx The linear thread index, offset for front/back faces.
+ *
  */
 __device__ void setIndicesFrontBackFaces(size_t& layer, size_t& row, size_t& col, const size_t height, const size_t width, const size_t depth, size_t idx) {
     layer = idx < height * width ? 0 : depth - 1;
@@ -142,16 +143,17 @@ __global__ void setRHSKernel3D(T* __restrict__ b,
   * @param indices The index of each corresponding row.
   * @param numNonZeroDiags The number of rows in A.
   * @param widthA The width of matrix A
+  * TODO: exploit that A sparse may be simetrical across multiple axises,a_{i, j} = a_{j, i} and a_{hieght - i, width - j} = a_{j, i}
+  * TODO: Should the value of the diagonal be closer to 0 if some of the neighbors are off grid (as opposed to artaficially set to 0 which is already covered)
   */
  template <typename T>
 __global__ void setAKernel(T* __restrict__ A, const size_t ldA, const size_t primaryDiagonalRow,
     const size_t gHeight, const size_t gWidth, const size_t gDepth,
     const int32_t* indices, const size_t numNonZeroDiags, const size_t widthA
     ) {
-    const size_t gRow = blockIdx.x * blockDim.x + threadIdx.x;
-    const size_t gCol = blockIdx.y * blockDim.y + threadIdx.y;
+    const size_t gCol = blockIdx.x * blockDim.x + threadIdx.x;
+    const size_t gRow = blockIdx.y * blockDim.y + threadIdx.y;
     const size_t gLayer = blockIdx.z * blockDim.z + threadIdx.z;
-
 
     if (gRow >= gHeight || gCol >= gWidth || gLayer >= gDepth) return;
 
@@ -161,27 +163,30 @@ __global__ void setAKernel(T* __restrict__ A, const size_t ldA, const size_t pri
 
     for (size_t rowA = 0; rowA < numNonZeroDiags; ++rowA) {
         const int32_t d = indices[rowA];
-        if (primaryDiagonalRow != rowA && sparseARow + abs(d) < widthA && sparseARow >= -d){
-            const bool bottom = d == 1                 && gRow == gHeight - 1,
-                       top    = d == -1                && gRow == 0,
-                       left   = d == -gHeight          && gCol == 0,
-                       right  = d == gHeight           && gCol == gWidth - 1,
-                       front  = d == -gWidth * gHeight && gLayer == 0,
-                       back   = d == gWidth * gHeight  && gLayer == gDepth - 1;
+        if (d > 0) printf("before d = %d\n", d);
+        if (primaryDiagonalRow != rowA && sparseARow + abs(d) < widthA && (d >= 0 || sparseARow >= -d)){
+            if (d > 0) printf("before d = %d\n", d);
+            const bool bottom = d == 1                                       && gRow == gHeight - 1,
+                       top    = d == -1                                      && gRow == 0,
+                       left   = d == -static_cast<int32_t>(gHeight)          && gCol == 0,
+                       right  = d == static_cast<int32_t>(gHeight)           && gCol == gWidth - 1,
+                       front  = d == -static_cast<int32_t>(gWidth * gHeight) && gLayer == 0,
+                       back   = d == static_cast<int32_t>(gWidth * gHeight)  && gLayer == gDepth - 1;
 
-            // size_t writeInd = sparseARowXLdA + rowA + (d < 0 ? static_cast<int32_t>(ldA) * d : 0);
-            // printf("gRow=%zu gCol=%zu gLayer=%zu rowA=%zu d=%d writeInd=%zu maxA=%zu\n", gRow,gCol,gLayer,rowA,d, writeInd, ldA*numNonZeroDiags);
+            size_t writeInd = sparseARowXLdA + rowA + -(d < 0 ? ldA * (-d) : 0);
+            // printf("Accepted to 1st loop: loc=(%llu, %llu, %llu) rowA=%llu d=%d writeInd=%llu A dim =(%llu, %llu)\n\tBooleans: bottom=%d, top=%d, left=%d, right=%d, front=%d, back=%d\n",
+            //     (unsigned long long)gRow, (unsigned long long)gCol, (unsigned long long)gLayer,
+            //     (unsigned long long)rowA, d, (unsigned long long)writeInd, (unsigned long long)numNonZeroDiags, (unsigned long long)widthA,
+            //     (int)bottom, (int)top, (int)left, (int)right, (int)front, (int)back);
 
-            if (d < 0 && (bottom || right || back) || d > 0 && (top || left || front)){
 
 
-                printf("testBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
-
+            if (d > 0 && (bottom || right || back) || d < 0 && (top || left || front)){
 
                 A[sparseARowXLdA + rowA + (d < 0 ? static_cast<int32_t>(ldA) * d : 0)] = static_cast<T>(0);
                 A[primaryDiagonalInd] += static_cast<T>(1);
             }
-        }
+        } //else if (rowA != 0) printf("Rejected from 1st loop: gRow=%llu \tgCol=%llu \tgLayer=%llu \trowA=%llu \td=%d writeInd=%llu \tA height = %llu \tA width = %llu\n", (unsigned long long)gRow,(unsigned long long)gCol,(unsigned long long)gLayer,(unsigned long long)rowA,d, (unsigned long long)(numNonZeroDiags), (unsigned long long)widthA);
     }
 }
 
@@ -232,7 +237,7 @@ private:
         for (size_t i = 1; i < indices.size(); ++i) A.row(i).fill(1, handle.stream);
 
         dim3 block(8, 8, 8);
-        dim3 grid = makeGridDim(_cols, _rows, _layers, block);
+        dim3 grid = makeGridDim( _cols, _rows, _layers, block);
 
         // kernel launch
         setAKernel<T><<<grid, block, 0, handle.stream>>>(
@@ -253,7 +258,9 @@ private:
 
         const size_t numNonZeroDiags = 7;
         Vec<int32_t> indices = Vec<int32_t>::create(numNonZeroDiags, handle.stream);
-        int32_t indiciesCpu[numNonZeroDiags] = {static_cast<int32_t>(0), static_cast<int32_t>(1), static_cast<int32_t>(-1), static_cast<int32_t>(_rows), static_cast<int32_t>(-_rows), static_cast<int32_t>(_rows * _cols), static_cast<int32_t>(-_rows * _cols)};
+        int32_t indiciesCpu[numNonZeroDiags] = {static_cast<int32_t>(0), static_cast<int32_t>(1), static_cast<int32_t>(-1),
+            static_cast<int32_t>(_rows), static_cast<int32_t>(-_rows), static_cast<int32_t>(_rows * _cols),
+            static_cast<int32_t>(-_rows * _cols)};
         indices.set(indiciesCpu, handle.stream);
 
         Mat<T> A = setA3d(indices, handle);
