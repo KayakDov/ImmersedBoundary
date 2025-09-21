@@ -123,12 +123,12 @@ __global__ void setRHSKernel3D(T* __restrict__ b,
     else if (!setIndicesTopBottomFaces(layer, row, col, gHeight, gWidth, gDepth, idx)) return;
 
     b[row + (col + layer * gWidth) * gHeight] -=
-          (row == 0           ? topBottom[col*tbLd + layer]                         : 0)
-        + (row == gHeight - 1  ? topBottom[col*tbLd + layer + tbBlockSize/2]              : 0)
-        + (col == 0           ? leftRight[(gDepth - 1 - layer)*lrLd + row]           : 0)
-        + (col == gWidth - 1   ? leftRight[(gDepth -1 - layer)*lrLd + row + lrBlockSize/2] : 0)
-        + (layer == 0         ? frontBack[col*fbLd + row]                           : 0)
-        + (layer == gDepth - 1 ? frontBack[col*fbLd + row + fbBlockSize/2]                : 0);
+          (row == 0            ? topBottom[col*tbLd + layer]                               : 0)
+        + (row == gHeight - 1  ? topBottom[col*tbLd + layer + gWidth*tbLd]               : 0)
+        + (col == 0            ? leftRight[(gDepth - 1 - layer)*lrLd + row]                : 0)
+        + (col == gWidth - 1   ? leftRight[(gDepth -1 - layer)*lrLd + row + gDepth*lrLd] : 0)
+        + (layer == 0          ? frontBack[col*fbLd + row]                                 : 0)
+        + (layer == gDepth - 1 ? frontBack[col*fbLd + row + gWidth * tbLd]                 : 0);
 }
 
  /**
@@ -160,12 +160,15 @@ __global__ void setAKernel(T* __restrict__ A, const size_t ldA, const size_t pri
     const size_t sparseARow = (gLayer * gWidth + gCol) * gHeight + gRow;
     const size_t sparseARowXLdA =  sparseARow * ldA;
     const size_t primaryDiagonalInd = sparseARowXLdA + primaryDiagonalRow;
+    A[primaryDiagonalInd] = static_cast<int32_t>(1) - static_cast<int32_t>(numNonZeroDiags);
 
     for (size_t rowA = 0; rowA < numNonZeroDiags; ++rowA) {
         const int32_t d = indices[rowA];
-        if (d > 0) printf("before d = %d\n", d);
+
+        size_t writeInd = sparseARowXLdA + rowA + (d < 0 ? static_cast<int32_t>(ldA) * d : 0);
+
         if (primaryDiagonalRow != rowA && sparseARow + abs(d) < widthA && (d >= 0 || sparseARow >= -d)){
-            if (d > 0) printf("before d = %d\n", d);
+
             const bool bottom = d == 1                                       && gRow == gHeight - 1,
                        top    = d == -1                                      && gRow == 0,
                        left   = d == -static_cast<int32_t>(gHeight)          && gCol == 0,
@@ -173,20 +176,12 @@ __global__ void setAKernel(T* __restrict__ A, const size_t ldA, const size_t pri
                        front  = d == -static_cast<int32_t>(gWidth * gHeight) && gLayer == 0,
                        back   = d == static_cast<int32_t>(gWidth * gHeight)  && gLayer == gDepth - 1;
 
-            size_t writeInd = sparseARowXLdA + rowA + -(d < 0 ? ldA * (-d) : 0);
-            // printf("Accepted to 1st loop: loc=(%llu, %llu, %llu) rowA=%llu d=%d writeInd=%llu A dim =(%llu, %llu)\n\tBooleans: bottom=%d, top=%d, left=%d, right=%d, front=%d, back=%d\n",
-            //     (unsigned long long)gRow, (unsigned long long)gCol, (unsigned long long)gLayer,
-            //     (unsigned long long)rowA, d, (unsigned long long)writeInd, (unsigned long long)numNonZeroDiags, (unsigned long long)widthA,
-            //     (int)bottom, (int)top, (int)left, (int)right, (int)front, (int)back);
-
-
-
             if (d > 0 && (bottom || right || back) || d < 0 && (top || left || front)){
 
-                A[sparseARowXLdA + rowA + (d < 0 ? static_cast<int32_t>(ldA) * d : 0)] = static_cast<T>(0);
+                A[writeInd] = static_cast<T>(0);
                 A[primaryDiagonalInd] += static_cast<T>(1);
-            }
-        } //else if (rowA != 0) printf("Rejected from 1st loop: gRow=%llu \tgCol=%llu \tgLayer=%llu \trowA=%llu \td=%d writeInd=%llu \tA height = %llu \tA width = %llu\n", (unsigned long long)gRow,(unsigned long long)gCol,(unsigned long long)gLayer,(unsigned long long)rowA,d, (unsigned long long)(numNonZeroDiags), (unsigned long long)widthA);
+            } else A[writeInd] = static_cast<T>(1);
+        } else if (primaryDiagonalRow != rowA) A[writeInd] = static_cast<T>(1); //else if (rowA != 0) printf("Rejected from 1st loop: gRow=%llu \tgCol=%llu \tgLayer=%llu \trowA=%llu \td=%d writeInd=%llu \tA height = %llu \tA width = %llu\n", (unsigned long long)gRow,(unsigned long long)gCol,(unsigned long long)gLayer,(unsigned long long)rowA,d, (unsigned long long)(numNonZeroDiags), (unsigned long long)widthA);
     }
 }
 
@@ -211,6 +206,8 @@ private:
             _rows, _cols, _layers);
 
         CHECK_CUDA_ERROR(cudaGetLastError());
+
+        std::cout << "PoissonFDM setB3d \n" << _b << std::endl;
     }
 
     static inline dim3 makeGridDim(size_t x, size_t y, size_t z, dim3 block) {
@@ -222,28 +219,23 @@ private:
     /**
      * @brief Launch kernel that assembles A in banded/dense storage.
      *
-     * @param Adata device pointer to A storage (node-major; stride ldA).
-     * @param ldA leading dimension (stride per node) of A.
-     * @param primaryDiagonalRow the stored row index that is the main diagonal.
      * @param indices device pointer to the int32_t offsets array (length numNonZeroDiags).
-     * @param numNonZeroDiags number of stored diagonals (rows per node).
      * @param handle contains the stream to run on.
      */
-    Mat<T> setA3d(Vec<int32_t> indices, Handle& handle) {
+    Mat<T> setA3d(int32_t indices[], size_t numInds, Handle& handle) {
 
-        Mat<T> A = Mat<T>::create(indices.size(), _b.size());
-
-        A.row(0).fill(-6, handle.stream);
-        for (size_t i = 1; i < indices.size(); ++i) A.row(i).fill(1, handle.stream);
+        Mat<T> A = Mat<T>::create(numInds, _b.size());
 
         dim3 block(8, 8, 8);
         dim3 grid = makeGridDim( _cols, _rows, _layers, block);
 
-        // kernel launch
+        Vec<int32_t> inds = Vec<int32_t>::create(numInds, handle.stream);
+        inds.set(indices, handle.stream);
+
         setAKernel<T><<<grid, block, 0, handle.stream>>>(
             A.data(), A._ld, size_t(0),
             _rows, _cols, _layers,
-            indices.data(), indices.size(), A._cols
+            inds.data(), numInds, A._cols
         );
         CHECK_CUDA_ERROR(cudaGetLastError());
 
@@ -258,12 +250,12 @@ private:
 
         const size_t numNonZeroDiags = 7;
         Vec<int32_t> indices = Vec<int32_t>::create(numNonZeroDiags, handle.stream);
-        int32_t indiciesCpu[numNonZeroDiags] = {static_cast<int32_t>(0), static_cast<int32_t>(1), static_cast<int32_t>(-1),
+        int32_t indicesCpu[numNonZeroDiags] = {static_cast<int32_t>(0), static_cast<int32_t>(1), static_cast<int32_t>(-1),
             static_cast<int32_t>(_rows), static_cast<int32_t>(-_rows), static_cast<int32_t>(_rows * _cols),
             static_cast<int32_t>(-_rows * _cols)};
-        indices.set(indiciesCpu, handle.stream);
 
-        Mat<T> A = setA3d(indices, handle);
+
+        Mat<T> A = setA3d(indicesCpu, numNonZeroDiags, handle);
         setB3d(handle.stream);
 
         std::cout << "Poisison::solve3d A = " << std::endl << A << std::endl;
@@ -297,7 +289,20 @@ public:
      Handle hand;
      Mat<float> frontBack = Mat<float>::create(2, 4), leftRight = Mat<float>::create(2, 4), topBottom = Mat<float>::create(2, 4);
      Vec<float> b = Vec<float>::create(8, hand.stream);
-     float bCpu[] = {0, 0, 0, 0, 0, 0, 0, 0}, frontBackCpu[] = {-1, 0, 0, 1, 2, 3, 3, 4}, leftRightCpu[] = {1, 0, 0, -1, 4, 3, 3, 2}, topBottomCpu[] = {2, 1, 1, 0, -1, -2, -2, -3};
+     // float bCpu[] = {0, 0, 0, 0, 0, 0, 0, 0},
+     //    frontBackCpu[] = {-1, 0, 0, 1, 2, 3, 3, 4},
+     //    leftRightCpu[] = {1, 0, 0, -1, 4, 3, 3, 2},
+     //    topBottomCpu[] = {2, 1, 1, 0, -1, -2, -2, -3};
+
+     float bCpu[] = {0, 0, 0, 0, 0, 0, 0, 0},
+             frontBackCpu[] = {-1, -1, -1, -1,
+                                                1, 1, 1, 1},
+             leftRightCpu[] = {-2, -2, -2, -2,
+                                                2, 2, 2, 2},
+             topBottomCpu[] = {-3, -3, -3, -3,
+                                                3, 3, 3, 3};
+
+
      b.set(bCpu, hand.stream);
      frontBack.set(frontBackCpu, hand.stream);
      leftRight.set(leftRightCpu, hand.stream);
