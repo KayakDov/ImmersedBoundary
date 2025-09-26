@@ -57,7 +57,7 @@ public:
     explicit BiCGSTAB(
         const Vec<T>& b,
         T tolerance = std::is_same_v<T,double> ? T(1e-12) : T(1e-6),
-        size_t maxIterations = static_cast<size_t>(-1),
+        size_t maxIterations = 0,
         Mat<T>* preAllocated = nullptr
     ):tolerance(tolerance),
       b(b),
@@ -69,7 +69,7 @@ public:
     {
         static_assert(std::is_same_v<T,float> || std::is_same_v<T,double>,
                 "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
-        if(maxIterations == static_cast<size_t>(-1)) maxIterations = b.size()*5;
+        if(this->maxIterations == 0) this->maxIterations = b.size()*5;
         cudaDeviceSynchronize();
         for (const auto& h : handle)
             cublasSetPointerMode(h.handle, CUBLAS_POINTER_MODE_DEVICE);

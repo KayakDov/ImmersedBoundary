@@ -40,6 +40,7 @@ template <typename T>
 const Singleton<T> Singleton<T>::MINUS_ONE = Singleton<T>::create(static_cast<T>(-1));
 
 
-template class Singleton<int>;
+template class Singleton<int32_t>;
+template class Singleton<size_t>;
 template class Singleton<float>;
 template class Singleton<double>;

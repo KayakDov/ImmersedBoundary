@@ -79,6 +79,9 @@ __device__ bool setIndicesTopBottomFaces(size_t& layer, size_t& row, size_t& col
     row = idx < depth * width ? 0 : height - 1;
     return true;
 }
+
+
+
 /**
  * @brief CUDA kernel to apply boundary conditions to the right-hand side of a 3D Poisson problem.
  *
@@ -123,33 +126,42 @@ __global__ void setRHSKernel3D(T* __restrict__ b,
     else if (!setIndicesTopBottomFaces(layer, row, col, gHeight, gWidth, gDepth, idx)) return;
 
     b[row + (col + layer * gWidth) * gHeight] -=
-          (row == 0            ? topBottom[col*tbLd + layer]                               : 0)
-        + (row == gHeight - 1  ? topBottom[col*tbLd + layer + gWidth*tbLd]               : 0)
+          (row == 0            ? topBottom[col*tbLd + (gDepth - 1 - layer)]                               : 0)
+        + (row == gHeight - 1  ? topBottom[col*tbLd + (gDepth - 1 - layer) + gWidth*tbLd]  : 0)
         + (col == 0            ? leftRight[(gDepth - 1 - layer)*lrLd + row]                : 0)
-        + (col == gWidth - 1   ? leftRight[(gDepth -1 - layer)*lrLd + row + gDepth*lrLd] : 0)
+        + (col == gWidth - 1   ? leftRight[(gDepth -1 - layer)*lrLd + row + gDepth*lrLd]   : 0)
         + (layer == 0          ? frontBack[col*fbLd + row]                                 : 0)
         + (layer == gDepth - 1 ? frontBack[col*fbLd + row + gWidth * tbLd]                 : 0);
 }
 
- /**
-  * We assume A comes in with the primary diagonal set to 4 or 6 and all other diagonals set to 1.
-  * @tparam T double or float
-  * @param A Matrix A is stored in a dense (banded) format, where each row corresponds to one diagonal (offset given by indices).
-  * @param ldA
-  * @param primaryDiagonalRow The row that the primary diagonal index is on.
-  * @param gHeight The height of the grid.
-  * @param gWidth The width of the grid.
-  * @param gDepth The depth of the grid.
-  * @param indices The index of each corresponding row.
-  * @param numNonZeroDiags The number of rows in A.
-  * @param widthA The width of matrix A
-  * TODO: exploit that A sparse may be simetrical across multiple axises,a_{i, j} = a_{j, i} and a_{hieght - i, width - j} = a_{j, i}
-  * TODO: Should the value of the diagonal be closer to 0 if some of the neighbors are off grid (as opposed to artaficially set to 0 which is already covered)
-  */
- template <typename T>
-__global__ void setAKernel(T* __restrict__ A, const size_t ldA, const size_t primaryDiagonalRow,
+
+template <typename T>
+class Set0 {
+private:
+    const size_t* mapDiagIndextoARow;
+    T* __restrict__ A;
+    const size_t ldA, idGrid, widthA, colXLda;
+public:
+    __device__ Set0(const size_t* mapDiagIndextoARow, T* __restrict__ A, const size_t ldA, const size_t idGrid, const size_t widthA) :
+        mapDiagIndextoARow(mapDiagIndextoARow), A(A), ldA(ldA), idGrid(idGrid), widthA(widthA), colXLda(idGrid * ldA) {}
+
+    __device__ void operator()(const int32_t rowDiagonalIndex) {
+        // ++A[colXLda + mapDiagIndextoARow[0]];
+
+        const size_t col = ((static_cast<int32_t>(idGrid) + min(rowDiagonalIndex , 0)) % static_cast<int32_t>(widthA) + static_cast<int32_t>(widthA)) % widthA;
+        const size_t indexA = col * ldA + mapDiagIndextoARow[rowDiagonalIndex];
+
+        if (col < widthA - abs(rowDiagonalIndex)) A[indexA] = static_cast<T>(0);
+        else A[indexA] = NAN;
+    }
+};
+
+
+
+template <typename T>
+__global__ void setAKernel3d(T* __restrict__ A, const size_t ldA, const size_t widthA,
     const size_t gHeight, const size_t gWidth, const size_t gDepth,
-    const int32_t* indices, const size_t numNonZeroDiags, const size_t widthA
+    const size_t* mapDiagIndextoARow
     ) {
     const size_t gCol = blockIdx.x * blockDim.x + threadIdx.x;
     const size_t gRow = blockIdx.y * blockDim.y + threadIdx.y;
@@ -157,32 +169,18 @@ __global__ void setAKernel(T* __restrict__ A, const size_t ldA, const size_t pri
 
     if (gRow >= gHeight || gCol >= gWidth || gLayer >= gDepth) return;
 
-    const size_t sparseARow = (gLayer * gWidth + gCol) * gHeight + gRow;
-    const size_t sparseARowXLdA =  sparseARow * ldA;
-    const size_t primaryDiagonalInd = sparseARowXLdA + primaryDiagonalRow;
-    A[primaryDiagonalInd] = static_cast<int32_t>(1) - static_cast<int32_t>(numNonZeroDiags);
+    const size_t idGrid = (gLayer * gWidth + gCol) * gHeight + gRow;
 
-    for (size_t rowA = 0; rowA < numNonZeroDiags; ++rowA) {
-        const int32_t d = indices[rowA];
+    A[idGrid*ldA + mapDiagIndextoARow[0]] = -6;
+    Set0<T> set0(mapDiagIndextoARow, A, ldA, idGrid, widthA);
 
-        size_t writeInd = sparseARowXLdA + rowA + (d < 0 ? static_cast<int32_t>(ldA) * d : 0);
+    if (gRow == 0) set0(-1);
+    else if (gRow == gHeight - 1) set0(1);
+    if (gCol == 0) set0(-static_cast<int32_t>(gHeight));
+    else if (gCol == gWidth - 1) set0(gHeight);
+    if (gLayer == 0) set0(-static_cast<int32_t>(gWidth * gHeight));
+    else if (gLayer == gDepth - 1) set0(gWidth * gHeight);
 
-        if (primaryDiagonalRow != rowA && sparseARow + abs(d) < widthA && (d >= 0 || sparseARow >= -d)){
-
-            const bool bottom = d == 1                                       && gRow == gHeight - 1,
-                       top    = d == -1                                      && gRow == 0,
-                       left   = d == -static_cast<int32_t>(gHeight)          && gCol == 0,
-                       right  = d == static_cast<int32_t>(gHeight)           && gCol == gWidth - 1,
-                       front  = d == -static_cast<int32_t>(gWidth * gHeight) && gLayer == 0,
-                       back   = d == static_cast<int32_t>(gWidth * gHeight)  && gLayer == gDepth - 1;
-
-            if (d > 0 && (bottom || right || back) || d < 0 && (top || left || front)){
-
-                A[writeInd] = static_cast<T>(0);
-                A[primaryDiagonalInd] += static_cast<T>(1);
-            } else A[writeInd] = static_cast<T>(1);
-        } else if (primaryDiagonalRow != rowA) A[writeInd] = static_cast<T>(1); //else if (rowA != 0) printf("Rejected from 1st loop: gRow=%llu \tgCol=%llu \tgLayer=%llu \trowA=%llu \td=%d writeInd=%llu \tA height = %llu \tA width = %llu\n", (unsigned long long)gRow,(unsigned long long)gCol,(unsigned long long)gLayer,(unsigned long long)rowA,d, (unsigned long long)(numNonZeroDiags), (unsigned long long)widthA);
-    }
 }
 
 template <typename T>
@@ -191,7 +189,11 @@ private:
     const Mat<T> _frontBack, _leftRight, _topBottom;
     Vec<T> _b;
     const size_t _rows, _cols, _layers;
-
+public:
+    [[nodiscard]] size_t gridSize() const {
+        return _rows * _cols * _layers;
+    }
+private:
     void setB3d(cudaStream_t stream) {
         const size_t totalThreadsNeeded = (_frontBack.size() + _leftRight.size() + _topBottom.size());
 
@@ -207,7 +209,6 @@ private:
 
         CHECK_CUDA_ERROR(cudaGetLastError());
 
-        std::cout << "PoissonFDM setB3d \n" << _b << std::endl;
     }
 
     static inline dim3 makeGridDim(size_t x, size_t y, size_t z, dim3 block) {
@@ -222,20 +223,18 @@ private:
      * @param indices device pointer to the int32_t offsets array (length numNonZeroDiags).
      * @param handle contains the stream to run on.
      */
-    Mat<T> setA3d(int32_t indices[], size_t numInds, Handle& handle) {
+    Mat<T> setA3d(Vec<size_t> mapDiagIndexToARow, size_t numInds, Handle& handle) {
 
         Mat<T> A = Mat<T>::create(numInds, _b.size());
+        A.subMat(1, 0, A._rows - 1, A._cols).fill(1, handle.stream);
 
         dim3 block(8, 8, 8);
         dim3 grid = makeGridDim( _cols, _rows, _layers, block);
 
-        Vec<int32_t> inds = Vec<int32_t>::create(numInds, handle.stream);
-        inds.set(indices, handle.stream);
-
-        setAKernel<T><<<grid, block, 0, handle.stream>>>(
-            A.data(), A._ld, size_t(0),
+        setAKernel3d<T><<<grid, block, 0, handle.stream>>>(
+            A.data(), A._ld, A._cols,
             _rows, _cols, _layers,
-            inds.data(), numInds, A._cols
+            mapDiagIndexToARow.data() + gridSize()
         );
         CHECK_CUDA_ERROR(cudaGetLastError());
 
@@ -249,19 +248,32 @@ private:
     void solve3d(Vec<T>& x, Handle& handle) {
 
         const size_t numNonZeroDiags = 7;
-        Vec<int32_t> indices = Vec<int32_t>::create(numNonZeroDiags, handle.stream);
-        int32_t indicesCpu[numNonZeroDiags] = {static_cast<int32_t>(0), static_cast<int32_t>(1), static_cast<int32_t>(-1),
-            static_cast<int32_t>(_rows), static_cast<int32_t>(-_rows), static_cast<int32_t>(_rows * _cols),
-            static_cast<int32_t>(-_rows * _cols)};
+        Vec<int32_t> mapARowToDiagnalInd = Vec<int32_t>::create(numNonZeroDiags, handle.stream);
+        int32_t mapRowToDiagCpu[numNonZeroDiags] = {static_cast<int32_t>(0), static_cast<int32_t>(1), static_cast<int32_t>(-1),
+            static_cast<int32_t>(_rows), -static_cast<int32_t>(_rows), static_cast<int32_t>(_rows * _cols),
+            -static_cast<int32_t>(_rows * _cols)};
+        mapARowToDiagnalInd.set(mapRowToDiagCpu, handle.stream);
 
+        size_t mapDiagToRowCpu[2*gridSize()];
+        for (size_t i = 0; i < numNonZeroDiags; ++i) mapDiagToRowCpu[mapRowToDiagCpu[i] + gridSize()] = i;
+        Vec<size_t> mapDiagToRow = Vec<size_t>::create(2*gridSize(), handle.stream);\
+        mapDiagToRow.set(mapDiagToRowCpu, handle.stream);
 
-        Mat<T> A = setA3d(indicesCpu, numNonZeroDiags, handle);
+        Mat<T> A = setA3d(mapDiagToRow, numNonZeroDiags, handle);
         setB3d(handle.stream);
 
-        std::cout << "Poisison::solve3d A = " << std::endl << A << std::endl;
-
         BiCGSTAB<T> solver(_b);
-        solver.solveUnpreconditionedBiCGSTAB(A, indices, &x);
+
+        std::cout << "PoissonFDM.cu::solve3d" << std::endl;
+        std::cout << "Solving 3D Poisson problem with " << _rows << " rows, " << _cols << " cols, " << _layers << " layers" << std::endl;
+        std::cout << "topBottom:\n" << _topBottom << std::endl;
+        std::cout << "leftRight:\n" << _leftRight << std::endl;
+        std::cout << "frontBack:\n" << _frontBack << std::endl;
+        std::cout << "indices = " << std::endl << mapARowToDiagnalInd << std::endl;
+        std::cout << "A = " << std::endl << A << std::endl;
+        std::cout << "b = " << _b << std::endl;
+
+        solver.solveUnpreconditionedBiCGSTAB(A, mapARowToDiagnalInd, &x);
 
     }
 
@@ -285,36 +297,27 @@ public:
 
 };
 
- int main(int argc, char *argv[]) {
-     Handle hand;
-     Mat<float> frontBack = Mat<float>::create(2, 4), leftRight = Mat<float>::create(2, 4), topBottom = Mat<float>::create(2, 4);
-     Vec<float> b = Vec<float>::create(8, hand.stream);
-     // float bCpu[] = {0, 0, 0, 0, 0, 0, 0, 0},
-     //    frontBackCpu[] = {-1, 0, 0, 1, 2, 3, 3, 4},
-     //    leftRightCpu[] = {1, 0, 0, -1, 4, 3, 3, 2},
-     //    topBottomCpu[] = {2, 1, 1, 0, -1, -2, -2, -3};
+int main(int argc, char *argv[]) {
+    Handle hand;
+    Mat<double> frontBack = Mat<double>::create(2, 4), leftRight = Mat<double>::create(2, 4), topBottom = Mat<double>::create(2, 4);
+    Vec<double> b = Vec<double>::create(8, hand.stream);
+   const double bCpu[] = {0, 0, 0, 0, 0, 0, 0, 0},
+       frontBackCpu[] = {3, 3, 3, 3, 0, 0, 0, 0},
+       leftRightCpu[] = {1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0},
+       topBottomCpu[] = {1, 2, 1, 2, 1, 2, 1, 2};
 
-     float bCpu[] = {0, 0, 0, 0, 0, 0, 0, 0},
-             frontBackCpu[] = {-1, -1, -1, -1,
-                                                1, 1, 1, 1},
-             leftRightCpu[] = {-2, -2, -2, -2,
-                                                2, 2, 2, 2},
-             topBottomCpu[] = {-3, -3, -3, -3,
-                                                3, 3, 3, 3};
+    b.set(bCpu, hand.stream);
+    frontBack.set(frontBackCpu, hand.stream);
+    leftRight.set(leftRightCpu, hand.stream);
+    topBottom.set(topBottomCpu, hand.stream);
 
+    PoissonFDM<double> solver(frontBack, leftRight, topBottom, b);
+    Vec<double> x = Vec<double>::create(8, hand.stream);
+    solver.solve(x, hand);
+    std::cout << x << std::endl;
 
-     b.set(bCpu, hand.stream);
-     frontBack.set(frontBackCpu, hand.stream);
-     leftRight.set(leftRightCpu, hand.stream);
-     topBottom.set(topBottomCpu, hand.stream);
-
-     PoissonFDM<float> solver(frontBack, leftRight, topBottom, b);
-     Vec<float> x = Vec<float>::create(8, hand.stream);
-     solver.solve(x, hand);
-     std::cout << x << std::endl;
-
-     return 0;
- }
+    return 0;
+}
 
 
 #endif //BICGSTAB_POISSONFDM_CUH

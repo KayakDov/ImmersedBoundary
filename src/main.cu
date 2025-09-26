@@ -89,7 +89,7 @@ template <typename T>
 void solveAndWriteOutput(Mat<T>& A, const Vec<int32_t>& diags, Vec<T>& b, const string& x_dest_file, const bool isText, size_t maxIter, double epsilon, Handle& handle) {
     Vec<T> x = Vec<T>::create(b.size(), handle.stream);
     BiCGSTAB setup(b, static_cast<T>(epsilon), maxIter);
-    setup.solveUnpreconditionedBiCGSTAB1(A, diags, &x);
+    setup.solveUnpreconditionedBiCGSTAB(A, diags, &x);
 
     ofstream x_fs(x_dest_file);
     if (!x_fs.is_open()) throw runtime_error("Could not open destination file: " + x_dest_file);

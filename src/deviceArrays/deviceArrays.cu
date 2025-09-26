@@ -261,21 +261,25 @@ Handle* Handle::_get_or_create_handle(Handle* handle, std::unique_ptr<Handle>& o
 }
 
 // CuFileHelper
-template class StreamHelper<int>;
 template class StreamHelper<float>;
 template class StreamHelper<double>;
+template class StreamHelper<int32_t>;
+template class StreamHelper<size_t>;
 
 // SetFromFile
-template class StreamSet<int>;
 template class StreamSet<float>;
 template class StreamSet<double>;
+template class StreamSet<int32_t>;
+template class StreamSet<size_t>;
 
 // GetToFile
-template class StreamGet<int>;
 template class StreamGet<float>;
 template class StreamGet<double>;
+template class StreamGet<int32_t>;
+template class StreamGet<size_t>;
 
 // CuArray
-template class GpuArray<int>;
 template class GpuArray<float>;
 template class GpuArray<double>;
+template class GpuArray<int32_t>;
+template class GpuArray<size_t>;

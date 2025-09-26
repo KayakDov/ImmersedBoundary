@@ -501,6 +501,7 @@ Vec<T> Mat<T>::row(const size_t index){
     return Vec<T>(this->_cols, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index), this->_ld);
 }
 
-template class Mat<int>;
 template class Mat<float>;
 template class Mat<double>;
+template class Mat<size_t>;
+template class Mat<int32_t>;
