@@ -16,7 +16,10 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/Tensor.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/Tensor.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/Tensor.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/Vec.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/Vec.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/Vec.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/deviceArrays.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/handle.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/testMethods.cu" "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/streamHelper.cpp" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o.d"
+  "" "PoissonFDM" "gcc" "CMakeFiles/PoissonFDM.dir/link.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

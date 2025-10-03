@@ -1,6 +1,19 @@
 #include "deviceArrays.h"
-#include "deviceArrays.h"
+#include <cusolverDn.h>
+#include <stdexcept>
+#include <sstream>
 
+
+#define CHECK_CUSOLVER_ERROR(func) \
+    do { \
+        cusolverStatus_t status = (func); \
+        if (status != CUSOLVER_STATUS_SUCCESS) { \
+            throw std::runtime_error( \
+                "cuSOLVER error: " + std::to_string(status) + \
+                " at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) \
+                ); \
+        } \
+    } while (0)
 
 template <typename T>
 Mat<T> Mat<T>::mult(
@@ -313,27 +326,27 @@ void Mat<T>::mult(const Singleton<T>& alpha, Handle* handle) {
 template <typename T>
 __global__ void diagMatVecKernel(
     const T* __restrict__ A, // packed diagonals
-    const int height, const int ld,
+    const size_t height, const size_t ld,
     
     const int* __restrict__ diags, // which diagonals
-    const int numDiags,
+    const size_t numDiags,
 
     const T* __restrict__ x,      // input vector
-    const int strideX,
+    const size_t strideX,
     
     T* __restrict__ result,       // output vecto
-    const int strideR,
+    const size_t strideR,
 
     const T* alpha,
     const T* beta
 ){
-    const int rowX = blockIdx.x;
-    const int rowA = threadIdx.x;
+    const size_t rowX = blockIdx.x;
+    const size_t rowA = threadIdx.x;
     const bool isValid = rowX < height && rowA < numDiags;
     T val;
     if (isValid){//TODO: this condition can be removed by requiring input matrices have exactly 32 rows, with extra rows having all 0's.  This may give a small speed boost.       
-        const int d = diags[rowA];
-        int colA = rowX;
+        const int32_t d = diags[rowA];
+        int32_t colA = rowX;
         if(d < 0) colA += d;
         val = 0 <= colA && colA < height - abs(d) ? A[colA*ld + rowA] * x[(rowX + d) * strideX] : 0;
     } else val = 0;
@@ -341,7 +354,7 @@ __global__ void diagMatVecKernel(
     for (int offset = 16; offset > 0; offset >>= 1)
         val += __shfl_down_sync(0xFFFFFFFF, val, offset);
     
-    int indR = rowX * strideR;
+    size_t indR = rowX * strideR;
 
     if(isValid && rowA == 0) result[indR] = *alpha * val + *beta * result[indR];
 }
@@ -501,7 +514,169 @@ Vec<T> Mat<T>::row(const size_t index){
     return Vec<T>(this->_cols, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index), this->_ld);
 }
 
+// Assuming you have a standard Deleter for cudaFree
+struct cudaFreeDeleter {
+    void operator()(void* ptr) const {
+        if (ptr) cudaFree(ptr);
+    }
+};
+/**
+ * @brief Check cuSOLVER `info` result and throw if an error occurred.
+ *
+ * @param info_dev  Device-side info object returned from cusolverDnXgeev.
+ * @param context   Optional string to add context to the exception message.
+ *
+ * @throws std::runtime_error if info != 0.
+ */
+inline void processInfo(const Singleton<int32_t>& info_dev,
+                        const std::string& context = "cusolverDnXgeev")
+{
+    int info_host = info_dev.get();
+
+    if (info_host == 0) return;
+
+    std::ostringstream msg;
+    msg << "cuSOLVER error in " << context << ": info = " << info_host << ". ";
+
+    switch (info_host) {
+        case -1: msg << "Parameter 1 (handle) had an illegal value."; break;
+        case -2: msg << "Parameter 2 (jobvl/jobvr) had an illegal value."; break;
+        case -3: msg << "Parameter 3 (n, matrix size) had an illegal value."; break;
+        case -4: msg << "Parameter 4 (A pointer/lda) had an illegal value."; break;
+        case -5: msg << "Parameter 5 (W/eigenvalue array) had an illegal value."; break;
+        case -6: msg << "Parameter 6 (VL matrix pointer/ldvl) had an illegal value."; break;
+        case -7: msg << "Parameter 7 (VR matrix pointer/ldvr) had an illegal value."; break;
+        case -8: msg << "Parameter 8 (workspace pointer/size) had an illegal value."; break;
+            // You can extend this mapping based on full cusolverDnXgeev docs.
+        default:
+            if (info_host > 0) {
+                msg << "The QR algorithm failed to compute all eigenvalues. "
+                    << info_host << " off-diagonal elements of the Hessenberg "
+                    << "matrix did not converge to zero.";
+            } else {
+                msg << "Unknown negative parameter error.";
+            }
+            break;
+    }
+
+    throw std::runtime_error(msg.str());
+}
+
+
+// Wrapper for cusolverDnXgeev
+template <typename T>
+void Mat<T>::eigen(
+    Vec<T>& eVals,     // Real part of eigenvalues
+    Mat<T>* eVecs,      // Eigenvectors (stored as real/imaginary parts)  Set to null if vectors should not be computed.
+    Mat<T>* temp,        // Optional pre-allocated temporary matrix to use for the eigenvalue computation.  It should be the same size as this matrix.
+    Handle* handle
+) const {
+    if (this->_rows != this->_cols)
+        throw std::invalid_argument("Eigenvalue computation requires a square matrix.");
+
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+
+    auto n = static_cast<int64_t>(this->_rows);
+    int info = 0;
+
+    std::unique_ptr<Mat<T>> temp_mat_ptr;
+    Mat<T>* copy = this->_get_or_create_target(n, n, temp, temp_mat_ptr);
+    this->get(*copy, h->stream);
+
+    std::unique_ptr<Vec<T>> temp_reEVal;
+    Vec<T>* eValsPtr = this->_get_or_create_target(2*n, &eVals, temp_reEVal, h->stream);
+
+    size_t workDeviceBytes, workHostBytes;
+    cudaDataType_t dataType;
+    if constexpr (std::is_same_v<T, float>) dataType = CUDA_R_32F;
+    else if constexpr (std::is_same_v<T, double>) dataType = CUDA_R_64F;
+    else throw std::invalid_argument("Unsupported type for cusolverDnXgeev.");
+
+    cusolverEigMode_t findVectors = eVecs != nullptr ? CUSOLVER_EIG_MODE_VECTOR : CUSOLVER_EIG_MODE_NOVECTOR;
+
+    CHECK_CUSOLVER_ERROR(cusolverDnXgeev_bufferSize(
+        h->cusolverHandle, nullptr,
+        CUSOLVER_EIG_MODE_NOVECTOR, findVectors, n,
+        dataType, copy->data(), copy->getLD(),
+        dataType, eValsPtr->data(),
+        dataType, nullptr, n,
+        dataType, eVecs == nullptr ? nullptr : eVecs->data(), eVecs == nullptr? n : eVecs->getLD(),
+        dataType,
+        &workDeviceBytes,
+        &workHostBytes
+        ));
+
+    Vec<uint8_t> workspaceDevice = Vec<uint8_t>::create(workDeviceBytes, h->stream);
+    std::vector<uint8_t> workspaceHost(workHostBytes);
+    Singleton<int32_t> info_dev = Singleton<int32_t>::create(h->stream);
+
+    CHECK_CUSOLVER_ERROR(cusolverDnXgeev(
+        h->cusolverHandle, nullptr,
+        CUSOLVER_EIG_MODE_NOVECTOR, findVectors, n,
+        dataType, copy->data(), copy->getLD(),
+        dataType, eValsPtr->data(),
+        dataType, nullptr, n,
+        dataType, eVecs == nullptr ? nullptr : eVecs->data(), eVecs == nullptr ? n : eVecs->getLD(),
+        dataType,
+        workspaceDevice.data(),
+        workDeviceBytes,
+        workspaceHost.data(),
+        workHostBytes,
+        info_dev.data()
+    ));
+
+    // processInfo(info_dev);
+}
+
+/**
+ * This method multiplies each column by a constant so that the selected row has a 1 in it.
+ * @tparam T  The type of data.
+ * @param A The matrix to be normalized. This matrix is modified in-place.
+ * @param normalizeByRow The row that will have a 1 in it after the operation.
+ * @param height The height of the matrix.
+ * @param width The width of the matrix.
+ * @param ld The leading dimension of the matrix (typically the height).
+ */
+template <typename T>
+__global__ void normalizeByRow(
+    T* __restrict__ A,
+    const size_t normalizeByRow,
+    const size_t height, const size_t width, const size_t ld
+) {
+    const size_t row = blockIdx.y * blockDim.y + threadIdx.y;
+    const size_t col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (row < height && col < width){
+        const size_t colInd = col * ld;
+        const T val = A[colInd + normalizeByRow];
+        if (val != 0) A[colInd + row] *= ( static_cast<T>(1) / val );
+    }
+}
+
+template <typename T>
+void Mat<T>::normalizeCols(size_t setRowTo1, Handle* handle) {
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+
+    constexpr dim3 blockDim(16, 16);
+
+    const dim3 gridDim(
+        (this->_cols + blockDim.x - 1) / blockDim.x,
+        (this->_rows + blockDim.y - 1) / blockDim.y
+    );
+
+    normalizeByRow<T><<<gridDim, blockDim, 0, h->stream>>>(
+        this->data(),
+        setRowTo1,
+        this->_rows,
+        this ->_cols,
+        this->_ld
+    );
+}
 template class Mat<float>;
 template class Mat<double>;
 template class Mat<size_t>;
 template class Mat<int32_t>;
+template class Mat<unsigned char>;
+

@@ -2,6 +2,10 @@
 #include <cmath>
 #include "Event.h"
 #include <iostream>
+#include <chrono>
+
+
+using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 template <typename T>
 class BiCGSTAB{
@@ -95,9 +99,12 @@ public:
         
         wait(1, {xReady});
 
-        int i = 0;
-        for(;i < maxIterations; i++) {
-        
+        double totalTime = 0;
+        size_t numIterations = 0;
+        for(;numIterations < maxIterations; numIterations++) {
+
+            TimePoint start = std::chrono::steady_clock::now();
+
             A.diagMult(diags, p, &v, handle, &Singleton<T>::ONE, &Singleton<T>::ZERO); // v = A * p
 
             r_tilde.mult(v, &alpha, handle);        
@@ -163,9 +170,14 @@ public:
             temp.set(beta, handle[0].stream);
             temp.mult(omega, handle);
             p.sub(v, &temp, handle); // p = p - beta * omega * v
+
+            TimePoint end = std::chrono::steady_clock::now();
+            double iterationTime = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
+            totalTime += iterationTime;
         }
 
-        std::cout << "algorithms.cu unpreconditionedBiCGSTAB Number of iterations:" << i << std::endl;
+        std::cout << "algorithms.cu unpreconditionedBiCGSTAB Number of iterations: " << numIterations << std::endl;
+        std::cout << "algorithms.cu unpreconditionedBiCGSTAB Average time per iteration in milliseconds: " << totalTime / numIterations << std::endl;
         
         return result;
     }

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <functional>
 #include <iomanip>
 #include <limits>
 
@@ -203,7 +204,24 @@ int useCommandLineArgs(int argc, char const* argv[]){
 
 
 int main(int argc, char const* argv[]) {
-    
-    return useCommandLineArgs(argc, argv);
+
+    Mat<double> mat = Mat<double>::create(3, 3);
+
+    double hostData[] = {1, 2, 3,  2, 4, 5,  3, 5, 6};
+
+    mat.set(hostData, nullptr);
+
+    Vec<double> vals = Vec<double>::create(6, nullptr);
+    Mat<double> vecs = Mat<double>::create(6, 3);
+
+    mat.eigen(vals, &vecs);
+    vecs.normalizeCols(2);
+
+    std::cout << "mat = \n" << mat << std::endl;
+    std::cout << "vals = \n" << vals << std::endl;
+    std::cout << "vecs = \n" << vecs << std::endl;
+
+
+    // return useCommandLineArgs(argc, argv);
 
 }

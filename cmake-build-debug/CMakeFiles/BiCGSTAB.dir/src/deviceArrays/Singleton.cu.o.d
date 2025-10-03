@@ -318,6 +318,9 @@ CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Singleton.cu.o : /home/dov/Documents/La
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp \
+    /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
+    /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
+    /usr/include/inttypes.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_kernel.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_discrete.h \

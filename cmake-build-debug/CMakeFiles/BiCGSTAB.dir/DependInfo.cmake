@@ -15,8 +15,11 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/Tensor.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Tensor.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Tensor.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/Vec.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/deviceArrays.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/handle.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/main.cu" "CMakeFiles/BiCGSTAB.dir/src/main.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/main.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/testMethods.cu" "CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/streamHelper.cpp" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.o.d"
+  "" "BiCGSTAB" "gcc" "CMakeFiles/BiCGSTAB.dir/link.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

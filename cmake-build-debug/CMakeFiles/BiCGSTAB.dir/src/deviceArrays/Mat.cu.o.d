@@ -318,6 +318,9 @@ CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.o : /home/dov/Documents/LaplaceF
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp \
+    /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
+    /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
+    /usr/include/inttypes.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_kernel.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_discrete.h \
@@ -333,4 +336,6 @@ CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.o : /home/dov/Documents/LaplaceF
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_normal_static.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_lognormal.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_poisson.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_discrete2.h
+    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_discrete2.h \
+    /usr/include/c++/13/sstream \
+    /usr/include/c++/13/bits/sstream.tcc

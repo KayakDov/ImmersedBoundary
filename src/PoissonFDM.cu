@@ -264,14 +264,14 @@ private:
 
         BiCGSTAB<T> solver(_b);
 
-        std::cout << "PoissonFDM.cu::solve3d" << std::endl;
-        std::cout << "Solving 3D Poisson problem with " << _rows << " rows, " << _cols << " cols, " << _layers << " layers" << std::endl;
-        std::cout << "topBottom:\n" << _topBottom << std::endl;
-        std::cout << "leftRight:\n" << _leftRight << std::endl;
-        std::cout << "frontBack:\n" << _frontBack << std::endl;
-        std::cout << "indices = " << std::endl << mapARowToDiagnalInd << std::endl;
-        std::cout << "A = " << std::endl << A << std::endl;
-        std::cout << "b = " << _b << std::endl;
+        // std::cout << "PoissonFDM.cu::solve3d" << std::endl;
+        // std::cout << "Solving 3D Poisson problem with " << _rows << " rows, " << _cols << " cols, " << _layers << " layers" << std::endl;
+        // std::cout << "topBottom:\n" << _topBottom << std::endl;
+        // std::cout << "leftRight:\n" << _leftRight << std::endl;
+        // std::cout << "frontBack:\n" << _frontBack << std::endl;
+        // std::cout << "indices = " << std::endl << mapARowToDiagnalInd << std::endl;
+        // std::cout << "A = " << std::endl << A << std::endl;
+        // std::cout << "b = " << _b << std::endl;
 
         solver.solveUnpreconditionedBiCGSTAB(A, mapARowToDiagnalInd, &x);
 
@@ -300,7 +300,8 @@ public:
 int main(int argc, char *argv[]) {
     Handle hand;
 
-    constexpr size_t height = 2, width = 3, depth = 2, size = height * width * depth;
+    constexpr  size_t dimLength = 80;
+    constexpr size_t height = dimLength, width = dimLength, depth = dimLength, size = height * width * depth;
     constexpr double frontFaceVal = 1;
 
     Mat<double> frontBack = Mat<double>::create(height, 2 * width),
@@ -323,10 +324,9 @@ int main(int argc, char *argv[]) {
 
     PoissonFDM<double> solver(frontBack, leftRight, topBottom, b);
     solver.solve(x, hand);
-    std::cout << x << std::endl;
+    // std::cout << x << std::endl;
 
     return 0;
 }
-
 
 #endif //BICGSTAB_POISSONFDM_CUH

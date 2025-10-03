@@ -44,10 +44,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /snap/clion/377/bin/cmake/linux/x64/bin/cmake
+CMAKE_COMMAND = /snap/clion/385/bin/cmake/linux/x64/bin/cmake
 
 # The command to remove a file.
-RM = /snap/clion/377/bin/cmake/linux/x64/bin/cmake -E rm -f
+RM = /snap/clion/385/bin/cmake/linux/x64/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -192,11 +192,40 @@ CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o: CMakeFiles/PoissonFDM.dir/flags.make
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o: CMakeFiles/PoissonFDM.dir/includes_CUDA.rsp
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/handle.cu
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CUDA object CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o"
+	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o -MF CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/handle.cu -o CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o
+
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CUDA source to CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.i"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
+
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.s"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
+
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o: CMakeFiles/PoissonFDM.dir/flags.make
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/streamHelper.cpp
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o -MF CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o.d -o CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/streamHelper.cpp
+
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/streamHelper.cpp > CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.i
+
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/streamHelper.cpp -o CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.s
+
 CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o: CMakeFiles/PoissonFDM.dir/flags.make
 CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o: CMakeFiles/PoissonFDM.dir/includes_CUDA.rsp
 CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/testMethods.cu
 CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CUDA object CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CUDA object CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o"
 	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o -MF CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/testMethods.cu -o CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o
 
 CMakeFiles/PoissonFDM.dir/src/testMethods.cu.i: cmake_force
@@ -217,6 +246,8 @@ PoissonFDM_OBJECTS = \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/Tensor.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/Vec.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.o" \
+"CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o" \
+"CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o" \
 "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o"
 
 # External object files for target PoissonFDM
@@ -230,8 +261,11 @@ CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/dev
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/Tensor.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/Vec.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.o
+CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o
+CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/build.make
+CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcudart.so
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcublas.so
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/librt.a
@@ -240,7 +274,7 @@ CMakeFiles/PoissonFDM.dir/cmake_device_link.o: /usr/local/cuda-12.9/targets/x86_
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/deviceLinkLibs.rsp
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/deviceObjects1.rsp
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/dlink.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CUDA device code CMakeFiles/PoissonFDM.dir/cmake_device_link.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CUDA device code CMakeFiles/PoissonFDM.dir/cmake_device_link.o"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/PoissonFDM.dir/dlink.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -257,6 +291,8 @@ PoissonFDM_OBJECTS = \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/Tensor.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/Vec.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.o" \
+"CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o" \
+"CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o" \
 "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o"
 
 # External object files for target PoissonFDM
@@ -270,18 +306,19 @@ PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/Singleton.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/Tensor.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/Vec.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.o
+PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o
+PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/build.make
+PoissonFDM: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
 PoissonFDM: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcudart.so
 PoissonFDM: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcublas.so
 PoissonFDM: /usr/lib/x86_64-linux-gnu/librt.a
 PoissonFDM: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcublasLt.so
 PoissonFDM: /usr/local/cuda-12.9/targets/x86_64-linux/lib/libculibos.a
 PoissonFDM: CMakeFiles/PoissonFDM.dir/cmake_device_link.o
-PoissonFDM: CMakeFiles/PoissonFDM.dir/linkLibs.rsp
-PoissonFDM: CMakeFiles/PoissonFDM.dir/objects1.rsp
 PoissonFDM: CMakeFiles/PoissonFDM.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CUDA executable PoissonFDM"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Linking CXX executable PoissonFDM"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/PoissonFDM.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

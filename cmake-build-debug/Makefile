@@ -48,10 +48,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /snap/clion/377/bin/cmake/linux/x64/bin/cmake
+CMAKE_COMMAND = /snap/clion/385/bin/cmake/linux/x64/bin/cmake
 
 # The command to remove a file.
-RM = /snap/clion/377/bin/cmake/linux/x64/bin/cmake -E rm -f
+RM = /snap/clion/385/bin/cmake/linux/x64/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -68,7 +68,7 @@ CMAKE_BINARY_DIR = /home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "No interactive CMake dialog available..."
-	/snap/clion/377/bin/cmake/linux/x64/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+	/snap/clion/385/bin/cmake/linux/x64/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -78,7 +78,7 @@ edit_cache/fast: edit_cache
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running CMake to regenerate build system..."
-	/snap/clion/377/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/snap/clion/385/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -355,6 +355,60 @@ src/deviceArrays/deviceArrays.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.s
 .PHONY : src/deviceArrays/deviceArrays.cu.s
 
+src/deviceArrays/handle.o: src/deviceArrays/handle.cu.o
+.PHONY : src/deviceArrays/handle.o
+
+# target to build an object file
+src/deviceArrays/handle.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o
+.PHONY : src/deviceArrays/handle.cu.o
+
+src/deviceArrays/handle.i: src/deviceArrays/handle.cu.i
+.PHONY : src/deviceArrays/handle.i
+
+# target to preprocess a source file
+src/deviceArrays/handle.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.i
+.PHONY : src/deviceArrays/handle.cu.i
+
+src/deviceArrays/handle.s: src/deviceArrays/handle.cu.s
+.PHONY : src/deviceArrays/handle.s
+
+# target to generate assembly for a file
+src/deviceArrays/handle.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.s
+.PHONY : src/deviceArrays/handle.cu.s
+
+src/deviceArrays/streamHelper.o: src/deviceArrays/streamHelper.cpp.o
+.PHONY : src/deviceArrays/streamHelper.o
+
+# target to build an object file
+src/deviceArrays/streamHelper.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o
+.PHONY : src/deviceArrays/streamHelper.cpp.o
+
+src/deviceArrays/streamHelper.i: src/deviceArrays/streamHelper.cpp.i
+.PHONY : src/deviceArrays/streamHelper.i
+
+# target to preprocess a source file
+src/deviceArrays/streamHelper.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.i
+.PHONY : src/deviceArrays/streamHelper.cpp.i
+
+src/deviceArrays/streamHelper.s: src/deviceArrays/streamHelper.cpp.s
+.PHONY : src/deviceArrays/streamHelper.s
+
+# target to generate assembly for a file
+src/deviceArrays/streamHelper.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.s
+.PHONY : src/deviceArrays/streamHelper.cpp.s
+
 src/main.o: src/main.cu.o
 .PHONY : src/main.o
 
@@ -440,6 +494,12 @@ help:
 	@echo "... src/deviceArrays/deviceArrays.o"
 	@echo "... src/deviceArrays/deviceArrays.i"
 	@echo "... src/deviceArrays/deviceArrays.s"
+	@echo "... src/deviceArrays/handle.o"
+	@echo "... src/deviceArrays/handle.i"
+	@echo "... src/deviceArrays/handle.s"
+	@echo "... src/deviceArrays/streamHelper.o"
+	@echo "... src/deviceArrays/streamHelper.i"
+	@echo "... src/deviceArrays/streamHelper.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

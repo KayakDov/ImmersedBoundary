@@ -320,3 +320,4 @@ template class Vec<float>;
 template class Vec<double>;
 template class Vec<size_t>;
 template class Vec<int32_t>;
+template class Vec<unsigned char>;

@@ -11,6 +11,7 @@
 #include <fstream> // For file I/O
 #include <string> // For std::string
 #include <cublas_v2.h> // For cuBLAS
+#include <cusolverDn.h>
 
 template <typename T> class GpuArray;
 template <typename T> class Vec;
@@ -73,6 +74,7 @@ public:
 class Handle {
 public:
     cublasHandle_t handle{};
+    cusolverDnHandle_t cusolverHandle{};
     cudaStream_t stream;
     Handle();
     
@@ -189,6 +191,10 @@ public:
 
     Vec<T> col(size_t index);
     Vec<T> row(size_t index);
+
+    void eigen(Vec<T> &eVals, Mat *eVecs, Mat *temp = nullptr, Handle *handle = nullptr) const;
+
+    void normalizeCols(size_t setRowTo1, Handle* handle = nullptr);
 };
 
 template <typename T>

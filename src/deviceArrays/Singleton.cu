@@ -44,3 +44,4 @@ template class Singleton<int32_t>;
 template class Singleton<size_t>;
 template class Singleton<float>;
 template class Singleton<double>;
+template class Singleton<unsigned char>;

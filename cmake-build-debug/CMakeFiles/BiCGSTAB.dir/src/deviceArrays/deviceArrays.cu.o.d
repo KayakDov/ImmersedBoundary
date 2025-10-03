@@ -318,6 +318,9 @@ CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o : /home/dov/Documents
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp \
+    /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
+    /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
+    /usr/include/inttypes.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_kernel.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_discrete.h \
@@ -337,10 +340,4 @@ CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o : /home/dov/Documents
     /usr/include/c++/13/numeric \
     /usr/include/c++/13/bits/stl_numeric.h \
     /usr/include/c++/13/pstl/glue_numeric_defs.h \
-    /usr/include/c++/13/iostream \
-    /usr/include/c++/13/algorithm \
-    /usr/include/c++/13/bits/stl_algo.h \
-    /usr/include/c++/13/bits/algorithmfwd.h \
-    /usr/include/c++/13/bits/stl_heap.h \
-    /usr/include/c++/13/bits/uniform_int_dist.h \
-    /usr/include/c++/13/pstl/glue_algorithm_defs.h
+    /usr/include/c++/13/iostream

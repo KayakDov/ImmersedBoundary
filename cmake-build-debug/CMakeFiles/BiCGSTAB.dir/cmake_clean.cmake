@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/BiCGSTAB.dir/link.d"
   "BiCGSTAB"
   "BiCGSTAB.pdb"
   "CMakeFiles/BiCGSTAB.dir/cmake_device_link.o"
@@ -16,6 +17,10 @@ file(REMOVE_RECURSE
   "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.o.d"
   "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o"
   "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o.d"
+  "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.o"
+  "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.o.d"
+  "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.o"
+  "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.o.d"
   "CMakeFiles/BiCGSTAB.dir/src/main.cu.o"
   "CMakeFiles/BiCGSTAB.dir/src/main.cu.o.d"
   "CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o"
@@ -23,6 +28,6 @@ file(REMOVE_RECURSE
 )
 
 # Per-language clean rules from dependency scanning.
-foreach(lang CUDA)
+foreach(lang CUDA CXX)
   include(CMakeFiles/BiCGSTAB.dir/cmake_clean_${lang}.cmake OPTIONAL)
 endforeach()

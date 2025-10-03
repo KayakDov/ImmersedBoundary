@@ -318,6 +318,9 @@ CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o : /home/dov/Documents/LaplaceFiniteD
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp \
+    /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
+    /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
+    /usr/include/inttypes.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_kernel.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_discrete.h \
@@ -335,4 +338,10 @@ CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o : /home/dov/Documents/LaplaceFiniteD
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_poisson.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_discrete2.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/Event.h \
-    /usr/include/c++/13/iostream
+    /usr/include/c++/13/iostream \
+    /usr/include/c++/13/chrono \
+    /usr/include/c++/13/bits/chrono.h \
+    /usr/include/c++/13/ratio \
+    /usr/include/c++/13/cstdint \
+    /usr/include/c++/13/ctime \
+    /usr/include/c++/13/bits/parse_numbers.h
