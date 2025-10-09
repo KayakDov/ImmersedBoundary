@@ -220,6 +220,33 @@ src/algorithms.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/algorithms.cu.s
 .PHONY : src/algorithms.cu.s
 
+src/deviceArrays/BandedMatrix.o: src/deviceArrays/BandedMatrix.cu.o
+.PHONY : src/deviceArrays/BandedMatrix.o
+
+# target to build an object file
+src/deviceArrays/BandedMatrix.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/BandedMatrix.cu.o
+.PHONY : src/deviceArrays/BandedMatrix.cu.o
+
+src/deviceArrays/BandedMatrix.i: src/deviceArrays/BandedMatrix.cu.i
+.PHONY : src/deviceArrays/BandedMatrix.i
+
+# target to preprocess a source file
+src/deviceArrays/BandedMatrix.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/BandedMatrix.cu.i
+.PHONY : src/deviceArrays/BandedMatrix.cu.i
+
+src/deviceArrays/BandedMatrix.s: src/deviceArrays/BandedMatrix.cu.s
+.PHONY : src/deviceArrays/BandedMatrix.s
+
+# target to generate assembly for a file
+src/deviceArrays/BandedMatrix.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/BandedMatrix.cu.s
+.PHONY : src/deviceArrays/BandedMatrix.cu.s
+
 src/deviceArrays/Mat.o: src/deviceArrays/Mat.cu.o
 .PHONY : src/deviceArrays/Mat.o
 
@@ -273,6 +300,33 @@ src/deviceArrays/Singleton.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Singleton.cu.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Singleton.cu.s
 .PHONY : src/deviceArrays/Singleton.cu.s
+
+src/deviceArrays/SquareMat.o: src/deviceArrays/SquareMat.cu.o
+.PHONY : src/deviceArrays/SquareMat.o
+
+# target to build an object file
+src/deviceArrays/SquareMat.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/SquareMat.cu.o
+.PHONY : src/deviceArrays/SquareMat.cu.o
+
+src/deviceArrays/SquareMat.i: src/deviceArrays/SquareMat.cu.i
+.PHONY : src/deviceArrays/SquareMat.i
+
+# target to preprocess a source file
+src/deviceArrays/SquareMat.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/SquareMat.cu.i
+.PHONY : src/deviceArrays/SquareMat.cu.i
+
+src/deviceArrays/SquareMat.s: src/deviceArrays/SquareMat.cu.s
+.PHONY : src/deviceArrays/SquareMat.s
+
+# target to generate assembly for a file
+src/deviceArrays/SquareMat.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/SquareMat.cu.s
+.PHONY : src/deviceArrays/SquareMat.cu.s
 
 src/deviceArrays/Tensor.o: src/deviceArrays/Tensor.cu.o
 .PHONY : src/deviceArrays/Tensor.o
@@ -479,12 +533,18 @@ help:
 	@echo "... src/algorithms.o"
 	@echo "... src/algorithms.i"
 	@echo "... src/algorithms.s"
+	@echo "... src/deviceArrays/BandedMatrix.o"
+	@echo "... src/deviceArrays/BandedMatrix.i"
+	@echo "... src/deviceArrays/BandedMatrix.s"
 	@echo "... src/deviceArrays/Mat.o"
 	@echo "... src/deviceArrays/Mat.i"
 	@echo "... src/deviceArrays/Mat.s"
 	@echo "... src/deviceArrays/Singleton.o"
 	@echo "... src/deviceArrays/Singleton.i"
 	@echo "... src/deviceArrays/Singleton.s"
+	@echo "... src/deviceArrays/SquareMat.o"
+	@echo "... src/deviceArrays/SquareMat.i"
+	@echo "... src/deviceArrays/SquareMat.s"
 	@echo "... src/deviceArrays/Tensor.o"
 	@echo "... src/deviceArrays/Tensor.i"
 	@echo "... src/deviceArrays/Tensor.s"

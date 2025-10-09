@@ -4,8 +4,10 @@ BiCGSTAB: \
   /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o \
   CMakeFiles/BiCGSTAB.dir/src/Event.cu.o \
   CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o \
+  CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.o \
   CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.o \
   CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Singleton.cu.o \
+  CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.o \
   CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Tensor.cu.o \
   CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.o \
   CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o \
@@ -80,9 +82,13 @@ CMakeFiles/BiCGSTAB.dir/src/Event.cu.o:
 
 CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o:
 
+CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.o:
+
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.o:
 
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Singleton.cu.o:
+
+CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.o:
 
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Tensor.cu.o:
 

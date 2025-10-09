@@ -1,5 +1,6 @@
 #include "deviceArrays.h"
 #include <algorithm>
+#include "deviceArraySupport.h"
 
 template <typename T>
 StreamHelper<T>::StreamHelper(size_t rows, size_t cols)

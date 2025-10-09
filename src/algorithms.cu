@@ -79,10 +79,7 @@ public:
             cublasSetPointerMode(h.handle, CUBLAS_POINTER_MODE_DEVICE);
     }
 
-    Vec<T> solveUnpreconditionedBiCGSTAB(
-        const Mat<T>& A, 
-        const Vec<int32_t>& diags,
-        Vec<T>* x = nullptr){
+    Vec<T> solveUnpreconditionedBiCGSTAB(const BandedMat<T>& A, Vec<T>* x = nullptr){
 
         Vec<T> result = x ? *x : Vec<T>::create(b.size(), handle[0].stream);
         result.fillRandom(&handle[0]); // set x randomly
@@ -91,7 +88,7 @@ public:
         r_tilde.fillRandom(&handle[0]); // set r_tilde randomly    
 
         set(r, b, 0);
-        A.diagMult(diags, result, &r, handle, &Singleton<T>::MINUS_ONE, &Singleton<T>::ONE); // r = b - A * x
+        A.mult(result, &r, handle, &Singleton<T>::MINUS_ONE, &Singleton<T>::ONE); // r = b - A * x
         
         set(p, r, 0);
         
@@ -105,7 +102,7 @@ public:
 
             TimePoint start = std::chrono::steady_clock::now();
 
-            A.diagMult(diags, p, &v, handle, &Singleton<T>::ONE, &Singleton<T>::ZERO); // v = A * p
+            A.mult(p, &v, handle, &Singleton<T>::ONE, &Singleton<T>::ZERO); // v = A * p
 
             r_tilde.mult(v, &alpha, handle);        
             alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, handle[0].stream); //alpha = rho / (r_tilde * v)
@@ -131,7 +128,7 @@ public:
             if(isSmall(s, 2)) break;
             renew({sReady, hReady});
 
-            A.diagMult(diags, s, &t, handle); // t = A * s
+            A.mult(s, &t, handle); // t = A * s
 
             t.mult(s, &temp, handle + 3);
             record(3, {prodTS});

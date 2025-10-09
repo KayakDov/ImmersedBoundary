@@ -87,10 +87,10 @@ void showHelp() {
  * @throws std::runtime_error if the output file cannot be opened.
  */
 template <typename T>
-void solveAndWriteOutput(Mat<T>& A, const Vec<int32_t>& diags, Vec<T>& b, const string& x_dest_file, const bool isText, size_t maxIter, double epsilon, Handle& handle) {
+void solveAndWriteOutput(BandedMat<T>& A, Vec<T>& b, const string& x_dest_file, const bool isText, size_t maxIter, double epsilon, Handle& handle) {
     Vec<T> x = Vec<T>::create(b.size(), handle.stream);
     BiCGSTAB setup(b, static_cast<T>(epsilon), maxIter);
-    setup.solveUnpreconditionedBiCGSTAB(A, diags, &x);
+    setup.solveUnpreconditionedBiCGSTAB(A, &x);
 
     ofstream x_fs(x_dest_file);
     if (!x_fs.is_open()) throw runtime_error("Could not open destination file: " + x_dest_file);
@@ -118,16 +118,19 @@ void solveSystem(int argc, char const* argv[], bool isText, size_t maxIter, doub
 
     Handle hand;
 
-    Mat<T> A = Mat<T>::create(numDiags, width);
+    Mat<T> Amat = Mat<T>::create(numDiags, width);
     Vec<T> b = Vec<T>::create(width, hand.stream);
     Vec<int> diags = Vec<int>::create(numDiags, hand.stream);
 
 
-    readAndPrint(A, a_file, isText, hand);
     readAndPrint(diags, diags_file, isText, hand);
+    readAndPrint(Amat, a_file, isText, hand);
+
+    BandedMat<T> A(Amat, diags);
+
     readAndPrint(b, b_file, isText, hand);
 
-    solveAndWriteOutput(A, diags, b, x_dest_file, isText, maxIter, epsilon, hand);
+    solveAndWriteOutput(A, b, x_dest_file, isText, maxIter, epsilon, hand);
 }
 
 /**
@@ -205,23 +208,21 @@ int useCommandLineArgs(int argc, char const* argv[]){
 
 int main(int argc, char const* argv[]) {
 
-    auto mat = Mat<double>::create(4, 4);
-
-    double hostData[] = {0, 1, 0, 0,  //col 1
-                         0, 0, 1, 0,  //col 2
-                         0, 7, 0, 2,
-                         5, 0, 0, 0};
-
-    mat.set(hostData, nullptr);
-
-    int32_t hostInds[] = {-1, 1, 3};
-    auto inds = Vec<int32_t>::create(3);
+    int32_t hostInds[] = {-1};
+    auto inds = Vec<int32_t>::create(1, nullptr);
     inds.set(hostInds, nullptr);
 
-    Mat<double> diagonal = mat.mapDenseToBanded(inds);
+    auto dense = SquareMat<double>::create(4);
+    auto banded  = BandedMat<double>::create(1, 4, inds);
 
-    std::cout << "mat = \n" << mat << std::endl;
-    std::cout << "banded = \n" << diagonal << std::endl;
+    double hostData[] = {1, 1, 2, 0};
+
+    banded.set(hostData, nullptr);
+
+    banded.getDense(dense, nullptr);
+
+    std::cout << "mat = \n" << dense << std::endl;
+    std::cout << "banded = \n" << banded << std::endl;
 
 
     // return useCommandLineArgs(argc, argv);

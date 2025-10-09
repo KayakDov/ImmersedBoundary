@@ -1,6 +1,7 @@
 #include <utility>
 
 #include "deviceArrays.h"
+#include <curand_kernel.h> // For curandState
 
 
 template<typename T>

@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "BiCGSTAB"
+			"path" : "PoissonFDM"
 		}
 	],
 	"backtrace" : 1,
@@ -29,13 +29,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 26,
+				"line" : 34,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 31,
+				"line" : 37,
 				"parent" : 0
 			},
 			{
@@ -105,7 +105,7 @@
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 27,
+				"line" : 35,
 				"parent" : 0
 			}
 		]
@@ -150,8 +150,10 @@
 				5,
 				6,
 				7,
+				8,
 				9,
-				10
+				10,
+				12
 			]
 		},
 		{
@@ -184,11 +186,11 @@
 			},
 			"sourceIndexes" : 
 			[
-				8
+				11
 			]
 		}
 	],
-	"id" : "BiCGSTAB::@6890427a1f51a3e7e1df",
+	"id" : "PoissonFDM::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -282,8 +284,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "BiCGSTAB",
-	"nameOnDisk" : "BiCGSTAB",
+	"name" : "PoissonFDM",
+	"nameOnDisk" : "PoissonFDM",
 	"paths" : 
 	{
 		"build" : ".",
@@ -305,12 +307,20 @@
 				7,
 				8,
 				9,
-				10
+				10,
+				11,
+				12
 			]
 		}
 	],
 	"sources" : 
 	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/PoissonFDM.cu",
+			"sourceGroupIndex" : 0
+		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
@@ -326,6 +336,12 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
+			"path" : "src/deviceArrays/BandedMatrix.cu",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
 			"path" : "src/deviceArrays/Mat.cu",
 			"sourceGroupIndex" : 0
 		},
@@ -333,6 +349,12 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "src/deviceArrays/Singleton.cu",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/deviceArrays/SquareMat.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
@@ -363,12 +385,6 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 1,
 			"path" : "src/deviceArrays/streamHelper.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "src/main.cu",
 			"sourceGroupIndex" : 0
 		},
 		{

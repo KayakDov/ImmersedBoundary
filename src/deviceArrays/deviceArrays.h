@@ -11,18 +11,17 @@
 #include <fstream> // For file I/O
 #include <string> // For std::string
 #include <cublas_v2.h> // For cuBLAS
+#include "deviceArraySupport.h"
 #include <cusolverDn.h>
+
 
 template <typename T> class GpuArray;
 template <typename T> class Vec;
 template <typename T> class Mat;
-template <typename T> class StreamHelper;
-template <typename T> class StreamSet;
-template <typename T> class StreamGet;
 template <typename T> class Singleton;
 template <typename T> class Tensor;
-#include <curand_kernel.h>
-
+template <typename T> class SquareMat;
+template <typename T> class BandedMat;
 
 void checkCudaErrors(cudaError_t err, const char* file, int line);
 #define CHECK_CUDA_ERROR(err) checkCudaErrors(err, __FILE__, __LINE__)
@@ -31,66 +30,6 @@ void checkCudaErrors(cudaError_t err, const char* file, int line);
 inline void cudaFreeDeleter(void* ptr) {
     if (ptr) cudaFree(ptr);
 }
-
-template <typename T>
-class StreamHelper {
-public:
-    const size_t _totalCols;
-    const size_t _maxColsPerChunk; 
-    const size_t _rows;
-protected:    
-    size_t _colsProcessed;
-    std::vector<T> _hostBuffer;
-public:
-    
-    StreamHelper(size_t rows, size_t cols);
-    virtual ~StreamHelper();
-    [[nodiscard]] bool hasNext() const;
-    [[nodiscard]] size_t getChunkWidth() const;
-    void updateProgress();
-    [[nodiscard]] size_t getColsProcessed() const;
-    std::vector<T>& getBuffer();
-};
-
-template <typename T>
-class StreamSet : public StreamHelper<T> {
-private:
-    std::istream& _input_stream;
-public:
-    StreamSet(size_t rows, size_t cols, std::istream& input_stream);
-    void readChunk(bool isText);
-};
-
-template <typename T>
-class StreamGet : public StreamHelper<T> {
-private:
-    std::ostream& _output_stream;
-public:
-    StreamGet(size_t rows, size_t cols, std::ostream& output_stream);
-    void writeChunk(bool isText);
-};
-
-
-class Handle {
-public:
-    cublasHandle_t handle{};
-    cusolverDnHandle_t cusolverHandle{};
-    cudaStream_t stream;
-    Handle();
-    
-    explicit Handle(cudaStream_t user_stream);
-
-    static Handle* _get_or_create_handle(Handle* handle, std::unique_ptr<Handle>& out_ptr_unique);
-
-    ~Handle();
-
-    void synch() const;
-
-private:
-    bool isOwner = false; // Flag to indicate if the class owns the stream and should destroy it.
-};
-
-
 
 template <typename T>
 class GpuArray {
@@ -134,7 +73,6 @@ template <typename T>
 class Mat : public GpuArray<T> {
     using GpuArray<T>::mult;
 protected:
-
     Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr);
     
 public:
@@ -152,53 +90,56 @@ public:
     Mat<T> mult(const Mat<T>& other, Mat<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T> *alpha = nullptr, const
                 Singleton<T> *beta = nullptr, bool transposeA = false, bool transposeB = false) const;
 
-    Vec<T> mult(const Vec<T>& other, Vec<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T> *alpha = nullptr, const
-                Singleton<T> *beta = nullptr, bool transpose = false) const;
-    
-    Vec<T> operator*(const Vec<T>& other) const;    
+    virtual Vec<T> mult(const Vec<T>& other, Vec<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T> *alpha = nullptr, const
+                        Singleton<T> *beta = nullptr, bool transpose = false) const;
 
-    Mat<T> operator*(const Mat<T>& other) const;    
-    
-    Mat<T> plus(const Mat<T>& x, Mat<T>* result = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr);
-    
-    Mat<T> minus(const Mat<T>& x, Mat<T>* result = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr);
+    virtual Vec<T> operator*(const Vec<T>& other) const;
 
-    void mult(const Singleton<T>& alpha, Handle* handle = nullptr);
+    virtual Mat<T> operator*(const Mat<T>& other) const;
 
-    /**
-     * Multiply a sparse diagonal matrix (packed diagonals) with a 1D vector.
-     *
-     * This matrix must have at most 64 rows, representing a sparse matrix with up to 64 non zero diagonals.
-     *
-     * this <- alpha * A * x + beta * this
-     *
-     * @param diags Array of diagonal indices (negative=sub-diagonal, 0=main, positive=super-diagonal).  Each row of this matrix is treated as a diagonal with the coresponding index.
-     * @param x Input vector.
-     * @param result Optional pointer to store the result. If nullptr, a new gpuArray1D is returned.
-     * @param handle Optional Handle for managing CUDA streams/context.
-     * @param alpha Optional scalar multiplier.
-     * @param beta Optional scalar multiplier.
-     * @return A new gpuArray1D containing the result of the multiplication.
-     */
-    Vec<T> diagMult(const Vec<int>& diags, const Vec<T>& x, Vec<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr) const;
+    virtual Mat<T> plus(const Mat<T>& x, Mat<T>* result = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr);
 
-    void transpose(Mat<T>& result, Handle* handle = nullptr) const;
-    void transpose(Handle* handle = nullptr, Mat<T>* preAlocatedMem = nullptr);
+    virtual Mat<T> minus(const Mat<T>& x, Mat<T>* result = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr);
+
+    virtual void mult(const Singleton<T>& alpha, Handle* handle = nullptr);
+
+    virtual void transpose(Mat<T>& result, Handle* handle = nullptr) const;
+
+    virtual void transpose(Handle* handle = nullptr, Mat<T>* preAlocatedMem = nullptr);
 
     static Mat<T> create(size_t rows, size_t cols);
 
-    [[nodiscard]] Mat<T> subMat(size_t startRow, size_t startCol, size_t height, size_t width) const;
+    [[nodiscard]] virtual Mat<T> subMat(size_t startRow, size_t startCol, size_t height, size_t width) const;
 
-    Vec<T> col(size_t index);
-    Vec<T> row(size_t index);
+    virtual Vec<T> col(size_t index);
 
-    void eigen(Vec<T> &eVals, Mat *eVecs, Mat *temp = nullptr, Handle *handle = nullptr) const;
+    virtual Vec<T> row(size_t index);
 
-    void normalizeCols(size_t setRowTo1, Handle* handle = nullptr);
+    virtual void normalizeCols(size_t setRowTo1, Handle* handle = nullptr);
+};
 
-    Mat<T> mapDenseToBanded(const Vec<int32_t> &indices, Mat *result = nullptr, Handle *handle = nullptr) const;
+template <typename T>
+class SquareMat : public Mat<T> {
+private:
+    SquareMat(size_t rowsCols, size_t ld, std::shared_ptr<T> _ptr);
 
-    void mapBandedToDense(const Vec<int32_t> &indices, Mat<T> &dense, Handle *handle) const;
+public:
+    static SquareMat<T> create(size_t rowsCols);
+
+    BandedMat<T> mapDenseToBanded(const Vec<int32_t> &indices, Mat<T> *result = nullptr, Handle *handle = nullptr) const;
+
+    void eigen(Vec<T> &eVals, SquareMat<T> *eVecs, Mat<T> *temp = nullptr, Handle *handle = nullptr) const;
+};
+
+template <typename T>
+class Tensor final : public Mat<T> {
+private:
+    Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::shared_ptr<T> _ptr);
+public:
+    static Tensor<T> create(size_t rows, size_t cols, size_t layers, cudaStream_t stream);
+    Mat<T> layer(size_t index);
+    Vec<T> depth(size_t row, size_t col);
+    Singleton<T> get(size_t row, size_t col, size_t layer);
 };
 
 template <typename T>
@@ -250,15 +191,46 @@ public:
 
 };
 
-template <typename T>
-class Tensor final : public Mat<T> {
+
+template<typename T>
+class BandedMat final : public Mat<T> {
 private:
-    Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::shared_ptr<T> _ptr);
+    const Vec<int32_t> _indices;
+protected:
+    BandedMat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr, const Vec<int32_t> &indices);
 public:
-    static Tensor<T> create(size_t rows, size_t cols, size_t layers, cudaStream_t stream);
-    Mat<T> layer(size_t index);
-    Vec<T> depth(size_t row, size_t col);
-    Singleton<T> get(size_t row, size_t col, size_t layer);
+    BandedMat(const Mat<T>& copyFrom, const Vec<int32_t>& indices);
+
+    static BandedMat create(size_t numDiagonals, size_t cols, const Vec<int32_t> &indices);
+    static BandedMat createFromDense(const SquareMat<T> &src, const Vec<int32_t> &indices, Mat<T> *result = nullptr, Handle *handle = nullptr);
+
+    Vec<T> mult(const Vec<T>& other, Vec<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T> *alpha = nullptr, const Singleton<T> *beta = nullptr, bool transpose = false) const;
+
+    Mat<T> mult(const Mat<T>& other, Mat<T>* result = nullptr, Handle* handle = nullptr, const Singleton<T> *alpha = nullptr, const
+                Singleton<T> *beta = nullptr, bool transposeA = false, bool transposeB = false) const;
+
+    void getDense(SquareMat<T> dense, Handle *handle = nullptr) const;
+
+
+    Mat<T> operator*(const Mat<T>& other) const override;
+
+    Mat<T> plus(const Mat<T>& x, Mat<T>* result = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr) override;
+
+    Mat<T> minus(const Mat<T>& x, Mat<T>* result = nullptr, const Singleton<T>* alpha = nullptr, const Singleton<T>* beta = nullptr, bool transposeA = false, bool transposeB = false, Handle* handle = nullptr) override;
+
+    void mult(const Singleton<T>& alpha, Handle* handle = nullptr) override;
+
+    void transpose(Mat<T>& result, Handle* handle = nullptr) const override;
+    void transpose(Handle* handle = nullptr, Mat<T>* preAlocatedMem = nullptr) override;
+
+    static Mat<T> create(size_t rows, size_t cols);
+
+    [[nodiscard]] Mat<T> subMat(size_t startRow, size_t startCol, size_t height, size_t width) const override;
+
+    Vec<T> col(size_t index) override;
+    Vec<T> row(size_t index) override;
+
+    void normalizeCols(size_t setRowTo1, Handle* handle = nullptr) override;
 };
 
 template <typename T>

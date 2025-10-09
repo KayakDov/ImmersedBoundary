@@ -259,7 +259,8 @@ private:
         Vec<size_t> mapDiagToRow = Vec<size_t>::create(2*gridSize(), handle.stream);\
         mapDiagToRow.set(mapDiagToRowCpu, handle.stream);
 
-        Mat<T> A = setA3d(mapDiagToRow, numNonZeroDiags, handle);
+        Mat<T> AMat = setA3d(mapDiagToRow, numNonZeroDiags, handle);
+        BandedMat<T> A(AMat, mapARowToDiagnalInd);
         setB3d(handle.stream);
 
         BiCGSTAB<T> solver(_b);
@@ -273,7 +274,7 @@ private:
         // std::cout << "A = " << std::endl << A << std::endl;
         // std::cout << "b = " << _b << std::endl;
 
-        solver.solveUnpreconditionedBiCGSTAB(A, mapARowToDiagnalInd, &x);
+        solver.solveUnpreconditionedBiCGSTAB(A, &x);
 
     }
 

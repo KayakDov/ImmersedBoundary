@@ -10,8 +10,10 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/dov/Documents/LaplaceFiniteDifference/src/Event.cu" "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/algorithms.cu" "CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/BandedMatrix.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/Mat.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/Singleton.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Singleton.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Singleton.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/SquareMat.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/Tensor.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Tensor.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Tensor.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/Vec.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/deviceArrays.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o.d"

@@ -318,6 +318,7 @@ CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.o : /home/dov/Documents/LaplaceF
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/deviceArraySupport.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
     /usr/include/inttypes.h \

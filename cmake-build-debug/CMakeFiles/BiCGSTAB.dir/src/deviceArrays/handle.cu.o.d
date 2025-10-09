@@ -318,22 +318,7 @@ CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.o : /home/dov/Documents/Lapla
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/deviceArraySupport.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
-    /usr/include/inttypes.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_kernel.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_discrete.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_precalc.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_mrg32k3a.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_mtgp32_kernel.h \
-    /usr/include/memory.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_mtgp32.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_philox4x32_x.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_globals.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_uniform.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_normal.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_normal_static.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_lognormal.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_poisson.h \
-    /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_discrete2.h
+    /usr/include/inttypes.h
