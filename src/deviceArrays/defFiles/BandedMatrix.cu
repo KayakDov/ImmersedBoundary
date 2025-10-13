@@ -14,7 +14,7 @@
  * Threads per block should be 32.
  * Shared memory size should be sizeof(T) * 32.
  *
- * @param A Packed diagonals of the matrix.  Trailing values are not read.  Each row is a diagonal, and the matrix is stored in column-major order.  There may be no more than 32 rows.
+ * @param banded Packed diagonals of the matrix.  Trailing values are not read.  Each row is a diagonal, and the matrix is stored in column-major order.  There may be no more than 32 rows.
  * @param height Number of rows in the greater matrix, not the packed matrix.  This is also the number of columns in the greater matrix and the number of rows in x.
  * @param ld Leading dimension of the packed diagonals.
  * @param diags Indices of the diagonals.  Negative indices indicate sub-diagonals.
@@ -30,7 +30,7 @@
  */
 template <typename T>
 __global__ void diagMatVecKernel(
-    const T* __restrict__ A, // packed diagonals
+    const T* __restrict__ banded, // packed diagonals
     const size_t height, const size_t ld,
 
     const int* __restrict__ diags, // which diagonals
@@ -46,14 +46,14 @@ __global__ void diagMatVecKernel(
     const T* beta
 ){
     const size_t rowX = blockIdx.x;
-    const size_t rowA = threadIdx.x;
-    const bool isValid = rowX < height && rowA < numDiags;
+    const size_t bandedRow = threadIdx.x;
+    const bool isValid = rowX < height && bandedRow < numDiags;
     T val;
     if (isValid){//TODO: this condition can be removed by requiring input matrices have exactly 32 rows, with extra rows having all 0's.  This may give a small speed boost.
-        const int32_t d = diags[rowA];
-        int32_t colA = rowX;
-        if(d < 0) colA += d;
-        val = 0 <= colA && colA < height - abs(d) ? A[colA*ld + rowA] * x[(rowX + d) * strideX] : 0;
+        const int32_t d = diags[bandedRow];
+        int32_t bandedCol = rowX;
+        if(d < 0) bandedCol += d;
+        val = 0 <= bandedCol && bandedCol < height - abs(d) ? banded[bandedCol*ld + bandedRow] * x[(rowX + d) * strideX] : 0;
     } else val = 0;
 
     for (int offset = 16; offset > 0; offset >>= 1)
@@ -61,7 +61,7 @@ __global__ void diagMatVecKernel(
 
     size_t indR = rowX * strideR;
 
-    if(isValid && rowA == 0) result[indR] = *alpha * val + *beta * result[indR];
+    if(isValid && bandedRow == 0) result[indR] = *alpha * val + *beta * result[indR];
 }
 
 /**
@@ -109,6 +109,13 @@ bool transpose
     if (transpose) (const_cast<Vec<int32_t>&>(_indices)).mult(Singleton<int32_t>::MINUS_ONE, h);
 
     return *resPtr;
+}
+
+template<typename T>
+Mat<T> BandedMat<T>::mult(const Mat<T> &other, Mat<T> *result, Handle *handle, const Singleton<T> *alpha,
+    const Singleton<T> *beta, bool transposeA, bool transposeB) const {
+    throw std::runtime_error("Not implemented");
+
 }
 
 

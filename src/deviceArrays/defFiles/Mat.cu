@@ -63,7 +63,7 @@ Vec<T> Mat<T>::mult(
 
 template <typename T>
 Mat<T> Mat<T>::operator*(const Mat<T>& other) const {
-    return this->mult(other);
+    return this->mult(other, nullptr, nullptr, nullptr, nullptr, false, false);
 }
 
 template <typename T>
@@ -189,6 +189,11 @@ void Mat<T>::get(std::ostream& output_stream, bool isText, bool printColMajor, c
         helper.writeChunk(isText);
         helper.updateProgress();
     }
+}
+
+template<typename T>
+Singleton<T> Mat<T>::get(size_t row, size_t col) {
+    return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->data() + col * this->_ld + row));
 }
 
 template <typename T>
