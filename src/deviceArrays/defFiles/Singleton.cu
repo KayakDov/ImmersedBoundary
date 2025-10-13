@@ -1,4 +1,4 @@
-#include "deviceArrays/deviceArrays.h"
+#include "../headers/singleton.h"
 
 
 template<typename T>

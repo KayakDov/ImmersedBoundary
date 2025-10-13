@@ -1,4 +1,7 @@
-#include "deviceArrays.h"
+#include "../headers/handle.h"
+
+#include <memory>
+#include <stdexcept>
 
 Handle::Handle(cudaStream_t user_stream) {
     if (cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS) throw std::runtime_error("Failed to create cuBLAS handle");
@@ -43,8 +46,10 @@ Handle::Handle() : Handle(nullptr) {}
 Handle::~Handle() {
     cublasDestroy(handle);
     cusolverDnDestroy(cusolverHandle);
-    if (this->isOwner) cudaStreamDestroy(stream);
-    CHECK_CUDA_ERROR(cudaDeviceSynchronize());
+    if (this->isOwner) {
+        CHECK_CUDA_ERROR(cudaStreamSynchronize(stream));
+        cudaStreamDestroy(stream);
+    }
 }
 
 void Handle::synch() const {

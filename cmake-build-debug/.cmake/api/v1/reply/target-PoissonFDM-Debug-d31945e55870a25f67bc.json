@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "BiCGSTAB"
+			"path" : "PoissonFDM"
 		}
 	],
 	"backtrace" : 1,
@@ -29,19 +29,19 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 26,
+				"line" : 40,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 31,
+				"line" : 43,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 29,
+				"line" : 35,
 				"parent" : 0
 			},
 			{
@@ -105,7 +105,7 @@
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 27,
+				"line" : 41,
 				"parent" : 0
 			}
 		]
@@ -152,7 +152,7 @@
 				7,
 				8,
 				9,
-				11,
+				10,
 				12
 			]
 		},
@@ -186,11 +186,11 @@
 			},
 			"sourceIndexes" : 
 			[
-				10
+				11
 			]
 		}
 	],
-	"id" : "BiCGSTAB::@6890427a1f51a3e7e1df",
+	"id" : "PoissonFDM::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -284,8 +284,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "BiCGSTAB",
-	"nameOnDisk" : "BiCGSTAB",
+	"name" : "PoissonFDM",
+	"nameOnDisk" : "PoissonFDM",
 	"paths" : 
 	{
 		"build" : ".",
@@ -318,6 +318,12 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
+			"path" : "src/PoissonFDM.cu",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
 			"path" : "src/Event.cu",
 			"sourceGroupIndex" : 0
 		},
@@ -330,61 +336,55 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/deviceArrays/BandedMatrix.cu",
+			"path" : "src/deviceArrays/defFiles/BandedMatrix.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/deviceArrays/Mat.cu",
+			"path" : "src/deviceArrays/defFiles/Mat.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/deviceArrays/Singleton.cu",
+			"path" : "src/deviceArrays/defFiles/Singleton.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/deviceArrays/SquareMat.cu",
+			"path" : "src/deviceArrays/defFiles/SquareMat.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/deviceArrays/Tensor.cu",
+			"path" : "src/deviceArrays/defFiles/Tensor.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/deviceArrays/Vec.cu",
+			"path" : "src/deviceArrays/defFiles/Vec.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/deviceArrays/deviceArrays.cu",
+			"path" : "src/deviceArrays/defFiles/deviceArrays.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/deviceArrays/handle.cu",
+			"path" : "src/deviceArrays/defFiles/handle.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 1,
-			"path" : "src/deviceArrays/streamHelper.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "src/main.cu",
+			"path" : "src/deviceArrays/defFiles/streamHelper.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{

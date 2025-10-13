@@ -1,4 +1,6 @@
-#include "deviceArrays/deviceArrays.h"
+#include "deviceArrays/headers/vec.h"
+#include "deviceArrays/headers/squareMat.h"
+#include "deviceArrays/headers/bandedMat.h"
 #include "testMethods.cu"
 #include "algorithms.cu"
 #include <fstream>
@@ -118,15 +120,12 @@ void solveSystem(int argc, char const* argv[], bool isText, size_t maxIter, doub
 
     Handle hand;
 
-    Mat<T> Amat = Mat<T>::create(numDiags, width);
     Vec<T> b = Vec<T>::create(width, hand.stream);
     Vec<int> diags = Vec<int>::create(numDiags, hand.stream);
-
+    BandedMat<T> A = BandedMat<T>::create(numDiags, width, diags);
 
     readAndPrint(diags, diags_file, isText, hand);
-    readAndPrint(Amat, a_file, isText, hand);
-
-    BandedMat<T> A(Amat, diags);
+    readAndPrint(A, a_file, isText, hand);
 
     readAndPrint(b, b_file, isText, hand);
 
@@ -208,18 +207,28 @@ int useCommandLineArgs(int argc, char const* argv[]){
 
 int main(int argc, char const* argv[]) {
 
+    Handle hand;
     int32_t hostInds[] = {-1};
-    auto inds = Vec<int32_t>::create(1, nullptr);
-    inds.set(hostInds, nullptr);
+    auto inds = Vec<int32_t>::create(1, hand.stream);
+
+    inds.set(hostInds, hand.stream);
 
     auto dense = SquareMat<double>::create(4);
-    auto banded  = BandedMat<double>::create(1, 4, inds);
 
-    double hostData[] = {1, 1, 2, 0};
+    const double hostData[] = {
+        0, 1, 0, 0,
+        0, 0, 2, 0,
+        0, 0, 0, 3,
+        0, 0, 0, 0
+    };
 
-    banded.set(hostData, nullptr);
+    dense.set(hostData, hand.stream);
 
-    banded.getDense(dense, nullptr);
+    BandedMat<double> banded = BandedMat<double>::create(1, 4, inds);
+
+    banded.setFromDense(dense, &hand);
+
+    banded.getDense(dense, &hand);
 
     std::cout << "mat = \n" << dense << std::endl;
     std::cout << "banded = \n" << banded << std::endl;

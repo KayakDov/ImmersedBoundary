@@ -324,4 +324,5 @@ CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.o : /home/dov/Documents/LaplaceF
     /usr/include/inttypes.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/KernelSupport.cuh \
     /usr/include/c++/13/sstream \
-    /usr/include/c++/13/bits/sstream.tcc
+    /usr/include/c++/13/bits/sstream.tcc \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/Mat.h

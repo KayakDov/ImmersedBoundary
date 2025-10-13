@@ -185,7 +185,7 @@ CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o : /home/dov/Documents/LaplaceFiniteD
     /usr/include/c++/13/utility \
     /usr/include/c++/13/bits/stl_relops.h \
     /usr/include/c++/13/initializer_list \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/deviceArrays.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
     /usr/include/c++/13/vector \
     /usr/include/c++/13/bits/allocator.h \
     /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
@@ -308,6 +308,7 @@ CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o : /home/dov/Documents/LaplaceFiniteD
     /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
     /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
     /usr/include/c++/13/bits/fstream.tcc \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_v2.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_api.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuComplex.h \
@@ -318,10 +319,13 @@ CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o : /home/dov/Documents/LaplaceFiniteD
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/deviceArraySupport.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
     /usr/include/inttypes.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/Event.h \
     /usr/include/c++/13/iostream \
     /usr/include/c++/13/chrono \

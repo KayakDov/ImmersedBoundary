@@ -244,7 +244,7 @@ CMakeFiles/BiCGSTAB.dir/src/Event.cu.o : /home/dov/Documents/LaplaceFiniteDiffer
     /usr/include/c++/13/bits/uses_allocator.h \
     /usr/include/c++/13/bits/uses_allocator_args.h \
     /usr/include/c++/13/tuple \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/deviceArrays.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
     /usr/include/c++/13/vector \
     /usr/include/c++/13/bits/stl_uninitialized.h \
     /usr/include/c++/13/bits/stl_vector.h \
@@ -309,6 +309,7 @@ CMakeFiles/BiCGSTAB.dir/src/Event.cu.o : /home/dov/Documents/LaplaceFiniteDiffer
     /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
     /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
     /usr/include/c++/13/bits/fstream.tcc \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_v2.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_api.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuComplex.h \
@@ -319,7 +320,6 @@ CMakeFiles/BiCGSTAB.dir/src/Event.cu.o : /home/dov/Documents/LaplaceFiniteDiffer
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/deviceArraySupport.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
     /usr/include/inttypes.h

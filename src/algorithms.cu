@@ -1,4 +1,5 @@
-#include "deviceArrays/deviceArrays.h"
+#include "deviceArrays/headers/deviceArrays.h"
+#include "deviceArrays/headers/singleton.h"
 #include <cmath>
 #include "Event.h"
 #include <iostream>

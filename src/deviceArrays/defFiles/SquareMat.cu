@@ -1,9 +1,13 @@
 #include <cusolver_common.h>
+#include <iostream>
 #include <sstream>
 
-#include "deviceArrays.h"
-#include "KernelSupport.cuh"
-#include "deviceArraySupport.h"
+#include "../headers/squareMat.h"
+#include "../headers/KernelSupport.cuh"
+#include "../headers/deviceArraySupport.h"
+#include "../headers/singleton.h"
+#include "../headers/vec.h"
+#include "../headers/bandedMat.h"
 
 
 template<typename T>
@@ -17,51 +21,6 @@ SquareMat<T> SquareMat<T>::create(size_t rowsCols) {
     return SquareMat<T>(rowsCols, mat._ld, mat._ptr);
 }
 
-template <typename T>
-__global__ void mapDenseToBandedSquareKernel(
-    const T* __restrict__ dense,
-    const size_t heightWidth, const size_t denseLd,
-    T* __restrict__ banded,
-    const size_t numDiags, const size_t bandedLd,
-    const int32_t* __restrict__ indices
-) {
-    const size_t bandedRow = blockIdx.y * blockDim.y + threadIdx.y;
-    const size_t bandedCol = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (bandedRow < numDiags && bandedCol < heightWidth){
-        const size_t writeTo = bandedCol*bandedLd + bandedRow;
-        if (const DenseInd denseInd(bandedRow, bandedCol, indices); denseInd.outOfBounds(heightWidth))
-            banded[writeTo] = NAN;
-        else banded[writeTo] = dense[denseInd.flat(denseLd)];
-    }
-}
-
-template<typename T>
-BandedMat<T> SquareMat<T>::mapDenseToBanded(const Vec<int32_t>& indices, Mat<T>* result, Handle *handle) const {
-    std::unique_ptr<Handle> temp_hand_ptr;
-    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-    std::unique_ptr<Mat<T>> temp_result;
-    Mat<T>* banded = GpuArray<T>::_get_or_create_target(indices.size(), this->_cols, result, temp_result);
-
-    constexpr dim3 blockDim(16, 16);
-
-    const dim3 gridDim(
-        (this->_cols + blockDim.x - 1) / blockDim.x,
-        (indices.size() + blockDim.y - 1) / blockDim.y
-    );
-
-    mapDenseToBandedSquareKernel<T><<<gridDim, blockDim, 0, h->stream>>>(
-        this->data(),
-        this->_cols,
-        this->getLD(),
-        banded->data(),
-        banded->_rows,
-        banded->_ld,
-        indices.data()
-    );
-    CHECK_CUDA_ERROR(cudaGetLastError());
-    return BandedMat<T>(*banded, indices);
-}
 
 
 /**
@@ -142,10 +101,10 @@ void SquareMat<T>::eigen(
     CHECK_CUSOLVER_ERROR(cusolverDnXgeev_bufferSize(
         h->cusolverHandle, nullptr,
         CUSOLVER_EIG_MODE_NOVECTOR, findVectors, n,
-        dataType, copy->data(), copy->getLD(),
+        dataType, copy->data(), copy->_ld,
         dataType, eValsPtr->data(),
         dataType, nullptr, n,
-        dataType, eVecs == nullptr ? nullptr : eVecs->data(), eVecs == nullptr? n : eVecs->getLD(),
+        dataType, eVecs == nullptr ? nullptr : eVecs->data(), eVecs == nullptr? n : eVecs->_ld,
         dataType,
         &workDeviceBytes,
         &workHostBytes
@@ -158,10 +117,10 @@ void SquareMat<T>::eigen(
     CHECK_CUSOLVER_ERROR(cusolverDnXgeev(
         h->cusolverHandle, nullptr,
         CUSOLVER_EIG_MODE_NOVECTOR, findVectors, n,
-        dataType, copy->data(), copy->getLD(),
+        dataType, copy->data(), copy->_ld,
         dataType, eValsPtr->data(),
         dataType, nullptr, n,
-        dataType, eVecs == nullptr ? nullptr : eVecs->data(), eVecs == nullptr ? n : eVecs->getLD(),
+        dataType, eVecs == nullptr ? nullptr : eVecs->data(), eVecs == nullptr ? n : eVecs->_ld,
         dataType,
         workspaceDevice.data(),
         workDeviceBytes,

@@ -2,7 +2,7 @@
  * @file deviceArrays.cu
  * @brief Templated classes for managing 1D and 2D arrays on a CUDA device in column-major order.
  */
-#include "deviceArrays.h"
+#include "../headers/singleton.h"
 #include <vector>
 #include <numeric>
 #include <iostream>
@@ -43,9 +43,6 @@ template <typename T>
 const T* GpuArray<T>::data() const {return _ptr.get(); }
 
 template <typename T>
-size_t GpuArray<T>::getLD() const { return _ld; }
-
-template <typename T>
 void GpuArray<T>::mult(
     const GpuArray<T>& other,
     GpuArray<T>* result,
@@ -68,19 +65,19 @@ void GpuArray<T>::mult(
         transposeA ? CUBLAS_OP_T : CUBLAS_OP_N, transposeB ? CUBLAS_OP_T : CUBLAS_OP_N,
         this->_rows, other._cols, this->_cols,
         a->data(),
-        this->data(), this->getLD(),
-        other.data(), other.getLD(),
+        this->data(), this->_ld,
+        other.data(), other._ld,
         b->data(),
-        result->data(), result->getLD());
+        result->data(), result->_ld);
     else if constexpr (std::is_same_v<T, double>)
         cublasDgemm(h->handle,
         transposeA ? CUBLAS_OP_T : CUBLAS_OP_N, transposeB ? CUBLAS_OP_T : CUBLAS_OP_N,
         this->_rows, other._cols, this->_cols,
         a->data(),
-        this->data(), this->getLD(),
-        other.data(), other.getLD(),
+        this->data(), this->_ld,
+        other.data(), other._ld,
         b->data(),
-        result->data(), result->getLD());
+        result->data(), result->_ld);
     else throw std::invalid_argument("Unsupported type.");
 }
 
@@ -97,6 +94,7 @@ Mat<T>* GpuArray<T>::_get_or_create_target(size_t rows, size_t cols, Mat<T>* res
     if (result) return result;
     else {
         out_ptr_unique = std::make_unique<Mat<T>>(Mat<T>::create(rows, cols));
+
         return out_ptr_unique.get();
     }
 }

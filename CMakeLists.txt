@@ -13,7 +13,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Collect all .cu sources
-file(GLOB_RECURSE SOURCES src/*.cu src/*.cpp src/*.c)
+file(GLOB_RECURSE SOURCES
+        src/*.cu
+        src/*.cpp
+        src/deviceArrays/defFiles/*.cu
+        src/deviceArrays/defFiles/*.cpp
+)
+
 
 # Exclude PoissonFDM.cu from the general source list used by the main app
 list(FILTER SOURCES EXCLUDE REGEX ".*PoissonFDM\\.cu$")

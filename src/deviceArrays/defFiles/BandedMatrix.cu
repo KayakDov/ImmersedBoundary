@@ -1,5 +1,10 @@
-#include "deviceArrays.h"
-#include "KernelSupport.cuh"
+#include <iostream>
+
+#include "../headers/bandedMat.h"
+#include "../headers/KernelSupport.cuh"
+#include "../headers/singleton.h"
+#include "../headers/squareMat.h"
+#include "../headers/vec.h"
 
 /**
  * Kernel for sparse diagonal matrix-vector multiplication.
@@ -92,11 +97,11 @@ bool transpose
     if (transpose) (const_cast<Vec<int32_t>&>(_indices)).mult(Singleton<int32_t>::MINUS_ONE, h);
 
     diagMatVecKernel<<<this->_cols, 32, 0, h->stream>>>(
-        this->data(), this->_cols, this->getLD(),
+        this->data(), this->_cols, this->_ld,
         _indices.data(), this->_rows,
-        other.data(), other.getLD(),
+        other.data(), other._ld,
         resPtr->data(),
-        resPtr->getLD(),
+        resPtr->_ld,
         a->data(), b->data()
     );
 
@@ -138,7 +143,7 @@ void BandedMat<T>::getDense(SquareMat<T> dense, Handle *handle) const {//TODO: h
     mapToDenseKernel<T><<<gridDim, blockDim, 0, h->stream>>>(
         dense.data(),
         dense._cols,
-        dense.getLD(),
+        dense._ld,
         this->data(),
         this->_rows,
         this->_ld,
@@ -206,24 +211,64 @@ void BandedMat<T>::normalizeCols(size_t setRowTo1, Handle *handle) {
 
 
 template<typename T>
-BandedMat<T>::BandedMat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr,
-    const Vec<int32_t> &indices): Mat<T>(rows, cols, ld, _ptr), _indices(indices) {
+BandedMat<T>::BandedMat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> ptr, const Vec<int32_t> &indices):
+    Mat<T>(rows, cols, ld, ptr), _indices(indices) {
 }
 
 template<typename T>
-BandedMat<T>::BandedMat(const Mat<T>& copyFrom, const Vec<int32_t>& indices): Mat<T>(copyFrom), _indices(indices) {
+BandedMat<T>::BandedMat(const Mat<T>& copyFrom, const Vec<int32_t>& indices):
+    BandedMat(copyFrom._rows, copyFrom._cols, copyFrom._ld, copyFrom._ptr, indices) {
     if (indices.size() != copyFrom._rows) throw std::invalid_argument("indices must be the same length as the number of rows in the matrix");
 }
 
 template<typename T>
 BandedMat<T> BandedMat<T>::create(size_t numDiagonals, size_t cols, const Vec<int32_t> &indices) {
-    auto m = Mat<T>::create(numDiagonals, cols);
-    return BandedMat<T>(m, indices);
+    return BandedMat<T>(Mat<T>::create(numDiagonals, cols), indices);
+}
+
+template <typename T>
+__global__ void mapDenseToBandedKernel(
+    const T* __restrict__ dense,
+    const size_t heightWidth, const size_t denseLd,
+    T* __restrict__ banded,
+    const size_t numDiags, const size_t bandedLd,
+    const int32_t* __restrict__ indices
+) {
+    const size_t bandedRow = blockIdx.y * blockDim.y + threadIdx.y;
+    const size_t bandedCol = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (bandedRow < numDiags && bandedCol < heightWidth){
+        const size_t writeTo = bandedCol*bandedLd + bandedRow;
+        if (const DenseInd denseInd(bandedRow, bandedCol, indices); denseInd.outOfBounds(heightWidth)) banded[writeTo] = NAN;
+        else banded[writeTo] = dense[denseInd.flat(denseLd)];
+
+    }
+
 }
 
 template<typename T>
-BandedMat<T> BandedMat<T>::createFromDense(const SquareMat<T> &src, const Vec<int32_t> &indices, Mat<T>* result, Handle *handle) {
-    return src.mapDenseToBanded(indices, result, handle);
+void BandedMat<T>::setFromDense(const SquareMat<T> &denseMat, Handle *handle) {
+
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+
+    constexpr dim3 blockDim(16, 16);
+
+    const dim3 gridDim(
+        (this->_cols + blockDim.x - 1) / blockDim.x,
+        (this->_rows + blockDim.y - 1) / blockDim.y
+    );
+
+    mapDenseToBandedKernel<T><<<gridDim, blockDim, 0, h->stream>>>(
+        denseMat.data(),
+        denseMat._rows,
+        denseMat._ld,
+        this->data(),
+        this->_rows,
+        this->_ld,
+        this->_indices.data()
+    );
+    CHECK_CUDA_ERROR(cudaGetLastError());
 }
 
 

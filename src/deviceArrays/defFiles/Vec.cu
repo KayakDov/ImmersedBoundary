@@ -1,7 +1,10 @@
 #include <utility>
 
-#include "deviceArrays.h"
+#include "../headers/vec.h"
+#include "../headers/singleton.h"
 #include <curand_kernel.h> // For curandState
+
+#include "deviceArrays/headers/deviceArraySupport.h"
 
 
 template<typename T>
@@ -19,8 +22,8 @@ template <typename T>
 Vec<T> Vec<T>::subVec(const size_t offset, const size_t length, const size_t stride) const{
     return Vec<T>(
         length,
-        std::shared_ptr<T>(this->_ptr, const_cast<T*>(this->data() + offset * this->getLD() * stride)),
-        stride*this->getLD()
+        std::shared_ptr<T>(this->_ptr, const_cast<T*>(this->data() + offset * this->_ld * stride)),
+        stride*this->_ld
         );
 }
 
@@ -63,9 +66,9 @@ T Vec<T>::mult(
     Singleton<T>* resPtr = this->_get_or_create_target(result, temp_res_ptr, h->stream);
     
     if constexpr (std::is_same_v<T, float>)
-        cublasSdot(h->handle, this->_cols, this->data(), this->getLD(), other.data(), other.getLD(), resPtr->data());
+        cublasSdot(h->handle, this->_cols, this->data(), this->_ld, other.data(), other._ld, resPtr->data());
     else if constexpr (std::is_same_v<T, double>)
-        cublasDdot(h->handle, this->_cols, this->data(), this->getLD(), other.data(), other.getLD(), resPtr->data());
+        cublasDdot(h->handle, this->_cols, this->data(), this->_ld, other.data(), other._ld, resPtr->data());
     else static_assert(!std::is_same_v<T, float> && !std::is_same_v<T, double>, "Vec::add unsupported type.");
 
     T scalar = resPtr->get();
@@ -119,12 +122,12 @@ void Vec<T>::get(T* hostData, cudaStream_t stream) const {
 
 template <typename T>
 void Vec<T>::set(const GpuArray<T>& src, cudaStream_t stream) {
-    if (this->_ld == 1 && src.getLD() == 1) {
+    if (this->_ld == 1 && src._ld == 1) {
         cudaMemcpyAsync(this->_ptr.get(), src.data(), bytes(), cudaMemcpyDeviceToDevice, stream);
     } else {
         cudaMemcpy2DAsync(
             this->_ptr.get(), this->_ld * sizeof(T),
-            src.data(), src.getLD() * sizeof(T),
+            src.data(), src._ld * sizeof(T),
             sizeof(T), this->_cols,
             cudaMemcpyDeviceToDevice, stream
         );
@@ -133,11 +136,11 @@ void Vec<T>::set(const GpuArray<T>& src, cudaStream_t stream) {
 
 template <typename T>
 void Vec<T>::get(GpuArray<T>& dst, cudaStream_t stream) const {
-    if (this->_ld == 1 && dst.getLD() == 1) {
+    if (this->_ld == 1 && dst._ld == 1) {
         cudaMemcpyAsync(dst.data(), this->_ptr.get(), bytes(), cudaMemcpyDeviceToDevice, stream);
     } else {
         cudaMemcpy2DAsync(
-            dst.data(), dst.getLD() * sizeof(T),
+            dst.data(), dst._ld * sizeof(T),
             this->_ptr.get(), this->_ld * sizeof(T),
             sizeof(T), this->_cols,
             cudaMemcpyDeviceToDevice, stream
@@ -193,7 +196,7 @@ void Vec<T>::fill(T val, cudaStream_t stream) {
 
 template<typename T>
 Singleton<T> Vec<T>::get(size_t i) {
-    return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->data() + i * this->getLD()));
+    return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->data() + i * this->_ld));
 }
 
 template <typename T>
@@ -207,9 +210,9 @@ void Vec<T>::add(const Vec<T>& x, const Singleton<T> *alpha, Handle* handle) {
     const Singleton<T>* a = this->_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
     
     if constexpr (std::is_same_v<T, float>)
-        cublasSaxpy(h->handle, this->_cols, a->data(), x.data(), x.getLD(), this->data(), this->getLD());
+        cublasSaxpy(h->handle, this->_cols, a->data(), x.data(), x._ld, this->data(), this->_ld);
     else if constexpr(std::is_same_v<T, double>) 
-        cublasDaxpy(h->handle, this->_cols, a->data(), x.data(), x.getLD(), this->data(), this->getLD());
+        cublasDaxpy(h->handle, this->_cols, a->data(), x.data(), x._ld, this->data(), this->_ld);
     else throw std::invalid_argument("Vec::add unsupported type.");
 }
 
@@ -229,9 +232,9 @@ void Vec<T>::mult(const Singleton<T>& alpha, Handle* handle) {
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
     
     if constexpr (std::is_same_v<T, float>)
-        cublasSscal(h->handle, this->_cols, alpha.data(), this->data(), this->getLD());
+        cublasSscal(h->handle, this->_cols, alpha.data(), this->data(), this->_ld);
     else if constexpr(std::is_same_v<T, double>) 
-        cublasDscal(h->handle, this->_cols, alpha.data(), this->data(), this->getLD());
+        cublasDscal(h->handle, this->_cols, alpha.data(), this->data(), this->_ld);
     else throw std::invalid_argument("Unsupported type.");
 }
 
@@ -265,13 +268,13 @@ void Vec<T>::fillRandom(Handle* handle) {
     CHECK_CUDA_ERROR(cudaMalloc(&devStates, this->_cols * sizeof(curandState)));
 
     if constexpr (std::is_same_v<T, float>){
-        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates, 0, this->size(), this->getLD());
+        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates, 0, this->size(), this->_ld);
         h->synch();
-        fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(this->data(), this->_cols, this->getLD(), devStates);
+        fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(this->data(), this->_cols, this->_ld, devStates);
     } else if constexpr (std::is_same_v<T, double>) {
-        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates, 0, this->size(), this->getLD());
+        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates, 0, this->size(), this->_ld);
         h->synch();
-        fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(this->data(), this->_cols, this->getLD(), devStates);
+        fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(this->data(), this->_cols, this->_ld, devStates);
     } else throw std::invalid_argument("Unsupported type.");
     
     CHECK_CUDA_ERROR(cudaFree(devStates));
@@ -295,7 +298,7 @@ void Vec<T>::EBEPow(const Singleton<T>& t, const Singleton<T>& n, cudaStream_t s
     int gridSize  = (this->_cols + blockSize - 1) / blockSize;
 
     EBEPowKernel<<<gridSize, blockSize, 0, stream>>>(
-        this->data(), this->_cols, this->getLD(),
+        this->data(), this->_cols, this->_ld,
         t.data(), n.data()
     );
 

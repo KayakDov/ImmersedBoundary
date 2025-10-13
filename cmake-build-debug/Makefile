@@ -220,248 +220,248 @@ src/algorithms.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/algorithms.cu.s
 .PHONY : src/algorithms.cu.s
 
-src/deviceArrays/BandedMatrix.o: src/deviceArrays/BandedMatrix.cu.o
-.PHONY : src/deviceArrays/BandedMatrix.o
+src/deviceArrays/defFiles/BandedMatrix.o: src/deviceArrays/defFiles/BandedMatrix.cu.o
+.PHONY : src/deviceArrays/defFiles/BandedMatrix.o
 
 # target to build an object file
-src/deviceArrays/BandedMatrix.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/BandedMatrix.cu.o
-.PHONY : src/deviceArrays/BandedMatrix.cu.o
+src/deviceArrays/defFiles/BandedMatrix.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
+.PHONY : src/deviceArrays/defFiles/BandedMatrix.cu.o
 
-src/deviceArrays/BandedMatrix.i: src/deviceArrays/BandedMatrix.cu.i
-.PHONY : src/deviceArrays/BandedMatrix.i
+src/deviceArrays/defFiles/BandedMatrix.i: src/deviceArrays/defFiles/BandedMatrix.cu.i
+.PHONY : src/deviceArrays/defFiles/BandedMatrix.i
 
 # target to preprocess a source file
-src/deviceArrays/BandedMatrix.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/BandedMatrix.cu.i
-.PHONY : src/deviceArrays/BandedMatrix.cu.i
+src/deviceArrays/defFiles/BandedMatrix.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.i
+.PHONY : src/deviceArrays/defFiles/BandedMatrix.cu.i
 
-src/deviceArrays/BandedMatrix.s: src/deviceArrays/BandedMatrix.cu.s
-.PHONY : src/deviceArrays/BandedMatrix.s
+src/deviceArrays/defFiles/BandedMatrix.s: src/deviceArrays/defFiles/BandedMatrix.cu.s
+.PHONY : src/deviceArrays/defFiles/BandedMatrix.s
 
 # target to generate assembly for a file
-src/deviceArrays/BandedMatrix.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/BandedMatrix.cu.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/BandedMatrix.cu.s
-.PHONY : src/deviceArrays/BandedMatrix.cu.s
+src/deviceArrays/defFiles/BandedMatrix.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.s
+.PHONY : src/deviceArrays/defFiles/BandedMatrix.cu.s
 
-src/deviceArrays/Mat.o: src/deviceArrays/Mat.cu.o
-.PHONY : src/deviceArrays/Mat.o
+src/deviceArrays/defFiles/Mat.o: src/deviceArrays/defFiles/Mat.cu.o
+.PHONY : src/deviceArrays/defFiles/Mat.o
 
 # target to build an object file
-src/deviceArrays/Mat.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Mat.cu.o
-.PHONY : src/deviceArrays/Mat.cu.o
+src/deviceArrays/defFiles/Mat.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o
+.PHONY : src/deviceArrays/defFiles/Mat.cu.o
 
-src/deviceArrays/Mat.i: src/deviceArrays/Mat.cu.i
-.PHONY : src/deviceArrays/Mat.i
+src/deviceArrays/defFiles/Mat.i: src/deviceArrays/defFiles/Mat.cu.i
+.PHONY : src/deviceArrays/defFiles/Mat.i
 
 # target to preprocess a source file
-src/deviceArrays/Mat.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Mat.cu.i
-.PHONY : src/deviceArrays/Mat.cu.i
+src/deviceArrays/defFiles/Mat.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.i
+.PHONY : src/deviceArrays/defFiles/Mat.cu.i
 
-src/deviceArrays/Mat.s: src/deviceArrays/Mat.cu.s
-.PHONY : src/deviceArrays/Mat.s
+src/deviceArrays/defFiles/Mat.s: src/deviceArrays/defFiles/Mat.cu.s
+.PHONY : src/deviceArrays/defFiles/Mat.s
 
 # target to generate assembly for a file
-src/deviceArrays/Mat.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Mat.cu.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Mat.cu.s
-.PHONY : src/deviceArrays/Mat.cu.s
+src/deviceArrays/defFiles/Mat.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.s
+.PHONY : src/deviceArrays/defFiles/Mat.cu.s
 
-src/deviceArrays/Singleton.o: src/deviceArrays/Singleton.cu.o
-.PHONY : src/deviceArrays/Singleton.o
+src/deviceArrays/defFiles/Singleton.o: src/deviceArrays/defFiles/Singleton.cu.o
+.PHONY : src/deviceArrays/defFiles/Singleton.o
 
 # target to build an object file
-src/deviceArrays/Singleton.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Singleton.cu.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Singleton.cu.o
-.PHONY : src/deviceArrays/Singleton.cu.o
+src/deviceArrays/defFiles/Singleton.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o
+.PHONY : src/deviceArrays/defFiles/Singleton.cu.o
 
-src/deviceArrays/Singleton.i: src/deviceArrays/Singleton.cu.i
-.PHONY : src/deviceArrays/Singleton.i
+src/deviceArrays/defFiles/Singleton.i: src/deviceArrays/defFiles/Singleton.cu.i
+.PHONY : src/deviceArrays/defFiles/Singleton.i
 
 # target to preprocess a source file
-src/deviceArrays/Singleton.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Singleton.cu.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Singleton.cu.i
-.PHONY : src/deviceArrays/Singleton.cu.i
+src/deviceArrays/defFiles/Singleton.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.i
+.PHONY : src/deviceArrays/defFiles/Singleton.cu.i
 
-src/deviceArrays/Singleton.s: src/deviceArrays/Singleton.cu.s
-.PHONY : src/deviceArrays/Singleton.s
+src/deviceArrays/defFiles/Singleton.s: src/deviceArrays/defFiles/Singleton.cu.s
+.PHONY : src/deviceArrays/defFiles/Singleton.s
 
 # target to generate assembly for a file
-src/deviceArrays/Singleton.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Singleton.cu.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Singleton.cu.s
-.PHONY : src/deviceArrays/Singleton.cu.s
+src/deviceArrays/defFiles/Singleton.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.s
+.PHONY : src/deviceArrays/defFiles/Singleton.cu.s
 
-src/deviceArrays/SquareMat.o: src/deviceArrays/SquareMat.cu.o
-.PHONY : src/deviceArrays/SquareMat.o
+src/deviceArrays/defFiles/SquareMat.o: src/deviceArrays/defFiles/SquareMat.cu.o
+.PHONY : src/deviceArrays/defFiles/SquareMat.o
 
 # target to build an object file
-src/deviceArrays/SquareMat.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/SquareMat.cu.o
-.PHONY : src/deviceArrays/SquareMat.cu.o
+src/deviceArrays/defFiles/SquareMat.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/SquareMat.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.o
+.PHONY : src/deviceArrays/defFiles/SquareMat.cu.o
 
-src/deviceArrays/SquareMat.i: src/deviceArrays/SquareMat.cu.i
-.PHONY : src/deviceArrays/SquareMat.i
+src/deviceArrays/defFiles/SquareMat.i: src/deviceArrays/defFiles/SquareMat.cu.i
+.PHONY : src/deviceArrays/defFiles/SquareMat.i
 
 # target to preprocess a source file
-src/deviceArrays/SquareMat.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/SquareMat.cu.i
-.PHONY : src/deviceArrays/SquareMat.cu.i
+src/deviceArrays/defFiles/SquareMat.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/SquareMat.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.i
+.PHONY : src/deviceArrays/defFiles/SquareMat.cu.i
 
-src/deviceArrays/SquareMat.s: src/deviceArrays/SquareMat.cu.s
-.PHONY : src/deviceArrays/SquareMat.s
+src/deviceArrays/defFiles/SquareMat.s: src/deviceArrays/defFiles/SquareMat.cu.s
+.PHONY : src/deviceArrays/defFiles/SquareMat.s
 
 # target to generate assembly for a file
-src/deviceArrays/SquareMat.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/SquareMat.cu.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/SquareMat.cu.s
-.PHONY : src/deviceArrays/SquareMat.cu.s
+src/deviceArrays/defFiles/SquareMat.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/SquareMat.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.s
+.PHONY : src/deviceArrays/defFiles/SquareMat.cu.s
 
-src/deviceArrays/Tensor.o: src/deviceArrays/Tensor.cu.o
-.PHONY : src/deviceArrays/Tensor.o
+src/deviceArrays/defFiles/Tensor.o: src/deviceArrays/defFiles/Tensor.cu.o
+.PHONY : src/deviceArrays/defFiles/Tensor.o
 
 # target to build an object file
-src/deviceArrays/Tensor.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Tensor.cu.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Tensor.cu.o
-.PHONY : src/deviceArrays/Tensor.cu.o
+src/deviceArrays/defFiles/Tensor.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Tensor.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Tensor.cu.o
+.PHONY : src/deviceArrays/defFiles/Tensor.cu.o
 
-src/deviceArrays/Tensor.i: src/deviceArrays/Tensor.cu.i
-.PHONY : src/deviceArrays/Tensor.i
+src/deviceArrays/defFiles/Tensor.i: src/deviceArrays/defFiles/Tensor.cu.i
+.PHONY : src/deviceArrays/defFiles/Tensor.i
 
 # target to preprocess a source file
-src/deviceArrays/Tensor.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Tensor.cu.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Tensor.cu.i
-.PHONY : src/deviceArrays/Tensor.cu.i
+src/deviceArrays/defFiles/Tensor.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Tensor.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Tensor.cu.i
+.PHONY : src/deviceArrays/defFiles/Tensor.cu.i
 
-src/deviceArrays/Tensor.s: src/deviceArrays/Tensor.cu.s
-.PHONY : src/deviceArrays/Tensor.s
+src/deviceArrays/defFiles/Tensor.s: src/deviceArrays/defFiles/Tensor.cu.s
+.PHONY : src/deviceArrays/defFiles/Tensor.s
 
 # target to generate assembly for a file
-src/deviceArrays/Tensor.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Tensor.cu.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Tensor.cu.s
-.PHONY : src/deviceArrays/Tensor.cu.s
+src/deviceArrays/defFiles/Tensor.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Tensor.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Tensor.cu.s
+.PHONY : src/deviceArrays/defFiles/Tensor.cu.s
 
-src/deviceArrays/Vec.o: src/deviceArrays/Vec.cu.o
-.PHONY : src/deviceArrays/Vec.o
+src/deviceArrays/defFiles/Vec.o: src/deviceArrays/defFiles/Vec.cu.o
+.PHONY : src/deviceArrays/defFiles/Vec.o
 
 # target to build an object file
-src/deviceArrays/Vec.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Vec.cu.o
-.PHONY : src/deviceArrays/Vec.cu.o
+src/deviceArrays/defFiles/Vec.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Vec.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Vec.cu.o
+.PHONY : src/deviceArrays/defFiles/Vec.cu.o
 
-src/deviceArrays/Vec.i: src/deviceArrays/Vec.cu.i
-.PHONY : src/deviceArrays/Vec.i
+src/deviceArrays/defFiles/Vec.i: src/deviceArrays/defFiles/Vec.cu.i
+.PHONY : src/deviceArrays/defFiles/Vec.i
 
 # target to preprocess a source file
-src/deviceArrays/Vec.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Vec.cu.i
-.PHONY : src/deviceArrays/Vec.cu.i
+src/deviceArrays/defFiles/Vec.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Vec.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Vec.cu.i
+.PHONY : src/deviceArrays/defFiles/Vec.cu.i
 
-src/deviceArrays/Vec.s: src/deviceArrays/Vec.cu.s
-.PHONY : src/deviceArrays/Vec.s
+src/deviceArrays/defFiles/Vec.s: src/deviceArrays/defFiles/Vec.cu.s
+.PHONY : src/deviceArrays/defFiles/Vec.s
 
 # target to generate assembly for a file
-src/deviceArrays/Vec.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/Vec.cu.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/Vec.cu.s
-.PHONY : src/deviceArrays/Vec.cu.s
+src/deviceArrays/defFiles/Vec.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Vec.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Vec.cu.s
+.PHONY : src/deviceArrays/defFiles/Vec.cu.s
 
-src/deviceArrays/deviceArrays.o: src/deviceArrays/deviceArrays.cu.o
-.PHONY : src/deviceArrays/deviceArrays.o
+src/deviceArrays/defFiles/deviceArrays.o: src/deviceArrays/defFiles/deviceArrays.cu.o
+.PHONY : src/deviceArrays/defFiles/deviceArrays.o
 
 # target to build an object file
-src/deviceArrays/deviceArrays.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.o
-.PHONY : src/deviceArrays/deviceArrays.cu.o
+src/deviceArrays/defFiles/deviceArrays.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/deviceArrays.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.o
+.PHONY : src/deviceArrays/defFiles/deviceArrays.cu.o
 
-src/deviceArrays/deviceArrays.i: src/deviceArrays/deviceArrays.cu.i
-.PHONY : src/deviceArrays/deviceArrays.i
+src/deviceArrays/defFiles/deviceArrays.i: src/deviceArrays/defFiles/deviceArrays.cu.i
+.PHONY : src/deviceArrays/defFiles/deviceArrays.i
 
 # target to preprocess a source file
-src/deviceArrays/deviceArrays.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.i
-.PHONY : src/deviceArrays/deviceArrays.cu.i
+src/deviceArrays/defFiles/deviceArrays.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/deviceArrays.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.i
+.PHONY : src/deviceArrays/defFiles/deviceArrays.cu.i
 
-src/deviceArrays/deviceArrays.s: src/deviceArrays/deviceArrays.cu.s
-.PHONY : src/deviceArrays/deviceArrays.s
+src/deviceArrays/defFiles/deviceArrays.s: src/deviceArrays/defFiles/deviceArrays.cu.s
+.PHONY : src/deviceArrays/defFiles/deviceArrays.s
 
 # target to generate assembly for a file
-src/deviceArrays/deviceArrays.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/deviceArrays.cu.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/deviceArrays.cu.s
-.PHONY : src/deviceArrays/deviceArrays.cu.s
+src/deviceArrays/defFiles/deviceArrays.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/deviceArrays.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.s
+.PHONY : src/deviceArrays/defFiles/deviceArrays.cu.s
 
-src/deviceArrays/handle.o: src/deviceArrays/handle.cu.o
-.PHONY : src/deviceArrays/handle.o
+src/deviceArrays/defFiles/handle.o: src/deviceArrays/defFiles/handle.cu.o
+.PHONY : src/deviceArrays/defFiles/handle.o
 
 # target to build an object file
-src/deviceArrays/handle.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.o
-.PHONY : src/deviceArrays/handle.cu.o
+src/deviceArrays/defFiles/handle.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/handle.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/handle.cu.o
+.PHONY : src/deviceArrays/defFiles/handle.cu.o
 
-src/deviceArrays/handle.i: src/deviceArrays/handle.cu.i
-.PHONY : src/deviceArrays/handle.i
+src/deviceArrays/defFiles/handle.i: src/deviceArrays/defFiles/handle.cu.i
+.PHONY : src/deviceArrays/defFiles/handle.i
 
 # target to preprocess a source file
-src/deviceArrays/handle.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.i
-.PHONY : src/deviceArrays/handle.cu.i
+src/deviceArrays/defFiles/handle.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/handle.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/handle.cu.i
+.PHONY : src/deviceArrays/defFiles/handle.cu.i
 
-src/deviceArrays/handle.s: src/deviceArrays/handle.cu.s
-.PHONY : src/deviceArrays/handle.s
+src/deviceArrays/defFiles/handle.s: src/deviceArrays/defFiles/handle.cu.s
+.PHONY : src/deviceArrays/defFiles/handle.s
 
 # target to generate assembly for a file
-src/deviceArrays/handle.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/handle.cu.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/handle.cu.s
-.PHONY : src/deviceArrays/handle.cu.s
+src/deviceArrays/defFiles/handle.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/handle.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/handle.cu.s
+.PHONY : src/deviceArrays/defFiles/handle.cu.s
 
-src/deviceArrays/streamHelper.o: src/deviceArrays/streamHelper.cpp.o
-.PHONY : src/deviceArrays/streamHelper.o
+src/deviceArrays/defFiles/streamHelper.o: src/deviceArrays/defFiles/streamHelper.cpp.o
+.PHONY : src/deviceArrays/defFiles/streamHelper.o
 
 # target to build an object file
-src/deviceArrays/streamHelper.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.o
-.PHONY : src/deviceArrays/streamHelper.cpp.o
+src/deviceArrays/defFiles/streamHelper.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.o
+.PHONY : src/deviceArrays/defFiles/streamHelper.cpp.o
 
-src/deviceArrays/streamHelper.i: src/deviceArrays/streamHelper.cpp.i
-.PHONY : src/deviceArrays/streamHelper.i
+src/deviceArrays/defFiles/streamHelper.i: src/deviceArrays/defFiles/streamHelper.cpp.i
+.PHONY : src/deviceArrays/defFiles/streamHelper.i
 
 # target to preprocess a source file
-src/deviceArrays/streamHelper.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.i
-.PHONY : src/deviceArrays/streamHelper.cpp.i
+src/deviceArrays/defFiles/streamHelper.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/streamHelper.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.i
+.PHONY : src/deviceArrays/defFiles/streamHelper.cpp.i
 
-src/deviceArrays/streamHelper.s: src/deviceArrays/streamHelper.cpp.s
-.PHONY : src/deviceArrays/streamHelper.s
+src/deviceArrays/defFiles/streamHelper.s: src/deviceArrays/defFiles/streamHelper.cpp.s
+.PHONY : src/deviceArrays/defFiles/streamHelper.s
 
 # target to generate assembly for a file
-src/deviceArrays/streamHelper.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/streamHelper.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/streamHelper.cpp.s
-.PHONY : src/deviceArrays/streamHelper.cpp.s
+src/deviceArrays/defFiles/streamHelper.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/streamHelper.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.s
+.PHONY : src/deviceArrays/defFiles/streamHelper.cpp.s
 
 src/main.o: src/main.cu.o
 .PHONY : src/main.o
@@ -533,33 +533,33 @@ help:
 	@echo "... src/algorithms.o"
 	@echo "... src/algorithms.i"
 	@echo "... src/algorithms.s"
-	@echo "... src/deviceArrays/BandedMatrix.o"
-	@echo "... src/deviceArrays/BandedMatrix.i"
-	@echo "... src/deviceArrays/BandedMatrix.s"
-	@echo "... src/deviceArrays/Mat.o"
-	@echo "... src/deviceArrays/Mat.i"
-	@echo "... src/deviceArrays/Mat.s"
-	@echo "... src/deviceArrays/Singleton.o"
-	@echo "... src/deviceArrays/Singleton.i"
-	@echo "... src/deviceArrays/Singleton.s"
-	@echo "... src/deviceArrays/SquareMat.o"
-	@echo "... src/deviceArrays/SquareMat.i"
-	@echo "... src/deviceArrays/SquareMat.s"
-	@echo "... src/deviceArrays/Tensor.o"
-	@echo "... src/deviceArrays/Tensor.i"
-	@echo "... src/deviceArrays/Tensor.s"
-	@echo "... src/deviceArrays/Vec.o"
-	@echo "... src/deviceArrays/Vec.i"
-	@echo "... src/deviceArrays/Vec.s"
-	@echo "... src/deviceArrays/deviceArrays.o"
-	@echo "... src/deviceArrays/deviceArrays.i"
-	@echo "... src/deviceArrays/deviceArrays.s"
-	@echo "... src/deviceArrays/handle.o"
-	@echo "... src/deviceArrays/handle.i"
-	@echo "... src/deviceArrays/handle.s"
-	@echo "... src/deviceArrays/streamHelper.o"
-	@echo "... src/deviceArrays/streamHelper.i"
-	@echo "... src/deviceArrays/streamHelper.s"
+	@echo "... src/deviceArrays/defFiles/BandedMatrix.o"
+	@echo "... src/deviceArrays/defFiles/BandedMatrix.i"
+	@echo "... src/deviceArrays/defFiles/BandedMatrix.s"
+	@echo "... src/deviceArrays/defFiles/Mat.o"
+	@echo "... src/deviceArrays/defFiles/Mat.i"
+	@echo "... src/deviceArrays/defFiles/Mat.s"
+	@echo "... src/deviceArrays/defFiles/Singleton.o"
+	@echo "... src/deviceArrays/defFiles/Singleton.i"
+	@echo "... src/deviceArrays/defFiles/Singleton.s"
+	@echo "... src/deviceArrays/defFiles/SquareMat.o"
+	@echo "... src/deviceArrays/defFiles/SquareMat.i"
+	@echo "... src/deviceArrays/defFiles/SquareMat.s"
+	@echo "... src/deviceArrays/defFiles/Tensor.o"
+	@echo "... src/deviceArrays/defFiles/Tensor.i"
+	@echo "... src/deviceArrays/defFiles/Tensor.s"
+	@echo "... src/deviceArrays/defFiles/Vec.o"
+	@echo "... src/deviceArrays/defFiles/Vec.i"
+	@echo "... src/deviceArrays/defFiles/Vec.s"
+	@echo "... src/deviceArrays/defFiles/deviceArrays.o"
+	@echo "... src/deviceArrays/defFiles/deviceArrays.i"
+	@echo "... src/deviceArrays/defFiles/deviceArrays.s"
+	@echo "... src/deviceArrays/defFiles/handle.o"
+	@echo "... src/deviceArrays/defFiles/handle.i"
+	@echo "... src/deviceArrays/defFiles/handle.s"
+	@echo "... src/deviceArrays/defFiles/streamHelper.o"
+	@echo "... src/deviceArrays/defFiles/streamHelper.i"
+	@echo "... src/deviceArrays/defFiles/streamHelper.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

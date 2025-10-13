@@ -1,4 +1,4 @@
-#include "deviceArrays.h"
+#include "../headers/Tensor.h"
 
 template<typename T>
 Tensor<T>::Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::shared_ptr<T> _ptr):GpuArray<T>(rows, cols * layers, ld, _ptr) {

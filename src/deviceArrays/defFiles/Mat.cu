@@ -1,8 +1,12 @@
-#include "deviceArrays.h"
-#include "KernelSupport.cuh"
+#include "../headers/vec.h"
+#include "../headers/deviceArraySupport.h"
+#include "../headers/singleton.h"
+
 #include <cusolverDn.h>
 #include <stdexcept>
-#include <sstream>
+#include "../headers/Mat.h"
+
+#include <iostream>
 
 template <typename T>
 Mat<T> Mat<T>::mult(
@@ -49,9 +53,9 @@ Vec<T> Mat<T>::mult(
     const Singleton<T>* b = this->_get_or_create_target(0, *h, beta, temp_b_ptr);
 
     if constexpr(std::is_same_v<T, float>)
-        cublasSgemv(h->handle, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->data(), this->data(), this->getLD(), other.data(), other.getLD(), b->data(), resPtr->data(), resPtr->getLD());
+        cublasSgemv(h->handle, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->data(), this->data(), this->_ld, other.data(), other._ld, b->data(), resPtr->data(), resPtr->_ld);
     else if constexpr(std::is_same_v<T, double>)
-        cublasDgemv(h->handle, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->data(), this->data(), this->getLD(), other.data(), other.getLD(), b->data(), resPtr->data(), resPtr->getLD());
+        cublasDgemv(h->handle, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->data(), this->data(), this->_ld, other.data(), other._ld, b->data(), resPtr->data(), resPtr->_ld);
     else throw std::invalid_argument("Unsupported type.");
         
     return *resPtr;
@@ -64,7 +68,7 @@ Mat<T> Mat<T>::operator*(const Mat<T>& other) const {
 
 template <typename T>
 Vec<T> Mat<T>::operator*(const Vec<T>& other) const {
-    return this->mult(other);
+    return this->mult(other, nullptr, nullptr, nullptr, nullptr, false);
 }
 
 template<typename T>
@@ -92,7 +96,7 @@ void Mat<T>::set(const T* src, cudaStream_t stream) {
 }
 
 template <typename T>
-void Mat<T>::get(T* dst, cudaStream_t stream) const {
+void Mat<T>::get(T* dst, const cudaStream_t stream) const {
     cudaMemcpy2DAsync(
         dst, this->_rows * sizeof(T),
         this->_ptr.get(), this->_ld * sizeof(T),
@@ -105,7 +109,7 @@ template <typename T>
 void Mat<T>::set(const GpuArray<T>& src, cudaStream_t stream) {
     cudaMemcpy2DAsync(
         this->_ptr.get(), this->_ld * sizeof(T),
-        src.data(), src.getLD() * sizeof(T),
+        src.data(), src._ld * sizeof(T),
         this->_rows * sizeof(T), this->_cols,
         cudaMemcpyDeviceToDevice, stream
     );
@@ -114,7 +118,7 @@ void Mat<T>::set(const GpuArray<T>& src, cudaStream_t stream) {
 template <typename T>
 void Mat<T>::get(GpuArray<T>& dst, cudaStream_t cuStream) const {
     cudaMemcpy2DAsync(
-        dst.data(), dst.getLD() * sizeof(T),
+        dst.data(), dst._ld * sizeof(T),
         this->_ptr.get(), this->_ld * sizeof(T),
         this->_rows * sizeof(T), this->_cols,
         cudaMemcpyDeviceToDevice, cuStream
@@ -165,7 +169,7 @@ void Mat<T>::get(std::ostream& output_stream, bool isText, bool printColMajor, c
     Handle handle(stream);
 
     if(!printColMajor) {
-        Mat<T> mat = Mat<T>::create(this->_rows, this->_cols);
+        Mat<T> mat = Mat<T>::create(this->_cols, this->_rows);
         this -> transpose(mat, &handle);
         mat.get(output_stream, isText, true, stream);
         return;        
@@ -215,9 +219,9 @@ Mat<T> Mat<T>::plus(
             transposeA ? CUBLAS_OP_T : CUBLAS_OP_N,
             transposeB ? CUBLAS_OP_T : CUBLAS_OP_N,
             this->_rows, this->_cols, 
-            a->data(), x.data(), x.getLD(),
-            b->data(), this->data(), this->getLD(),
-            resPtr->data(), resPtr->getLD()
+            a->data(), x.data(), x._ld,
+            b->data(), this->data(), this->_ld,
+            resPtr->data(), resPtr->_ld
         );
     else if constexpr (std:: is_same_v<T, double>)
         cublasDgeam(
@@ -225,9 +229,9 @@ Mat<T> Mat<T>::plus(
             transposeA ? CUBLAS_OP_T : CUBLAS_OP_N,
             transposeB ? CUBLAS_OP_T : CUBLAS_OP_N,
             this->_rows, this->_cols, 
-            a->data(), x.data(), x.getLD(),
-            b->data(), this->data(), this->getLD(),
-            resPtr->data(), resPtr->getLD()
+            a->data(), x.data(), x._ld,
+            b->data(), this->data(), this->_ld,
+            resPtr->data(), resPtr->_ld
         );
     else throw std::invalid_argument("Unsupported type.");
 
@@ -285,7 +289,7 @@ void Mat<T>::mult(const Singleton<T>& alpha, Handle* handle) {
         this->data(),
         this->_rows,
         this->_cols,
-        this->getLD(),
+        this->_ld,
         alpha.data()
     );
 }
@@ -319,9 +323,9 @@ void Mat<T>::transpose(
             this->_cols, // Result rows
             this->_rows, // Result columns
             alpha.data(), 
-            this->data(), this->getLD(),
-            beta.data(), nullptr, this->getLD(), // B is not referenced since beta=0
-            result.data(), result.getLD()
+            this->data(), this->_ld,
+            beta.data(), nullptr, this->_ld, // B is not referenced since beta=0
+            result.data(), result._ld
         );
     } else if constexpr (std::is_same_v<T, double>) {
         double alpha = 1.0;
@@ -333,9 +337,9 @@ void Mat<T>::transpose(
             this->_cols,
             this->_rows,
             &alpha, 
-            this->data(), this->getLD(),
-            &beta, nullptr, this->getLD(),
-            result.data(), result.getLD()
+            this->data(), this->_ld,
+            &beta, nullptr, this->_ld,
+            result.data(), result._ld
         );
     }
 }
@@ -372,7 +376,7 @@ Mat<T> Mat<T>::create(size_t rows, size_t cols){
 
     CHECK_CUDA_ERROR(cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols));//Note: there does not seem to be an asynchronos version of this method.
 
-    return Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter));
+    return Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter));;
 }
 
 template <typename T>
@@ -381,8 +385,8 @@ Mat<T> Mat<T>::subMat(const size_t startRow, const size_t startCol, const size_t
     return Mat<T>(
         height,
         width,
-        this->getLD(),
-        std::shared_ptr<T>(this->_ptr, const_cast<T*>(this->data() + startCol * this->getLD() + startRow))
+        this->_ld,
+        std::shared_ptr<T>(this->_ptr, const_cast<T*>(this->data() + startCol * this->_ld + startRow))
     );
 }
 
@@ -390,7 +394,7 @@ Mat<T> Mat<T>::subMat(const size_t startRow, const size_t startCol, const size_t
 template <typename T>
 Vec<T> Mat<T>::col(const size_t index){
     if (index >= this->_cols) throw std::out_of_range("Out of range");
-    return Vec<T>(this->_rows, std::shared_ptr<T>(this->_ptr, this->data() + index * this->getLD()), 1);
+    return Vec<T>(this->_rows, std::shared_ptr<T>(this->_ptr, this->data() + index * this->_ld), 1);
 }
 template <typename T>
 Vec<T> Mat<T>::row(const size_t index){

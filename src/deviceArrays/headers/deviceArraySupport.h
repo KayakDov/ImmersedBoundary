@@ -2,8 +2,6 @@
 #ifndef BICGSTAB_DEVICEARRAYSUPPORT_H
 #define BICGSTAB_DEVICEARRAYSUPPORT_H
 
-#include <cusolverDn.h>
-#include <fstream>
 #include <vector>
 
 template <typename T>
@@ -44,25 +42,6 @@ public:
     void writeChunk(bool isText);
 };
 
-
-class Handle {
-public:
-    cublasHandle_t handle{};
-    cusolverDnHandle_t cusolverHandle{};
-    cudaStream_t stream;
-    Handle();
-
-    explicit Handle(cudaStream_t user_stream);
-
-    static Handle* _get_or_create_handle(Handle* handle, std::unique_ptr<Handle>& out_ptr_unique);
-
-    ~Handle();
-
-    void synch() const;
-
-private:
-    bool isOwner = false; // Flag to indicate if the class owns the stream and should destroy it.
-};
 
 #define CHECK_CUSOLVER_ERROR(func) \
 do { \

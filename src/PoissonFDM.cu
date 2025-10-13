@@ -1,7 +1,7 @@
 
  #ifndef BICGSTAB_POISSONFDM_CUH
 #define BICGSTAB_POISSONFDM_CUH
-#include "deviceArrays/deviceArrays.h"
+#include "deviceArrays/headers/deviceArrays.h"
 #include "algorithms.cu"
 
 
