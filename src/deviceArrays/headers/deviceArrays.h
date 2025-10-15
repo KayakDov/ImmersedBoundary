@@ -404,7 +404,6 @@ public:
      */
     [[nodiscard]] const T* data() const;
 
-    GpuArray(const GpuArray<T>& other) = default;
     
 };
 

@@ -147,7 +147,6 @@ __global__ void setRHSKernel3D(T* __restrict__ b,
 template <typename T>
 class Set0 {
 private:
-    const size_t* mapDiagIndextoARow;
     T* __restrict__ A;
     const size_t ldA, idGrid, widthA, colXLda;
 public:
@@ -160,8 +159,8 @@ public:
      * @param[in] idGrid The linear index of the current grid point (row in A).
      * @param[in] widthA The width (number of columns) of A, equal to gridSize.
      */
-    __device__ Set0(const size_t* mapDiagIndextoARow, T* __restrict__ A, const size_t ldA, const size_t idGrid, const size_t widthA) :
-        mapDiagIndextoARow(mapDiagIndextoARow), A(A), ldA(ldA), idGrid(idGrid), widthA(widthA), colXLda(idGrid * ldA) {}
+    __device__ Set0(T* __restrict__ A, const size_t ldA, const size_t idGrid, const size_t widthA) :
+        A(A), ldA(ldA), idGrid(idGrid), widthA(widthA), colXLda(idGrid * ldA) {}
 
     /**
      * @brief Sets the corresponding off-diagonal entry to 0 or NAN based on boundary condition logic.
@@ -169,16 +168,22 @@ public:
      * This operator is called to check if a specific off-diagonal entry (corresponding to a neighbor)
      * should be set to 0 (internal point) or NAN (outside band storage).
      *
-     * @param[in] rowDiagonalIndex The diagonal index (offset) corresponding to the neighbor being checked.
+     * @param[in] diagIndex The diagonal index (offset) corresponding to the neighbor being checked.
      */
-    __device__ void operator()(const int32_t rowDiagonalIndex) {
+    __device__ void operator()(const int32_t diagIndex, const size_t rowIndex) {
 
-        const size_t col = ((static_cast<int32_t>(idGrid) + min(rowDiagonalIndex , 0)) % static_cast<int32_t>(widthA) + static_cast<int32_t>(widthA)) % widthA;
-        const size_t indexA = col * ldA + mapDiagIndextoARow[rowDiagonalIndex];
+        const size_t col = ((static_cast<int32_t>(idGrid) + min(diagIndex , 0)) % static_cast<int32_t>(widthA) + static_cast<int32_t>(widthA)) % widthA;
+        const size_t indexA = col * ldA + rowIndex;
 
-        if (col < widthA - abs(rowDiagonalIndex)) A[indexA] = static_cast<T>(0);
+        if (col < widthA - abs(diagIndex)) A[indexA] = static_cast<T>(0);
         else A[indexA] = NAN;
     }
+};
+
+struct Adjacency {
+    const size_t row;
+    const int32_t diag;
+    Adjacency(const size_t row, const int32_t diag): row(row), diag(diag) {}
 };
 
 /**
@@ -201,7 +206,13 @@ public:
 template <typename T>
 __global__ void setAKernel(T* __restrict__ A, const size_t ldA, const size_t widthA,
     const size_t gHeight, const size_t gWidth, const size_t gDepth,
-    const size_t* mapDiagIndextoARow
+    const size_t hereRow,
+    const size_t upRow,
+    const size_t downRow,
+    const size_t leftRow,
+    const size_t rightRow,
+    const size_t frontRow,
+    const size_t backRow
     ) {
     const size_t gCol = blockIdx.x * blockDim.x + threadIdx.x;
     const size_t gRow = blockIdx.y * blockDim.y + threadIdx.y;
@@ -211,15 +222,15 @@ __global__ void setAKernel(T* __restrict__ A, const size_t ldA, const size_t wid
 
     const size_t idGrid = (gLayer * gWidth + gCol) * gHeight + gRow;
 
-    A[idGrid*ldA + mapDiagIndextoARow[0]] = -6;
-    Set0<T> set0(mapDiagIndextoARow, A, ldA, idGrid, widthA);
+    A[idGrid*ldA + hereRow] = -6;
+    Set0<T> set0(A, ldA, idGrid, widthA);
 
-    if (gRow == 0) set0(-1);
-    else if (gRow == gHeight - 1) set0(1);
-    if (gCol == 0) set0(-static_cast<int32_t>(gHeight));
-    else if (gCol == gWidth - 1) set0(gHeight);
-    if (gLayer == 0) set0(-static_cast<int32_t>(gWidth * gHeight));
-    else if (gLayer == gDepth - 1) set0(gWidth * gHeight);
+    if (gRow == 0) set0(-1, upRow);
+    else if (gRow == gHeight - 1) set0(1, downRow);
+    if (gCol == 0) set0(-static_cast<int32_t>(gHeight), leftRow);
+    else if (gCol == gWidth - 1) set0(gHeight, rightRow);
+    if (gLayer == 0) set0(-static_cast<int32_t>(gWidth * gHeight), frontRow);
+    else if (gLayer == gDepth - 1) set0(gWidth * gHeight, backRow);
 
 }
 
@@ -242,6 +253,7 @@ private:
     Vec<T> _b;
     const size_t _rows, _cols, _layers;
 public:
+    const Adjacency here, up, down, left, right, back, front;
     /**
      * @brief Calculates the total number of unknowns (interior points) in the 3D grid.
      * @return The total grid size: $\text{rows} \times \text{cols} \times \text{layers}$.
@@ -279,7 +291,7 @@ private:
      * @param indices device pointer to the int32_t offsets array (length numNonZeroDiags).
      * @param handle contains the stream to run on.
      */
-    Mat<T> setA3d(Vec<size_t> mapDiagIndexToARow, size_t numInds, Handle& handle) {
+    Mat<T> setA(size_t numInds, Handle& handle) {
 
         Mat<T> A = Mat<T>::create(numInds, _b.size());
         A.subMat(1, 0, A._rows - 1, A._cols).fill(1, handle.stream);
@@ -290,13 +302,22 @@ private:
         setAKernel<T><<<grid, block, 0, handle.stream>>>(
             A.data(), A._ld, A._cols,
             _rows, _cols, _layers,
-            mapDiagIndexToARow.data() + gridSize()
+            here.row, up.row, down.row, left.row, right.row, front.row, back.row
         );
         CHECK_CUDA_ERROR(cudaGetLastError());
 
         return A;
     }
 
+    void loadMapRowToDiag(int32_t* diags) {
+        diags[up.row] = up.diag;
+        diags[down.row] = down.diag;
+        diags[left.row] = left.diag;
+        diags[right.row] = right.diag;
+        diags[back.row] = back.diag;
+        diags[front.row] = front.diag;
+        diags[here.row] = here.diag;
+    }
 public:
     /**
     * @brief Constructs the PoissonFDM solver object.
@@ -317,7 +338,15 @@ public:
         _b(b),
         _rows(frontBack._rows),
         _cols(frontBack._cols/2),
-        _layers(topBottom._rows) {
+        _layers(topBottom._rows),
+        here(0, 0),
+        up(1, 1),
+        down(2, -1),
+        left(3, -_rows),
+        right(4, _rows),
+        back(5, _rows*_cols),
+        front(6, -_rows*_cols)
+    {
 
     }
     /**
@@ -331,17 +360,11 @@ public:
     void solve(Vec<T>& x, Handle& handle) {
         constexpr size_t numNonZeroDiags = 7;
         Vec<int32_t> mapARowToDiagonalInd = Vec<int32_t>::create(numNonZeroDiags, handle.stream);
-        int32_t mapRowToDiagCpu[numNonZeroDiags] = {static_cast<int32_t>(0), static_cast<int32_t>(1), static_cast<int32_t>(-1),
-            static_cast<int32_t>(_rows), -static_cast<int32_t>(_rows), static_cast<int32_t>(_rows * _cols),
-            -static_cast<int32_t>(_rows * _cols)};
+        int32_t mapRowToDiagCpu[numNonZeroDiags];
+        loadMapRowToDiag(mapRowToDiagCpu);
         mapARowToDiagonalInd.set(mapRowToDiagCpu, handle.stream);
 
-        size_t mapDiagToRowCpu[2*gridSize()];
-        for (size_t i = 0; i < numNonZeroDiags; ++i) mapDiagToRowCpu[mapRowToDiagCpu[i] + gridSize()] = i;
-        Vec<size_t> mapDiagToRow = Vec<size_t>::create(2*gridSize(), handle.stream);\
-        mapDiagToRow.set(mapDiagToRowCpu, handle.stream);
-
-        Mat<T> AMat = setA3d(mapDiagToRow, numNonZeroDiags, handle);
+        Mat<T> AMat = setA(numNonZeroDiags, handle);
         BandedMat<T> A(AMat, mapARowToDiagonalInd);
         setB(handle.stream);
 
@@ -365,7 +388,7 @@ public:
 int main(int argc, char *argv[]) {
     Handle hand;
 
-    constexpr  size_t dimLength = 80;
+    constexpr  size_t dimLength = 200;
     constexpr size_t height = dimLength, width = dimLength, depth = dimLength, size = height * width * depth;
     constexpr double frontFaceVal = 1;
 

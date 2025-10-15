@@ -162,7 +162,7 @@ public:
      * @param A The left hand side of the equation Ax = b
      * @param result The x of the equation Ax = b
      */
-    void preamable(BandedMat<Float>& A, Vec<Float>& result) {
+    void preamable(const BandedMat<Float>& A, Vec<Float>& result) {
         r_tilde.fillRandom(&handle[0]); // set r_tilde randomly
 
         set(r, b, 0);
