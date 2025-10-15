@@ -3,8 +3,8 @@ PoissonFDM: \
   /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crti.o \
   /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o \
   CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o \
+  CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o \
   CMakeFiles/PoissonFDM.dir/src/Event.cu.o \
-  CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o \
   CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o \
   CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o \
   CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o \
@@ -80,9 +80,9 @@ PoissonFDM: \
 
 CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o:
 
-CMakeFiles/PoissonFDM.dir/src/Event.cu.o:
+CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o:
 
-CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o:
+CMakeFiles/PoissonFDM.dir/src/Event.cu.o:
 
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o:
 

@@ -8,8 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/dov/Documents/LaplaceFiniteDifference/src/BiCGSTAB.cu" "CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/Event.cu" "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o.d"
-  "/home/dov/Documents/LaplaceFiniteDifference/src/algorithms.cu" "CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/BandedMatrix.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Mat.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Singleton.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.o.d"

@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "PoissonFDM"
+			"path" : "BiCGSTAB"
 		}
 	],
 	"backtrace" : 1,
@@ -29,13 +29,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 40,
+				"line" : 32,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 43,
+				"line" : 37,
 				"parent" : 0
 			},
 			{
@@ -105,7 +105,7 @@
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 41,
+				"line" : 33,
 				"parent" : 0
 			}
 		]
@@ -152,7 +152,7 @@
 				7,
 				8,
 				9,
-				10,
+				11,
 				12
 			]
 		},
@@ -186,11 +186,11 @@
 			},
 			"sourceIndexes" : 
 			[
-				11
+				10
 			]
 		}
 	],
-	"id" : "PoissonFDM::@6890427a1f51a3e7e1df",
+	"id" : "BiCGSTAB::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -284,8 +284,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "PoissonFDM",
-	"nameOnDisk" : "PoissonFDM",
+	"name" : "BiCGSTAB",
+	"nameOnDisk" : "BiCGSTAB",
 	"paths" : 
 	{
 		"build" : ".",
@@ -318,19 +318,13 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/PoissonFDM.cu",
+			"path" : "src/BiCGSTAB.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "src/Event.cu",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "src/algorithms.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
@@ -385,6 +379,12 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 1,
 			"path" : "src/deviceArrays/defFiles/streamHelper.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/main.cu",
 			"sourceGroupIndex" : 0
 		},
 		{

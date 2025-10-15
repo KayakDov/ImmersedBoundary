@@ -2,10 +2,10 @@
  #ifndef BICGSTAB_POISSONFDM_CUH
 #define BICGSTAB_POISSONFDM_CUH
 #include "deviceArrays/headers/bandedMat.h"
-#include "algorithms.cu"
+#include "BiCGSTAB.cu"
 
 
-/**
+ /**
  * @brief Map a linear index to coordinates on the front or back faces of the 3D grid.
  *
  * This function determines the (layer, row, col) coordinates corresponding
@@ -287,7 +287,7 @@ private:
         dim3 block(8, 8, 8);
         dim3 grid = makeGridDim( _cols, _rows, _layers, block);
 
-        setAKernel3d<T><<<grid, block, 0, handle.stream>>>(
+        setAKernel<T><<<grid, block, 0, handle.stream>>>(
             A.data(), A._ld, A._cols,
             _rows, _cols, _layers,
             mapDiagIndexToARow.data() + gridSize()
@@ -295,11 +295,6 @@ private:
         CHECK_CUDA_ERROR(cudaGetLastError());
 
         return A;
-    }
-
-
-    void solve2d(Vec<T>& x, Handle hand) {
-
     }
 
 public:
@@ -348,7 +343,7 @@ public:
 
         Mat<T> AMat = setA3d(mapDiagToRow, numNonZeroDiags, handle);
         BandedMat<T> A(AMat, mapARowToDiagonalInd);
-        setB3d(handle.stream);
+        setB(handle.stream);
 
         BiCGSTAB<T> solver(_b);
 

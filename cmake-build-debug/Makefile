@@ -142,6 +142,33 @@ PoissonFDM/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/build
 .PHONY : PoissonFDM/fast
 
+src/BiCGSTAB.o: src/BiCGSTAB.cu.o
+.PHONY : src/BiCGSTAB.o
+
+# target to build an object file
+src/BiCGSTAB.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o
+.PHONY : src/BiCGSTAB.cu.o
+
+src/BiCGSTAB.i: src/BiCGSTAB.cu.i
+.PHONY : src/BiCGSTAB.i
+
+# target to preprocess a source file
+src/BiCGSTAB.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.i
+.PHONY : src/BiCGSTAB.cu.i
+
+src/BiCGSTAB.s: src/BiCGSTAB.cu.s
+.PHONY : src/BiCGSTAB.s
+
+# target to generate assembly for a file
+src/BiCGSTAB.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.s
+.PHONY : src/BiCGSTAB.cu.s
+
 src/Event.o: src/Event.cu.o
 .PHONY : src/Event.o
 
@@ -192,33 +219,6 @@ src/PoissonFDM.s: src/PoissonFDM.cu.s
 src/PoissonFDM.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.s
 .PHONY : src/PoissonFDM.cu.s
-
-src/algorithms.o: src/algorithms.cu.o
-.PHONY : src/algorithms.o
-
-# target to build an object file
-src/algorithms.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o
-.PHONY : src/algorithms.cu.o
-
-src/algorithms.i: src/algorithms.cu.i
-.PHONY : src/algorithms.i
-
-# target to preprocess a source file
-src/algorithms.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/algorithms.cu.i
-.PHONY : src/algorithms.cu.i
-
-src/algorithms.s: src/algorithms.cu.s
-.PHONY : src/algorithms.s
-
-# target to generate assembly for a file
-src/algorithms.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/algorithms.cu.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/algorithms.cu.s
-.PHONY : src/algorithms.cu.s
 
 src/deviceArrays/defFiles/BandedMatrix.o: src/deviceArrays/defFiles/BandedMatrix.cu.o
 .PHONY : src/deviceArrays/defFiles/BandedMatrix.o
@@ -524,15 +524,15 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... BiCGSTAB"
 	@echo "... PoissonFDM"
+	@echo "... src/BiCGSTAB.o"
+	@echo "... src/BiCGSTAB.i"
+	@echo "... src/BiCGSTAB.s"
 	@echo "... src/Event.o"
 	@echo "... src/Event.i"
 	@echo "... src/Event.s"
 	@echo "... src/PoissonFDM.o"
 	@echo "... src/PoissonFDM.i"
 	@echo "... src/PoissonFDM.s"
-	@echo "... src/algorithms.o"
-	@echo "... src/algorithms.i"
-	@echo "... src/algorithms.s"
 	@echo "... src/deviceArrays/defFiles/BandedMatrix.o"
 	@echo "... src/deviceArrays/defFiles/BandedMatrix.i"
 	@echo "... src/deviceArrays/defFiles/BandedMatrix.s"

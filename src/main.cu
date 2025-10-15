@@ -2,7 +2,7 @@
 #include "deviceArrays/headers/squareMat.h"
 #include "deviceArrays/headers/bandedMat.h"
 #include "testMethods.cu"
-#include "algorithms.cu"
+#include "BiCGSTAB.cu"
 #include <fstream>
 #include <stdexcept>
 #include <iostream>

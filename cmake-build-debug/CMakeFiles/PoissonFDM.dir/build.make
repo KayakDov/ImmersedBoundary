@@ -87,11 +87,26 @@ CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
+CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o: CMakeFiles/PoissonFDM.dir/flags.make
+CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o: CMakeFiles/PoissonFDM.dir/includes_CUDA.rsp
+CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/BiCGSTAB.cu
+CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CUDA object CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o"
+	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o -MF CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/BiCGSTAB.cu -o CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o
+
+CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CUDA source to CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.i"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
+
+CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.s"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
+
 CMakeFiles/PoissonFDM.dir/src/Event.cu.o: CMakeFiles/PoissonFDM.dir/flags.make
 CMakeFiles/PoissonFDM.dir/src/Event.cu.o: CMakeFiles/PoissonFDM.dir/includes_CUDA.rsp
 CMakeFiles/PoissonFDM.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/Event.cu
 CMakeFiles/PoissonFDM.dir/src/Event.cu.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CUDA object CMakeFiles/PoissonFDM.dir/src/Event.cu.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CUDA object CMakeFiles/PoissonFDM.dir/src/Event.cu.o"
 	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/PoissonFDM.dir/src/Event.cu.o -MF CMakeFiles/PoissonFDM.dir/src/Event.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/Event.cu -o CMakeFiles/PoissonFDM.dir/src/Event.cu.o
 
 CMakeFiles/PoissonFDM.dir/src/Event.cu.i: cmake_force
@@ -100,21 +115,6 @@ CMakeFiles/PoissonFDM.dir/src/Event.cu.i: cmake_force
 
 CMakeFiles/PoissonFDM.dir/src/Event.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/PoissonFDM.dir/src/Event.cu.s"
-	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
-
-CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o: CMakeFiles/PoissonFDM.dir/flags.make
-CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o: CMakeFiles/PoissonFDM.dir/includes_CUDA.rsp
-CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/algorithms.cu
-CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CUDA object CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o"
-	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o -MF CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/algorithms.cu -o CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o
-
-CMakeFiles/PoissonFDM.dir/src/algorithms.cu.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CUDA source to CMakeFiles/PoissonFDM.dir/src/algorithms.cu.i"
-	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
-
-CMakeFiles/PoissonFDM.dir/src/algorithms.cu.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/PoissonFDM.dir/src/algorithms.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: CMakeFiles/PoissonFDM.dir/flags.make
@@ -269,8 +269,8 @@ CMakeFiles/PoissonFDM.dir/src/testMethods.cu.s: cmake_force
 # Object files for target PoissonFDM
 PoissonFDM_OBJECTS = \
 "CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o" \
+"CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/Event.cu.o" \
-"CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o" \
@@ -286,8 +286,8 @@ PoissonFDM_OBJECTS = \
 PoissonFDM_EXTERNAL_OBJECTS =
 
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o
+CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/Event.cu.o
-CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o
@@ -322,8 +322,8 @@ CMakeFiles/PoissonFDM.dir/build: CMakeFiles/PoissonFDM.dir/cmake_device_link.o
 # Object files for target PoissonFDM
 PoissonFDM_OBJECTS = \
 "CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o" \
+"CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/Event.cu.o" \
-"CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o" \
@@ -339,8 +339,8 @@ PoissonFDM_OBJECTS = \
 PoissonFDM_EXTERNAL_OBJECTS =
 
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o
+PoissonFDM: CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/Event.cu.o
-PoissonFDM: CMakeFiles/PoissonFDM.dir/src/algorithms.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o
