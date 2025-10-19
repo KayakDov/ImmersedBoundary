@@ -220,33 +220,6 @@ src/PoissonFDM.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.s
 .PHONY : src/PoissonFDM.cu.s
 
-src/deviceArrays/DeviceMemory.o: src/deviceArrays/DeviceMemory.cpp.o
-.PHONY : src/deviceArrays/DeviceMemory.o
-
-# target to build an object file
-src/deviceArrays/DeviceMemory.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o
-.PHONY : src/deviceArrays/DeviceMemory.cpp.o
-
-src/deviceArrays/DeviceMemory.i: src/deviceArrays/DeviceMemory.cpp.i
-.PHONY : src/deviceArrays/DeviceMemory.i
-
-# target to preprocess a source file
-src/deviceArrays/DeviceMemory.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.i
-.PHONY : src/deviceArrays/DeviceMemory.cpp.i
-
-src/deviceArrays/DeviceMemory.s: src/deviceArrays/DeviceMemory.cpp.s
-.PHONY : src/deviceArrays/DeviceMemory.s
-
-# target to generate assembly for a file
-src/deviceArrays/DeviceMemory.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.s
-.PHONY : src/deviceArrays/DeviceMemory.cpp.s
-
 src/deviceArrays/defFiles/BandedMatrix.o: src/deviceArrays/defFiles/BandedMatrix.cu.o
 .PHONY : src/deviceArrays/defFiles/BandedMatrix.o
 
@@ -273,6 +246,33 @@ src/deviceArrays/defFiles/BandedMatrix.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.s
 .PHONY : src/deviceArrays/defFiles/BandedMatrix.cu.s
+
+src/deviceArrays/defFiles/DeviceMemory.o: src/deviceArrays/defFiles/DeviceMemory.cpp.o
+.PHONY : src/deviceArrays/defFiles/DeviceMemory.o
+
+# target to build an object file
+src/deviceArrays/defFiles/DeviceMemory.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o
+.PHONY : src/deviceArrays/defFiles/DeviceMemory.cpp.o
+
+src/deviceArrays/defFiles/DeviceMemory.i: src/deviceArrays/defFiles/DeviceMemory.cpp.i
+.PHONY : src/deviceArrays/defFiles/DeviceMemory.i
+
+# target to preprocess a source file
+src/deviceArrays/defFiles/DeviceMemory.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.i
+.PHONY : src/deviceArrays/defFiles/DeviceMemory.cpp.i
+
+src/deviceArrays/defFiles/DeviceMemory.s: src/deviceArrays/defFiles/DeviceMemory.cpp.s
+.PHONY : src/deviceArrays/defFiles/DeviceMemory.s
+
+# target to generate assembly for a file
+src/deviceArrays/defFiles/DeviceMemory.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.s
+.PHONY : src/deviceArrays/defFiles/DeviceMemory.cpp.s
 
 src/deviceArrays/defFiles/Mat.o: src/deviceArrays/defFiles/Mat.cu.o
 .PHONY : src/deviceArrays/defFiles/Mat.o
@@ -560,12 +560,12 @@ help:
 	@echo "... src/PoissonFDM.o"
 	@echo "... src/PoissonFDM.i"
 	@echo "... src/PoissonFDM.s"
-	@echo "... src/deviceArrays/DeviceMemory.o"
-	@echo "... src/deviceArrays/DeviceMemory.i"
-	@echo "... src/deviceArrays/DeviceMemory.s"
 	@echo "... src/deviceArrays/defFiles/BandedMatrix.o"
 	@echo "... src/deviceArrays/defFiles/BandedMatrix.i"
 	@echo "... src/deviceArrays/defFiles/BandedMatrix.s"
+	@echo "... src/deviceArrays/defFiles/DeviceMemory.o"
+	@echo "... src/deviceArrays/defFiles/DeviceMemory.i"
+	@echo "... src/deviceArrays/defFiles/DeviceMemory.s"
 	@echo "... src/deviceArrays/defFiles/Mat.o"
 	@echo "... src/deviceArrays/defFiles/Mat.i"
 	@echo "... src/deviceArrays/defFiles/Mat.s"

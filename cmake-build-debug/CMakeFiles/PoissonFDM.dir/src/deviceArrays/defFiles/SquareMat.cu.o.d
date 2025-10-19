@@ -336,7 +336,7 @@ CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.o : /home/dov/D
     /usr/include/c++/13/bits/locale_facets_nonio.tcc \
     /usr/include/c++/13/bits/locale_conv.h \
     /usr/include/c++/13/bits/quoted_string.h \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/DeviceMemory.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/KernelSupport.cuh \
     /usr/include/c++/13/cstdint \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/deviceArraySupport.h \

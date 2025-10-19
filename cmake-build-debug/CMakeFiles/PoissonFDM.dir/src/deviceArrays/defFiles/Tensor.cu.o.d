@@ -336,4 +336,4 @@ CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Tensor.cu.o : /home/dov/Docu
     /usr/include/c++/13/bits/quoted_string.h \
     /usr/include/c++/13/sstream \
     /usr/include/c++/13/bits/sstream.tcc \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.h
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/DeviceMemory.h

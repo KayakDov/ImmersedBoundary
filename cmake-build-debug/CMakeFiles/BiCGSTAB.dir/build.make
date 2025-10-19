@@ -102,25 +102,11 @@ CMakeFiles/BiCGSTAB.dir/src/Event.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/BiCGSTAB.dir/src/Event.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
-CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o: CMakeFiles/BiCGSTAB.dir/flags.make
-CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp
-CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o: CMakeFiles/BiCGSTAB.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o -MF CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o.d -o CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp
-
-CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp > CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.i
-
-CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp -o CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.s
-
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: CMakeFiles/BiCGSTAB.dir/flags.make
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: CMakeFiles/BiCGSTAB.dir/includes_CUDA.rsp
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/BandedMatrix.cu
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: CMakeFiles/BiCGSTAB.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CUDA object CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o"
 	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o -MF CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/BandedMatrix.cu -o CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
 
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.i: cmake_force
@@ -130,6 +116,20 @@ CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.i: cmake_force
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
+
+CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: CMakeFiles/BiCGSTAB.dir/flags.make
+CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp
+CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: CMakeFiles/BiCGSTAB.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o -MF CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o.d -o CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp
+
+CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp > CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.i
+
+CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp -o CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.s
 
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o: CMakeFiles/BiCGSTAB.dir/flags.make
 CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o: CMakeFiles/BiCGSTAB.dir/includes_CUDA.rsp
@@ -284,8 +284,8 @@ CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.s: cmake_force
 BiCGSTAB_OBJECTS = \
 "CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o" \
-"CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o" \
+"CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/SquareMat.cu.o" \
@@ -302,8 +302,8 @@ BiCGSTAB_EXTERNAL_OBJECTS =
 
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/Event.cu.o
-CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
+CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.o
 CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/SquareMat.cu.o
@@ -339,8 +339,8 @@ CMakeFiles/BiCGSTAB.dir/build: CMakeFiles/BiCGSTAB.dir/cmake_device_link.o
 BiCGSTAB_OBJECTS = \
 "CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o" \
-"CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o" \
+"CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.o" \
 "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/SquareMat.cu.o" \
@@ -357,8 +357,8 @@ BiCGSTAB_EXTERNAL_OBJECTS =
 
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/Event.cu.o
-BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
+BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.o
 BiCGSTAB: CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/SquareMat.cu.o

@@ -145,7 +145,7 @@
 				0,
 				1,
 				2,
-				4,
+				3,
 				5,
 				6,
 				7,
@@ -186,7 +186,7 @@
 			},
 			"sourceIndexes" : 
 			[
-				3,
+				4,
 				12
 			]
 		}
@@ -337,14 +337,14 @@
 		},
 		{
 			"backtrace" : 1,
-			"compileGroupIndex" : 1,
-			"path" : "src/deviceArrays/DeviceMemory.cpp",
+			"compileGroupIndex" : 0,
+			"path" : "src/deviceArrays/defFiles/BandedMatrix.cu",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "src/deviceArrays/defFiles/BandedMatrix.cu",
+			"compileGroupIndex" : 1,
+			"path" : "src/deviceArrays/defFiles/DeviceMemory.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{

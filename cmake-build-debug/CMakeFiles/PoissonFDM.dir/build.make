@@ -117,25 +117,11 @@ CMakeFiles/PoissonFDM.dir/src/Event.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/PoissonFDM.dir/src/Event.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
-CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o: CMakeFiles/PoissonFDM.dir/flags.make
-CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp
-CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o -MF CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o.d -o CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp
-
-CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp > CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.i
-
-CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp -o CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.s
-
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: CMakeFiles/PoissonFDM.dir/flags.make
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: CMakeFiles/PoissonFDM.dir/includes_CUDA.rsp
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/BandedMatrix.cu
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CUDA object CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CUDA object CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o"
 	/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o -MF CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o.d -x cu -rdc=true -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/BandedMatrix.cu -o CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
 
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.i: cmake_force
@@ -145,6 +131,20 @@ CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.i: cmake_for
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CUDA source to assembly CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
+
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: CMakeFiles/PoissonFDM.dir/flags.make
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: CMakeFiles/PoissonFDM.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o -MF CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o.d -o CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o -c /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp
+
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp > CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.i
+
+CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp -o CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.s
 
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o: CMakeFiles/PoissonFDM.dir/flags.make
 CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o: CMakeFiles/PoissonFDM.dir/includes_CUDA.rsp
@@ -285,8 +285,8 @@ PoissonFDM_OBJECTS = \
 "CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/Event.cu.o" \
-"CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o" \
+"CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.o" \
@@ -303,8 +303,8 @@ PoissonFDM_EXTERNAL_OBJECTS =
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/Event.cu.o
-CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
+CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o
 CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.o
@@ -340,8 +340,8 @@ PoissonFDM_OBJECTS = \
 "CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/Event.cu.o" \
-"CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o" \
+"CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o" \
 "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.o" \
@@ -358,8 +358,8 @@ PoissonFDM_EXTERNAL_OBJECTS =
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/Event.cu.o
-PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o
+PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o
 PoissonFDM: CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.o

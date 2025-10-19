@@ -20,7 +20,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/deviceArrays.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/handle.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/handle.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/handle.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/testMethods.cu" "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o.d"
-  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/DeviceMemory.cpp.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/streamHelper.cpp" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.o.d"
   "" "PoissonFDM" "gcc" "CMakeFiles/PoissonFDM.dir/link.d"
   )

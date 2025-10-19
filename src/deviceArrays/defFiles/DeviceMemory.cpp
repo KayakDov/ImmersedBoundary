@@ -1,4 +1,4 @@
-#include "DeviceMemory.h"
+#include "../headers/DeviceMemory.h"
 #include <iostream>
 #include <iomanip> // Required for std::fixed and std::setprecision
 #include <stdexcept>

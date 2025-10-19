@@ -126,10 +126,10 @@ public:
      */
     explicit BiCGSTAB(
         const Vec<T>& b,
+        Mat<T>* preAllocated = nullptr,
         T tolerance = std::is_same_v<T,double> ? T(1e-12) : T(1e-6),
-        size_t maxIterations = 0,
-        Mat<T>* preAllocated = nullptr
-    ):tolerance(tolerance),
+        size_t maxIterations = 0
+        ):tolerance(tolerance),
       b(b),
       paM(preAllocated ? *preAllocated : Mat<T>::create(b.size(), 7)),
       r(paM.col(0)), r_tilde(paM.col(1)), p(paM.col(2)), v(paM.col(3)), s(paM.col(4)), t(paM.col(5)), h(paM.col(6)),

@@ -13,7 +13,7 @@
 #include "handle.h"
 #include <iostream>
 #include <iomanip>
-#include "deviceArrays/DeviceMemory.h"
+#include "DeviceMemory.h"
 
 
 template <typename T> class GpuArray;

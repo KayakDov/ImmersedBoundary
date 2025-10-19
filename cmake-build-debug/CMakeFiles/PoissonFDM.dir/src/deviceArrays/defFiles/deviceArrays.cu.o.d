@@ -338,7 +338,7 @@ CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.o : /home/do
     /usr/include/c++/13/bits/quoted_string.h \
     /usr/include/c++/13/sstream \
     /usr/include/c++/13/bits/sstream.tcc \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/DeviceMemory.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/Tensor.h \
     /usr/include/c++/13/numeric \
     /usr/include/c++/13/bits/stl_numeric.h \

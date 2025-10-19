@@ -3,7 +3,7 @@
 #define BICGSTAB_POISSONFDM_CUH
 #include "deviceArrays/headers/bandedMat.h"
 #include "BiCGSTAB.cu"
-#include "deviceArrays/DeviceMemory.h"
+#include "deviceArrays/headers/DeviceMemory.h"
 
 
  /**
@@ -364,7 +364,7 @@ public:
      * @param A Pre-allocated memory that will be used to compute the solution.  It should be numDiagonals rows and _b.size() columns.
      * @param[in] hand The CUDA handle (stream/context) to manage the computation.
      */
-    void solve(Vec<T>& x, const Mat<T>& A, Handle& hand) {
+    void solve(Vec<T>& x, const Mat<T>& A, Mat<T> prealocatedForBiCGSTAB, Handle& hand) {
 
         Vec<int32_t> mapARowToDiagonalInd = Vec<int32_t>::create(numDiagonals, hand.stream);
         loadMapRowToDiag(mapARowToDiagonalInd, hand.stream);
@@ -381,7 +381,7 @@ public:
         // std::cout << "PoissonFDM::solve  b:\n";
         // _b.get(std::cout, true, false, hand.stream);
 
-        BiCGSTAB<T> solver(_b);
+        BiCGSTAB<T> solver(_b, &prealocatedForBiCGSTAB);
 
         solver.solveUnpreconditionedBiCGSTAB(ABanded, x);
     }
@@ -400,7 +400,7 @@ public:
 int main(int argc, char *argv[]) {
     Handle hand;
 
-    constexpr  size_t dimLength = 2;//225 works
+    constexpr  size_t dimLength = 250;//250 works
     constexpr size_t height = dimLength, width = dimLength, depth = dimLength, size = height * width * depth;
     constexpr double frontFaceVal = 1;
 
@@ -428,15 +428,16 @@ int main(int argc, char *argv[]) {
         bottom.row(layerInd).fill(val, hand.stream);
     }
 
-    auto longVecs = Mat<double>::create(size, 3 + numDiagonals);
+    auto longVecs = Mat<double>::create(size, 32+ numDiagonals + 7);
     auto b = longVecs.col(0);
     b.fill(0, hand.stream);
     auto x = longVecs.col(1);
     auto A = longVecs.subMat(0, 2, size, numDiagonals);
+    auto prealocatedForBiCGSTAB = longVecs.subMat(0, 2 + numDiagonals, size, 7);
 
     PoissonFDM<double> solver(frontBack, leftRight, topBottom, b);
 
-    solver.solve(x, A, hand);
+    solver.solve(x, A, prealocatedForBiCGSTAB, hand);
     // x.get(std::cout, true, false, hand.stream);
 
     return 0;

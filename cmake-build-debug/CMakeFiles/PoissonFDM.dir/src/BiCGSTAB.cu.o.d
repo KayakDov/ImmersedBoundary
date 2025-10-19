@@ -335,7 +335,7 @@ CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o : /home/dov/Documents/LaplaceFiniteD
     /usr/include/c++/13/bits/quoted_string.h \
     /usr/include/c++/13/sstream \
     /usr/include/c++/13/bits/sstream.tcc \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \

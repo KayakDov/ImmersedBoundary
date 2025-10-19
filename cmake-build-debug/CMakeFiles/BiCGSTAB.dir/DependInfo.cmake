@@ -20,7 +20,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/handle.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/handle.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/handle.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/main.cu" "CMakeFiles/BiCGSTAB.dir/src/main.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/main.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/testMethods.cu" "CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o.d"
-  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.cpp" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/DeviceMemory.cpp.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/streamHelper.cpp" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o.d"
   "" "BiCGSTAB" "gcc" "CMakeFiles/BiCGSTAB.dir/link.d"
   )

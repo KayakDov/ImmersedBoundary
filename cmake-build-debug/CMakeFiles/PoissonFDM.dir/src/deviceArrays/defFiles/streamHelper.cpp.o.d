@@ -248,7 +248,7 @@ CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: \
  /usr/include/c++/13/bits/locale_conv.h \
  /usr/include/c++/13/bits/quoted_string.h /usr/include/c++/13/sstream \
  /usr/include/c++/13/bits/sstream.tcc \
- /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/DeviceMemory.h \
+ /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/DeviceMemory.h \
  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime_api.h \
  /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_types.h \
  /usr/include/c++/13/algorithm /usr/include/c++/13/bits/stl_algo.h \

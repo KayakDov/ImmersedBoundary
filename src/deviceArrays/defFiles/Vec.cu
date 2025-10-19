@@ -3,6 +3,7 @@
 #include "../headers/vec.h"
 #include "../headers/singleton.h"
 #include <curand_kernel.h> // For curandState
+#include "../headers/DeviceMemory.h"
 
 #include "deviceArrays/headers/deviceArraySupport.h"
 
@@ -257,28 +258,34 @@ __global__ void fillRandomKernel_double(double* array, size_t size, size_t strid
 
 template <typename T>
 void Vec<T>::fillRandom(Handle* handle) {
-    
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-    
+
     dim3 threadsPerBlock(256);
     dim3 numBlocks((this->_cols + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
-    curandState* devStates;
-    CHECK_CUDA_ERROR(cudaMalloc(&devStates, this->_cols * sizeof(curandState)));
+    curandState* rawDevStates = nullptr;
+    CHECK_CUDA_ERROR(cudaMalloc(&rawDevStates, this->_cols * sizeof(curandState)));
 
-    if constexpr (std::is_same_v<T, float>){
-        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates, 0, this->size(), this->_ld);
+    std::unique_ptr<curandState, decltype(&cudaFreeDeleter)>
+        devStates(rawDevStates, &cudaFreeDeleter);
+
+    std::cout << DeviceMemory() << std::endl << "memory used in rand:  " << this->_cols * sizeof(curandState) / BYTES_PER_GB << "GB";
+
+    if constexpr (std::is_same_v<T, float>) {
+        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates.get(), 0, this->size(), this->_ld);
         h->synch();
-        fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(this->data(), this->_cols, this->_ld, devStates);
-    } else if constexpr (std::is_same_v<T, double>) {
-        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates, 0, this->size(), this->_ld);
+        fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(this->data(), this->_cols, this->_ld, devStates.get());
+    }
+    else if constexpr (std::is_same_v<T, double>) {
+        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates.get(), 0, this->size(), this->_ld);
         h->synch();
-        fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(this->data(), this->_cols, this->_ld, devStates);
-    } else throw std::invalid_argument("Unsupported type.");
-    
-    CHECK_CUDA_ERROR(cudaFree(devStates));
+        fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(this->data(), this->_cols, this->_ld, devStates.get());
+    }
+    else throw std::invalid_argument("Unsupported type.");
+
 }
+
 
 
 template <typename T>
