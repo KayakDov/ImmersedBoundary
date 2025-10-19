@@ -270,7 +270,7 @@ void Vec<T>::fillRandom(Handle* handle) {
     std::unique_ptr<curandState, decltype(&cudaFreeDeleter)>
         devStates(rawDevStates, &cudaFreeDeleter);
 
-    std::cout << DeviceMemory() << std::endl << "memory used in rand:  " << this->_cols * sizeof(curandState) / BYTES_PER_GB << "GB";
+    // std::cout << DeviceMemory() << std::endl << "memory used in rand:  " << this->_cols * sizeof(curandState) / BYTES_PER_GB << "GB";
 
     if constexpr (std::is_same_v<T, float>) {
         setup_kernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates.get(), 0, this->size(), this->_ld);
