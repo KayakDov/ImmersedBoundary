@@ -308,23 +308,65 @@ void Vec<T>::EBEPow(const Singleton<T>& t, const Singleton<T>& n, cudaStream_t s
     CHECK_CUDA_ERROR(cudaGetLastError());
 }
 
-template <typename T>
-void Vec<T>::setSum(const Vec& a, const Vec& b, const Singleton<T>* alpha, const Singleton<T>* beta, Handle* handle){
 
+template <typename T>
+__global__ void setSumKernel(T* d_result, const T* d_a, const T* d_b, const T* alpha, const T* beta, const size_t size) {
+    if (size_t idx = blockIdx.x * blockDim.x + threadIdx.x; idx < size)
+        d_result[idx] = *alpha * d_a[idx] + *beta * d_b[idx];
+}
+
+template <typename T>
+void Vec<T>::setSum(const Vec<T>& a, const Vec<T>& b, const Singleton<T>& alpha, const Singleton<T>& beta, Handle* handle) {
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-    std::unique_ptr<Singleton<T>> temp_a_ptr;
-    const Singleton<T>* alph = this->_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
-    std::unique_ptr<Singleton<T>> temp_b_ptr;
-    const Singleton<T>* bet = this->_get_or_create_target(0, *h, beta, temp_b_ptr);
 
-    this->set(a, h->stream);
-    this->mult(*alph, h);
-    this->add(b, bet, h);
+    constexpr int THREADS_PER_BLOCK = 256;
+    int numBlocks = (this->size() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+
+    setSumKernel<<<numBlocks, THREADS_PER_BLOCK, 0, h->stream>>>(
+        this->data(), // Destination: 'this' vector
+        a.data(),     // Input 1: 'a' vector
+        b.data(),     // Input 2: 'b' vector
+        alpha.data(),            // Scalar alpha (passed by value)
+        beta.data(),             // Scalar beta (passed by value)
+        this->size()                     // Size
+    );
 }
+
+
+ template <typename T>
+__global__ void setDifferenceKernel(T* d_result, const T* d_a, const T* d_b, const T* alpha, const T* beta, const size_t size) {
+        if (size_t idx = blockIdx.x * blockDim.x + threadIdx.x; idx < size)
+            d_result[idx] = *alpha * d_a[idx] - *beta * d_b[idx];
+    }
+
+template<typename T>
+void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> &alpha, const Singleton<T> &beta, Handle *handle){
+
+        std::unique_ptr<Handle> temp_hand_ptr;
+        Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+
+        constexpr int THREADS_PER_BLOCK = 256;
+        int numBlocks = (this->size() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+
+        setDifferenceKernel<<<numBlocks, THREADS_PER_BLOCK, 0, h->stream>>>(
+            this->data(), // Destination: 'this' vector
+            a.data(),     // Input 1: 'a' vector
+            b.data(),     // Input 2: 'b' vector
+            alpha.data(),            // Scalar alpha (passed by value)
+            beta.data(),             // Scalar beta (passed by value)
+            this->size()                     // Size
+        );
+}
+
+
+
+
 
 template class Vec<float>;
 template class Vec<double>;
 template class Vec<size_t>;
 template class Vec<int32_t>;
 template class Vec<unsigned char>;
+
+

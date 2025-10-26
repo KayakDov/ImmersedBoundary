@@ -10,6 +10,43 @@ using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 
 /**
+ * @brief Implements the full BiCGSTAB update for the P (search direction) vector:
+ *
+ * p_new = r + beta * (p_old - omega * v)
+ *
+ * This operation is performed in place on d_p, which holds p_old.
+ *
+ * @tparam T Floating point type.
+ * @param d_p The P vector (input/output).
+ * @param d_r The R residual vector (input).
+ * @param d_v The V vector (input).
+ * @param d_beta Device pointer to the scalar beta (input).
+ * @param d_omega Device pointer to the scalar omega (input).
+ * @param N The size of the vectors.
+ */
+template <typename T>
+__global__ void updatePKernel(
+    T* d_p,
+    const T* d_r,
+    const T* d_v,
+    const T* d_beta,
+    const T* d_omega,
+    const int N)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (idx < N) {
+        // Read the scalars from device memory once
+        const T beta_val = *d_beta;
+        const T omega_val = *d_omega;
+
+        // p[i] = r[i] + beta_val * (p[i] - omega_val * v[i])
+        // The original p[i] is used on the RHS and overwritten on the LHS.
+        d_p[idx] = d_r[idx] + beta_val * (d_p[idx] - omega_val * d_v[idx]);
+    }
+}
+
+/**
  * @brief Implements the Bi-Conjugate Gradient Stabilized (BiCGSTAB) iterative solver
  * for sparse linear systems $A\mathbf{x} = \mathbf{b}$ on the GPU using CUDA streams
  * and cuBLAS for high performance.
@@ -99,17 +136,27 @@ private:
     void set(Vec<T>& dst, const Vec<T>& src, const size_t streamInd){
         dst.set(src, handle[streamInd].stream);
     }
+
     /**
-     * @brief Computes the quotient of two Singletons: $\text{dst} = \text{numerator} / \text{denom}$.
+     * @brief Executes the BiCGSTAB P vector update: p = r + beta * (p - omega * v).
+     * * This is a single, highly efficient kernel launch using internal BiCGSTAB state vectors.
      *
-     * @param[out] dst The Singleton to store the result.
-     * @param[in] numerator The numerator Singleton.
-     * @param[in] denom The denominator Singleton.
-     * @param[in] streamInd The stream index to perform the operation on.
+     * @param[in] streamInd The index of the stream handle to perform the operation on.
      */
-    void setQuotient(Singleton<T>& dst, const Singleton<T>& numerator, const Singleton<T>& denom, const size_t streamInd){
-        dst.set(denom, handle[streamInd].stream);
-        dst.EBEPow(numerator, Singleton<T>::MINUS_ONE, handle[streamInd].stream);
+    void pUpdate(const size_t streamInd) {
+        const int N = p.size();
+        constexpr int THREADS_PER_BLOCK = 256;
+        int numBlocks = (N + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+
+        // Kernel launch performs: p = r + beta * (p - omega * v)
+        updatePKernel<<<numBlocks, THREADS_PER_BLOCK, 0, handle[streamInd].stream>>>(
+            p.data(),       // d_p (Input/Output)
+            r.data(),       // d_r
+            v.data(),       // d_v
+            beta.data(),            // d_beta (Device pointer from Singleton)
+            omega.data(),           // d_omega (Device pointer from Singleton)
+            N
+        );
     }
 
 public:
@@ -204,12 +251,8 @@ public:
             renew({alphaReady, xReady});
             h.add(p, &alpha, handle + 1); // h = x + alpha * p
 
-            temp[0].set(alpha, handle[0].stream);
-            temp[0].mult(Singleton<T>::MINUS_ONE, handle);
-            s.setSum(r, v, &Singleton<T>::ONE, temp, handle); // s = r - alpha * v
+            s.setDifference(r, v, Singleton<T>::ONE, alpha, handle); // s = r - alpha * v
             record(0, {sReady});
-
-            set(x, h, 1);
 
             wait(2, {sReady, hReady});
             if(isSmall(s, temp[2], 2)) break;
@@ -226,14 +269,12 @@ public:
             record(0, {omegaReady});
 
             wait(1, {omegaReady});
-            x.add(s, &omega, handle + 1); // x = h + omega * s
+            x.setSum(h, s, Singleton<T>::ONE, omega, handle + 1); // x = h + omega * s
             record(1, {xReady});
 
             synch(0);
             prodTS.renew();
-            temp[0].set(omega, handle[0].stream);
-            temp[0].mult(Singleton<T>::MINUS_ONE, handle);
-            r.setSum(s, t, &Singleton<T>::ONE, temp, handle); // r = s - omega * t
+            r.setDifference(s, t, Singleton<T>::ONE, omega, handle); // r = s - omega * t
             record(0, {rReady});
 
             wait(2, {xReady, rReady});
@@ -243,17 +284,11 @@ public:
 
             r_tilde.mult(r, rho_new, handle);
 
-            setQuotient(temp[0], rho_new, rho, 0);
-            setQuotient(beta, alpha, omega, 0);
-            beta.EBEPow(temp[0], Singleton<T>::ONE, handle[0].stream); // beta = (rho_new / rho) * (alpha / omega);
+            beta.setProductOfQutients(rho_new, rho, alpha, omega, handle[0].stream); // beta = (rho_new / rho) * (alpha / omega);
 
             set(rho, rho_new, 0);
 
-            p.mult(beta, handle);
-            p.add(r, &Singleton<T>::ONE, handle); // p = r + beta * p
-            temp[0].set(beta, handle[0].stream);
-            temp[0].mult(omega, handle);
-            p.sub(v, temp, handle); // p = p - beta * omega * v
+            pUpdate(0); // p = p - beta * omega * v
 
             TimePoint end = std::chrono::steady_clock::now();
             double iterationTime = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();

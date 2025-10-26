@@ -63,6 +63,16 @@ public:
      * @param stream Optional CUDA stream for device synchronization.
      */
     void set(T val, cudaStream_t stream);
+
+    /**
+     * Multiplies to fractions, and sets this to the result.
+     * @param numA
+     * @param denA
+     * @param numB
+     * @param denB
+     * @param stream
+     */
+    void setProductOfQutients(const Singleton<T>& numA, const Singleton<T>& denA, const Singleton<T>& numB, const Singleton<T>& denB, cudaStream_t stream);
 };
 
 #endif //BICGSTAB_SINGLETON_H

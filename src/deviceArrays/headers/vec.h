@@ -187,12 +187,13 @@ public:
      * Performs: this = alpha * a + beta * B
      * 
      * @param a First vector.
-     * @param B Second vector.
+     * @param b Second vector.
      * @param alpha Scaling factor for a.
      * @param beta Scaling factor for B.
      * @param handle Optional GPU handle.
      */
-    void setSum(const Vec& a, const Vec& B, const Singleton<T>* alpha, const Singleton<T>* beta, Handle* handle);
+    void setSum(const Vec<T> &a, const Vec<T> &b, const Singleton<T> &alpha, const Singleton<T> &beta, Handle *handle);
+    void setDifference(const Vec<T>& a, const Vec<T>& b, const Singleton<T>& alpha, const Singleton<T>& beta, Handle* handle);
 };
 
 #endif //BICGSTAB_VEC_H

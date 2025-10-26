@@ -30,6 +30,29 @@ void Singleton<T>::set(const T val, cudaStream_t stream){
     this->Vec<T>::set(cpuPointer, stream);    
 }
 
+
+
+template <typename T>
+__global__ void setProductOfQutientsKernel(T* result, const T* numA, const T* denA, const T* numB, const T* denB) {
+    if (blockIdx.x * blockDim.x + threadIdx.x == 0)
+        *result = *numA * *numB/(*denA * *denB);
+}
+
+template<typename T>
+void Singleton<T>::setProductOfQutients(const Singleton<T> &numA, const Singleton<T> &denA, const Singleton<T> &numB, const Singleton<T> &denB, cudaStream_t stream) {
+
+    constexpr int THREADS_PER_BLOCK = 1;
+    int numBlocks = 1;
+
+    setProductOfQutientsKernel<<<numBlocks, THREADS_PER_BLOCK, 0, stream>>>(
+        this->data(), // Destination: 'this' vector
+        numA.data(),     // Input 1: 'a' vector
+        denA.data(),     // Input 2: 'b' vector
+        numB.data(),            // Scalar alpha (passed by value)
+        denB.data()             // Scalar beta (passed by value)
+    );
+}
+
 template <typename T>
 const Singleton<T> Singleton<T>::ONE = Singleton<T>::create(static_cast<T>(1));
 

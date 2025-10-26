@@ -441,6 +441,8 @@ void freeMat(const std::initializer_list<std::reference_wrapper<Mat<T>>> destruc
     freeMat<double>({boundaries, frontBack, leftRight, topBottom, front, back, top, bottom});
 
     solver.solve(x, prealocatedForBiCGSTAB);
+
+    // x.get(std::cout, true, false, stream);
 }
 
 /**
@@ -459,9 +461,12 @@ int main(int argc, char *argv[]) {
 
     std::cout << "dimension size, number of iterations, total time" << std::endl;
     for (size_t i = 2; i < 350; ++i) {
+
+    // size_t i = 2;
         std::cout << i << ", ";
         testPoisson(i, hand.stream);
         cudaDeviceSynchronize();
+
     }
 
     return 0;

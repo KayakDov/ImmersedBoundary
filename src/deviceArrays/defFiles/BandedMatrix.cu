@@ -58,8 +58,7 @@ __global__ void multVecKernel(
             0;
     } else val = 0;
 
-    for (int offset = 16; offset > 0; offset >>= 1)
-        val += __shfl_down_sync(0xFFFFFFFF, val, offset);
+    for (int offset = 16; offset > 0; offset >>= 1) val += __shfl_down_sync(0xFFFFFFFF, val, offset);
 
     size_t indR = rowX * strideR;
 
@@ -96,7 +95,7 @@ void BandedMat<T>::mult(
 
     if (transpose) (const_cast<Vec<int32_t>&>(_indices)).mult(Singleton<int32_t>::MINUS_ONE, h);
 
-    multVecKernel<<<this->_rows, 32, 0, h->stream>>>(
+    multVecKernel<<<this->_rows, this->_cols, 0, h->stream>>>(
         this->data(), this->_rows, this->_ld,
         _indices.data(), this->_cols,
         other.data(), other._ld,
