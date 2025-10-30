@@ -1,43 +1,13 @@
 file(REMOVE_RECURSE
   "CMakeFiles/PoissonFDM.dir/link.d"
   "CMakeFiles/PoissonFDM.dir/cmake_device_link.o"
-  "CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/Event.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/Event.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/Poisson/FastDiagonalizationMethod.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/Poisson/FastDiagonalizationMethod.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/Poisson/FiniteDiffMethod.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/Poisson/FiniteDiffMethod.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/Poisson/GridBoundary.cpp.o"
-  "CMakeFiles/PoissonFDM.dir/src/Poisson/GridBoundary.cpp.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/SquareMat.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Tensor.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Tensor.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Vec.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Vec.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/handle.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/handle.cu.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.o"
-  "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.o.d"
-  "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o"
-  "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o.d"
+  "CMakeFiles/PoissonFDM.dir/src/Poisson/FiniteDiffMethodPoisson.cu.o"
+  "CMakeFiles/PoissonFDM.dir/src/Poisson/FiniteDiffMethodPoisson.cu.o.d"
   "PoissonFDM"
   "PoissonFDM.pdb"
 )
 
 # Per-language clean rules from dependency scanning.
-foreach(lang CUDA CXX)
+foreach(lang CUDA)
   include(CMakeFiles/PoissonFDM.dir/cmake_clean_${lang}.cmake OPTIONAL)
 endforeach()

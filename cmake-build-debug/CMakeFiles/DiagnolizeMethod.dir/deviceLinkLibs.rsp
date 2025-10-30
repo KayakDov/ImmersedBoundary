@@ -1,0 +1,1 @@
+  -L"/usr/local/cuda-12.9/targets/x86_64-linux/lib/stubs"  -L"/usr/local/cuda-12.9/targets/x86_64-linux/lib"  libBiCGSTAB_LIB.a  -ldl "/usr/lib/x86_64-linux-gnu/librt.a" "/usr/local/cuda-12.9/targets/x86_64-linux/lib/libculibos.a" -lcudadevrt -lcudart_static -lrt -lpthread 

@@ -58,6 +58,12 @@ public:
      * @note This function assumes the matrix is square.
      */
     void eigen(Vec<T> &eVals, SquareMat<T> *eVecs, Mat<T> *temp = nullptr, Handle *handle = nullptr) const;
+
+    /**
+     * Sets this matrix to be the identity matrix.
+     * @param stream
+     */
+    SquareMat setToIdentity(cudaStream_t stream);
 };
 
 #endif //BICGSTAB_SQUAREMAT_H

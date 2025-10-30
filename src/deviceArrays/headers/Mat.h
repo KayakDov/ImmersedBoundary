@@ -17,8 +17,9 @@
 template <typename T>
 class Mat : public GpuArray<T> {
     using GpuArray<T>::mult;
-protected:
+private:
 
+protected:
     /**
      * @brief Protected constructor. Use static create() method or derived classes.
      * @param rows Number of rows in the matrix.
@@ -29,6 +30,16 @@ protected:
     Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr);
 
 public:
+
+    /**
+     * Creates a vector that is a window into part of this matrix, or the underlying data.
+     * Note: before using this method, make sure row, col, or diag don't meet your needs, as they are safer.
+     * @param offset The vector starts here relative to the first element of this matrix.
+     * @param ld The step size between vector elements.
+     * @param size The number of elements in the new vector.
+     * @return The new vector created that is a window into this matrix.
+     */
+    Vec<T> vec(size_t offset, size_t ld, size_t size);
 
     /**
      * @copydoc GpuArray::size
@@ -172,7 +183,7 @@ public:
      * @param index
      * @return The diagonal, as a vector.
      */
-    virtual Vec<T> diagonal(int32_t index);
+    virtual Vec<T> diag(int32_t index);
     /**
      * @brief Normalize the columns of the matrix, setting a specific row to 1.
      * @param setRowTo1 Index of the row that should be set to 1.
@@ -180,5 +191,6 @@ public:
      * @note Not yet implemented.
      */
     virtual void normalizeCols(size_t setRowTo1, Handle* handle);
+
 };
 #endif //BICGSTAB_MAT_H

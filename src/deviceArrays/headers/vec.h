@@ -27,13 +27,9 @@ class Vec : public GpuArray<T> {
     using GpuArray<T>::mult;
 
 private:
-    /**
-     * @brief Grants access to Mat and Tensor friend methods that produce Vec views.
-     */
-    friend Vec<T> Mat<T>::row(size_t index);
-    friend Vec<T> Mat<T>::col(size_t index);
+    friend Vec<T> Mat<T>::vec(size_t offset, size_t ld, size_t size);
     friend Vec<T> Tensor<T>::depth(size_t row, size_t col);
-    friend Vec<T> Mat<T>::diagonal(size_t index);
+
 
 protected:
     /**

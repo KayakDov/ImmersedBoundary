@@ -163,7 +163,7 @@ Vec<T>* GpuArray<T>::_get_or_create_target(size_t length, Vec<T>* result, std::u
  * @param ldR Leading dimension of C (must be >= heightR).
  */
 template <typename T>
-__global__ void kroneckerKernel2D(const T* A, size_t heightA, size_t widthA, size_t ldA,
+__global__ void kroneckerKernel(const T* A, size_t ldA,
                                   const T* B, size_t heightB, size_t widthB, size_t ldB,
                                   T* result, size_t heightR, size_t widthR, size_t ldR) {
 
@@ -177,26 +177,25 @@ __global__ void kroneckerKernel2D(const T* A, size_t heightA, size_t widthA, siz
         const size_t colB = colR % widthB;
         const size_t rowB = rowR % heightB;
 
-        result[colR * ldR + rowR] = A[colA * ldA + rowA] * B[colB * ldB + rowB];
+        result[colR * ldR + rowR] += A[colA * ldA + rowA] * B[colB * ldB + rowB];
     }
 }
 
 template<typename T>
-void GpuArray<T>::multKronecker(const GpuArray<T> &other, GpuArray<T>& result, cudaStream_t stream) const {
+void GpuArray<T>::multKronecker(const GpuArray<T>& other, GpuArray<T>& result, cudaStream_t stream) const {
 
     constexpr int threadsPerBlock = 16;
 
-    const int gridX = (result->_cols + threadsPerBlock - 1) / threadsPerBlock;
-    const int gridY = (result->_rows + threadsPerBlock - 1) / threadsPerBlock;
+    const int gridX = (result._cols + threadsPerBlock - 1) / threadsPerBlock;
+    const int gridY = (result._rows + threadsPerBlock - 1) / threadsPerBlock;
 
     dim3 blockSize(threadsPerBlock, threadsPerBlock);
     dim3 gridSize(gridX, gridY);
 
-    kroneckerKernel2D<<<gridSize, blockSize, 0, stream>>>(
-        this->data(), this->_rows, this->_cols, this->_ld,
+    kroneckerKernel<<<gridSize, blockSize, 0, stream>>>(
+        this->data(), this->_ld,
         other.data(), other._rows, other._cols, other._ld,
-        result->data(), result->_rows, result->_cols, result->_ld,
-        result->size()
+        result.data(), result._rows, result._cols, result._ld
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());

@@ -70,6 +70,11 @@ Vec<T> Mat<T>::operator*(const Vec<T>& other) const {
 }
 
 template<typename T>
+Vec<T> Mat<T>::vec(size_t offset, size_t ld, size_t size) {
+    return Vec<T>(size, std::shared_ptr<T>(this->_ptr, this->data() + offset), ld);
+}
+
+template<typename T>
 Mat<T>::Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr): GpuArray<T>(rows, cols, ld, _ptr) {
 }
 
@@ -376,9 +381,6 @@ Mat<T> Mat<T>::create(size_t rows, size_t cols){
     T* rawPtr = nullptr;
     size_t pitch = 0;
 
-    // std::cout << "Mat.cu::create " << DeviceMemory() << std::endl;
-    // std::cout << "allocating " << rows * cols * sizeof(T) / BYTES_PER_GB << std::endl;
-
     CHECK_CUDA_ERROR(cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols));//Note: there does not seem to be an asynchronos version of this method.
 
     return Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter));;
@@ -399,26 +401,26 @@ Mat<T> Mat<T>::subMat(const size_t startRow, const size_t startCol, const size_t
 template <typename T>
 Vec<T> Mat<T>::col(const size_t index){
     if (index >= this->_cols) throw std::out_of_range("Out of range");
-    return Vec<T>(this->_rows, std::shared_ptr<T>(this->_ptr, this->data() + index * this->_ld), 1);
+    return this->vec(index * this->_ld, 1, this->_rows);
+
 }
 template <typename T>
 Vec<T> Mat<T>::row(const size_t index){
     if (index > this->_rows) throw std::out_of_range("Out of range");
-    return Vec<T>(this->_cols, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index), this->_ld);
+    return this->vec(index, this->_ld, this->_cols);
 }
 
 template<typename T>
-Vec<T> Mat<T>::diagonal(int32_t index) {
+Vec<T> Mat<T>::diag(int32_t index) {
 
     if (index >= 0) {
-        if (index > this-> _cols) throw std::out_of_range("Out of range");
-        size_t size = std::min(this->_rows, this->_cols - index);
-        return Vec<T>(size, index * this->ld, this->_ld + 1);
-    }
-    else {
-        if (index >= this->_rows) throw std::out_of_range("Out of range");
-        size_t size = std::min(this->_cols, this->_rows + index);
-        return Vec<T>(size, index, this->_ld + 1);
+        if (index >= this-> _cols) throw std::out_of_range("Out of range");
+        const size_t size = std::min(this->_rows, this->_cols - index);
+        return this->vec(index * this->_ld, this->_ld + 1, size);
+    } else {
+        if (-index >= this->_rows) throw std::out_of_range("Out of range.");
+        const size_t size = std::min(this->_cols, this->_rows + index);
+        return this->vec(-index, this->_ld + 1, size);
     }
 }
 

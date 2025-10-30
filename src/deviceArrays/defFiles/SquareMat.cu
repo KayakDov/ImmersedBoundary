@@ -132,6 +132,34 @@ void SquareMat<T>::eigen(
     // processInfo(info_dev);
 }
 
+template <typename T>
+__global__ void setToIdentityKernel(T* __restrict__ mat, const size_t height, const size_t ld) {
+    const size_t row = blockIdx.y * blockDim.y + threadIdx.y;
+    const size_t col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (row < height && col < height)
+        mat[col * ld + row] = row == col ? 1 : 0;
+
+}
+
+template<typename T>
+SquareMat<T> SquareMat<T>::setToIdentity(cudaStream_t stream) {
+
+    constexpr dim3 blockDim(16, 16);
+
+    const dim3 gridDim(
+        (this->_cols + blockDim.x - 1) / blockDim.x,
+        (this->_rows + blockDim.y - 1) / blockDim.y
+    );
+
+    setToIdentityKernel<T><<<gridDim, blockDim, 0, stream>>>(
+        this->data(),
+        this->_rows,
+        this->_ld
+    );
+    return *this;
+}
+
 template class SquareMat<float>;
 template class SquareMat<double>;
 template class SquareMat<size_t>;
