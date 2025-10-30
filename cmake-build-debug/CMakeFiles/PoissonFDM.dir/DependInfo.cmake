@@ -10,7 +10,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/dov/Documents/LaplaceFiniteDifference/src/BiCGSTAB.cu" "CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/BiCGSTAB.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/Event.cu" "CMakeFiles/PoissonFDM.dir/src/Event.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/Event.cu.o.d"
-  "/home/dov/Documents/LaplaceFiniteDifference/src/PoissonFDM.cu" "CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/FastDiagonalizationMethod.cu" "CMakeFiles/PoissonFDM.dir/src/Poisson/FastDiagonalizationMethod.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/Poisson/FastDiagonalizationMethod.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/FiniteDiffMethod.cu" "CMakeFiles/PoissonFDM.dir/src/Poisson/FiniteDiffMethod.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/Poisson/FiniteDiffMethod.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/BandedMatrix.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Mat.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Mat.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Singleton.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Singleton.cu.o.d"
@@ -20,6 +21,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/deviceArrays.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/deviceArrays.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/handle.cu" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/handle.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/handle.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/testMethods.cu" "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/testMethods.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/GridBoundary.cpp" "CMakeFiles/PoissonFDM.dir/src/Poisson/GridBoundary.cpp.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/Poisson/GridBoundary.cpp.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/streamHelper.cpp" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.o" "gcc" "CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/streamHelper.cpp.o.d"
   "" "PoissonFDM" "gcc" "CMakeFiles/PoissonFDM.dir/link.d"

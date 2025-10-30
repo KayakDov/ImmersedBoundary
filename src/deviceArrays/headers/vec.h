@@ -33,6 +33,7 @@ private:
     friend Vec<T> Mat<T>::row(size_t index);
     friend Vec<T> Mat<T>::col(size_t index);
     friend Vec<T> Tensor<T>::depth(size_t row, size_t col);
+    friend Vec<T> Mat<T>::diagonal(size_t index);
 
 protected:
     /**

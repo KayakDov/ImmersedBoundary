@@ -407,6 +407,21 @@ Vec<T> Mat<T>::row(const size_t index){
     return Vec<T>(this->_cols, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index), this->_ld);
 }
 
+template<typename T>
+Vec<T> Mat<T>::diagonal(int32_t index) {
+
+    if (index >= 0) {
+        if (index > this-> _cols) throw std::out_of_range("Out of range");
+        size_t size = std::min(this->_rows, this->_cols - index);
+        return Vec<T>(size, index * this->ld, this->_ld + 1);
+    }
+    else {
+        if (index >= this->_rows) throw std::out_of_range("Out of range");
+        size_t size = std::min(this->_cols, this->_rows + index);
+        return Vec<T>(size, index, this->_ld + 1);
+    }
+}
+
 // Assuming you have a standard Deleter for cudaFree
 struct cudaFreeDeleter {
     void operator()(void* ptr) const {

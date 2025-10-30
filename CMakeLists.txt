@@ -42,7 +42,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(BiCGSTAB PRIVATE CUDA::cudart CUDA::cublas CUDA::cusolver)
 
 # Test executable builds Poisson harness plus all library sources (without main.cu)
-add_executable(PoissonFDM src/PoissonFDM.cu ${LIB_SOURCES})
+add_executable(PoissonFDM src/Poisson/FiniteDiffMethod.cu ${LIB_SOURCES})
 target_include_directories(PoissonFDM PRIVATE ${CMAKE_SOURCE_DIR}/src)
 set_target_properties(PoissonFDM PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_link_libraries(PoissonFDM

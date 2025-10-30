@@ -130,7 +130,78 @@ Vec<T>* GpuArray<T>::_get_or_create_target(size_t length, Vec<T>* result, std::u
         return out_ptr_unique.get();
     }
 }
-// CuArray
+
+// --- kronecker_kernel.cu (or part of deviceArrays.cu) ---
+
+#include <cuda_runtime.h>
+// Include the deviceArrays.h header here to get GpuArray class definition
+
+/**
+ * @brief CUDA kernel for computing the Kronecker product C = A (x) B using a 2D block grid.
+ *
+ * This kernel assigns one thread to each element of the resulting matrix C by
+ * mapping the thread's 2D global index (row, col) directly to the element's
+ * position in C.
+ *
+ * The dimensions are:
+ * - A: (heightA x widthA)
+ * - B: (heightB x widthB)
+ * - C: (heightA * heightB) x (widthA * widthB)
+ *
+ * @tparam T The data type of the matrix elements (e.g., float, double).
+ * @param A Pointer to matrix A data on the device.
+ * @param heightA Number of rows in A.
+ * @param widthA Number of columns in A.
+ * @param ldA Leading dimension of A (must be >= heightA).
+ * @param B Pointer to matrix B data on the device.
+ * @param heightB Number of rows in B.
+ * @param widthB Number of columns in B.
+ * @param ldB Leading dimension of B (must be >= heightB).
+ * @param result Pointer to result matrix C data on the device.
+ * @param heightR Number of rows in C (heightA * heightB).
+ * @param widthR Number of columns in C (widthA * widthB).
+ * @param ldR Leading dimension of C (must be >= heightR).
+ */
+template <typename T>
+__global__ void kroneckerKernel2D(const T* A, size_t heightA, size_t widthA, size_t ldA,
+                                  const T* B, size_t heightB, size_t widthB, size_t ldB,
+                                  T* result, size_t heightR, size_t widthR, size_t ldR) {
+
+    const size_t colR = blockIdx.x * blockDim.x + threadIdx.x; // Column index in C (0 to widthR - 1)
+    const size_t rowR = blockIdx.y * blockDim.y + threadIdx.y; // Row index in C (0 to heightR - 1)
+
+    if (rowR < heightR && colR < widthR) {
+
+        const size_t colA = colR / widthB;
+        const size_t rowA = rowR / heightB;
+        const size_t colB = colR % widthB;
+        const size_t rowB = rowR % heightB;
+
+        result[colR * ldR + rowR] = A[colA * ldA + rowA] * B[colB * ldB + rowB];
+    }
+}
+
+template<typename T>
+void GpuArray<T>::multKronecker(const GpuArray<T> &other, GpuArray<T>& result, cudaStream_t stream) const {
+
+    constexpr int threadsPerBlock = 16;
+
+    const int gridX = (result->_cols + threadsPerBlock - 1) / threadsPerBlock;
+    const int gridY = (result->_rows + threadsPerBlock - 1) / threadsPerBlock;
+
+    dim3 blockSize(threadsPerBlock, threadsPerBlock);
+    dim3 gridSize(gridX, gridY);
+
+    kroneckerKernel2D<<<gridSize, blockSize, 0, stream>>>(
+        this->data(), this->_rows, this->_cols, this->_ld,
+        other.data(), other._rows, other._cols, other._ld,
+        result->data(), result->_rows, result->_cols, result->_ld,
+        result->size()
+    );
+
+    CHECK_CUDA_ERROR(cudaGetLastError());
+}
+
 template class GpuArray<float>;
 template class GpuArray<double>;
 template class GpuArray<int32_t>;

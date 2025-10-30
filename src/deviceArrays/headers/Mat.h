@@ -166,6 +166,14 @@ public:
     virtual Vec<T> row(size_t index);
 
     /**
+     * @brief Gets the desired diagonal.  An index of 0 is the primary diagonal, a positive index indicates the start
+     * column of the super diagonal and a negative index is the start row of the sub diagonal.
+     *
+     * @param index
+     * @return The diagonal, as a vector.
+     */
+    virtual Vec<T> diagonal(int32_t index);
+    /**
      * @brief Normalize the columns of the matrix, setting a specific row to 1.
      * @param setRowTo1 Index of the row that should be set to 1.
      * @param handle Optional Handle object for GPU streams.

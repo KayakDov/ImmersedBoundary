@@ -175,14 +175,14 @@ public:
         const Vec<T>& b,
         Mat<T>* preAllocated = nullptr,
         T tolerance = std::is_same_v<T,double> ? T(1e-12) : T(1e-6),
-        size_t maxIterations = 0
+        size_t maxIterations = 1500
         ):tolerance(tolerance),
       b(b),
       paM(preAllocated ? *preAllocated : Mat<T>::create(b.size(), 7)),
       r(paM.col(0)), r_tilde(paM.col(1)), p(paM.col(2)), v(paM.col(3)), s(paM.col(4)), t(paM.col(5)), h(paM.col(6)),
       paV(Vec<T>::create(9, handle[0].stream)),
       rho(paV.get(0)), alpha(paV.get(1)), omega(paV.get(2)), rho_new(paV.get(3)), beta(paV.get(4)), temp({paV.get(5), paV.get(6), paV.get(7), paV.get(8)}),
-      maxIterations(maxIterations <= 0 ? 5*b.size() : maxIterations)
+      maxIterations(maxIterations)
     {
         static_assert(std::is_same_v<T,float> || std::is_same_v<T,double>,
                 "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
@@ -295,6 +295,7 @@ public:
             totalTime += iterationTime;
         }
 
+        if (numIterations >= maxIterations) std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
         std::cout << numIterations << ", " << totalTime << std::endl;
         
         return x;

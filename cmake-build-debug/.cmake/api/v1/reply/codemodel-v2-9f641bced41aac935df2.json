@@ -1,0 +1,69 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.24"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "BiCGSTAB",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "BiCGSTAB::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-BiCGSTAB-Debug-49ad00e665b61ba2ba7f.json",
+					"name" : "BiCGSTAB",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "PoissonFDM::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-PoissonFDM-Debug-829d4a826a78762d5432.json",
+					"name" : "PoissonFDM",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug",
+		"source" : "/home/dov/Documents/LaplaceFiniteDifference"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 8
+	}
+}

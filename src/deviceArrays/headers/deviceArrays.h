@@ -208,6 +208,18 @@ protected:
      * @warning Ensure that handle, alpha, beta, and result pointers are properly allocated and valid before calling.
      */
     virtual void mult(const GpuArray<T>& other, GpuArray<T>* result, Handle* handle, const Singleton<T> *alpha, const Singleton<T> *beta, bool transposeA, bool transposeB) const;
+
+    /**
+     * https://en.wikipedia.org/wiki/Kronecker_product
+     * @brief Computes the Kronecker product C = A (x) B, where A is *this and B is *other.
+     *
+     * The result matrix C will have dimensions (heightA * heightB) x (widthA * widthB).
+     *
+     * @param other The second matrix (B) in the Kronecker product.
+     * @param result Pointer to the GpuArray where the result (C) will be stored.
+     * @param stream
+     */
+    void multKronecker(const GpuArray &other, GpuArray &result, cudaStream_t stream) const;
     
 public:
     /**

@@ -10,6 +10,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/dov/Documents/LaplaceFiniteDifference/src/BiCGSTAB.cu" "CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/BiCGSTAB.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/Event.cu" "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/Event.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/FastDiagonalizationMethod.cu" "CMakeFiles/BiCGSTAB.dir/src/Poisson/FastDiagonalizationMethod.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/Poisson/FastDiagonalizationMethod.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/FiniteDiffMethod.cu" "CMakeFiles/BiCGSTAB.dir/src/Poisson/FiniteDiffMethod.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/Poisson/FiniteDiffMethod.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/BandedMatrix.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Mat.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Mat.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Singleton.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/Singleton.cu.o.d"
@@ -20,6 +22,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/handle.cu" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/handle.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/handle.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/main.cu" "CMakeFiles/BiCGSTAB.dir/src/main.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/main.cu.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/testMethods.cu" "CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/testMethods.cu.o.d"
+  "/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/GridBoundary.cpp" "CMakeFiles/BiCGSTAB.dir/src/Poisson/GridBoundary.cpp.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/Poisson/GridBoundary.cpp.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o.d"
   "/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/streamHelper.cpp" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o" "gcc" "CMakeFiles/BiCGSTAB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o.d"
   "" "BiCGSTAB" "gcc" "CMakeFiles/BiCGSTAB.dir/link.d"

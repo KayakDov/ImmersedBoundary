@@ -48,10 +48,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /snap/clion/385/bin/cmake/linux/x64/bin/cmake
+CMAKE_COMMAND = /snap/clion/393/bin/cmake/linux/x64/bin/cmake
 
 # The command to remove a file.
-RM = /snap/clion/385/bin/cmake/linux/x64/bin/cmake -E rm -f
+RM = /snap/clion/393/bin/cmake/linux/x64/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -68,7 +68,7 @@ CMAKE_BINARY_DIR = /home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "No interactive CMake dialog available..."
-	/snap/clion/385/bin/cmake/linux/x64/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+	/snap/clion/393/bin/cmake/linux/x64/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -78,7 +78,7 @@ edit_cache/fast: edit_cache
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running CMake to regenerate build system..."
-	/snap/clion/385/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/snap/clion/393/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -196,29 +196,86 @@ src/Event.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Event.cu.s
 .PHONY : src/Event.cu.s
 
-src/PoissonFDM.o: src/PoissonFDM.cu.o
-.PHONY : src/PoissonFDM.o
+src/Poisson/FastDiagonalizationMethod.o: src/Poisson/FastDiagonalizationMethod.cu.o
+.PHONY : src/Poisson/FastDiagonalizationMethod.o
 
 # target to build an object file
-src/PoissonFDM.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.o
-.PHONY : src/PoissonFDM.cu.o
+src/Poisson/FastDiagonalizationMethod.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Poisson/FastDiagonalizationMethod.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Poisson/FastDiagonalizationMethod.cu.o
+.PHONY : src/Poisson/FastDiagonalizationMethod.cu.o
 
-src/PoissonFDM.i: src/PoissonFDM.cu.i
-.PHONY : src/PoissonFDM.i
+src/Poisson/FastDiagonalizationMethod.i: src/Poisson/FastDiagonalizationMethod.cu.i
+.PHONY : src/Poisson/FastDiagonalizationMethod.i
 
 # target to preprocess a source file
-src/PoissonFDM.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.i
-.PHONY : src/PoissonFDM.cu.i
+src/Poisson/FastDiagonalizationMethod.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Poisson/FastDiagonalizationMethod.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Poisson/FastDiagonalizationMethod.cu.i
+.PHONY : src/Poisson/FastDiagonalizationMethod.cu.i
 
-src/PoissonFDM.s: src/PoissonFDM.cu.s
-.PHONY : src/PoissonFDM.s
+src/Poisson/FastDiagonalizationMethod.s: src/Poisson/FastDiagonalizationMethod.cu.s
+.PHONY : src/Poisson/FastDiagonalizationMethod.s
 
 # target to generate assembly for a file
-src/PoissonFDM.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/PoissonFDM.cu.s
-.PHONY : src/PoissonFDM.cu.s
+src/Poisson/FastDiagonalizationMethod.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Poisson/FastDiagonalizationMethod.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Poisson/FastDiagonalizationMethod.cu.s
+.PHONY : src/Poisson/FastDiagonalizationMethod.cu.s
+
+src/Poisson/FiniteDiffMethod.o: src/Poisson/FiniteDiffMethod.cu.o
+.PHONY : src/Poisson/FiniteDiffMethod.o
+
+# target to build an object file
+src/Poisson/FiniteDiffMethod.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Poisson/FiniteDiffMethod.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Poisson/FiniteDiffMethod.cu.o
+.PHONY : src/Poisson/FiniteDiffMethod.cu.o
+
+src/Poisson/FiniteDiffMethod.i: src/Poisson/FiniteDiffMethod.cu.i
+.PHONY : src/Poisson/FiniteDiffMethod.i
+
+# target to preprocess a source file
+src/Poisson/FiniteDiffMethod.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Poisson/FiniteDiffMethod.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Poisson/FiniteDiffMethod.cu.i
+.PHONY : src/Poisson/FiniteDiffMethod.cu.i
+
+src/Poisson/FiniteDiffMethod.s: src/Poisson/FiniteDiffMethod.cu.s
+.PHONY : src/Poisson/FiniteDiffMethod.s
+
+# target to generate assembly for a file
+src/Poisson/FiniteDiffMethod.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Poisson/FiniteDiffMethod.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Poisson/FiniteDiffMethod.cu.s
+.PHONY : src/Poisson/FiniteDiffMethod.cu.s
+
+src/Poisson/GridBoundary.o: src/Poisson/GridBoundary.cpp.o
+.PHONY : src/Poisson/GridBoundary.o
+
+# target to build an object file
+src/Poisson/GridBoundary.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Poisson/GridBoundary.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Poisson/GridBoundary.cpp.o
+.PHONY : src/Poisson/GridBoundary.cpp.o
+
+src/Poisson/GridBoundary.i: src/Poisson/GridBoundary.cpp.i
+.PHONY : src/Poisson/GridBoundary.i
+
+# target to preprocess a source file
+src/Poisson/GridBoundary.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Poisson/GridBoundary.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Poisson/GridBoundary.cpp.i
+.PHONY : src/Poisson/GridBoundary.cpp.i
+
+src/Poisson/GridBoundary.s: src/Poisson/GridBoundary.cpp.s
+.PHONY : src/Poisson/GridBoundary.s
+
+# target to generate assembly for a file
+src/Poisson/GridBoundary.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB.dir/build.make CMakeFiles/BiCGSTAB.dir/src/Poisson/GridBoundary.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PoissonFDM.dir/build.make CMakeFiles/PoissonFDM.dir/src/Poisson/GridBoundary.cpp.s
+.PHONY : src/Poisson/GridBoundary.cpp.s
 
 src/deviceArrays/defFiles/BandedMatrix.o: src/deviceArrays/defFiles/BandedMatrix.cu.o
 .PHONY : src/deviceArrays/defFiles/BandedMatrix.o
@@ -557,9 +614,15 @@ help:
 	@echo "... src/Event.o"
 	@echo "... src/Event.i"
 	@echo "... src/Event.s"
-	@echo "... src/PoissonFDM.o"
-	@echo "... src/PoissonFDM.i"
-	@echo "... src/PoissonFDM.s"
+	@echo "... src/Poisson/FastDiagonalizationMethod.o"
+	@echo "... src/Poisson/FastDiagonalizationMethod.i"
+	@echo "... src/Poisson/FastDiagonalizationMethod.s"
+	@echo "... src/Poisson/FiniteDiffMethod.o"
+	@echo "... src/Poisson/FiniteDiffMethod.i"
+	@echo "... src/Poisson/FiniteDiffMethod.s"
+	@echo "... src/Poisson/GridBoundary.o"
+	@echo "... src/Poisson/GridBoundary.i"
+	@echo "... src/Poisson/GridBoundary.s"
 	@echo "... src/deviceArrays/defFiles/BandedMatrix.o"
 	@echo "... src/deviceArrays/defFiles/BandedMatrix.i"
 	@echo "... src/deviceArrays/defFiles/BandedMatrix.s"
