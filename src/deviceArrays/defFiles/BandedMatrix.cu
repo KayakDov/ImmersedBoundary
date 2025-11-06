@@ -2,9 +2,9 @@
 
 #include "../headers/bandedMat.h"
 #include "../headers/KernelSupport.cuh"
-#include "../headers/singleton.h"
-#include "../headers/squareMat.h"
-#include "../headers/vec.h"
+#include "../headers/Singleton.h"
+#include "../headers/SquareMat.h"
+#include "../headers/Vec.h"
 
 /**
  * Kernel for sparse diagonal matrix-vector multiplication.
@@ -31,12 +31,10 @@
 template <typename T>
 __global__ void multVecKernel(
     const DeviceData2d<T> banded, // packed diagonals
-
     const int32_t* __restrict__ diags, // the number of diagonals is banded.cols
+    const DeviceData1d<T> x,      // input vector
 
-    const DeviceData2d<T> x,      // input vector
-
-    DeviceData2d<T> result,
+    DeviceData1d<T> result,
 
     const T* alpha,
     const T* beta
@@ -84,19 +82,19 @@ void BandedMat<T>::mult(
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
     std::unique_ptr<Singleton<T>> temp_a_ptr;
-    const Singleton<T>* a = this->_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
+    const Singleton<T>* a = Singleton<T>::_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
     std::unique_ptr<Singleton<T>> temp_b_ptr;
-    const Singleton<T>* b = this->_get_or_create_target(static_cast<T>(0), *h, beta, temp_b_ptr);
+    const Singleton<T>* b = Singleton<T>::_get_or_create_target(static_cast<T>(0), *h, beta, temp_b_ptr);
 
     if (transpose) (const_cast<Vec<int32_t>&>(_indices)).mult(Singleton<int32_t>::MINUS_ONE, h);
 
     multVecKernel<<<this->_rows, this->_cols, 0, h->stream>>>(
-        this->toKernel(),
-        _indices.toKernel().data,
-        other.toKernel(),
-        result.toKernel(),
-        a->toKernel().data,
-        b->toKernel().data
+        this->toKernel2d(),
+        _indices.toKernel1d().data,
+        other.toKernel1d(),
+        result.toKernel1d(),
+        a->toKernel1d().data,
+        b->toKernel1d().data
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());

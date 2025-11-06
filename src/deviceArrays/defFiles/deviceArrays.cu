@@ -2,7 +2,7 @@
  * @file deviceArrays.cu
  * @brief Templated classes for managing 1D and 2D arrays on a CUDA device in column-major order.
  */
-#include "../headers/singleton.h"
+#include "../headers/Singleton.h"
 #include <vector>
 #include <numeric>
 #include <iostream>
@@ -42,7 +42,9 @@ void GpuArray<T>::fill(T val, cudaStream_t stream) {
 }
 
 template <typename T>
-DeviceData2d<T> GpuArray<T>::toKernel() { return DeviceData2d<T>(_rows, _cols, _ld, _ptr.get()); }
+DeviceData2d<T> GpuArray<T>::toKernel2d() { return DeviceData2d<T>(_rows, _cols, _ld, _ptr.get()); }
+template <typename T>
+DeviceData2d<T> GpuArray<T>::toKernel2d() const { return DeviceData2d<T>(_rows, _cols, _ld, _ptr.get()); }
 
 template<typename T>
 std::shared_ptr<T> GpuArray<T>::ptr() const{
@@ -73,15 +75,15 @@ void GpuArray<T>::mult(
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
     std::unique_ptr<Singleton<T>> temp_a_ptr;
-    const Singleton<T>* a = _get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
+    const Singleton<T>* a = Singleton<T>::_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
     std::unique_ptr<Singleton<T>> temp_b_ptr;
-    const Singleton<T>* b = _get_or_create_target(static_cast<T>(0), *h, beta, temp_b_ptr);
+    const Singleton<T>* b = Singleton<T>::_get_or_create_target(static_cast<T>(0), *h, beta, temp_b_ptr);
 
     cublasOperation_t transA = transposeA ? CUBLAS_OP_T : CUBLAS_OP_N,
             transB = transposeB ? CUBLAS_OP_T : CUBLAS_OP_N;
 
     if constexpr (std::is_same_v<T, float>)
-        CHECK_CUDA_ERROR(cublasSgemm(h->handle,
+        CHECK_CUBLAS_ERROR(cublasSgemm(h->handle,
         transA, transB,
         this->_rows, other._cols, this->_cols,
         a->toKernel(),
@@ -90,7 +92,7 @@ void GpuArray<T>::mult(
         b->toKernel(),
         result->toKernel(), result->_ld));
     else if constexpr (std::is_same_v<T, double>)
-        CHECK_CUDA_ERROR(cublasDgemm(h->handle,
+        CHECK_CUBLAS_ERROR(cublasDgemm(h->handle,
         transA, transB,
         this->_rows, other._cols, this->_cols,
         a->toKernel(),
@@ -99,46 +101,6 @@ void GpuArray<T>::mult(
         b->toKernel(),
         result->toKernel(), result->_ld));
     else throw std::invalid_argument("Unsupported type.");
-}
-
-// --- Helper Functions and Macros Definitions ---
-
-
-template <typename T>
-Mat<T>* GpuArray<T>::_get_or_create_target(size_t rows, size_t cols, Mat<T>* result, std::unique_ptr<Mat<T>>& out_ptr_unique) const {
-    if (result) return result;
-    else {
-        out_ptr_unique = std::make_unique<Mat<T>>(Mat<T>::create(rows, cols));
-
-        return out_ptr_unique.get();
-    }
-}
-
-template <typename T>
-Singleton<T>* GpuArray<T>::_get_or_create_target(Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique, cudaStream_t stream) const {
-    if (result) return result;
-    else {
-        out_ptr_unique = std::make_unique<Singleton<T>>(Singleton<T>::create(stream));
-        return out_ptr_unique.get();
-    }
-}
-
-template <typename T>
-const Singleton<T>* GpuArray<T>::_get_or_create_target(T defaultVal, Handle& hand, const Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) const {
-    if (result) return result;
-    else {
-        out_ptr_unique = std::make_unique<Singleton<T>>(Singleton<T>::create(defaultVal, hand.stream));
-        return out_ptr_unique.get();
-    }
-}
-
-template <typename T>
-Vec<T>* GpuArray<T>::_get_or_create_target(size_t length, Vec<T>* result, std::unique_ptr<Vec<T>>& out_ptr_unique, cudaStream_t stream) const {
-    if (result) return result;
-    else {
-        out_ptr_unique = std::make_unique<Vec<T>>(Vec<T>::create(length, stream));
-        return out_ptr_unique.get();
-    }
 }
 
 // --- kronecker_kernel.cu (or part of deviceArrays.cu) ---

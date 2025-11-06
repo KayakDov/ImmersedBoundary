@@ -1,5 +1,5 @@
 #include "deviceArrays/headers/GPUArray.h"
-#include "deviceArrays/headers/singleton.h"
+#include "deviceArrays/headers/Singleton.h"
 #include <cmath>
 #include "Event.h"
 #include <iostream>

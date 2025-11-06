@@ -1,8 +1,12 @@
 
-#include "deviceArrays/headers/vec.h"
-#include "Poisson.h"
-#include "deviceArrays/headers/squareMat.h"
+#include "deviceArrays/headers/Mat.h"        // 1. BASE CLASS MUST BE INCLUDED FIRST
+#include "deviceArrays/headers/SquareMat.h"   // 2. DERIVED CLASS SECOND
+#include "deviceArrays/headers/Vec.h"
+#include "Poisson.h"                        // 3. This indirect path is now safe
+
 #include <cmath>
+#include <iostream>
+#include <array>
 
 template <typename T>
 __device__ __host__ constexpr T PI = static_cast<T>(3.14159265358979323846);
@@ -59,19 +63,11 @@ private:
             (f._rows + blockDim.y - 1) / blockDim.y,
             (f._layers + blockDim.z - 1) / blockDim.z
         );
-        setUTildeKernel<<<gridDim3d, blockDim, 0, stream>>>(u.toKernel(), eVals.toKernel(), f.toKernel());
+        setUTildeKernel<<<gridDim3d, blockDim, 0, stream>>>(u.toKernel3d(), eVals.toKernel(), f.toKernel3d());
     }
 
-    // std::array<SquareMat<T>, 3> L;
     std::array<SquareMat<T>, 3> eVecs;//Note: transpose is the inverse for these matrices.
     Mat<T> eVals;//The eigenvalues for L[i] are stored in column i.
-
-    // void setL(size_t i, cudaStream_t stream) {//TODO: try parallelizing this data
-    //     L[i].fill(static_cast<T>(0), stream);
-    //     L[i].diag(0).fill(static_cast<T>(-2), stream);
-    //     L[i].diag(1).fill(static_cast<T>(1), stream);
-    //     L[i].diag(-1).fill(static_cast<T>(1), stream);
-    // }
 
     /**
      * The kronecker product of a, b, and c
@@ -93,9 +89,25 @@ private:
     }
 
     void multiplyEF(Handle& hand, Tensor<T>& f, bool transposeE) {
-        Mat<T>::batchMult(Singleton<T>::ONE, eVecs[0], 0, f.layerRowCol(0), f.layerSize(), Singleton<T>::ZERO, f.layerRowCol(0), f.layerSize(), transposeE, true, hand, f._layers);
-        Mat<T>::batchMult(Singleton<T>::ONE, eVecs[1], 0, f.layerRowCol(0), f.layerSize(), Singleton<T>::ZERO, f.layerRowCol(0), f.layerSize(), transposeE, false, hand, f._layers);
-        Mat<T>::batchMult(Singleton<T>::ONE, eVecs[2], 0, f.layerColDepth(0), f._rows, Singleton<T>::ZERO, f.layerColDepth(0), f._rows, transposeE, true, hand, f._cols);
+        Mat<T>::batchMult(Singleton<T>::ONE,
+            eVecs[0], 0,
+            f.layerRowCol(0), f.layerSize(),
+            Singleton<T>::ZERO, f.layerRowCol(0), f.layerSize(),
+            transposeE, true, hand,
+            f._layers
+            );
+        Mat<T>::batchMult(Singleton<T>::ONE,
+            eVecs[1], 0,
+            f.layerRowCol(0), f.layerSize(),
+            Singleton<T>::ZERO, f.layerRowCol(0), f.layerSize(),
+            transposeE, false, hand, f._layers
+            );
+        Mat<T>::batchMult(Singleton<T>::ONE,
+            eVecs[2], 0,
+            f.layerColDepth(0), f._rows,
+            Singleton<T>::ZERO, f.layerColDepth(0), f._rows,
+            transposeE, true, hand, f._cols
+            );
     }
 public:
     /**
@@ -156,3 +168,12 @@ int main() {
 
     return 0;
 }
+
+
+
+// void setL(size_t i, cudaStream_t stream) {//TODO: try parallelizing this data
+//     L[i].fill(static_cast<T>(0), stream);
+//     L[i].diag(0).fill(static_cast<T>(-2), stream);
+//     L[i].diag(1).fill(static_cast<T>(1), stream);
+//     L[i].diag(-1).fill(static_cast<T>(1), stream);
+// }

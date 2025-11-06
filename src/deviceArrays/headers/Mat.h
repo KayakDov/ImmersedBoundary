@@ -2,7 +2,10 @@
 #ifndef BICGSTAB_MAT_H
 #define BICGSTAB_MAT_H
 
+#include "Singleton.h"
+#include "Tensor.h"
 #include "GPUArray.h"
+#include "Vec.h"
 
 /**
  * @brief Abstract base class for GPU-backed matrices.
@@ -17,7 +20,6 @@
 template <typename T>
 class Mat : public GpuArray<T> {
     using GpuArray<T>::mult;
-private:
 
 protected:
     /**
@@ -30,7 +32,6 @@ protected:
     Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr);
 
 public:
-    ~Mat() override = default;
 
     /**
      * Creates a vector that is a window into part of this matrix, or the underlying data.
@@ -43,13 +44,33 @@ public:
     Vec<T> vec(size_t offset, size_t ld, size_t size);
 
     /**
+     * @brief Retrieves or creates a target matrix with the specified dimensions.
+     *
+     * This method either uses an existing `Mat<T>` pointer if provided or creates
+     * a new `Mat<T>` instance with the given dimensions. The newly created
+     * `Mat<T>` instance is managed through a unique pointer and returned to the caller.
+     *
+     * @param rows The number of rows for the target matrix.
+     * @param cols The number of columns for the target matrix.
+     * @param result A pointer to an existing `Mat<T>` instance. If not null, this
+     *               instance will be used directly.
+     * @param out_ptr_unique A unique pointer to manage the newly created `Mat<T>` instance,
+     *                       if no existing matrix (`result`) is provided.
+     *
+     * @return A pointer to the target `Mat<T>` matrix, either an existing instance
+     *         (`result`) or a newly created one.
+     */
+    static Mat<T> *_get_or_create_target(size_t rows, size_t cols, Mat<T> *result,
+                                  std::unique_ptr<Mat<T>> &out_ptr_unique);
+
+    /**
      * @copydoc GpuArray::size
      */
     [[nodiscard]] size_t size() const override;
     /**
      * @copydoc GpuArray::bytes
      */
-    [[nodiscard]] size_t bytes() const override;
+    [[nodiscard]] size_t bytes() const;
     /**
      * @copydoc GpuArray::set
      */

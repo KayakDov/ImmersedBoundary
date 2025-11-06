@@ -62,7 +62,7 @@ size_t Tensor<T>::layerSize() const {
 }
 
 template<typename T>
-DeviceData3d<T> Tensor<T>::toKernel() {
+DeviceData3d<T> Tensor<T>::toKernel3d() {
     return DeviceData3d<T>(this->_rows, this->_cols, this->_layers, this->_ld, this->_ptr.get());
 }
 

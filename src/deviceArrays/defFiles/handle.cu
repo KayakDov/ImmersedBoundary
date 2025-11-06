@@ -65,3 +65,15 @@ void checkCudaErrors(cudaError_t err, const char* file, int line) {
         exit(EXIT_FAILURE);
     }
 }
+
+#include <cublas_v2.h> // Make sure this is included for cublasStatus_t
+
+// New function to check CUBLAS errors
+void checkCublasErrors(cublasStatus_t status, const char* file, int line) {
+    if (status != CUBLAS_STATUS_SUCCESS) {
+        // CUBLAS doesn't have a simple string getter like cudaGetErrorString,
+        // so we print the code or map it manually.
+        std::cerr << "CUBLAS Error: " << status << " at " << file << ":" << line << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}

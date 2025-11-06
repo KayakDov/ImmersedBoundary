@@ -13,6 +13,7 @@
 #ifndef BICGSTAB_TENSOR_H
 #define BICGSTAB_TENSOR_H
 
+#include "DeviceData.cuh"
 #include "GPUArray.h"
 
 /**
@@ -137,7 +138,7 @@ public:
      * The data for this destined for a kernel.
      * @return
      */
-    DeviceData3d<T> toKernel() override;
+    DeviceData3d<T> toKernel3d();
 
     /**
      *

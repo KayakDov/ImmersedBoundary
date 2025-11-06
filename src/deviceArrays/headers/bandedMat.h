@@ -5,7 +5,8 @@
 #ifndef BICGSTAB_BANDEDMAT_H
 #define BICGSTAB_BANDEDMAT_H
 
-#include "vec.h"
+#include "Vec.h"
+#include "Singleton.h"
 
 /**
  * @brief Represents a square matrix stored in banded (diagonal) format.

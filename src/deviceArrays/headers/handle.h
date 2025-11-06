@@ -14,7 +14,7 @@
  * This function is the backend of the CHECK_CUDA_ERROR macro.
  */
 void checkCudaErrors(cudaError_t err, const char* file, int line);
-
+void checkCublasErrors(cublasStatus_t status, const char* file, int line);
 /**
  * @brief Macro to check a CUDA runtime error and throw a runtime exception if needed.
  * @param err CUDA runtime function call to check.
@@ -22,6 +22,7 @@ void checkCudaErrors(cudaError_t err, const char* file, int line);
  * Expands to a call to checkCudaErrors passing the current file and line number.
  */
 #define CHECK_CUDA_ERROR(err) checkCudaErrors(err, __FILE__, __LINE__)
+#define CHECK_CUBLAS_ERROR(status) checkCublasErrors(status, __FILE__, __LINE__)
 
 /**
  * @brief Wrapper class for managing cuBLAS, cuSOLVER, and CUDA streams.

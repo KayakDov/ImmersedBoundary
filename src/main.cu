@@ -1,5 +1,5 @@
-#include "deviceArrays/headers/vec.h"
-#include "deviceArrays/headers/squareMat.h"
+#include "deviceArrays/headers/Vec.h"
+#include "deviceArrays/headers/SquareMat.h"
 #include "deviceArrays/headers/bandedMat.h"
 #include "testMethods.cu"
 #include "BiCGSTAB.cu"

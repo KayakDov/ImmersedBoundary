@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "GridDim.h"
+
 /**
  * @brief Helper class to map a row/column in a banded matrix to the corresponding element
  *        in a dense square matrix.
@@ -41,7 +43,7 @@ public:
      * @return True if either row or column is outside [0, max-1], false otherwise
      */
     __device__ bool outOfBounds(size_t max) const {
-        return row < 0 || row >= max || col < 0 || col >= max;
+        return row >= max || col >= max;
     }
 };
 

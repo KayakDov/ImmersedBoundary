@@ -4,10 +4,7 @@
 
 #ifndef BICGSTAB_GRIDDIM_H
 #define BICGSTAB_GRIDDIM_H
-#include <crt/host_defines.h>
-#include <cstddef>
 
-#include "deviceArrays/headers/Mat.h"
 
 class GridInd2d {
 public:
@@ -64,51 +61,12 @@ public:
 __device__ bool operator<(const GridInd3d& ind, const GridDim& dim);
 
 /**
- * Checks if the indices point to a spot in the matrix.
- * @tparam T
- * @param ind
- * @param dim
- * @return
- */
-template <typename T>
-__device__ bool operator<(const GridInd2d& ind, const DeviceData2d<T>& dim);
-
-
-/**
- * Are the indices outside the dimensions (inclusive).
- * @param ind
- * @param dim
- * @return
- */
-template <typename T>
-__device__ bool operator>=(const GridInd2d& ind, const DeviceData2d<T>& dim);
-/**
  * Are the indices outside the dimensions (inclusive).
  * @param ind
  * @param dim
  * @return
  */
 __device__ bool operator>=(const GridInd3d& ind, const GridDim& dim);
-
-
-
-/**
- * Checks if the indices point to a spot in the matrix.
- * @tparam T
- * @param ind
- * @param dim
- * @return
- */
-template <typename T>
-__device__ bool operator<(const GridInd3d& ind, const DeviceData3d<T>& dim);
-/**
- * Are the indices outside the dimensions (inclusive).
- * @param ind
- * @param dim
- * @return
- */
-template <typename T>
-__device__ bool operator>=(const GridInd3d& ind, const DeviceData3d<T>& dim);
 
 
 #endif //BICGSTAB_GRIDDIM_H

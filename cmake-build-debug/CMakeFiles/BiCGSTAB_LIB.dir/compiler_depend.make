@@ -3,15 +3,13 @@
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/BiCGSTAB.cu \
   /home/dov/Documents/LaplaceFiniteDifference/src/Event.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData2d.cuh \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
@@ -40,7 +38,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFinite
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -77,7 +74,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFinite
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
   /usr/include/c++/13/bits/stl_construct.h \
   /usr/include/c++/13/bits/stl_function.h \
   /usr/include/c++/13/bits/stl_iterator.h \
@@ -88,7 +84,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFinite
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_tempbuf.h \
   /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -97,7 +92,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFinite
   /usr/include/c++/13/bits/uses_allocator.h \
   /usr/include/c++/13/bits/uses_allocator_args.h \
   /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/chrono \
@@ -120,7 +114,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFinite
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
@@ -160,7 +153,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFinite
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
   /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -261,10 +253,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFinite
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -354,11 +344,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB.cu.o: /home/dov/Documents/LaplaceFinite
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/Event.cu \
   /home/dov/Documents/LaplaceFiniteDifference/src/Event.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData2d.cuh \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
@@ -387,7 +376,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDif
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -423,7 +411,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDif
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
   /usr/include/c++/13/bits/stl_construct.h \
   /usr/include/c++/13/bits/stl_function.h \
   /usr/include/c++/13/bits/stl_iterator.h \
@@ -434,7 +421,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDif
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_tempbuf.h \
   /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -443,7 +429,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDif
   /usr/include/c++/13/bits/uses_allocator.h \
   /usr/include/c++/13/bits/uses_allocator_args.h \
   /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
@@ -464,12 +449,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDif
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
   /usr/include/c++/13/iosfwd \
-  /usr/include/c++/13/iostream \
   /usr/include/c++/13/istream \
   /usr/include/c++/13/limits \
   /usr/include/c++/13/locale \
@@ -503,7 +486,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDif
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
   /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -604,10 +586,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDif
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -696,11 +676,14 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o: /home/dov/Documents/LaplaceFiniteDif
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/CubeBoundary.cu \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData2d.cuh \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
@@ -729,7 +712,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -765,7 +747,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
   /usr/include/c++/13/bits/stl_construct.h \
   /usr/include/c++/13/bits/stl_function.h \
   /usr/include/c++/13/bits/stl_iterator.h \
@@ -776,7 +757,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_tempbuf.h \
   /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -785,7 +765,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/bits/uses_allocator.h \
   /usr/include/c++/13/bits/uses_allocator_args.h \
   /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
@@ -806,12 +785,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
   /usr/include/c++/13/iosfwd \
-  /usr/include/c++/13/iostream \
   /usr/include/c++/13/istream \
   /usr/include/c++/13/limits \
   /usr/include/c++/13/locale \
@@ -845,7 +822,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
   /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -946,10 +922,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: /home/dov/Documents/L
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -1041,20 +1015,20 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: /home/dov/Documents/L
   /home/dov/Documents/LaplaceFiniteDifference/src/BiCGSTAB.cu \
   /home/dov/Documents/LaplaceFiniteDifference/src/Event.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/bandedMat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/CubeBoundary.cu \
   /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/Poisson.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData2d.cuh \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
@@ -1084,7 +1058,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -1121,7 +1094,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
   /usr/include/c++/13/bits/stl_construct.h \
   /usr/include/c++/13/bits/stl_function.h \
   /usr/include/c++/13/bits/stl_iterator.h \
@@ -1132,7 +1104,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_tempbuf.h \
   /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -1141,7 +1112,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/bits/uses_allocator.h \
   /usr/include/c++/13/bits/uses_allocator_args.h \
   /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/chrono \
@@ -1164,7 +1134,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
@@ -1204,7 +1173,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: /home/dov/Documents/L
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
   /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -1305,10 +1273,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: /home/dov/Documents/L
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -1397,22 +1363,23 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: /home/dov/Documents/L
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/FastDiagonalization.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/FastDiagonalization.cu \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/CubeBoundary.cu \
   /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/Poisson.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData2d.cuh \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/SquareMat.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/squareMat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
   /usr/include/assert.h \
+  /usr/include/c++/13/array \
   /usr/include/c++/13/backward/auto_ptr.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
@@ -1436,7 +1403,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/FastDiagonalization.cu.o: /home/dov/Docu
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -1472,7 +1438,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/FastDiagonalization.cu.o: /home/dov/Docu
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
   /usr/include/c++/13/bits/stl_construct.h \
   /usr/include/c++/13/bits/stl_function.h \
   /usr/include/c++/13/bits/stl_iterator.h \
@@ -1483,7 +1448,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/FastDiagonalization.cu.o: /home/dov/Docu
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_tempbuf.h \
   /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -1492,11 +1456,11 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/FastDiagonalization.cu.o: /home/dov/Docu
   /usr/include/c++/13/bits/uses_allocator.h \
   /usr/include/c++/13/bits/uses_allocator_args.h \
   /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
   /usr/include/c++/13/cmath \
+  /usr/include/c++/13/compare \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
@@ -1513,7 +1477,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/FastDiagonalization.cu.o: /home/dov/Docu
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
@@ -1552,7 +1515,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/FastDiagonalization.cu.o: /home/dov/Docu
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
   /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -1653,10 +1615,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/FastDiagonalization.cu.o: /home/dov/Docu
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -1744,320 +1704,18 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/FastDiagonalization.cu.o: /home/dov/Docu
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.hpp \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
-CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/GridDim.cpp.o: /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/GridDim.cpp \
-  /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/GridDim.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
-  /usr/include/alloca.h \
-  /usr/include/asm-generic/errno-base.h \
-  /usr/include/asm-generic/errno.h \
-  /usr/include/c++/13/array \
-  /usr/include/c++/13/backward/auto_ptr.h \
-  /usr/include/c++/13/backward/binders.h \
-  /usr/include/c++/13/bit \
-  /usr/include/c++/13/bits/align.h \
-  /usr/include/c++/13/bits/alloc_traits.h \
-  /usr/include/c++/13/bits/allocated_ptr.h \
-  /usr/include/c++/13/bits/allocator.h \
-  /usr/include/c++/13/bits/atomic_base.h \
-  /usr/include/c++/13/bits/atomic_lockfree_defines.h \
-  /usr/include/c++/13/bits/basic_ios.h \
-  /usr/include/c++/13/bits/basic_ios.tcc \
-  /usr/include/c++/13/bits/basic_string.h \
-  /usr/include/c++/13/bits/basic_string.tcc \
-  /usr/include/c++/13/bits/char_traits.h \
-  /usr/include/c++/13/bits/charconv.h \
-  /usr/include/c++/13/bits/codecvt.h \
-  /usr/include/c++/13/bits/concept_check.h \
-  /usr/include/c++/13/bits/cpp_type_traits.h \
-  /usr/include/c++/13/bits/cxxabi_forced.h \
-  /usr/include/c++/13/bits/cxxabi_init_exception.h \
-  /usr/include/c++/13/bits/exception.h \
-  /usr/include/c++/13/bits/exception_defines.h \
-  /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
-  /usr/include/c++/13/bits/functexcept.h \
-  /usr/include/c++/13/bits/functional_hash.h \
-  /usr/include/c++/13/bits/hash_bytes.h \
-  /usr/include/c++/13/bits/invoke.h \
-  /usr/include/c++/13/bits/ios_base.h \
-  /usr/include/c++/13/bits/istream.tcc \
-  /usr/include/c++/13/bits/locale_classes.h \
-  /usr/include/c++/13/bits/locale_classes.tcc \
-  /usr/include/c++/13/bits/locale_conv.h \
-  /usr/include/c++/13/bits/locale_facets.h \
-  /usr/include/c++/13/bits/locale_facets.tcc \
-  /usr/include/c++/13/bits/locale_facets_nonio.h \
-  /usr/include/c++/13/bits/locale_facets_nonio.tcc \
-  /usr/include/c++/13/bits/localefwd.h \
-  /usr/include/c++/13/bits/memory_resource.h \
-  /usr/include/c++/13/bits/memoryfwd.h \
-  /usr/include/c++/13/bits/move.h \
-  /usr/include/c++/13/bits/nested_exception.h \
-  /usr/include/c++/13/bits/new_allocator.h \
-  /usr/include/c++/13/bits/ostream.tcc \
-  /usr/include/c++/13/bits/ostream_insert.h \
-  /usr/include/c++/13/bits/postypes.h \
-  /usr/include/c++/13/bits/predefined_ops.h \
-  /usr/include/c++/13/bits/ptr_traits.h \
-  /usr/include/c++/13/bits/quoted_string.h \
-  /usr/include/c++/13/bits/range_access.h \
-  /usr/include/c++/13/bits/refwrap.h \
-  /usr/include/c++/13/bits/requires_hosted.h \
-  /usr/include/c++/13/bits/shared_ptr.h \
-  /usr/include/c++/13/bits/shared_ptr_atomic.h \
-  /usr/include/c++/13/bits/shared_ptr_base.h \
-  /usr/include/c++/13/bits/specfun.h \
-  /usr/include/c++/13/bits/sstream.tcc \
-  /usr/include/c++/13/bits/std_abs.h \
-  /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
-  /usr/include/c++/13/bits/stl_construct.h \
-  /usr/include/c++/13/bits/stl_function.h \
-  /usr/include/c++/13/bits/stl_iterator.h \
-  /usr/include/c++/13/bits/stl_iterator_base_funcs.h \
-  /usr/include/c++/13/bits/stl_iterator_base_types.h \
-  /usr/include/c++/13/bits/stl_pair.h \
-  /usr/include/c++/13/bits/stl_raw_storage_iter.h \
-  /usr/include/c++/13/bits/stl_relops.h \
-  /usr/include/c++/13/bits/stl_tempbuf.h \
-  /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
-  /usr/include/c++/13/bits/streambuf.tcc \
-  /usr/include/c++/13/bits/streambuf_iterator.h \
-  /usr/include/c++/13/bits/string_view.tcc \
-  /usr/include/c++/13/bits/stringfwd.h \
-  /usr/include/c++/13/bits/unique_ptr.h \
-  /usr/include/c++/13/bits/uses_allocator.h \
-  /usr/include/c++/13/bits/uses_allocator_args.h \
-  /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
-  /usr/include/c++/13/cctype \
-  /usr/include/c++/13/cerrno \
-  /usr/include/c++/13/clocale \
-  /usr/include/c++/13/cmath \
-  /usr/include/c++/13/compare \
-  /usr/include/c++/13/cstddef \
-  /usr/include/c++/13/cstdio \
-  /usr/include/c++/13/cstdlib \
-  /usr/include/c++/13/cstring \
-  /usr/include/c++/13/ctime \
-  /usr/include/c++/13/cwchar \
-  /usr/include/c++/13/cwctype \
-  /usr/include/c++/13/debug/assertions.h \
-  /usr/include/c++/13/debug/debug.h \
-  /usr/include/c++/13/exception \
-  /usr/include/c++/13/ext/aligned_buffer.h \
-  /usr/include/c++/13/ext/alloc_traits.h \
-  /usr/include/c++/13/ext/atomicity.h \
-  /usr/include/c++/13/ext/concurrence.h \
-  /usr/include/c++/13/ext/numeric_traits.h \
-  /usr/include/c++/13/ext/string_conversions.h \
-  /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
-  /usr/include/c++/13/initializer_list \
-  /usr/include/c++/13/iomanip \
-  /usr/include/c++/13/ios \
-  /usr/include/c++/13/iosfwd \
-  /usr/include/c++/13/iostream \
-  /usr/include/c++/13/istream \
-  /usr/include/c++/13/limits \
-  /usr/include/c++/13/locale \
-  /usr/include/c++/13/math.h \
-  /usr/include/c++/13/memory \
-  /usr/include/c++/13/new \
-  /usr/include/c++/13/ostream \
-  /usr/include/c++/13/pstl/execution_defs.h \
-  /usr/include/c++/13/pstl/glue_memory_defs.h \
-  /usr/include/c++/13/pstl/pstl_config.h \
-  /usr/include/c++/13/sstream \
-  /usr/include/c++/13/stdexcept \
-  /usr/include/c++/13/streambuf \
-  /usr/include/c++/13/string \
-  /usr/include/c++/13/string_view \
-  /usr/include/c++/13/system_error \
-  /usr/include/c++/13/tr1/bessel_function.tcc \
-  /usr/include/c++/13/tr1/beta_function.tcc \
-  /usr/include/c++/13/tr1/ell_integral.tcc \
-  /usr/include/c++/13/tr1/exp_integral.tcc \
-  /usr/include/c++/13/tr1/gamma.tcc \
-  /usr/include/c++/13/tr1/hypergeometric.tcc \
-  /usr/include/c++/13/tr1/legendre_function.tcc \
-  /usr/include/c++/13/tr1/modified_bessel_func.tcc \
-  /usr/include/c++/13/tr1/poly_hermite.tcc \
-  /usr/include/c++/13/tr1/poly_laguerre.tcc \
-  /usr/include/c++/13/tr1/riemann_zeta.tcc \
-  /usr/include/c++/13/tr1/special_function_util.h \
-  /usr/include/c++/13/tuple \
-  /usr/include/c++/13/type_traits \
-  /usr/include/c++/13/typeinfo \
-  /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
-  /usr/include/ctype.h \
-  /usr/include/endian.h \
-  /usr/include/errno.h \
-  /usr/include/features-time64.h \
-  /usr/include/features.h \
-  /usr/include/inttypes.h \
-  /usr/include/libintl.h \
-  /usr/include/limits.h \
-  /usr/include/linux/errno.h \
-  /usr/include/linux/limits.h \
-  /usr/include/locale.h \
-  /usr/include/math.h \
-  /usr/include/pthread.h \
-  /usr/include/sched.h \
-  /usr/include/stdc-predef.h \
-  /usr/include/stdint.h \
-  /usr/include/stdio.h \
-  /usr/include/stdlib.h \
-  /usr/include/string.h \
-  /usr/include/strings.h \
-  /usr/include/time.h \
-  /usr/include/wchar.h \
-  /usr/include/wctype.h \
-  /usr/include/x86_64-linux-gnu/asm/errno.h \
-  /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
-  /usr/include/x86_64-linux-gnu/bits/byteswap.h \
-  /usr/include/x86_64-linux-gnu/bits/cpu-set.h \
-  /usr/include/x86_64-linux-gnu/bits/endian.h \
-  /usr/include/x86_64-linux-gnu/bits/endianness.h \
-  /usr/include/x86_64-linux-gnu/bits/errno.h \
-  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
-  /usr/include/x86_64-linux-gnu/bits/floatn.h \
-  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
-  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
-  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
-  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
-  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
-  /usr/include/x86_64-linux-gnu/bits/locale.h \
-  /usr/include/x86_64-linux-gnu/bits/long-double.h \
-  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
-  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
-  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
-  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
-  /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
-  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
-  /usr/include/x86_64-linux-gnu/bits/sched.h \
-  /usr/include/x86_64-linux-gnu/bits/select.h \
-  /usr/include/x86_64-linux-gnu/bits/setjmp.h \
-  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
-  /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
-  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
-  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
-  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
-  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
-  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
-  /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h \
-  /usr/include/x86_64-linux-gnu/bits/time.h \
-  /usr/include/x86_64-linux-gnu/bits/time64.h \
-  /usr/include/x86_64-linux-gnu/bits/timesize.h \
-  /usr/include/x86_64-linux-gnu/bits/timex.h \
-  /usr/include/x86_64-linux-gnu/bits/types.h \
-  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
-  /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
-  /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/clock_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
-  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
-  /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
-  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
-  /usr/include/x86_64-linux-gnu/bits/uintn-identity.h \
-  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
-  /usr/include/x86_64-linux-gnu/bits/waitflags.h \
-  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
-  /usr/include/x86_64-linux-gnu/bits/wchar.h \
-  /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
-  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
-  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_inline.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/error_constants.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/gthr-default.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/gthr.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/messages_members.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/time_members.h \
-  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
-  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
-  /usr/include/x86_64-linux-gnu/sys/cdefs.h \
-  /usr/include/x86_64-linux-gnu/sys/select.h \
-  /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
-  /usr/include/x86_64-linux-gnu/sys/types.h \
-  /usr/lib/gcc/x86_64-linux-gnu/13/include/limits.h \
-  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \
-  /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h \
-  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h \
-  /usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/builtin_types.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/channel_descriptor.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_config.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_defines.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuComplex.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_api.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_v2.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_device_runtime_api.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime_api.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_types.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_functions.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_types.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/library_types.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/nv/detail/__preprocessor \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/nv/detail/__target_macros \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/nv/target \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/surface_types.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/texture_types.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.hpp \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
-
 CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/Poisson.cu \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/CubeBoundary.cu \
   /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/Poisson.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData2d.cuh \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
@@ -2087,7 +1745,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: /home/dov/Documents/Laplac
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -2123,7 +1780,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: /home/dov/Documents/Laplac
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
   /usr/include/c++/13/bits/stl_construct.h \
   /usr/include/c++/13/bits/stl_function.h \
   /usr/include/c++/13/bits/stl_iterator.h \
@@ -2134,7 +1790,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: /home/dov/Documents/Laplac
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_tempbuf.h \
   /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -2143,7 +1798,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: /home/dov/Documents/Laplac
   /usr/include/c++/13/bits/uses_allocator.h \
   /usr/include/c++/13/bits/uses_allocator_args.h \
   /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
@@ -2164,12 +1818,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: /home/dov/Documents/Laplac
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
   /usr/include/c++/13/iosfwd \
-  /usr/include/c++/13/iostream \
   /usr/include/c++/13/istream \
   /usr/include/c++/13/limits \
   /usr/include/c++/13/locale \
@@ -2204,7 +1856,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: /home/dov/Documents/Laplac
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
   /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -2305,10 +1956,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: /home/dov/Documents/Laplac
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -2397,19 +2046,18 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: /home/dov/Documents/Laplac
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/BandedMatrix.cu \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData2d.cuh \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/KernelSupport.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/SquareMat.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/bandedMat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/squareMat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
@@ -2437,7 +2085,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/d
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -2473,7 +2120,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/d
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
   /usr/include/c++/13/bits/stl_construct.h \
   /usr/include/c++/13/bits/stl_function.h \
   /usr/include/c++/13/bits/stl_iterator.h \
@@ -2484,7 +2130,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/d
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_tempbuf.h \
   /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -2493,7 +2138,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/d
   /usr/include/c++/13/bits/uses_allocator.h \
   /usr/include/c++/13/bits/uses_allocator_args.h \
   /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
@@ -2515,7 +2159,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/d
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
@@ -2554,7 +2197,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/d
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
   /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -2655,10 +2297,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/d
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -2746,11 +2386,203 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: /home/d
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.hpp \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
-CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp \
+CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceData.cu \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
+  /usr/include/alloca.h \
+  /usr/include/assert.h \
+  /usr/include/c++/13/bit \
+  /usr/include/c++/13/bits/concept_check.h \
+  /usr/include/c++/13/bits/cpp_type_traits.h \
+  /usr/include/c++/13/bits/exception.h \
+  /usr/include/c++/13/bits/exception_defines.h \
+  /usr/include/c++/13/bits/functexcept.h \
+  /usr/include/c++/13/bits/move.h \
+  /usr/include/c++/13/bits/predefined_ops.h \
+  /usr/include/c++/13/bits/ptr_traits.h \
+  /usr/include/c++/13/bits/requires_hosted.h \
+  /usr/include/c++/13/bits/specfun.h \
+  /usr/include/c++/13/bits/std_abs.h \
+  /usr/include/c++/13/bits/stl_algobase.h \
+  /usr/include/c++/13/bits/stl_iterator.h \
+  /usr/include/c++/13/bits/stl_iterator_base_funcs.h \
+  /usr/include/c++/13/bits/stl_iterator_base_types.h \
+  /usr/include/c++/13/bits/stl_pair.h \
+  /usr/include/c++/13/bits/stl_relops.h \
+  /usr/include/c++/13/bits/utility.h \
+  /usr/include/c++/13/cmath \
+  /usr/include/c++/13/cstddef \
+  /usr/include/c++/13/cstdlib \
+  /usr/include/c++/13/debug/assertions.h \
+  /usr/include/c++/13/debug/debug.h \
+  /usr/include/c++/13/ext/numeric_traits.h \
+  /usr/include/c++/13/ext/type_traits.h \
+  /usr/include/c++/13/initializer_list \
+  /usr/include/c++/13/limits \
+  /usr/include/c++/13/math.h \
+  /usr/include/c++/13/new \
+  /usr/include/c++/13/pstl/pstl_config.h \
+  /usr/include/c++/13/stdlib.h \
+  /usr/include/c++/13/tr1/bessel_function.tcc \
+  /usr/include/c++/13/tr1/beta_function.tcc \
+  /usr/include/c++/13/tr1/ell_integral.tcc \
+  /usr/include/c++/13/tr1/exp_integral.tcc \
+  /usr/include/c++/13/tr1/gamma.tcc \
+  /usr/include/c++/13/tr1/hypergeometric.tcc \
+  /usr/include/c++/13/tr1/legendre_function.tcc \
+  /usr/include/c++/13/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/13/tr1/poly_hermite.tcc \
+  /usr/include/c++/13/tr1/poly_laguerre.tcc \
+  /usr/include/c++/13/tr1/riemann_zeta.tcc \
+  /usr/include/c++/13/tr1/special_function_util.h \
+  /usr/include/c++/13/type_traits \
+  /usr/include/c++/13/utility \
+  /usr/include/ctype.h \
+  /usr/include/endian.h \
+  /usr/include/features-time64.h \
+  /usr/include/features.h \
+  /usr/include/limits.h \
+  /usr/include/linux/limits.h \
+  /usr/include/math.h \
+  /usr/include/stdc-predef.h \
+  /usr/include/stdio.h \
+  /usr/include/stdlib.h \
+  /usr/include/string.h \
+  /usr/include/strings.h \
+  /usr/include/time.h \
+  /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
+  /usr/include/x86_64-linux-gnu/bits/byteswap.h \
+  /usr/include/x86_64-linux-gnu/bits/endian.h \
+  /usr/include/x86_64-linux-gnu/bits/endianness.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/long-double.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
+  /usr/include/x86_64-linux-gnu/bits/select.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
+  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
+  /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h \
+  /usr/include/x86_64-linux-gnu/bits/time.h \
+  /usr/include/x86_64-linux-gnu/bits/time64.h \
+  /usr/include/x86_64-linux-gnu/bits/timesize.h \
+  /usr/include/x86_64-linux-gnu/bits/timex.h \
+  /usr/include/x86_64-linux-gnu/bits/types.h \
+  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clock_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
+  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
+  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+  /usr/include/x86_64-linux-gnu/bits/uintn-identity.h \
+  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/waitflags.h \
+  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
+  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+  /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+  /usr/include/x86_64-linux-gnu/sys/select.h \
+  /usr/include/x86_64-linux-gnu/sys/types.h \
+  /usr/lib/gcc/x86_64-linux-gnu/13/include/limits.h \
+  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \
+  /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h \
+  /usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/builtin_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/channel_descriptor.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/common_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/cudacc_ext.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_double_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_double_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_config.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_defines.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/math_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/math_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_100_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_100_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_70_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_70_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_80_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_80_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_90_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_90_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_device_runtime_api.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime_api.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_launch_parameters.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/library_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_30_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_30_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_35_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_35_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_60_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_60_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_61_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_61_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/surface_indirect_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/surface_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/texture_indirect_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/texture_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
+
+CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cu \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
+  /usr/include/assert.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
   /usr/include/c++/13/bits/alloc_traits.h \
@@ -2797,6 +2629,7 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/
   /usr/include/c++/13/bits/range_access.h \
   /usr/include/c++/13/bits/refwrap.h \
   /usr/include/c++/13/bits/requires_hosted.h \
+  /usr/include/c++/13/bits/specfun.h \
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
@@ -2806,6 +2639,7 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/
   /usr/include/c++/13/bits/stl_iterator_base_funcs.h \
   /usr/include/c++/13/bits/stl_iterator_base_types.h \
   /usr/include/c++/13/bits/stl_pair.h \
+  /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -2816,6 +2650,7 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
+  /usr/include/c++/13/cmath \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
@@ -2836,19 +2671,35 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/
   /usr/include/c++/13/iosfwd \
   /usr/include/c++/13/iostream \
   /usr/include/c++/13/istream \
+  /usr/include/c++/13/limits \
   /usr/include/c++/13/locale \
+  /usr/include/c++/13/math.h \
   /usr/include/c++/13/new \
   /usr/include/c++/13/ostream \
   /usr/include/c++/13/pstl/pstl_config.h \
   /usr/include/c++/13/sstream \
   /usr/include/c++/13/stdexcept \
+  /usr/include/c++/13/stdlib.h \
   /usr/include/c++/13/streambuf \
   /usr/include/c++/13/string \
   /usr/include/c++/13/string_view \
   /usr/include/c++/13/system_error \
+  /usr/include/c++/13/tr1/bessel_function.tcc \
+  /usr/include/c++/13/tr1/beta_function.tcc \
+  /usr/include/c++/13/tr1/ell_integral.tcc \
+  /usr/include/c++/13/tr1/exp_integral.tcc \
+  /usr/include/c++/13/tr1/gamma.tcc \
+  /usr/include/c++/13/tr1/hypergeometric.tcc \
+  /usr/include/c++/13/tr1/legendre_function.tcc \
+  /usr/include/c++/13/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/13/tr1/poly_hermite.tcc \
+  /usr/include/c++/13/tr1/poly_laguerre.tcc \
+  /usr/include/c++/13/tr1/riemann_zeta.tcc \
+  /usr/include/c++/13/tr1/special_function_util.h \
   /usr/include/c++/13/tuple \
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
+  /usr/include/c++/13/utility \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -2859,11 +2710,14 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/
   /usr/include/linux/errno.h \
   /usr/include/linux/limits.h \
   /usr/include/locale.h \
+  /usr/include/math.h \
   /usr/include/pthread.h \
   /usr/include/sched.h \
   /usr/include/stdc-predef.h \
   /usr/include/stdio.h \
   /usr/include/stdlib.h \
+  /usr/include/string.h \
+  /usr/include/strings.h \
   /usr/include/time.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
@@ -2876,10 +2730,19 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/
   /usr/include/x86_64-linux-gnu/bits/errno.h \
   /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
   /usr/include/x86_64-linux-gnu/bits/floatn.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
   /usr/include/x86_64-linux-gnu/bits/local_lim.h \
   /usr/include/x86_64-linux-gnu/bits/locale.h \
   /usr/include/x86_64-linux-gnu/bits/long-double.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
   /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
   /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
   /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
@@ -2956,29 +2819,263 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o: /home/
   /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h \
   /usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/builtin_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/channel_descriptor.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/common_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/cudacc_ext.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_double_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_double_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_config.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_defines.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/math_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/math_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_100_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_100_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_70_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_70_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_80_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_80_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_90_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_90_rt.hpp \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_device_runtime_api.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime_api.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_launch_parameters.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/device_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_functions.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/library_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_30_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_30_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_35_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_35_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_60_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_60_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_61_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_61_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/surface_indirect_functions.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/surface_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/texture_indirect_functions.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/texture_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
+
+CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/GridDim.cu \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
+  /usr/include/alloca.h \
+  /usr/include/assert.h \
+  /usr/include/c++/13/bit \
+  /usr/include/c++/13/bits/concept_check.h \
+  /usr/include/c++/13/bits/cpp_type_traits.h \
+  /usr/include/c++/13/bits/exception.h \
+  /usr/include/c++/13/bits/exception_defines.h \
+  /usr/include/c++/13/bits/functexcept.h \
+  /usr/include/c++/13/bits/move.h \
+  /usr/include/c++/13/bits/predefined_ops.h \
+  /usr/include/c++/13/bits/ptr_traits.h \
+  /usr/include/c++/13/bits/requires_hosted.h \
+  /usr/include/c++/13/bits/specfun.h \
+  /usr/include/c++/13/bits/std_abs.h \
+  /usr/include/c++/13/bits/stl_algobase.h \
+  /usr/include/c++/13/bits/stl_iterator.h \
+  /usr/include/c++/13/bits/stl_iterator_base_funcs.h \
+  /usr/include/c++/13/bits/stl_iterator_base_types.h \
+  /usr/include/c++/13/bits/stl_pair.h \
+  /usr/include/c++/13/bits/stl_relops.h \
+  /usr/include/c++/13/bits/utility.h \
+  /usr/include/c++/13/cmath \
+  /usr/include/c++/13/cstdlib \
+  /usr/include/c++/13/debug/assertions.h \
+  /usr/include/c++/13/debug/debug.h \
+  /usr/include/c++/13/ext/numeric_traits.h \
+  /usr/include/c++/13/ext/type_traits.h \
+  /usr/include/c++/13/initializer_list \
+  /usr/include/c++/13/limits \
+  /usr/include/c++/13/math.h \
+  /usr/include/c++/13/new \
+  /usr/include/c++/13/pstl/pstl_config.h \
+  /usr/include/c++/13/stdlib.h \
+  /usr/include/c++/13/tr1/bessel_function.tcc \
+  /usr/include/c++/13/tr1/beta_function.tcc \
+  /usr/include/c++/13/tr1/ell_integral.tcc \
+  /usr/include/c++/13/tr1/exp_integral.tcc \
+  /usr/include/c++/13/tr1/gamma.tcc \
+  /usr/include/c++/13/tr1/hypergeometric.tcc \
+  /usr/include/c++/13/tr1/legendre_function.tcc \
+  /usr/include/c++/13/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/13/tr1/poly_hermite.tcc \
+  /usr/include/c++/13/tr1/poly_laguerre.tcc \
+  /usr/include/c++/13/tr1/riemann_zeta.tcc \
+  /usr/include/c++/13/tr1/special_function_util.h \
+  /usr/include/c++/13/type_traits \
+  /usr/include/c++/13/utility \
+  /usr/include/ctype.h \
+  /usr/include/endian.h \
+  /usr/include/features-time64.h \
+  /usr/include/features.h \
+  /usr/include/limits.h \
+  /usr/include/linux/limits.h \
+  /usr/include/math.h \
+  /usr/include/stdc-predef.h \
+  /usr/include/stdio.h \
+  /usr/include/stdlib.h \
+  /usr/include/string.h \
+  /usr/include/strings.h \
+  /usr/include/time.h \
+  /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
+  /usr/include/x86_64-linux-gnu/bits/byteswap.h \
+  /usr/include/x86_64-linux-gnu/bits/endian.h \
+  /usr/include/x86_64-linux-gnu/bits/endianness.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/long-double.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
+  /usr/include/x86_64-linux-gnu/bits/select.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
+  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
+  /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h \
+  /usr/include/x86_64-linux-gnu/bits/time.h \
+  /usr/include/x86_64-linux-gnu/bits/time64.h \
+  /usr/include/x86_64-linux-gnu/bits/timesize.h \
+  /usr/include/x86_64-linux-gnu/bits/timex.h \
+  /usr/include/x86_64-linux-gnu/bits/types.h \
+  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clock_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
+  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
+  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+  /usr/include/x86_64-linux-gnu/bits/uintn-identity.h \
+  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/waitflags.h \
+  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
+  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+  /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+  /usr/include/x86_64-linux-gnu/sys/select.h \
+  /usr/include/x86_64-linux-gnu/sys/types.h \
+  /usr/lib/gcc/x86_64-linux-gnu/13/include/limits.h \
+  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \
+  /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h \
+  /usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/builtin_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/channel_descriptor.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/common_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/cudacc_ext.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_double_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_double_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/device_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_config.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_defines.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/math_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/math_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_100_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_100_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_70_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_70_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_80_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_80_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_90_rt.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_90_rt.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_device_runtime_api.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime_api.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_launch_parameters.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/device_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/library_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_30_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_30_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_35_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_35_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_60_atomic_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_60_atomic_functions.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_61_intrinsics.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_61_intrinsics.hpp \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/surface_indirect_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/surface_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/texture_indirect_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/texture_types.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.h \
+  /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_functions.hpp \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Mat.cu \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArraySupport.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
   /usr/include/assert.h \
-  /usr/include/c++/13/array \
   /usr/include/c++/13/backward/auto_ptr.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
@@ -3002,7 +3099,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o: /home/dov/Docume
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -3063,7 +3159,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o: /home/dov/Docume
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
   /usr/include/c++/13/cmath \
-  /usr/include/c++/13/compare \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
@@ -3080,7 +3175,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o: /home/dov/Docume
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
@@ -3220,10 +3314,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o: /home/dov/Docume
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -3312,18 +3404,17 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o: /home/dov/Docume
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Singleton.cu \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
   /usr/include/assert.h \
-  /usr/include/c++/13/array \
   /usr/include/c++/13/backward/auto_ptr.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
@@ -3347,7 +3438,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: /home/dov/
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -3383,7 +3473,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: /home/dov/
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
   /usr/include/c++/13/bits/stl_construct.h \
   /usr/include/c++/13/bits/stl_function.h \
   /usr/include/c++/13/bits/stl_iterator.h \
@@ -3394,7 +3483,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: /home/dov/
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_tempbuf.h \
   /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -3403,12 +3491,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: /home/dov/
   /usr/include/c++/13/bits/uses_allocator.h \
   /usr/include/c++/13/bits/uses_allocator_args.h \
   /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
   /usr/include/c++/13/cmath \
-  /usr/include/c++/13/compare \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
@@ -3425,12 +3511,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: /home/dov/
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
   /usr/include/c++/13/iosfwd \
-  /usr/include/c++/13/iostream \
   /usr/include/c++/13/istream \
   /usr/include/c++/13/limits \
   /usr/include/c++/13/locale \
@@ -3464,7 +3548,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: /home/dov/
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
   /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -3565,10 +3648,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: /home/dov/
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -3657,22 +3738,23 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: /home/dov/
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/SquareMat.cu \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/KernelSupport.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/SquareMat.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/bandedMat.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArraySupport.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/squareMat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
   /usr/include/assert.h \
-  /usr/include/c++/13/array \
   /usr/include/c++/13/backward/auto_ptr.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
@@ -3696,7 +3778,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: /home/dov/
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -3757,7 +3838,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: /home/dov/
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
   /usr/include/c++/13/cmath \
-  /usr/include/c++/13/compare \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdint \
   /usr/include/c++/13/cstdio \
@@ -3775,7 +3855,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: /home/dov/
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
@@ -3915,10 +3994,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: /home/dov/
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -4007,15 +4084,16 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: /home/dov/
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Tensor.cu \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
   /usr/include/assert.h \
-  /usr/include/c++/13/array \
   /usr/include/c++/13/backward/auto_ptr.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
@@ -4039,7 +4117,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: /home/dov/Doc
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -4075,7 +4152,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: /home/dov/Doc
   /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
-  /usr/include/c++/13/bits/stl_bvector.h \
   /usr/include/c++/13/bits/stl_construct.h \
   /usr/include/c++/13/bits/stl_function.h \
   /usr/include/c++/13/bits/stl_iterator.h \
@@ -4086,7 +4162,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: /home/dov/Doc
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_tempbuf.h \
   /usr/include/c++/13/bits/stl_uninitialized.h \
-  /usr/include/c++/13/bits/stl_vector.h \
   /usr/include/c++/13/bits/streambuf.tcc \
   /usr/include/c++/13/bits/streambuf_iterator.h \
   /usr/include/c++/13/bits/string_view.tcc \
@@ -4095,12 +4170,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: /home/dov/Doc
   /usr/include/c++/13/bits/uses_allocator.h \
   /usr/include/c++/13/bits/uses_allocator_args.h \
   /usr/include/c++/13/bits/utility.h \
-  /usr/include/c++/13/bits/vector.tcc \
   /usr/include/c++/13/cctype \
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
   /usr/include/c++/13/cmath \
-  /usr/include/c++/13/compare \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
@@ -4117,12 +4190,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: /home/dov/Doc
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
   /usr/include/c++/13/iosfwd \
-  /usr/include/c++/13/iostream \
   /usr/include/c++/13/istream \
   /usr/include/c++/13/limits \
   /usr/include/c++/13/locale \
@@ -4156,7 +4227,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: /home/dov/Doc
   /usr/include/c++/13/type_traits \
   /usr/include/c++/13/typeinfo \
   /usr/include/c++/13/utility \
-  /usr/include/c++/13/vector \
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
@@ -4257,10 +4327,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: /home/dov/Doc
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -4349,19 +4417,18 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: /home/dov/Doc
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Vec.cu \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArraySupport.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
   /usr/include/assert.h \
-  /usr/include/c++/13/array \
   /usr/include/c++/13/backward/auto_ptr.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
@@ -4385,7 +4452,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o: /home/dov/Docume
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -4446,7 +4512,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o: /home/dov/Docume
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
   /usr/include/c++/13/cmath \
-  /usr/include/c++/13/compare \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
@@ -4463,12 +4528,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o: /home/dov/Docume
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
   /usr/include/c++/13/iosfwd \
-  /usr/include/c++/13/iostream \
   /usr/include/c++/13/istream \
   /usr/include/c++/13/limits \
   /usr/include/c++/13/locale \
@@ -4604,10 +4667,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o: /home/dov/Docume
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -4711,18 +4772,17 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o: /home/dov/Docume
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/deviceArrays.cu.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/deviceArrays.cu \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
   /usr/include/assert.h \
-  /usr/include/c++/13/array \
   /usr/include/c++/13/backward/auto_ptr.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
@@ -4808,7 +4868,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/deviceArrays.cu.o: /home/d
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
   /usr/include/c++/13/cmath \
-  /usr/include/c++/13/compare \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
@@ -5375,15 +5434,16 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o: /home/dov/Doc
   /usr/local/cuda-12.9/targets/x86_64-linux/include/vector_types.h
 
 CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/streamHelper.cpp \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
+  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArraySupport.h \
-  /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h \
   /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
   /usr/include/c++/13/algorithm \
-  /usr/include/c++/13/array \
   /usr/include/c++/13/backward/auto_ptr.h \
   /usr/include/c++/13/backward/binders.h \
   /usr/include/c++/13/bit \
@@ -5408,7 +5468,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: /home/
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
-  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -5472,7 +5531,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: /home/
   /usr/include/c++/13/cerrno \
   /usr/include/c++/13/clocale \
   /usr/include/c++/13/cmath \
-  /usr/include/c++/13/compare \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
@@ -5490,12 +5548,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: /home/
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
-  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/iomanip \
   /usr/include/c++/13/ios \
   /usr/include/c++/13/iosfwd \
-  /usr/include/c++/13/iostream \
   /usr/include/c++/13/istream \
   /usr/include/c++/13/limits \
   /usr/include/c++/13/locale \
@@ -5630,10 +5686,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: /home/
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
-  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -5656,8 +5710,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: /home/
   /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h \
   /usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/builtin_types.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/channel_descriptor.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_config.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_defines.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cuComplex.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_api.h \
@@ -5667,12 +5719,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: /home/
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_device_runtime_api.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.hpp \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime_api.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/device_types.h \
-  /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_functions.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/driver_types.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/library_types.h \
   /usr/local/cuda-12.9/targets/x86_64-linux/include/nv/detail/__preprocessor \
@@ -5879,6 +5929,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/streamHelper.cpp:
 
+/usr/include/c++/13/fstream:
+
 /usr/include/c++/13/bits/stl_numeric.h:
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_uniform.h:
@@ -5891,15 +5943,31 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/SquareMat.cu:
 
+/usr/include/c++/13/vector:
+
+/usr/include/c++/13/bits/stl_vector.h:
+
+/usr/include/c++/13/bits/stl_bvector.h:
+
 /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArraySupport.h:
+
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/GridDim.cu:
+
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cu:
 
 /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/BandedMatrix.cu:
 
+/usr/include/c++/13/bits/vector.tcc:
+
+/usr/include/c++/13/optional:
+
 /usr/include/c++/13/array:
 
-/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/GridDim.h:
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/SquareMat.h:
 
 /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/FastDiagonalization.cu:
+
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h:
 
 /home/dov/Documents/LaplaceFiniteDifference/src/Poisson/CubeBoundary.cu:
 
@@ -5929,6 +5997,10 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_atomic_functions.hpp:
 
+/usr/include/c++/13/bits/fstream.tcc:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_atomic_functions.h:
+
 /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_30_intrinsics.hpp:
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/sm_30_intrinsics.h:
@@ -5955,11 +6027,17 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_runtime.h:
 
+/usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h:
+
 /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_v2.h:
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_api.h:
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/cuComplex.h:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_80_rt.hpp:
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_80_rt.h:
 
@@ -6025,29 +6103,27 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/error_constants.h:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h:
+/usr/include/c++/13/pstl/execution_defs.h:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h:
+/usr/include/c++/13/bits/basic_ios.tcc:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h:
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h:
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/handle.cu:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h:
-
-/usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.h:
-
-/usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h:
-
-/usr/include/x86_64-linux-gnu/bits/xopen_lim.h:
-
-/usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h:
-
-/usr/include/x86_64-linux-gnu/bits/wordsize.h:
+/usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
 
 /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Tensor.cu:
 
 /usr/include/c++/13/istream:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_intrinsics.hpp:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_atomic_functions.h:
+
+/usr/include/strings.h:
+
+/usr/include/c++/13/iomanip:
 
 /usr/include/c++/13/bits/uses_allocator.h:
 
@@ -6083,8 +6159,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/c++/13/cstdio:
 
-/usr/include/c++/13/fstream:
-
 /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_globals.h:
 
 /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
@@ -6093,7 +6167,15 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/c++/13/cstddef:
 
+/usr/include/c++/13/ostream:
+
+/usr/include/c++/13/tr1/riemann_zeta.tcc:
+
 /usr/include/c++/13/cmath:
+
+/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/DirectSolver.cu:
+
+/usr/include/c++/13/clocale:
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_lognormal.h:
 
@@ -6107,14 +6189,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/c++/13/cstdlib:
 
-/usr/include/c++/13/optional:
-
-/usr/include/c++/13/bits/vector.tcc:
-
-/usr/include/c++/13/bits/stl_function.h:
-
-/usr/include/c++/13/tr1/beta_function.tcc:
-
 /usr/include/c++/13/bits/uses_allocator_args.h:
 
 /usr/include/c++/13/bits/atomic_base.h:
@@ -6125,9 +6199,17 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/x86_64-linux-gnu/bits/long-double.h:
 
+/usr/include/c++/13/pstl/glue_memory_defs.h:
+
+/usr/include/c++/13/exception:
+
 /usr/include/c++/13/bits/stl_pair.h:
 
 /usr/include/x86_64-linux-gnu/bits/errno.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h:
+
+/usr/include/c++/13/bits/unique_ptr.h:
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/device_launch_parameters.h:
 
@@ -6136,6 +6218,16 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 /usr/include/c++/13/bits/align.h:
 
 /usr/include/x86_64-linux-gnu/bits/waitflags.h:
+
+/usr/include/c++/13/memory:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/crt/common_functions.h:
+
+/usr/include/x86_64-linux-gnu/bits/floatn.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h:
 
 /usr/include/c++/13/bits/new_allocator.h:
 
@@ -6157,21 +6249,19 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/c++/13/bits/stl_construct.h:
 
-/usr/include/c++/13/bits/stl_bvector.h:
-
-/usr/include/c++/13/bits/allocator.h:
-
 /usr/include/c++/13/bits/stl_algobase.h:
+
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Singleton.h:
 
 /usr/include/c++/13/bits/sstream.tcc:
 
 /usr/include/c++/13/cwctype:
 
-/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/Poisson.h:
+/usr/include/c++/13/bits/refwrap.h:
 
-/usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_defines.h:
+/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
 
-/usr/include/c++/13/bits/shared_ptr_atomic.h:
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h:
 
 /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/Mat.cu:
 
@@ -6183,43 +6273,41 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/c++/13/bits/ptr_traits.h:
 
-/usr/local/cuda-12.9/targets/x86_64-linux/include/driver_functions.h:
+/usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h:
 
-/usr/include/c++/13/bits/std_abs.h:
+/usr/include/c++/13/bits/exception_ptr.h:
 
-/usr/include/c++/13/bits/parse_numbers.h:
+/usr/include/x86_64-linux-gnu/c++/13/bits/ctype_inline.h:
 
-/usr/local/cuda-12.9/targets/x86_64-linux/include/nv/detail/__preprocessor:
+/usr/include/c++/13/bits/char_traits.h:
 
-/usr/include/c++/13/bits/ostream_insert.h:
+/usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h:
 
-/usr/include/c++/13/math.h:
-
-/usr/include/c++/13/bits/ostream.tcc:
-
-/usr/include/c++/13/bits/refwrap.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
-
-/usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_atomic_functions.h:
-
-/usr/include/c++/13/bits/fstream.tcc:
-
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h:
-
-/usr/include/features-time64.h:
+/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
 
 /usr/include/c++/13/bits/streambuf.tcc:
 
 /usr/include/c++/13/bits/specfun.h:
 
-/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/DirectSolver.cu:
-
-/usr/include/c++/13/clocale:
-
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/deviceArrays.h:
+/usr/include/c++/13/bits/basic_string.h:
 
 /usr/include/c++/13/tr1/poly_laguerre.tcc:
+
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h:
+
+/usr/include/libintl.h:
+
+/usr/include/c++/13/bits/chrono.h:
+
+/usr/include/x86_64-linux-gnu/bits/endianness.h:
+
+/usr/include/c++/13/bits/basic_ios.h:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/driver_types.h:
+
+/usr/include/x86_64-linux-gnu/bits/time64.h:
+
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Vec.h:
 
 /usr/include/c++/13/bits/atomic_lockfree_defines.h:
 
@@ -6237,38 +6325,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/c++/13/backward/binders.h:
 
-/usr/include/c++/13/bits/predefined_ops.h:
-
-/usr/include/c++/13/iosfwd:
-
-/usr/include/c++/13/bits/allocated_ptr.h:
-
-/usr/include/c++/13/bit:
-
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/bandedMat.h:
-
-/usr/include/c++/13/bits/basic_string.tcc:
-
-/usr/include/c++/13/backward/auto_ptr.h:
-
-/usr/include/assert.h:
-
-/usr/include/c++/13/bits/stl_vector.h:
-
-/usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp:
-
-/usr/include/c++/13/bits/stl_tempbuf.h:
-
-/usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_80_rt.hpp:
-
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/singleton.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h:
-
-/usr/include/c++/13/bits/codecvt.h:
-
 /usr/include/c++/13/ext/alloc_traits.h:
 
 /usr/include/c++/13/new:
@@ -6281,9 +6337,19 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/c++/13/ios:
 
-/usr/include/x86_64-linux-gnu/sys/select.h:
+/usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_70_rt.h:
 
-/usr/include/c++/13/cwchar:
+/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:
+
+/usr/include/c++/13/bits/string_view.tcc:
+
+/usr/include/c++/13/bits/locale_facets.tcc:
+
+/home/dov/Documents/LaplaceFiniteDifference/src/Event.h:
+
+/usr/include/c++/13/bits/predefined_ops.h:
+
+/usr/include/c++/13/iosfwd:
 
 /usr/include/c++/13/bits/shared_ptr.h:
 
@@ -6291,27 +6357,31 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h:
 
+/usr/include/c++/13/math.h:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/nv/detail/__preprocessor:
+
+/usr/include/c++/13/bits/ostream_insert.h:
+
 /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h:
 
-/usr/include/libintl.h:
+/usr/include/c++/13/bits/allocated_ptr.h:
 
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Tensor.h:
+/usr/include/c++/13/bit:
 
-/usr/include/c++/13/bits/basic_ios.h:
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/bandedMat.h:
 
-/usr/local/cuda-12.9/targets/x86_64-linux/include/driver_types.h:
+/usr/include/c++/13/bits/basic_string.tcc:
 
-/usr/include/x86_64-linux-gnu/bits/time64.h:
+/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/Poisson.h:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/crt/host_defines.h:
+
+/usr/include/c++/13/bits/shared_ptr_atomic.h:
 
 /usr/include/c++/13/ext/aligned_buffer.h:
 
 /usr/include/locale.h:
-
-/usr/include/c++/13/bits/utility.h:
-
-/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
-
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceMemory.cpp:
 
 /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h:
 
@@ -6331,55 +6401,35 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/alloca.h:
 
-/usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h:
+/usr/include/x86_64-linux-gnu/sys/select.h:
 
-/usr/include/c++/13/bits/unique_ptr.h:
+/usr/include/c++/13/cwchar:
 
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData2d.cuh:
+/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
 
-/usr/local/cuda-12.9/targets/x86_64-linux/include/crt/sm_70_rt.h:
+/usr/include/c++/13/bits/utility.h:
 
-/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:
+/usr/include/c++/13/bits/stl_function.h:
 
-/usr/include/c++/13/bits/string_view.tcc:
+/usr/include/c++/13/tr1/beta_function.tcc:
 
-/home/dov/Documents/LaplaceFiniteDifference/src/Poisson/GridDim.cpp:
+/usr/include/c++/13/backward/auto_ptr.h:
 
-/usr/include/c++/13/bits/locale_facets.tcc:
+/usr/include/assert.h:
 
-/home/dov/Documents/LaplaceFiniteDifference/src/Event.h:
+/usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_bf16.hpp:
 
-/usr/include/c++/13/bits/basic_string.h:
+/usr/include/c++/13/bits/stl_tempbuf.h:
 
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/vec.h:
+/usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:
 
-/usr/include/c++/13/bits/uniform_int_dist.h:
+/usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h:
 
-/usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.h:
-
-/usr/include/c++/13/bits/locale_classes.tcc:
-
-/usr/include/x86_64-linux-gnu/bits/endianness.h:
-
-/usr/include/c++/13/bits/chrono.h:
-
-/usr/include/x86_64-linux-gnu/c++/13/bits/ctype_inline.h:
-
-/usr/include/c++/13/bits/char_traits.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
-
-/usr/include/c++/13/bits/exception_ptr.h:
+/usr/include/c++/13/bits/codecvt.h:
 
 /usr/include/c++/13/bits/istream.tcc:
 
 /usr/include/c++/13/bits/locale_conv.h:
-
-/usr/include/c++/13/ostream:
-
-/usr/include/c++/13/tr1/riemann_zeta.tcc:
 
 /usr/include/c++/13/bits/cpp_type_traits.h:
 
@@ -6415,10 +6465,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
 
-/usr/include/c++/13/bits/basic_ios.tcc:
-
-/usr/include/c++/13/pstl/execution_defs.h:
-
 /usr/include/c++/13/bits/functional_hash.h:
 
 /usr/include/errno.h:
@@ -6437,37 +6483,31 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/c++/13/bits/ios_base.h:
 
+/usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h:
+
+/usr/include/c++/13/bits/ostream.tcc:
+
 /usr/include/c++/13/bits/stl_relops.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
+
+/usr/include/c++/13/bits/allocator.h:
+
+/usr/include/c++/13/bits/uniform_int_dist.h:
+
+/usr/local/cuda-12.9/targets/x86_64-linux/include/cuda_fp16.h:
+
+/usr/include/c++/13/bits/locale_classes.tcc:
 
 /usr/include/c++/13/bits/locale_facets_nonio.h:
 
 /usr/include/c++/13/bits/memoryfwd.h:
 
-/usr/include/c++/13/memory:
+/usr/local/cuda-12.9/targets/x86_64-linux/include/driver_functions.h:
 
-/usr/local/cuda-12.9/targets/x86_64-linux/include/crt/common_functions.h:
+/usr/include/c++/13/bits/std_abs.h:
 
-/usr/include/x86_64-linux-gnu/bits/floatn.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h:
-
-/usr/include/c++/13/exception:
-
-/usr/include/c++/13/pstl/glue_memory_defs.h:
-
-/usr/local/cuda-12.9/targets/x86_64-linux/include/sm_32_intrinsics.hpp:
-
-/usr/local/cuda-12.9/targets/x86_64-linux/include/sm_20_atomic_functions.h:
-
-/usr/include/c++/13/iomanip:
-
-/usr/include/strings.h:
-
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/handle.cu:
-
-/usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
+/usr/include/c++/13/bits/parse_numbers.h:
 
 /usr/local/cuda-12.9/targets/x86_64-linux/include/curand_mtgp32.h:
 
@@ -6482,6 +6522,8 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
 
 /usr/include/c++/13/string:
+
+/usr/include/features-time64.h:
 
 /usr/include/c++/13/tr1/ell_integral.tcc:
 
@@ -6528,8 +6570,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 /usr/include/c++/13/bits/nested_exception.h:
 
 /usr/include/c++/13/tuple:
-
-/usr/include/c++/13/vector:
 
 /usr/include/ctype.h:
 
@@ -6587,8 +6627,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/x86_64-linux-gnu/bits/types/wint_t.h:
 
-/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/squareMat.h:
-
 /usr/include/x86_64-linux-gnu/bits/fp-fast.h:
 
 /usr/include/x86_64-linux-gnu/bits/fp-logb.h:
@@ -6637,11 +6675,15 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 
 /usr/include/x86_64-linux-gnu/bits/timesize.h:
 
+/home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/DeviceData.cu:
+
 /usr/local/cuda-12.9/targets/x86_64-linux/include/device_types.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdio_lim.h:
 
 /usr/include/x86_64-linux-gnu/bits/timex.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h:
 
 /usr/include/math.h:
 
@@ -6678,3 +6720,11 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: /home/dov/Documents/LaplaceFin
 /usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/typesizes.h:
+
+/usr/include/x86_64-linux-gnu/bits/xopen_lim.h:
+
+/usr/include/x86_64-linux-gnu/bits/wordsize.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h:

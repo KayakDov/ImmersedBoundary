@@ -2,11 +2,11 @@
 #include <iostream>
 #include <sstream>
 
-#include "../headers/squareMat.h"
+#include "../headers/SquareMat.h"
 #include "../headers/KernelSupport.cuh"
 #include "../headers/deviceArraySupport.h"
-#include "../headers/singleton.h"
-#include "../headers/vec.h"
+#include "../headers/Singleton.h"
+#include "../headers/Vec.h"
 #include "../headers/bandedMat.h"
 #include "../headers/GridDim.h"
 
@@ -85,11 +85,11 @@ void SquareMat<T>::eigen(
     int info = 0;
 
     std::unique_ptr<Mat<T>> temp_mat_ptr;
-    Mat<T>* copy = this->_get_or_create_target(n, n, temp, temp_mat_ptr);
+    Mat<T>* copy = Mat<T>::_get_or_create_target(n, n, temp, temp_mat_ptr);
     this->get(*copy, h->stream);
 
     std::unique_ptr<Vec<T>> temp_reEVal;
-    Vec<T>* eValsPtr = this->_get_or_create_target(2*n, &eVals, temp_reEVal, h->stream);
+    Vec<T>* eValsPtr = Vec<T>::_get_or_create_target(2*n, &eVals, temp_reEVal, h->stream);
 
     size_t workDeviceBytes, workHostBytes;
     cudaDataType_t dataType;

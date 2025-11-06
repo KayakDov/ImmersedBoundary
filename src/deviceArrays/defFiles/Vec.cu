@@ -1,7 +1,7 @@
 #include <utility>
 
-#include "../headers/vec.h"
-#include "../headers/singleton.h"
+#include "../headers/Vec.h"
+#include "../headers/Singleton.h"
 #include <curand_kernel.h> // For curandState
 #include "../headers/DeviceMemory.h"
 
@@ -24,9 +24,18 @@ template<typename T>
 Vec<T> Vec<T>::subVec(const size_t offset, const size_t length, const size_t stride) const {
     return Vec<T>(
         length,
-        std::shared_ptr<T>(this->_ptr, const_cast<T *>(this->data() + offset * this->_ld * stride)),
+        std::shared_ptr<T>(this->_ptr, const_cast<T *>(this->toKernel1d() + offset * this->_ld * stride)),
         stride * this->_ld
     );
+}
+
+template <typename T>
+Vec<T>* Vec<T>::_get_or_create_target(size_t length, Vec<T>* result, std::unique_ptr<Vec<T>>& out_ptr_unique, cudaStream_t stream) {
+    if (result) return result;
+    else {
+        out_ptr_unique = std::make_unique<Vec<T>>(Vec<T>::create(length, stream));
+        return out_ptr_unique.get();
+    }
 }
 
 template<typename T>
@@ -63,9 +72,9 @@ void Vec<T>::mult(
 
 
     if constexpr (std::is_same_v<T, float>)
-        cublasSdot(h->handle, this->_cols, this->data(), this->_ld, other.toKernel(), other._ld, result.toKernel());
+        cublasSdot(h->handle, this->_cols, this->toKernel1d(), this->_ld, other.toKernel1d(), other._ld, result.toKernel());
     else if constexpr (std::is_same_v<T, double>)
-        cublasDdot(h->handle, this->_cols, this->data(), this->_ld, other.toKernel(), other._ld, result.toKernel());
+        cublasDdot(h->handle, this->_cols, this->toKernel1d(), this->_ld, other.toKernel1d(), other._ld, result.toKernel());
     else static_assert(!std::is_same_v<T, float> && !std::is_same_v<T, double>, "Vec::add unsupported type.");
 }
 
@@ -190,18 +199,18 @@ __global__ void fill1dKernel(DeviceData1d<T> a, const T val) {
 template<typename T>
 void Vec<T>::fill(T val, cudaStream_t stream) {
     if (this->_ld == 1 && (val == static_cast<T>(0) || sizeof(T) == 1))
-        cudaMemset(this->data(), val, size() * sizeof(T));
+        cudaMemset(this->toKernel1d(), val, size() * sizeof(T));
     else {
         constexpr size_t BLOCK_SIZE = 256;
         size_t num_blocks = (this->size() + BLOCK_SIZE - 1) / BLOCK_SIZE;
-        fill1dKernel<<<num_blocks, BLOCK_SIZE, 0, stream>>>(this->data(), this->size(), val, this->_ld);
+        fill1dKernel<<<num_blocks, BLOCK_SIZE, 0, stream>>>(this->toKernel1d(), this->size(), val, this->_ld);
     }
     CHECK_CUDA_ERROR(cudaGetLastError());
 }
 
 template<typename T>
 Singleton<T> Vec<T>::get(size_t i) {
-    return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->data() + i * this->_ld));
+    return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->toKernel1d() + i * this->_ld));
 }
 
 template<typename T>
@@ -215,9 +224,9 @@ void Vec<T>::add(const Vec<T> &x, const Singleton<T> *alpha, Handle *handle) {
     const Singleton<T> *a = this->_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
 
     if constexpr (std::is_same_v<T, float>)
-        cublasSaxpy(h->handle, this->_cols, a->data(), x.toKernel(), x._ld, this->data(), this->_ld);
+        cublasSaxpy(h->handle, this->_cols, a->toKernel1d(), x.toKernel(), x._ld, this->toKernel1d(), this->_ld);
     else if constexpr (std::is_same_v<T, double>)
-        cublasDaxpy(h->handle, this->_cols, a->data(), x.toKernel(), x._ld, this->data(), this->_ld);
+        cublasDaxpy(h->handle, this->_cols, a->toKernel1d(), x.toKernel(), x._ld, this->toKernel1d(), this->_ld);
     else throw std::invalid_argument("Vec::add unsupported type.");
 }
 
@@ -236,9 +245,9 @@ void Vec<T>::mult(const Singleton<T> &alpha, Handle *handle) {
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
     if constexpr (std::is_same_v<T, float>)
-        cublasSscal(h->handle, this->_cols, alpha.toKernel(), this->data(), this->_ld);
+        cublasSscal(h->handle, this->_cols, alpha.toKernel(), this->toKernel1d(), this->_ld);
     else if constexpr (std::is_same_v<T, double>)
-        cublasDscal(h->handle, this->_cols, alpha.toKernel(), this->data(), this->_ld);
+        cublasDscal(h->handle, this->_cols, alpha.toKernel(), this->toKernel1d(), this->_ld);
     else throw std::invalid_argument("Unsupported type.");
 }
 
@@ -280,12 +289,12 @@ void Vec<T>::fillRandom(Handle *handle) {
         setup_kernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates.get(), 0, this->size(), this->_ld);
         h->synch();
         fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(
-            this->data(), devStates.get());
+            this->toKernel1d(), devStates.get());
     } else if constexpr (std::is_same_v<T, double>) {
         setup_kernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates.get(), 0, this->size(), this->_ld);
         h->synch();
         fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(
-            this->data(),  devStates.get());
+            this->toKernel1d(),  devStates.get());
     } else throw std::invalid_argument("Unsupported type.");
 }
 
@@ -304,7 +313,7 @@ void Vec<T>::EBEPow(const Singleton<T> &t, const Singleton<T> &n, cudaStream_t s
     int gridSize = (this->_cols + blockSize - 1) / blockSize;
 
     EBEPowKernel<<<gridSize, blockSize, 0, stream>>>(
-        this->data(),
+        this->toKernel1d(),
         t.toKernel(), n.toKernel()
     );
 
@@ -356,7 +365,7 @@ void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> 
     int numBlocks = (this->size() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
     setDifferenceKernel<<<numBlocks, THREADS_PER_BLOCK, 0, h->stream>>>(
-        this->data(), // Destination: 'this' vector
+        this->toKernel1d(), // Destination: 'this' vector
         a.toKernel(), // Input 1: 'a' vector
         b.toKernel(), // Input 2: 'b' vector
         alpha.toKernel(), // Scalar alpha (passed by value)
@@ -366,7 +375,12 @@ void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> 
 }
 
 template<typename T>
-DeviceData1d<T> Vec<T>::toKernel() {
+DeviceData1d<T> Vec<T>::toKernel1d() {
+    return DeviceData1d<T>(this->size(), this->_ld, this->_ptr.get());
+}
+
+template<typename T>
+DeviceData1d<T> Vec<T>::toKernel1d() const {
     return DeviceData1d<T>(this->size(), this->_ld, this->_ptr.get());
 }
 

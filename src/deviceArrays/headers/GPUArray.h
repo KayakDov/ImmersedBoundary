@@ -1,21 +1,19 @@
-// --- deviceArrays.h ---
+// --- GPUArray.h ---
 // This file declares the classes and functions used in deviceArrays.cu.
 // It is included by main.cu to let the compiler know what exists.
-#ifndef DEVICEARRAYS_H
-#define DEVICEARRAYS_H
+#ifndef GPUARRAY_H
+#define GPUARRAY_H
 
-#include <vector> // For std::vector
+
 #include <memory> // For std::shared_ptr
-#include <stdexcept> // For std::runtime_error
-#include <fstream> // For file I/O
 #include "handle.h"
-#include <iostream>
 #include <iomanip>
 #include "DeviceMemory.h"
-#include "DeviceData2d.cuh"
+#include "DeviceData.cuh"
 
 
-template <typename T> class GpuArray;
+
+
 template <typename T> class Vec;
 template <typename T> class Mat;
 template <typename T> class Singleton;
@@ -27,11 +25,6 @@ inline void cudaFreeDeleter(void* ptr) {
     if (ptr) cudaFree(ptr);
 }
 
-/**
- * An array stored on the GPU.
- * @tparam T The type of data that will be stored on the GPU.
- */
-template <typename T>
 /**
  * @brief A class representing a GPU-accelerated multidimensional array.
  *
@@ -49,6 +42,7 @@ template <typename T>
  * @warning Attempting to operate on uninitialized or invalid GpuArray instances
  * may result in undefined behavior.
  */
+template <typename T>
 class GpuArray {
 public:
     /**
@@ -118,75 +112,6 @@ protected:
 
 
     /**
-     * @brief Retrieves or creates a target matrix with the specified dimensions.
-     *
-     * This method either uses an existing `Mat<T>` pointer if provided or creates
-     * a new `Mat<T>` instance with the given dimensions. The newly created
-     * `Mat<T>` instance is managed through a unique pointer and returned to the caller.
-     *
-     * @param rows The number of rows for the target matrix.
-     * @param cols The number of columns for the target matrix.
-     * @param result A pointer to an existing `Mat<T>` instance. If not null, this
-     *               instance will be used directly.
-     * @param out_ptr_unique A unique pointer to manage the newly created `Mat<T>` instance,
-     *                       if no existing matrix (`result`) is provided.
-     *
-     * @return A pointer to the target `Mat<T>` matrix, either an existing instance
-     *         (`result`) or a newly created one.
-     */
-    Mat<T>* _get_or_create_target(size_t rows, size_t cols, Mat<T>* result, std::unique_ptr<Mat<T>>& out_ptr_unique) const;
-
-    /**
-     * @brief Retrieves an existing GPU vector or creates a new one with the specified length.
-     *
-     * This method checks whether the given result pointer is valid. If it is, the existing
-     * vector is returned. Otherwise, a new GPU vector is created with the specified length
-     * and stream, and the unique pointer is updated to manage the new vector's lifetime.
-     *
-     * @param length The length of the GPU vector to be created if no valid result is provided.
-     * @param result A pointer to an existing GPU vector; if valid, it will be returned.
-     * @param out_ptr_unique A unique pointer that will be initialized with a new GPU vector
-     *                       if the result pointer is null.
-     * @param stream The CUDA stream used for creating the GPU vector.
-     * @return A pointer to the existing or newly created GPU vector.
-     */
-    Vec<T>* _get_or_create_target(size_t length, Vec<T> *result, std::unique_ptr<Vec<T>> &out_ptr_unique, cudaStream_t stream) const;
-
-    /**
-     * @brief Retrieves an existing target or creates a new target of type Singleton.
-     *
-     * This method checks if the target `result` is already provided. If `result` is not
-     * null, it returns the existing target. Otherwise, it creates a new instance of
-     * `Singleton` using the given CUDA stream and assigns it to `out_ptr_unique`.
-     * The newly created object is then returned.
-     *
-     * @param result Pointer to an existing `Singleton` instance, if available. If null,
-     * a new instance will be created.
-     * @param out_ptr_unique Reference to a `std::unique_ptr` to store the newly created
-     * `Singleton` instance if `result` is null.
-     * @param stream The CUDA stream used for initializing the `Singleton` instance
-     * when creating a new target.
-     * @return Pointer to the existing or newly created `Singleton` instance.
-     */
-    Singleton<T>* _get_or_create_target(Singleton<T> *result, std::unique_ptr<Singleton<T>> &out_ptr_unique, cudaStream_t stream) const;
-
-    /**
-     * @brief Retrieves an existing target or creates a new one with the specified default value.
-     *
-     * This method fetches a given target if it exists, or initializes and returns a new
-     * instance of the target using the provided default value and handle. If no target exists
-     * (`result` is null), a new instance is created using `std::unique_ptr` and returned.
-     *
-     * @param defaultVal The default value used for initializing the new target, if required.
-     * @param hand The handle providing additional context such as a stream for target creation.
-     * @param result Pointer to an existing target instance, or null if no instance exists.
-     * @param out_ptr_unique A unique pointer that holds ownership of a newly created target
-     * if `result` is null.
-     * @return A pointer to an existing or newly created target of type `Singleton<T>`.
-     */
-    const Singleton<T>* _get_or_create_target(T defaultVal, Handle& hand, const Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) const;
-
-    /**
      * @brief Performs matrix multiplication with optional transposition, scaling factors, and result storage.
      *
      * This method multiplies the current GpuArray instance with another GpuArray, applying optional
@@ -248,7 +173,7 @@ public:
      *
      * @return The size in bytes as a `size_t` value.
      */
-    [[nodiscard]] size_t bytes() const;
+    [[nodiscard]] virtual size_t bytes() const;
 
     /**
      * @brief Virtual method to copy data from host memory to device memory.
@@ -390,7 +315,8 @@ public:
      * @return A pointer to the GPU memory holding the array's data.
      * The pointer is valid as long as the GpuArray instance remains valid.
      */
-    virtual DeviceData2d<T> toKernel();
+    virtual DeviceData2d<T> toKernel2d();
+    virtual DeviceData2d<T> toKernel2d() const;
 
     /**
      * The shared pointer to the gpu data.
@@ -432,143 +358,143 @@ public:
      */
     void multKronecker(const GpuArray& other, GpuArray& result, cudaStream_t stream) const;
 };
+//TODO: rewrite these with gets.
+// /**
+//  * @brief Input formatted data (space-separated values) into gpuArray1D<T> from a stream.
+//  * @tparam T Element type
+//  * @param is Input stream
+//  * @param arr Array to fill
+//  * @return Input stream
+//  */
+// template <typename T>
+// std::istream& operator>>(std::istream& is, Vec<T>& arr) {
+//
+//     std::vector<T> hostData(arr.size());
+//     for (size_t i = 0; i < hostData.size(); ++i) {
+//         is >> hostData[i];
+//         if (!is) {
+//             is.setstate(std::ios::badbit);
+//             break;
+//         }
+//     }
+//     arr.set(hostData.data());
+//     return is;
+// }
+//
+// /**
+//  * @brief Prints a gpuArray1D<T> to a stream.
+//  * @tparam T Element type
+//  * @param os Output stream
+//  * @param arr The gpuArray1D to print
+//  * @return Output stream
+//  */
+// template <typename T>
+// std::ostream& operator<<(std::ostream& os, const Vec<T>& arr) {
+//     std::vector<T> hostData(arr.size());
+//     Handle hand;
+//     arr.get(hostData.data(), hand.stream);
+//     hand.synch();
+//
+//     for (size_t i = 0; i < hostData.size(); ++i) {
+//         os << hostData[i];
+//         if (i + 1 < hostData.size()) {
+//             os << " ";
+//         }
+//     }
+//     os << "\n";
+//     return os;
+// }
+//
+// /**
+//  * @brief Prints a gpuArray2D<T> to a stream with improved formatting.
+//  *
+//  * This operator assumes a column-major memory layout and prints the matrix
+//  * row by row for a more readable output. It uses iomanip to format the
+//  * floating-point numbers to a fixed precision and set width.
+//  *
+//  * @tparam T Element type
+//  * @param os Output stream
+//  * @param arr The gpuArray2D to print
+//  * @return Output stream
+//  */
+// template <typename T>
+// std::ostream& operator<<(std::ostream& os, const Mat<T>& arr) {
+//     cudaDeviceSynchronize();
+//     std::vector<T> hostData(arr.size());
+//
+//     Handle hand;
+//     arr.get(hostData.data(), hand.stream);
+//     hand.synch();
+//
+//     for (size_t r = 0; r < arr._rows; ++r) {
+//         for (size_t c = 0; c < arr._cols; ++c) {
+//             // Contiguous column-major access
+//             os << hostData[c * arr._rows + r] << " ";
+//         }
+//         os << "\n";
+//     }
+//     return os;
+// }
+//
+//
+// /**
+//  * @brief Reads formatted data (column by column) into gpuArray2D<T> from a stream.
+//  *
+//  * This operator assumes the input stream is formatted in column-major order,
+//  * meaning it will read all elements of the first column, then the second, and so on.
+//  *
+//  * @tparam T Element type
+//  * @param is Input stream
+//  * @param arr Array to fill
+//  * @return Input stream
+//  */
+// template <typename T>
+// std::istream& operator>>(std::istream& is, Mat<T>& arr) {
+//     std::vector<T> hostData(arr.size());
+//     size_t ld = arr.getLD();
+//
+//     for (size_t c = 0; c < arr._cols; ++c) {
+//         for (size_t r = 0; r < arr._rows; ++r) {
+//             // Reading data in column-major order from the stream
+//             is >> hostData[c * ld + r];
+//             if (!is) {
+//                 is.setstate(std::ios::badbit);
+//                 return is;
+//             }
+//         }
+//     }
+//
+//     arr.set(hostData.data());
+//     return is;
+// }
+//
+// template <typename T>
+// /**
+//  * @brief Overloads the stream insertion operator for GpuArray instances.
+//  *
+//  * This function provides formatted output for GpuArray objects by determining
+//  * whether the array instance is one-dimensional (Vec) or two-dimensional (Mat).
+//  * It dynamically casts the input object to the appropriate type and delegates
+//  * stream formatting to the corresponding type's stream operator.
+//  *
+//  * @tparam T The data type of the elements in the GpuArray.
+//  * @param os The output stream to which the array's content will be written.
+//  * @param arr The GpuArray instance to be formatted and written to the stream.
+//  * @return A reference to the output stream with the formatted array content.
+//  *
+//  * @throws std::runtime_error If the function fails to determine whether the input
+//  * array is of type Vec or Mat, indicating the array's type is unsupported.
+//  *
+//  * @note The underlying implementation assumes that valid dynamic casting can
+//  * differentiate between one-dimensional and two-dimensional arrays derived
+//  * from the GpuArray base class.
+//  */
+// std::ostream& operator<<(std::ostream& os, const GpuArray<T>& arr) {
+//
+//     if (auto ptr1d = dynamic_cast<const Vec<T>*> (&arr)) return os << *ptr1d;
+//     else if (auto ptr2d = dynamic_cast<const Mat<T>*>(&arr)) return os << *ptr2d;
+//     else throw std::runtime_error("Unable to detect the type of array, 1d or 2d.");
+//     return os;
+// }
 
-/**
- * @brief Input formatted data (space-separated values) into gpuArray1D<T> from a stream.
- * @tparam T Element type
- * @param is Input stream
- * @param arr Array to fill
- * @return Input stream
- */
-template <typename T>
-std::istream& operator>>(std::istream& is, Vec<T>& arr) {
-
-    std::vector<T> hostData(arr.size());
-    for (size_t i = 0; i < hostData.size(); ++i) {
-        is >> hostData[i];
-        if (!is) {
-            is.setstate(std::ios::badbit);
-            break;
-        }
-    }
-    arr.set(hostData.data());
-    return is;
-}
-
-/**
- * @brief Prints a gpuArray1D<T> to a stream.
- * @tparam T Element type
- * @param os Output stream
- * @param arr The gpuArray1D to print
- * @return Output stream
- */
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const Vec<T>& arr) {
-    std::vector<T> hostData(arr.size());
-    Handle hand;
-    arr.get(hostData.data(), hand.stream);
-    hand.synch();
-
-    for (size_t i = 0; i < hostData.size(); ++i) {
-        os << hostData[i];
-        if (i + 1 < hostData.size()) {
-            os << " ";
-        }
-    }
-    os << "\n";
-    return os;
-}
-
-/**
- * @brief Prints a gpuArray2D<T> to a stream with improved formatting.
- *
- * This operator assumes a column-major memory layout and prints the matrix
- * row by row for a more readable output. It uses iomanip to format the
- * floating-point numbers to a fixed precision and set width.
- *
- * @tparam T Element type
- * @param os Output stream
- * @param arr The gpuArray2D to print
- * @return Output stream
- */
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const Mat<T>& arr) {
-    cudaDeviceSynchronize();
-    std::vector<T> hostData(arr.size());
-
-    Handle hand;
-    arr.get(hostData.data(), hand.stream);
-    hand.synch();
-
-    for (size_t r = 0; r < arr._rows; ++r) {
-        for (size_t c = 0; c < arr._cols; ++c) {
-            // Contiguous column-major access
-            os << hostData[c * arr._rows + r] << " ";
-        }
-        os << "\n";
-    }
-    return os;
-}
-
-
-/**
- * @brief Reads formatted data (column by column) into gpuArray2D<T> from a stream.
- *
- * This operator assumes the input stream is formatted in column-major order,
- * meaning it will read all elements of the first column, then the second, and so on.
- *
- * @tparam T Element type
- * @param is Input stream
- * @param arr Array to fill
- * @return Input stream
- */
-template <typename T>
-std::istream& operator>>(std::istream& is, Mat<T>& arr) {
-    std::vector<T> hostData(arr.size());
-    size_t ld = arr.getLD();
-
-    for (size_t c = 0; c < arr._cols; ++c) {
-        for (size_t r = 0; r < arr._rows; ++r) {
-            // Reading data in column-major order from the stream
-            is >> hostData[c * ld + r];
-            if (!is) {
-                is.setstate(std::ios::badbit);
-                return is;
-            }
-        }
-    }
-
-    arr.set(hostData.data());
-    return is;
-}
-
-template <typename T>
-/**
- * @brief Overloads the stream insertion operator for GpuArray instances.
- *
- * This function provides formatted output for GpuArray objects by determining
- * whether the array instance is one-dimensional (Vec) or two-dimensional (Mat).
- * It dynamically casts the input object to the appropriate type and delegates
- * stream formatting to the corresponding type's stream operator.
- *
- * @tparam T The data type of the elements in the GpuArray.
- * @param os The output stream to which the array's content will be written.
- * @param arr The GpuArray instance to be formatted and written to the stream.
- * @return A reference to the output stream with the formatted array content.
- *
- * @throws std::runtime_error If the function fails to determine whether the input
- * array is of type Vec or Mat, indicating the array's type is unsupported.
- *
- * @note The underlying implementation assumes that valid dynamic casting can
- * differentiate between one-dimensional and two-dimensional arrays derived
- * from the GpuArray base class.
- */
-std::ostream& operator<<(std::ostream& os, const GpuArray<T>& arr) {
-    
-    if (auto ptr1d = dynamic_cast<const Vec<T>*>(&arr)) return os << *ptr1d;
-    else if (auto ptr2d = dynamic_cast<const Mat<T>*>(&arr)) return os << *ptr2d;
-    else throw std::runtime_error("Unable to detect the type of array, 1d or 2d.");
-    return os;
-}
-
-#endif // DEVICEARRAYS_H
+#endif // GPUARRAY_H

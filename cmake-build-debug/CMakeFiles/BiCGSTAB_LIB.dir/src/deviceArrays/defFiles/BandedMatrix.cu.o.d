@@ -279,16 +279,11 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o : /home/
     /usr/include/c++/13/istream \
     /usr/include/c++/13/bits/istream.tcc \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/bandedMat.h \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/vec.h \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/Mat.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/Vec.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/GPUArray.h \
-    /usr/include/c++/13/vector \
-    /usr/include/c++/13/bits/stl_uninitialized.h \
-    /usr/include/c++/13/bits/stl_vector.h \
-    /usr/include/c++/13/bits/stl_bvector.h \
-    /usr/include/c++/13/bits/vector.tcc \
     /usr/include/c++/13/memory \
     /usr/include/c++/13/bits/stl_tempbuf.h \
+    /usr/include/c++/13/bits/stl_uninitialized.h \
     /usr/include/c++/13/bits/stl_raw_storage_iter.h \
     /usr/include/c++/13/bits/align.h \
     /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h \
@@ -307,11 +302,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o : /home/
     /usr/include/c++/13/backward/auto_ptr.h \
     /usr/include/c++/13/pstl/glue_memory_defs.h \
     /usr/include/c++/13/pstl/execution_defs.h \
-    /usr/include/c++/13/fstream \
-    /usr/include/c++/13/bits/codecvt.h \
-    /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
-    /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
-    /usr/include/c++/13/bits/fstream.tcc \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/handle.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_v2.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_api.h \
@@ -333,17 +323,18 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o : /home/
     /usr/include/x86_64-linux-gnu/c++/13/bits/time_members.h \
     /usr/include/x86_64-linux-gnu/c++/13/bits/messages_members.h \
     /usr/include/libintl.h \
+    /usr/include/c++/13/bits/codecvt.h \
     /usr/include/c++/13/bits/locale_facets_nonio.tcc \
     /usr/include/c++/13/bits/locale_conv.h \
     /usr/include/c++/13/bits/quoted_string.h \
     /usr/include/c++/13/sstream \
     /usr/include/c++/13/bits/sstream.tcc \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/DeviceMemory.h \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/DeviceData2d.cuh \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/DeviceData.cuh \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/GridDim.h \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/Tensor.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/Singleton.h \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/KernelSupport.cuh \
     /usr/include/c++/13/cstdint \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/singleton.h \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/squareMat.h
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/SquareMat.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/Mat.h \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/defFiles/../headers/Tensor.h

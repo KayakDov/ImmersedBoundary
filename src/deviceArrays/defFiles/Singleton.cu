@@ -1,4 +1,4 @@
-#include "../headers/singleton.h"
+#include "../headers/Singleton.h"
 
 
 template<typename T>
@@ -33,25 +33,45 @@ void Singleton<T>::set(const T val, cudaStream_t stream){
 
 
 template <typename T>
-__global__ void setProductOfQutientsKernel(T* result, const T* numA, const T* denA, const T* numB, const T* denB) {
+__global__ void setProductOfQuotientsKernel(T* result, const T* numA, const T* denA, const T* numB, const T* denB) {
     if (blockIdx.x * blockDim.x + threadIdx.x == 0)
         *result = *numA * *numB/(*denA * *denB);
 }
 
+
 template<typename T>
-void Singleton<T>::setProductOfQutients(const Singleton<T> &numA, const Singleton<T> &denA, const Singleton<T> &numB, const Singleton<T> &denB, cudaStream_t stream) {
+void Singleton<T>::setProductOfQuotients(const Singleton<T> &numA, const Singleton<T> &denA, const Singleton<T> &numB, const Singleton<T> &denB, cudaStream_t stream) {
 
     constexpr int THREADS_PER_BLOCK = 1;
     int numBlocks = 1;
 
-    setProductOfQutientsKernel<<<numBlocks, THREADS_PER_BLOCK, 0, stream>>>(
-        this->data().data, // Destination: 'this' vector
-        numA.data().data,     // Input 1: 'a' vector
-        denA.data().data,     // Input 2: 'b' vector
-        numB.data().data,            // Scalar alpha (passed by value)
-        denB.data().data             // Scalar beta (passed by value)
+    setProductOfQuotientsKernel<<<numBlocks, THREADS_PER_BLOCK, 0, stream>>>(
+        this->toKernel1d().data, // Destination: 'this' vector
+        numA.toKernel1d().data,     // Input 1: 'a' vector
+        denA.toKernel1d().data,     // Input 2: 'b' vector
+        numB.toKernel1d().data,            // Scalar alpha (passed by value)
+        denB.toKernel1d().data             // Scalar beta (passed by value)
     );
 }
+
+template <typename T>
+Singleton<T>* Singleton<T>::_get_or_create_target(Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique, cudaStream_t stream) {
+    if (result) return result;
+    else {
+        out_ptr_unique = std::make_unique<Singleton<T>>(Singleton<T>::create(stream));
+        return out_ptr_unique.get();
+    }
+}
+
+template <typename T>
+const Singleton<T>* Singleton<T>::_get_or_create_target(T defaultVal, Handle& hand, const Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) {
+    if (result) return result;
+    else {
+        out_ptr_unique = std::make_unique<Singleton<T>>(Singleton<T>::create(defaultVal, hand.stream));
+        return out_ptr_unique.get();
+    }
+}
+
 
 template <typename T>
 const Singleton<T> Singleton<T>::ONE = Singleton<T>::create(static_cast<T>(1));

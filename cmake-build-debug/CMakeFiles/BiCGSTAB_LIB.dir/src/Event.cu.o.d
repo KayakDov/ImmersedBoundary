@@ -245,13 +245,9 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o : /home/dov/Documents/LaplaceFiniteDi
     /usr/include/c++/13/bits/uses_allocator_args.h \
     /usr/include/c++/13/tuple \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GPUArray.h \
-    /usr/include/c++/13/vector \
-    /usr/include/c++/13/bits/stl_uninitialized.h \
-    /usr/include/c++/13/bits/stl_vector.h \
-    /usr/include/c++/13/bits/stl_bvector.h \
-    /usr/include/c++/13/bits/vector.tcc \
     /usr/include/c++/13/memory \
     /usr/include/c++/13/bits/stl_tempbuf.h \
+    /usr/include/c++/13/bits/stl_uninitialized.h \
     /usr/include/c++/13/bits/stl_raw_storage_iter.h \
     /usr/include/c++/13/bits/align.h \
     /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h \
@@ -282,33 +278,6 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o : /home/dov/Documents/LaplaceFiniteDi
     /usr/include/c++/13/backward/auto_ptr.h \
     /usr/include/c++/13/pstl/glue_memory_defs.h \
     /usr/include/c++/13/pstl/execution_defs.h \
-    /usr/include/c++/13/fstream \
-    /usr/include/c++/13/istream \
-    /usr/include/c++/13/ios \
-    /usr/include/c++/13/bits/ios_base.h \
-    /usr/include/c++/13/bits/locale_classes.h \
-    /usr/include/c++/13/bits/locale_classes.tcc \
-    /usr/include/c++/13/system_error \
-    /usr/include/x86_64-linux-gnu/c++/13/bits/error_constants.h \
-    /usr/include/c++/13/streambuf \
-    /usr/include/c++/13/bits/streambuf.tcc \
-    /usr/include/c++/13/bits/basic_ios.h \
-    /usr/include/c++/13/bits/locale_facets.h \
-    /usr/include/c++/13/cwctype \
-    /usr/include/wctype.h \
-    /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
-    /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
-    /usr/include/c++/13/bits/streambuf_iterator.h \
-    /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_inline.h \
-    /usr/include/c++/13/bits/locale_facets.tcc \
-    /usr/include/c++/13/bits/basic_ios.tcc \
-    /usr/include/c++/13/ostream \
-    /usr/include/c++/13/bits/ostream.tcc \
-    /usr/include/c++/13/bits/istream.tcc \
-    /usr/include/c++/13/bits/codecvt.h \
-    /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
-    /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
-    /usr/include/c++/13/bits/fstream.tcc \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/handle.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_v2.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cublas_api.h \
@@ -323,20 +292,41 @@ CMakeFiles/BiCGSTAB_LIB.dir/src/Event.cu.o : /home/dov/Documents/LaplaceFiniteDi
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolverDn.h \
     /usr/local/cuda-12.9/targets/x86_64-linux/include/cusolver_common.h \
     /usr/include/inttypes.h \
-    /usr/include/c++/13/iostream \
     /usr/include/c++/13/iomanip \
+    /usr/include/c++/13/bits/ios_base.h \
+    /usr/include/c++/13/bits/locale_classes.h \
+    /usr/include/c++/13/bits/locale_classes.tcc \
+    /usr/include/c++/13/system_error \
+    /usr/include/x86_64-linux-gnu/c++/13/bits/error_constants.h \
     /usr/include/c++/13/locale \
+    /usr/include/c++/13/bits/locale_facets.h \
+    /usr/include/c++/13/cwctype \
+    /usr/include/wctype.h \
+    /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
+    /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
+    /usr/include/c++/13/streambuf \
+    /usr/include/c++/13/bits/streambuf.tcc \
+    /usr/include/c++/13/bits/streambuf_iterator.h \
+    /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_inline.h \
+    /usr/include/c++/13/bits/locale_facets.tcc \
     /usr/include/c++/13/bits/locale_facets_nonio.h \
     /usr/include/c++/13/ctime \
     /usr/include/x86_64-linux-gnu/c++/13/bits/time_members.h \
     /usr/include/x86_64-linux-gnu/c++/13/bits/messages_members.h \
     /usr/include/libintl.h \
+    /usr/include/c++/13/bits/codecvt.h \
     /usr/include/c++/13/bits/locale_facets_nonio.tcc \
     /usr/include/c++/13/bits/locale_conv.h \
     /usr/include/c++/13/bits/quoted_string.h \
     /usr/include/c++/13/sstream \
+    /usr/include/c++/13/istream \
+    /usr/include/c++/13/ios \
+    /usr/include/c++/13/bits/basic_ios.h \
+    /usr/include/c++/13/bits/basic_ios.tcc \
+    /usr/include/c++/13/ostream \
+    /usr/include/c++/13/bits/ostream.tcc \
+    /usr/include/c++/13/bits/istream.tcc \
     /usr/include/c++/13/bits/sstream.tcc \
     /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceMemory.h \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData2d.cuh \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h \
-    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/Mat.h
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/DeviceData.cuh \
+    /home/dov/Documents/LaplaceFiniteDifference/src/deviceArrays/headers/GridDim.h

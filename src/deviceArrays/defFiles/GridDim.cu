@@ -37,26 +37,7 @@ __device__ size_t GridDim::operator[](const GridInd3d& ind) const {
 __device__ bool operator<(const GridInd3d &ind, const GridDim &dim) {
     return ind.row < dim.rows && ind.col < dim.cols && ind.layer < dim.layers;
 }
-template<typename T>
-__device__ bool operator<(const GridInd2d &ind, const DeviceData2d<T> &dim) {
-    return ind.row < dim.rows && ind.col < dim.cols;
-}
 
 __device__ bool operator>=(const GridInd3d &ind, const GridDim &dim) {
-    return !(ind < dim);
-}
-
-template<typename T>
-__device__ bool operator>=(const GridInd2d &ind, const DeviceData2d<T> &dim) {
-    return !(ind < dim);
-}
-
-template<typename T>
-__device__ bool operator<(const GridInd3d &ind, const DeviceData3d<T> &dim) {
-    return ind.row < dim.rows && ind.col < dim.cols && ind.layer < dim.layers;
-}
-
-template<typename T>
-__device__ bool operator>=(const GridInd3d &ind, const DeviceData3d<T> &dim) {
     return !(ind < dim);
 }

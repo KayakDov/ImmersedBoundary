@@ -294,30 +294,6 @@ src/Poisson/FastDiagonalization.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/DiagnolizeMethod.dir/build.make CMakeFiles/DiagnolizeMethod.dir/src/Poisson/FastDiagonalization.cu.s
 .PHONY : src/Poisson/FastDiagonalization.cu.s
 
-src/Poisson/GridDim.o: src/Poisson/GridDim.cpp.o
-.PHONY : src/Poisson/GridDim.o
-
-# target to build an object file
-src/Poisson/GridDim.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/GridDim.cpp.o
-.PHONY : src/Poisson/GridDim.cpp.o
-
-src/Poisson/GridDim.i: src/Poisson/GridDim.cpp.i
-.PHONY : src/Poisson/GridDim.i
-
-# target to preprocess a source file
-src/Poisson/GridDim.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/GridDim.cpp.i
-.PHONY : src/Poisson/GridDim.cpp.i
-
-src/Poisson/GridDim.s: src/Poisson/GridDim.cpp.s
-.PHONY : src/Poisson/GridDim.s
-
-# target to generate assembly for a file
-src/Poisson/GridDim.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/GridDim.cpp.s
-.PHONY : src/Poisson/GridDim.cpp.s
-
 src/Poisson/Poisson.o: src/Poisson/Poisson.cu.o
 .PHONY : src/Poisson/Poisson.o
 
@@ -390,29 +366,53 @@ src/deviceArrays/defFiles/DeviceData.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.s
 .PHONY : src/deviceArrays/defFiles/DeviceData.cu.s
 
-src/deviceArrays/defFiles/DeviceMemory.o: src/deviceArrays/defFiles/DeviceMemory.cpp.o
+src/deviceArrays/defFiles/DeviceMemory.o: src/deviceArrays/defFiles/DeviceMemory.cu.o
 .PHONY : src/deviceArrays/defFiles/DeviceMemory.o
 
 # target to build an object file
-src/deviceArrays/defFiles/DeviceMemory.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.o
-.PHONY : src/deviceArrays/defFiles/DeviceMemory.cpp.o
+src/deviceArrays/defFiles/DeviceMemory.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o
+.PHONY : src/deviceArrays/defFiles/DeviceMemory.cu.o
 
-src/deviceArrays/defFiles/DeviceMemory.i: src/deviceArrays/defFiles/DeviceMemory.cpp.i
+src/deviceArrays/defFiles/DeviceMemory.i: src/deviceArrays/defFiles/DeviceMemory.cu.i
 .PHONY : src/deviceArrays/defFiles/DeviceMemory.i
 
 # target to preprocess a source file
-src/deviceArrays/defFiles/DeviceMemory.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.i
-.PHONY : src/deviceArrays/defFiles/DeviceMemory.cpp.i
+src/deviceArrays/defFiles/DeviceMemory.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.i
+.PHONY : src/deviceArrays/defFiles/DeviceMemory.cu.i
 
-src/deviceArrays/defFiles/DeviceMemory.s: src/deviceArrays/defFiles/DeviceMemory.cpp.s
+src/deviceArrays/defFiles/DeviceMemory.s: src/deviceArrays/defFiles/DeviceMemory.cu.s
 .PHONY : src/deviceArrays/defFiles/DeviceMemory.s
 
 # target to generate assembly for a file
-src/deviceArrays/defFiles/DeviceMemory.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cpp.s
-.PHONY : src/deviceArrays/defFiles/DeviceMemory.cpp.s
+src/deviceArrays/defFiles/DeviceMemory.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.s
+.PHONY : src/deviceArrays/defFiles/DeviceMemory.cu.s
+
+src/deviceArrays/defFiles/GridDim.o: src/deviceArrays/defFiles/GridDim.cu.o
+.PHONY : src/deviceArrays/defFiles/GridDim.o
+
+# target to build an object file
+src/deviceArrays/defFiles/GridDim.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o
+.PHONY : src/deviceArrays/defFiles/GridDim.cu.o
+
+src/deviceArrays/defFiles/GridDim.i: src/deviceArrays/defFiles/GridDim.cu.i
+.PHONY : src/deviceArrays/defFiles/GridDim.i
+
+# target to preprocess a source file
+src/deviceArrays/defFiles/GridDim.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.i
+.PHONY : src/deviceArrays/defFiles/GridDim.cu.i
+
+src/deviceArrays/defFiles/GridDim.s: src/deviceArrays/defFiles/GridDim.cu.s
+.PHONY : src/deviceArrays/defFiles/GridDim.s
+
+# target to generate assembly for a file
+src/deviceArrays/defFiles/GridDim.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiCGSTAB_LIB.dir/build.make CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.s
+.PHONY : src/deviceArrays/defFiles/GridDim.cu.s
 
 src/deviceArrays/defFiles/Mat.o: src/deviceArrays/defFiles/Mat.cu.o
 .PHONY : src/deviceArrays/defFiles/Mat.o
@@ -681,9 +681,6 @@ help:
 	@echo "... src/Poisson/FastDiagonalization.o"
 	@echo "... src/Poisson/FastDiagonalization.i"
 	@echo "... src/Poisson/FastDiagonalization.s"
-	@echo "... src/Poisson/GridDim.o"
-	@echo "... src/Poisson/GridDim.i"
-	@echo "... src/Poisson/GridDim.s"
 	@echo "... src/Poisson/Poisson.o"
 	@echo "... src/Poisson/Poisson.i"
 	@echo "... src/Poisson/Poisson.s"
@@ -696,6 +693,9 @@ help:
 	@echo "... src/deviceArrays/defFiles/DeviceMemory.o"
 	@echo "... src/deviceArrays/defFiles/DeviceMemory.i"
 	@echo "... src/deviceArrays/defFiles/DeviceMemory.s"
+	@echo "... src/deviceArrays/defFiles/GridDim.o"
+	@echo "... src/deviceArrays/defFiles/GridDim.i"
+	@echo "... src/deviceArrays/defFiles/GridDim.s"
 	@echo "... src/deviceArrays/defFiles/Mat.o"
 	@echo "... src/deviceArrays/defFiles/Mat.i"
 	@echo "... src/deviceArrays/defFiles/Mat.s"

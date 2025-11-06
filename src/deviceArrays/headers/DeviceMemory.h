@@ -5,7 +5,7 @@
 #include <driver_types.h>
 #include <ostream>
 #include <stddef.h>
-#include <stdexcept>
+
 
 constexpr double BYTES_PER_MB = 1024.0 * 1024.0;
 constexpr double BYTES_PER_GB = BYTES_PER_MB * 1024.0;
