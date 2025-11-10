@@ -347,6 +347,12 @@ void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> 
 }
 
 template<typename T>
+Tensor<T> Vec<T>::tensor(size_t height, size_t layers) {
+    size_t rows = size()/(height * layers);
+    return Tensor<T>(height, rows, layers, rows, this->_ptr);
+}
+
+template<typename T>
 DeviceData1d<T> Vec<T>::toKernel1d() {
     return DeviceData1d<T>(this->size(), this->_ld, this->_ptr.get());
 }

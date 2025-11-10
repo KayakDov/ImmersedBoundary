@@ -13,19 +13,21 @@
 
 
 #include <cstddef>
+#include <device_launch_parameters.h>
 
 class GridInd2d {
 public:
     const size_t row, col;
     __device__ GridInd2d(size_t row, size_t col);
-    __device__ GridInd2d();
+    __device__ inline GridInd2d():row(blockIdx.y * blockDim.y + threadIdx.y),
+    col(blockIdx.x * blockDim.x + threadIdx.x){}
 };
 
 class GridInd3d : public GridInd2d{
 public:
     const size_t layer;
     __device__ GridInd3d(size_t row, size_t col, size_t layer);
-    __device__ GridInd3d();
+    __device__ inline GridInd3d(): GridInd2d(), layer(blockIdx.z * blockDim.z + threadIdx.z){}
     
 };
 

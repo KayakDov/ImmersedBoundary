@@ -76,7 +76,7 @@ public:
      *
      * @return The size of all the faces.
      */
-    [[nodiscard]] size_t size() {
+    [[nodiscard]] size_t size() const {
         return frontBack.size() + leftRight.size() + topBottom.size();
     }
 
@@ -113,7 +113,7 @@ public:
      * @return A cube boundary.
      */
     static CubeBoundary<T> ZeroTo1(const size_t dimLength, cudaStream_t stream) {
-        const size_t height = dimLength, width = dimLength, depth = dimLength, size = height * width * depth;
+        const size_t height = dimLength, width = dimLength, depth = dimLength;
         constexpr T frontFaceVal = 1;
 
         auto boundaries = Mat<T>::create(

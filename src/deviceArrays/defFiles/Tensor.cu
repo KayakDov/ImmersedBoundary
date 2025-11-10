@@ -2,7 +2,7 @@
 
 template<typename T>
 Tensor<T>::Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::shared_ptr<T> _ptr) :
-    GpuArray<T>(rows, cols, ld, _ptr), _layers(layers), utilityMatrix(rows*layers, cols, ld, _ptr) {},
+    GpuArray<T>(rows, cols, ld, _ptr), _layers(layers), utilityMatrix(subMatrix(0,0,0, rows * layers, cols, ld)) {}
 
 
 template<typename T>
@@ -62,6 +62,11 @@ size_t Tensor<T>::layerSize() const {
 }
 
 template<typename T>
+DeviceData3d<T> Tensor<T>::toKernel3d() const{
+    return DeviceData3d<T>(this->_rows, this->_cols, this->_layers, this->_ld, this->_ptr.get());
+}
+
+template<typename T>
 DeviceData3d<T> Tensor<T>::toKernel3d() {
     return DeviceData3d<T>(this->_rows, this->_cols, this->_layers, this->_ld, this->_ptr.get());
 }
@@ -109,10 +114,16 @@ void Tensor<T>::get(GpuArray<T> &dst, cudaStream_t stream) const {
 
 template<typename T>
 void Tensor<T>::set(std::istream &input_stream, bool isText, bool isColMjr, Handle *hand) {
-    utilityMatrix.set(input_stream, isText, isColMjr);
+    utilityMatrix.set(input_stream, isText, isColMjr, hand);
 }
 
 template<typename T>
 void Tensor<T>::get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const {
     utilityMatrix.get(output_stream, isText, printColMajor, hand);
 }
+
+template class Tensor<float>;
+template class Tensor<double>;
+template class Tensor<size_t>;
+template class Tensor<int32_t>;
+template class Tensor<unsigned char>;

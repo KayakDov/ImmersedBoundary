@@ -1,19 +1,10 @@
 
 #include "../headers/GridDim.cuh"
 
-#include <device_launch_parameters.h>
-
 __device__ GridInd2d::GridInd2d(const size_t row, const size_t col): row(row), col(col) {
 }
 
-GridInd2d::GridInd2d():
-    row(blockIdx.y * blockDim.y + threadIdx.y),
-    col(blockIdx.x * blockDim.x + threadIdx.x) {
-}
-
 __device__ GridInd3d::GridInd3d(size_t row, size_t col, size_t layer): GridInd2d(row, col), layer(layer) {
-}
-__device__ GridInd3d::GridInd3d() : GridInd2d(), layer(blockIdx.z * blockDim.z + threadIdx.z) {
 }
 
 __device__ __host__ GridDim::GridDim(const size_t height, const size_t width, const size_t depth): cols(width), rows(height), layers(depth), layerSize(rows * cols) {}

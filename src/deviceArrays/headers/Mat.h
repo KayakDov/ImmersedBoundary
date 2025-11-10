@@ -21,6 +21,8 @@ template <typename T>
 class Mat : public GpuArray<T> {
     using GpuArray<T>::mult;
 
+    friend Tensor<T>;
+
 protected:
     /**
      * @brief Protected constructor. Use static create() method or derived classes.

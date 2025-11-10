@@ -9,7 +9,7 @@
 #include <array>
 
 template <typename T>
-__device__ __host__ constexpr T PI = static_cast<T>(3.14159265358979323846);
+__device__ constexpr T PI = static_cast<T>(3.14159265358979323846);
 
 template <typename T>
 __global__ void eiganMatLKernel(DeviceData2d<T> eVecs) {

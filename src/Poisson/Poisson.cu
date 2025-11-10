@@ -99,35 +99,34 @@ __device__ T bVal(const GridInd3d& ind, const GridDim& g, const DeviceData2d<T>&
  *               Initially holds the RHS for the interior, and is incremented by boundary contributions.
  * @param[in] frontBack Concatenated arrays holding the boundary values for the front (layer = 0)
  *                      and back (layer = depth - 1) faces.
+ * @param fbSize The size of the front plus the size of the back is the size of frontBack
 
- * @param[in] fbBlockSize Number of elements in combined faces, frontFace + backFace.
  * @param[in] leftRight Concatenated arrays holding the boundary values for the left (col = 0)
  *                      and right (col = width - 1) faces.
- * @param[in] lrBlockSize Number of elements in one face (left or right).
+ * @param lrAndFbSize The sum of the sizes of the front, back, left, and right.
  * @param[in] topBottom Concatenated arrays holding the boundary values for the top (row = 0)
  *                      and bottom (row = height - 1) faces.
- * @param[in] tbBlockSize Number of elements in one face (top or bottom).
+ * @param boundarySize The size of all the faces.
  * @param grid the dimensions of the grid
  */
 template <typename T>
-__global__ void setRHSKernel3D(DeviceData2d<T> b,
-                               const DeviceData2d<T> frontBack, const size_t fbBlockSize,
-                               const DeviceData2d<T> leftRight, const size_t lrBlockSize,
-                               const DeviceData2d<T> topBottom, const size_t tbBlockSize,
+__global__ void setRHSKernel3D(DeviceData1d<T> b,
+                               const DeviceData2d<T> frontBack, const size_t fbSize,
+                               const DeviceData2d<T> leftRight, const size_t lrAndFbSize,
+                               const DeviceData2d<T> topBottom, const size_t boundarySize,
                                const GridDim grid) {
     const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     bool success;
-    if (idx >= fbBlockSize + lrBlockSize + tbBlockSize) return;
 
-    if (idx < fbBlockSize) {
+    if (idx < fbSize) {
         GridInd3d ind = setIndicesFrontBackFaces(grid, idx);
         b[grid[ind]] -= bVal(ind, grid, topBottom, leftRight, frontBack);
     }
-    else if (idx < fbBlockSize + lrBlockSize) {
+    else if (idx < lrAndFbSize) {
         auto ind = setIndicesLeftRightFaces(grid, success, idx);
         if (success) b[grid[ind]] -= bVal(ind, grid, topBottom, leftRight, frontBack);
     }
-    else {
+    else if (idx < boundarySize){
         auto ind = setIndicesTopBottomFaces(grid, success, idx);
         if (success)
             b[grid[ind]] -= bVal(ind, grid, topBottom, leftRight, frontBack);
@@ -142,14 +141,13 @@ size_t Poisson<T>::size() const {
 template <typename T>
 void Poisson<T>::setB(const CubeBoundary<T>& boundary, cudaStream_t stream) {
 
-    constexpr size_t threadsPerBlock = 256;
-    const size_t gridDim = (boundary.size() + threadsPerBlock - 1) / threadsPerBlock;
+    KernelPrep kp(boundary.size());
 
-    setRHSKernel3D<<<gridDim, threadsPerBlock, 0, stream>>>(//TODO:look into passing objects.
-        _b.toKernel(),
-        boundary.frontBack.toKernel(), boundary.leftRight.toKernel(),
-        boundary.leftRight.toKernel(), boundary.leftRight.size(),
-        boundary.topBottom.toKernel(), boundary.topBottom.size(),
+    setRHSKernel3D<<<kp.gridDim, kp.blockDim, 0, stream>>>(
+        _b.toKernel1d(),
+        boundary.frontBack.toKernel2d(), boundary.frontBack.size(),
+        boundary.leftRight.toKernel2d(), boundary.frontBack.size() + boundary.leftRight.size(),
+        boundary.topBottom.toKernel2d(), boundary.size(),
         dim);
 
     CHECK_CUDA_ERROR(cudaGetLastError());
@@ -162,3 +160,6 @@ Poisson<T>::Poisson(const CubeBoundary<T>& boundary, Vec<T>& f, const cudaStream
     setB(boundary, stream);
 }
 
+
+template class Poisson<float>;
+template class Poisson<double>;

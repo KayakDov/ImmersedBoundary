@@ -11,6 +11,7 @@
 #define BICGSTAB_VEC_H
 #include "GpuArray.h"
 #include "DeviceData.cuh"
+#include  "Tensor.h"
 
 template <typename T> class Mat;
 template <typename T> class Tensor;

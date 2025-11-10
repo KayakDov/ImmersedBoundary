@@ -534,9 +534,9 @@ GpuArray<T>::operator DeviceData2d<T>() const {
 
 //TODO: these methods are in the parent class as private and copied here as public.  This is redundant code.  Sort it out.  It's private in parent class so that Vec and Tensor don't accidently use it.  But we need the code here and in dependents of this class.
 template <typename T>
-DeviceData2d<T> GpuArray<T>::toKernel2d() { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
+DeviceData2d<T> Mat<T>::toKernel2d() { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
 template <typename T>
-DeviceData2d<T> GpuArray<T>::toKernel2d() const { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
+DeviceData2d<T> Mat<T>::toKernel2d() const { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
 
 
 template class Mat<float>;
@@ -545,3 +545,8 @@ template class Mat<size_t>;
 template class Mat<int32_t>;
 template class Mat<unsigned char>;
 
+template void Vec<float>::mult(const Mat<float>&, Vec<float>&, Handle*, const Singleton<float>*, const Singleton<float>*, bool) const;
+template void Vec<double>::mult(const Mat<double>&, Vec<double>&, Handle*, const Singleton<double>*, const Singleton<double>*, bool) const;
+template void Vec<size_t>::mult(const Mat<size_t>&, Vec<size_t>&, Handle*, const Singleton<size_t>*, const Singleton<size_t>*, bool) const;
+template void Vec<int32_t>::mult(const Mat<int32_t>&, Vec<int32_t>&, Handle*, const Singleton<int32_t>*, const Singleton<int32_t>*, bool) const;
+template void Vec<unsigned char>::mult(const Mat<unsigned char>&, Vec<unsigned char>&, Handle*, const Singleton<unsigned char>*, const Singleton<unsigned char>*, bool) const;

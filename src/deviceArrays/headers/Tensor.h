@@ -14,7 +14,7 @@
 #define BICGSTAB_TENSOR_H
 
 #include "DeviceData.cuh"
-#include "GpuArray.h"
+#include "Mat.h"
 
 /**
  * @class Tensor
@@ -30,6 +30,7 @@
  */
 template <typename T>
 class Tensor final : public GpuArray<T> {
+    friend Vec<T>;
 private:
 
     Mat<T> utilityMatrix;
@@ -129,6 +130,8 @@ public:
      * @return The size of a layer
      */
     [[nodiscard]] size_t layerSize() const;
+
+    DeviceData3d<T> toKernel3d() const;
 
     /**
      * The data for this destined for a kernel.

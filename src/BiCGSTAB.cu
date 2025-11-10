@@ -1,9 +1,10 @@
-#include "deviceArrays/headers/GpuArray.h"
+
 #include "deviceArrays/headers/Singleton.h"
-#include <cmath>
 #include "Event.h"
 #include <iostream>
 #include <chrono>
+#include <array>
+
 
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
@@ -57,7 +58,7 @@ private:
     Vec<T> r, r_tilde, p, v, s, t, h;
     Vec<T> paV;
     Singleton<T> rho, alpha, omega, rho_new, beta;
-    Singleton<T> temp[4];//a temporary place for a single value on each stream.
+    std::array<Singleton<T>, 4> temp;//a temporary place for a single value on each stream.
 
     const size_t maxIterations;
 
@@ -168,7 +169,7 @@ public:
       paM(preAllocated ? *preAllocated : Mat<T>::create(b.size(), 7)),
       r(paM.col(0)), r_tilde(paM.col(1)), p(paM.col(2)), v(paM.col(3)), s(paM.col(4)), t(paM.col(5)), h(paM.col(6)),
       paV(Vec<T>::create(9, handle[0].stream)),
-      rho(paV.get(0)), alpha(paV.get(1)), omega(paV.get(2)), rho_new(paV.get(3)), beta(paV.get(4)), temp({paV.get(5), paV.get(6), paV.get(7), paV.get(8)}),
+      rho(paV.get(0)), alpha(paV.get(1)), omega(paV.get(2)), rho_new(paV.get(3)), beta(paV.get(4)), temp{{paV.get(5), paV.get(6), paV.get(7), paV.get(8)}},
       maxIterations(maxIterations)
     {
         static_assert(std::is_same_v<T,float> || std::is_same_v<T,double>,
