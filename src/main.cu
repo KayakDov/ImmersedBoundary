@@ -1,6 +1,6 @@
 #include "deviceArrays/headers/Vec.h"
 #include "deviceArrays/headers/SquareMat.h"
-#include "deviceArrays/headers/bandedMat.h"
+#include "deviceArrays/headers/BandedMat.h"
 #include "testMethods.cu"
 #include "BiCGSTAB.cu"
 #include <fstream>
@@ -35,11 +35,11 @@ void readAndPrint(GpuArray<T>& array, const string& fileName, const bool isText,
     if(!reader.is_open())
         throw runtime_error("Could not open " + fileName);
 
-    array.set(reader, isText, true, TODO);
+    array.set(reader, isText, true, &hand);
     reader.close();
 
     cout << "Read matrix "<< fileName <<" from file." << endl;
-    if(array.size() < 1000) cout << array << endl;
+    if(array.size() < 1000) array.get(std::cout << "array = ", true, false, &hand);
     else cout << "The matrix is too large to display." << endl;
 }
 
@@ -86,12 +86,16 @@ void showHelp() {
  * @param isText True if the file is a text file, and false if it's a binary file.
  * @param maxIter The maximum number of iterations.
  * @param epsilon A threshold for completion.  How close must a number be to 0 to essentially be 0.
+ * @param handle
  * @throws std::runtime_error if the output file cannot be opened.
  */
 template <typename T>
 void solveAndWriteOutput(BandedMat<T>& A, Vec<T>& b, const string& x_dest_file, const bool isText, size_t maxIter, double epsilon, Handle& handle) {
-    Vec<T> x = Vec<T>::create(b.size(), handle.stream);
-    BiCGSTAB setup(b, nullptr, static_cast<T>(epsilon), maxIter);
+    Vec<T> x = Vec<T>::create(b.size(), handle);
+
+    Mat<T> space = Mat<T>::create(b.size(), 7);
+
+    BiCGSTAB setup(b, &space, static_cast<T>(epsilon), maxIter);
     setup.solveUnpreconditionedBiCGSTAB(A, x);
 
     ofstream x_fs(x_dest_file);
@@ -100,7 +104,7 @@ void solveAndWriteOutput(BandedMat<T>& A, Vec<T>& b, const string& x_dest_file, 
     x.get(x_fs, isText, !isText, &handle);
     x_fs.close();
     cout << "Wrote solution vector x to file: " << x_dest_file << endl;
-    if(x.size() < 1000) cout << "x:\n" << x << endl;
+    if(x.size() < 1000) x.get(std::cout << "x =\n", true, false, &handle);
     else cout << "x is too large to display." << endl;
 }
 
@@ -114,9 +118,6 @@ void solveSystem(int argc, char const* argv[], bool isText, size_t maxIter, doub
     string x_dest_file = argv[6];
 
     if (numDiags <= 0 || width <= 0) throw runtime_error("Number of diagonals and matrix width must be positive.");
-
-    // Check if maxIter needs to be set to its default
-    if (maxIter == -1) maxIter = width * 2;
 
     Handle hand;
 
@@ -159,7 +160,7 @@ int useCommandLineArgs(int argc, char const* argv[]){
         bool useFloat = false;
         bool isText = false;
         double epsilon = -1.0; // -1.0 indicates default epsilon
-        size_t maxIter = -1; // -1 indicates default max iterations
+        size_t maxIter = std::numeric_limits<size_t>::max();
 
         // Parse optional flags
         for (size_t i = 1; i < argc; ++i) {
@@ -207,38 +208,29 @@ int useCommandLineArgs(int argc, char const* argv[]){
 
 int main(int argc, char const* argv[]) {
 
-    // Handle hand;
-    //
-    // size_t heightWidth = 4;
-    // size_t numDiags = 2;
-    //
-    // auto indices = Vec<int>::create(numDiags, hand.stream);
-    // indices.get(0).set(-1, hand.stream);
-    // indices.get(1).set(1, hand.stream);
-    //
-    // auto banded = BandedMat<double>::create(heightWidth, numDiags, indices);
-    // banded.Mat<double>::col(0).fill(1.0, hand.stream);
-    // banded.Mat<double>::col(1).fill(2, hand.stream);
-    //
-    // auto x = Vec<double>::create(heightWidth, hand.stream);
-    // double xCpu[] = {1 , 2, 3, 4};
-    // x.set(xCpu, hand.stream);
-    //
-    // auto y = Vec<double>::create(heightWidth, hand.stream);
-    //
-    // banded.mult(x, &y, &hand, nullptr, nullptr, false);
-    //
-    // auto dense = SquareMat<double>::create(heightWidth);
-    // banded.getDense(dense, &hand);
-    //
-    // std::cout << "banded:\n" << std::endl;
-    // dense.get(std::cout, true, false, hand.stream);
-    //
-    // std::cout << "x:\n" << std::endl;
-    // x.get(std::cout, true, false, hand.stream);
-    //
-    // std::cout << "y:\n" << std::endl;
-    // y.get(std::cout, true, false, hand.stream);
-    return useCommandLineArgs(argc, argv);
+    Handle hand;
+
+    size_t denseMatDim = 4;
+
+    auto indices = Vec<int32_t>::create(2);
+    indices.get(0).set(1, hand);
+    indices.get(1).set(-1, hand);
+
+    auto bm = BandedMat<double>::create(denseMatDim, 2,indices);
+    bm.col(0).fill(3, hand);
+    bm.col(1).fill(-2, hand);
+
+    auto b = Vec<double>::create(denseMatDim, hand);
+    b.fill(1, hand);
+
+    auto x = Vec<double>::create(denseMatDim, hand);
+
+    BiCGSTAB<double> bs(b);
+
+    bs.solveUnpreconditionedBiCGSTAB(bm, x);
+
+    x.get(std::cout << "x = \n", true, false, &hand);
+
+    // return useCommandLineArgs(argc, argv);
 
 }

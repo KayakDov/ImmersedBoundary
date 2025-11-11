@@ -28,8 +28,8 @@ file(GLOB_RECURSE ALL_PROJECT_SOURCES
 # Filter out *all* main entry points from the shared library list.
 # These files will be added only to their respective executable targets.
 list(FILTER ALL_PROJECT_SOURCES EXCLUDE REGEX ".*main\\.cu$")
-list(FILTER ALL_PROJECT_SOURCES EXCLUDE REGEX ".*FiniteDiffMethodPoisson\\.cu$")
-list(FILTER ALL_PROJECT_SOURCES EXCLUDE REGEX ".*FastDiagonalizationMethod\\.cu$")
+list(FILTER ALL_PROJECT_SOURCES EXCLUDE REGEX ".*DirectSolver\\.cu$")
+list(FILTER ALL_PROJECT_SOURCES EXCLUDE REGEX ".*FastDiagonalization\\.cu$")
 
 # --- 1. Shared Static Library Target ---
 # Create a library from all shared code that does NOT contain a main() function.

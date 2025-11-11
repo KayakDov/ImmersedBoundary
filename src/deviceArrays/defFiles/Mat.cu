@@ -185,7 +185,7 @@ void Mat<T>::set(std::istream& input_stream, bool isText, bool isColMjr, Handle*
  * Note, if gets to text, will print data as row major and is much slower.  If gets to binary data, will write as column major and is fast.
  */
 template <typename T>
-void Mat<T>::get(std::ostream& output_stream, bool isText, bool printColMajor, Handle* hand) const {
+std::ostream &Mat<T>::get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const {
 
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(hand, temp_hand_ptr);
@@ -196,7 +196,7 @@ void Mat<T>::get(std::ostream& output_stream, bool isText, bool printColMajor, H
         Mat<T> transposed = Mat<T>::create(this->_cols, this->_rows);
         this -> transpose(transposed, h);
         transposed.get(output_stream, isText, true, h);
-        return;        
+        return output_stream;
     }
     
     while (helper.hasNext()) {
@@ -213,6 +213,7 @@ void Mat<T>::get(std::ostream& output_stream, bool isText, bool printColMajor, H
         helper.writeChunk(isText);
         helper.updateProgress();
     }
+    return output_stream;
 }
 
 template<typename T>
@@ -456,14 +457,8 @@ void Mat<T>::normalizeCols(size_t setRowTo1, Handle* handle) {
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
-    constexpr dim3 blockDim(16, 16);
-
-    const dim3 gridDim(
-        (this->_cols + blockDim.x - 1) / blockDim.x,
-        (this->_rows + blockDim.y - 1) / blockDim.y
-    );
-
-    normalizeByRowKernel<T><<<gridDim, blockDim, 0, h->stream>>>(this->toKernel2d(), setRowTo1);
+    KernelPrep kp = this->kernelPrep();
+    normalizeByRowKernel<T><<<kp.gridDim, kp.blockDim, 0, h->stream>>>(this->toKernel2d(), setRowTo1);
 }
 
 template<typename T>

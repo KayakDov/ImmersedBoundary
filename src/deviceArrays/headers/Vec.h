@@ -10,7 +10,7 @@
 #ifndef BICGSTAB_VEC_H
 #define BICGSTAB_VEC_H
 #include "GpuArray.h"
-#include "DeviceData.cuh"
+#include "../defFiles/DeviceData.cu"
 #include  "Tensor.h"
 
 template <typename T> class Mat;
@@ -85,7 +85,7 @@ public:
     void set(std::istream &input_stream, bool isText, bool isColMjr, Handle *hand) override;
 
     /// @copydoc GpuArray::get(std::ostream&, bool, bool, cudaStream_t) const
-    void get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const override;
+    std::ostream &get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const override;
 
     /// @copydoc GpuArray::fill
     void fill(T val, cudaStream_t stream) override;

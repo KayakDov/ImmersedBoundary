@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../headers/bandedMat.h"
+#include "../headers/BandedMat.h"
 #include "../headers/KernelSupport.cuh"
 #include "../headers/Singleton.h"
 #include "../headers/SquareMat.h"
@@ -60,31 +60,29 @@ __global__ void multVecKernel(
 
 /**
  * Multiplies a sparse banded matrix (stored in packed diagonal format) with a 1D vector.
- *
- * @param vec Input vector.
+ * result <- alpha * other + beta * result
+ * @param other The vector this matrix is multiplied by.
+ * @param result The result of the multiplication will be put here.
  * @param handle Optional Cuda handle for stream/context management.
- * @param diags Array of diagonal indices (negative=sub-diagonal, 0=main, positive=super-diagonal)
+ * @param alpha multiplies the product of this and other.  By default, set to &Singleton<T>::ONE.
+ * @param beta  Multiplies the result before the product is added.  If the result is meant to start with no values, set to &Singleton<T>::ZERO
+ * @param transpose  Should this matrix be transposed.
  * @return A new CuArray1D containing the result.
  *
  */
 template <typename T>
-void BandedMat<T>::mult(
+void BandedMat<T>::bandedMult(
     const Vec<T>& other,
     Vec<T>& result,
     Handle* handle,
-    const Singleton<T> *alpha,
-    const Singleton<T> *beta,
+    const Singleton<T> alpha,
+    const Singleton<T> beta,
     bool transpose
 ) const {
-    if (this->_cols > 32)
-        throw std::invalid_argument("height must be <= 32 for this kernel");
+    if (this->_cols > 32) throw std::invalid_argument("height must be <= 32 for this kernel");
 
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-    std::unique_ptr<Singleton<T>> temp_a_ptr;
-    const Singleton<T>* a = Singleton<T>::_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
-    std::unique_ptr<Singleton<T>> temp_b_ptr;
-    const Singleton<T>* b = Singleton<T>::_get_or_create_target(static_cast<T>(0), *h, beta, temp_b_ptr);
 
     if (transpose) (const_cast<Vec<int32_t>&>(_indices)).mult(Singleton<int32_t>::MINUS_ONE, h);
 
@@ -93,21 +91,13 @@ void BandedMat<T>::mult(
         _indices.toKernel1d().data,
         other.toKernel1d(),
         result.toKernel1d(),
-        a->toKernel1d().data,
-        b->toKernel1d().data
+        alpha.toKernel1d().data,
+        beta.toKernel1d().data
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());
     if (transpose) (const_cast<Vec<int32_t>&>(_indices)).mult(Singleton<int32_t>::MINUS_ONE, h);
 }
-
-template<typename T>
-Mat<T> BandedMat<T>::mult(const Mat<T> &other, Mat<T> *result, Handle *handle, const Singleton<T> *alpha,
-    const Singleton<T> *beta, bool transposeA, bool transposeB) const {
-    throw std::runtime_error("Not implemented");
-
-}
-
 
 template <typename T>
 __global__ void mapToDenseKernel(
@@ -141,68 +131,9 @@ void BandedMat<T>::getDense(SquareMat<T> dense, Handle *handle) const {//TODO: h
 }
 
 template<typename T>
-Mat<T> BandedMat<T>::operator*(const Mat<T> &other) const {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-Mat<T> BandedMat<T>::plus(const Mat<T> &x, Mat<T> *result, const Singleton<T> *alpha, const Singleton<T> *beta,
-    bool transposeA, bool transposeB, Handle *handle) {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-Mat<T> BandedMat<T>::minus(const Mat<T> &x, Mat<T> *result, const Singleton<T> *alpha, const Singleton<T> *beta,
-    bool transposeA, bool transposeB, Handle *handle) {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-void BandedMat<T>::mult(const Singleton<T> &alpha, Handle *handle) {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-void BandedMat<T>::transpose(Mat<T> &result, Handle *handle) const {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-void BandedMat<T>::transpose(Handle *handle, Mat<T> *preAlocatedMem) {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-Mat<T> BandedMat<T>::create(size_t rows, size_t cols) {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-Mat<T> BandedMat<T>::subMat(size_t startRow, size_t startCol, size_t height, size_t width) const {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-Vec<T> BandedMat<T>::col(size_t index) {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-Vec<T> BandedMat<T>::row(size_t index) {
-    throw std::runtime_error("Not implemented");
-}
-
-template<typename T>
-void BandedMat<T>::normalizeCols(size_t setRowTo1, Handle *handle) {
-    throw std::runtime_error("Not implemented");
-}
-
-
-template<typename T>
-BandedMat<T>::BandedMat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> ptr, const Vec<int32_t> &indices):
+BandedMat<T>::BandedMat(size_t rows, size_t cols, size_t ld, const std::shared_ptr<T>& ptr, const Vec<int32_t> &indices):
     Mat<T>(rows, cols, ld, ptr), _indices(indices) {
 }
-
 template<typename T>
 BandedMat<T>::BandedMat(const Mat<T>& copyFrom, const Vec<int32_t>& indices):
     BandedMat(copyFrom._rows, copyFrom._cols, copyFrom._ld, copyFrom.ptr(), indices) {
@@ -210,8 +141,8 @@ BandedMat<T>::BandedMat(const Mat<T>& copyFrom, const Vec<int32_t>& indices):
 }
 
 template<typename T>
-BandedMat<T> BandedMat<T>::create(size_t rows, size_t numDiagonals, const Vec<int32_t> &indices) {
-    return BandedMat<T>(Mat<T>::create(rows, numDiagonals), indices);
+BandedMat<T> BandedMat<T>::create(size_t denseSqMatDim, size_t numDiagonals, const Vec<int32_t> &indices) {
+    return BandedMat<T>(Mat<T>::create(denseSqMatDim, numDiagonals), indices);
 }
 
 template <typename T>

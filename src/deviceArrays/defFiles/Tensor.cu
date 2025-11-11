@@ -118,8 +118,8 @@ void Tensor<T>::set(std::istream &input_stream, bool isText, bool isColMjr, Hand
 }
 
 template<typename T>
-void Tensor<T>::get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const {
-    utilityMatrix.get(output_stream, isText, printColMajor, hand);
+std::ostream &Tensor<T>::get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const {
+    return utilityMatrix.get(output_stream, isText, printColMajor, hand);
 }
 
 template class Tensor<float>;

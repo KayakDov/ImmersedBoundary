@@ -13,7 +13,7 @@
 #ifndef BICGSTAB_TENSOR_H
 #define BICGSTAB_TENSOR_H
 
-#include "DeviceData.cuh"
+#include "../defFiles/DeviceData.cu"
 #include "Mat.h"
 
 /**
@@ -160,7 +160,7 @@ public:
 
     void set(std::istream &input_stream, bool isText, bool isColMjr, Handle *hand) override;
 
-    void get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const override;
+    std::ostream &get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const override;
 };
 
 #endif //BICGSTAB_TENSOR_H

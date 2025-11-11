@@ -1,6 +1,6 @@
-/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles/BiCGSTAB_LIB.dir
-/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles/BiCGSTAB.dir
-/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles/PoissonFDM.dir
-/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles/DiagnolizeMethod.dir
-/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/dov/Documents/TelAvivU/cmake-build-debug/CMakeFiles/BiCGSTAB_LIB.dir
+/home/dov/Documents/TelAvivU/cmake-build-debug/CMakeFiles/BiCGSTAB.dir
+/home/dov/Documents/TelAvivU/cmake-build-debug/CMakeFiles/PoissonFDM.dir
+/home/dov/Documents/TelAvivU/cmake-build-debug/CMakeFiles/DiagnolizeMethod.dir
+/home/dov/Documents/TelAvivU/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/dov/Documents/TelAvivU/cmake-build-debug/CMakeFiles/rebuild_cache.dir

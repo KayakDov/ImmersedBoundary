@@ -96,7 +96,7 @@ public:
     /**
      * @copydoc GpuArray::get
      */
-    void get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const override;
+    std::ostream &get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const override;
     /**
      * @brief Access an element of the matrix as a Singleton.
      * @param row Row index.

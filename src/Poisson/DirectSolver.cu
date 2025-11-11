@@ -2,7 +2,7 @@
  #ifndef BICGSTAB_POISSONFDM_CUH
 #define BICGSTAB_POISSONFDM_CUH
 #include "Poisson.h"
-#include "../deviceArrays/headers/bandedMat.h"
+#include "../deviceArrays/headers/BandedMat.h"
 #include "../BiCGSTAB.cu"
 #include "../deviceArrays/headers/DeviceMemory.h"
 
@@ -222,6 +222,9 @@ public:
 
     auto boundary = CubeBoundary<double>::ZeroTo1(dimLength, stream);
 
+     cudaDeviceSynchronize();
+     Handle handle;
+     boundary.frontBack.get(std::cout<<"front back\n", true, false, &handle);
 
     auto longVecs = Mat<double>::create(boundary.internalSize(), 2 + numDiagonals + 7);
     auto b = longVecs.col(0);
@@ -238,7 +241,9 @@ public:
 
     solver.solve(x, prealocatedForBiCGSTAB);
 
-    // x.get(std::cout, true, false, stream);
+     cudaDeviceSynchronize();
+    Handle hand;
+    x.get(std::cout << "x = \n", true, false, &hand);
 }
 
 /**
@@ -256,14 +261,16 @@ int main(int argc, char *argv[]) {
     Handle hand;
 
     std::cout << "dimension size, number of iterations, total time" << std::endl;
-    for (size_t i = 2; i < 350; ++i) {
+    // for (size_t i = 2; i < 350; ++i) {
 
-    // size_t i = 2;
-        std::cout << i << ", ";
+    size_t i = 2;
+        // std::cout << i << ", ";
         testPoisson(i, hand.stream);
-        cudaDeviceSynchronize();
+        // cudaDeviceSynchronize();
 
-    }
+    // }
+
+
 
     return 0;
 }

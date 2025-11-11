@@ -67,6 +67,10 @@ Handle::operator cublasHandle_t() {
     return handle;
 }
 
+Handle::operator struct CUstream_st*() const {
+    return stream;
+}
+
 void checkCudaErrors(cudaError_t err, const char* file, int line) {
     if (err != cudaSuccess) {
         std::cerr << "CUDA Error: " << cudaGetErrorString(err) << " at " << file << ":" << line << std::endl;

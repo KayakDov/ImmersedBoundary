@@ -1,3 +1,0 @@
-file(REMOVE_RECURSE
-  "libBiCGSTAB_LIB.a"
-)

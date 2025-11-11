@@ -156,7 +156,7 @@ void Vec<T>::set(std::istream &input_stream, bool isText, bool isColMjr, Handle*
 }
 
 template<typename T>
-void Vec<T>::get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const {
+std::ostream &Vec<T>::get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const {
     StreamGet<T> helper(this->_rows, this->_cols, output_stream);
     while (helper.hasNext()) {
         Vec<T> subArray = this->subVec(
@@ -168,6 +168,7 @@ void Vec<T>::get(std::ostream &output_stream, bool isText, bool printColMajor, H
         helper.writeChunk(isText);
         helper.updateProgress();
     }
+    return output_stream;
 }
 
 template<typename T>
@@ -348,7 +349,7 @@ void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> 
 
 template<typename T>
 Tensor<T> Vec<T>::tensor(size_t height, size_t layers) {
-    size_t rows = size()/(height * layers);
+    const size_t rows = size()/(height * layers);
     return Tensor<T>(height, rows, layers, rows, this->_ptr);
 }
 

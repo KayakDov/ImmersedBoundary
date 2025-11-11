@@ -178,7 +178,8 @@ public:
     }
 
     /**
-     * @brief Initalizes variables r_tilde, r, b, p, and rho
+     *
+     * @brief Initalizes variables r_tilde, r, b, p, and rx.ho
      * @param A The left-hand side of the equation Ax = b
      * @param x The x of the equation Ax = b
      */
@@ -187,14 +188,14 @@ public:
         x.fillRandom(&handle[0]); // set x randomly
         record(0, xReady);
 
-        r_tilde.fillRandom(&handle[0]); // set r_tilde randomly
-
         set(r, b, 0);
-        A.mult(x, r, handle, &Singleton<T>::MINUS_ONE, &Singleton<T>::ONE); // r = b - A * x
+        A.bandedMult(x, r, handle, Singleton<T>::MINUS_ONE, Singleton<T>::ONE); // r = b - A * x
+
+        set(r_tilde, r, 0); //r_tilde = r
+
+        r_tilde.mult(r, rho, handle); //rho = r_tilde * r
 
         set(p, r, 0);
-
-        r_tilde.mult(r, rho, handle);
 
         wait(1, {xReady});
     }
@@ -222,7 +223,7 @@ public:
 
             TimePoint start = std::chrono::steady_clock::now();
 
-            A.mult(p, v, handle, &Singleton<T>::ONE, &Singleton<T>::ZERO); // v = A * p
+            A.bandedMult(p, v, handle); // v = A * p
 
             r_tilde.mult(v, alpha, handle);
             alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, handle[0].stream); //alpha = rho / (r_tilde * v)
@@ -241,10 +242,13 @@ public:
             record(0, {sReady});
 
             wait(2, {sReady, hReady});
-            if(isSmall(s, temp[2], 2)) break;
+            if(isSmall(s, temp[2], 2)) {
+                set(x, h, 2);
+                break;
+            }
             renew({sReady, hReady});
 
-            A.mult(s, t, handle); // t = A * s
+            A.bandedMult(s, t, handle); // t = A * s
 
             t.mult(s, temp[3], handle + 3);
             record(3, {prodTS});
@@ -283,7 +287,7 @@ public:
 
         if (numIterations >= maxIterations) std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
         std::cout << numIterations << ", " << totalTime << std::endl;
-        
+
         return x;
     }
 

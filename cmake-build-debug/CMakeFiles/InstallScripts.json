@@ -1,7 +1,7 @@
 {
 	"InstallScripts" : 
 	[
-		"/home/dov/Documents/LaplaceFiniteDifference/cmake-build-debug/cmake_install.cmake"
+		"/home/dov/Documents/TelAvivU/cmake-build-debug/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

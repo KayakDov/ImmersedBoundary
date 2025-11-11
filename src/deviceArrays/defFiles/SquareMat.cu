@@ -7,7 +7,7 @@
 #include "../headers/deviceArraySupport.h"
 #include "../headers/Singleton.h"
 #include "../headers/Vec.h"
-#include "../headers/bandedMat.h"
+#include "../headers/BandedMat.h"
 #include "../headers/GridDim.cuh"
 
 
@@ -82,7 +82,6 @@ void SquareMat<T>::eigen(
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
     auto n = static_cast<int64_t>(this->_rows);
-    int info = 0;
 
     std::unique_ptr<Mat<T>> temp_mat_ptr;
     Mat<T>* copy = Mat<T>::_get_or_create_target(n, n, temp, temp_mat_ptr);

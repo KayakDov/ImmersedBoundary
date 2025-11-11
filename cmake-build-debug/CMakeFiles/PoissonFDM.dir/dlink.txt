@@ -1,1 +1,0 @@
-/usr/local/cuda-12.9/bin/nvcc -forward-unknown-to-host-compiler -g -arch=native -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink --options-file CMakeFiles/PoissonFDM.dir/deviceObjects1.rsp -o CMakeFiles/PoissonFDM.dir/cmake_device_link.o --options-file CMakeFiles/PoissonFDM.dir/deviceLinkLibs.rsp

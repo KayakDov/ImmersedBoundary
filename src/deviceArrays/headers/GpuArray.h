@@ -4,7 +4,7 @@
 #ifndef GPUARRAY_H
 #define GPUARRAY_H
 
-#include "DeviceData.cuh"
+#include "../defFiles/DeviceData.cu"
 #include <memory> // For std::shared_ptr
 #include "handle.h"
 #include <iomanip>
@@ -61,8 +61,8 @@ private:
     DeviceData2d<T> toKernel2d() const;
 
 
-    __host__ __device__ operator DeviceData2d<T>();
-    __host__ __device__ operator DeviceData2d<T>() const;
+    operator DeviceData2d<T>();
+    operator DeviceData2d<T>() const;
 public:
     /**
      * @brief Represents the number of rows in a GpuArray instance.
@@ -304,7 +304,7 @@ public:
      * @warning Attempting to retrieve data from an uninitialized or invalid GPU array
      * may result in undefined behavior.
      */
-    virtual void get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const = 0;
+    virtual std::ostream &get(std::ostream &output_stream, bool isText, bool printColMajor, Handle *hand) const = 0;
 
     /**
      * @brief Fills the GpuArray with the specified value on a given CUDA stream.

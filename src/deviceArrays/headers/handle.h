@@ -84,7 +84,7 @@ public:
     operator cublasHandle_t() const;
     operator cublasHandle_t();
 
-
+    operator cudaStream_t() const;
 
 private:
     bool isOwner = false; ///< True if the Handle owns the CUDA stream and should destroy it

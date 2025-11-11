@@ -41,19 +41,21 @@ private:
      * @param i The index of the desired matrix, 1,2, or 3.
      * @param stream
      */
-    void eigenL(size_t i, cudaStream_t stream) { //TODO: this method could run both kernels on different streams.  Also different streams for each index.  Also, I don't use L, so that should be remvoved.
+    void eigenL(size_t i, cudaStream_t stream) { //TODO: this method could run on different streams.  Also different streams for each index.  Also, I don't use L, so that should be remvoved.
 
         KernelPrep kpVec = eVecs[i].kernelPrep();
         eiganMatLKernel<T><<<kpVec.gridDim, kpVec.blockDim, 0, stream>>>(eVecs[i].toKernel2d());
 
         KernelPrep kpVal(eVecs[i]._cols);
         eiganValLKernel<T><<<kpVal.gridDim, kpVal.blockDim, 0, stream>>>(eVals.col(i).toKernel1d());
+
     }
 
-    void setUTilde(Tensor<T> f, Tensor<T> u, cudaStream_t stream) {
+    void setUTilde(Tensor<T> f, Tensor<T> u, Handle stream) {
 
         KernelPrep kp = f.kernelPrep();
         setUTildeKernel<<<kp.gridDim, kp.blockDim, 0, stream>>>(u.toKernel3d(), eVals.toKernel2d(), f.toKernel3d());
+
     }
 
     std::array<SquareMat<T>, 3> eVecs;//Note: transpose is the inverse for these matrices.
@@ -75,6 +77,7 @@ private:
     }
 
     void multiplyEF(Handle& hand, Tensor<T>& f, bool transposeE) {
+
         auto c1Front = f.layerRowCol(0);
 
         Mat<T>::batchMult(Singleton<T>::ONE,
@@ -108,22 +111,27 @@ public:
      * @param stream
      */
     FastDiagonalization(const CubeBoundary<T>& boundary, Vec<T>& x, Vec<T>& f, Handle hand) ://TODO: provide pre alocated memory
-        Poisson<T>(boundary, f, hand.stream),
+        Poisson<T>(boundary, f, hand),
         eVecs({SquareMat<T>::create(this->dim.cols), SquareMat<T>::create(this->dim.rows), SquareMat<T>::create(this->dim.layers)}),
         eVals(Mat<T>::create(std::max(this->dim.rows, std::max(this->dim.cols, this->dim.layers)),3))
     {
+
+        f.get(std::cout << "f:\n", true, false, &hand);
+
         Mat<T> temp = SquareMat<T>::create(std::max(this->dim.rows,this->dim.cols));
 
-        for (size_t i = 0; i < 3; ++i) eigenL(i, hand.stream);
+        for (size_t i = 0; i < 3; ++i) eigenL(i, hand);
 
         auto fTensor = f.tensor(this->dim.rows, this->dim.cols);
         multiplyEF(hand, fTensor, true);
 
         auto xTensor = x.tensor(this->dim.rows, this->dim.cols);
 
-        setUTilde(fTensor, xTensor, hand.stream);
+        setUTilde(fTensor, xTensor, hand);
 
         multiplyEF(hand, xTensor, false);
+
+
     }
 };
 
@@ -151,9 +159,12 @@ int main() {
     constexpr size_t dim = 2;
     Handle hand;
 
-    auto boundary = CubeBoundary<double>::ZeroTo1(dim, hand.stream);
-    auto x = Vec<double>::create(boundary.internalSize(), hand.stream);
-    auto f = Vec<double>::create(boundary.internalSize(), hand.stream);
+    const auto boundary = CubeBoundary<double>::ZeroTo1(dim, hand);
+
+    auto x = Vec<double>::create(boundary.internalSize(), hand);
+
+    auto f = Vec<double>::create(boundary.internalSize(), hand);
+
     f.fill(0, hand.stream);
 
     FastDiagonalization<double> fdm(boundary, x, f, hand);
