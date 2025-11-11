@@ -57,7 +57,7 @@ private:
 
     }
 
-    void setUTilde(Tensor<T> f, Tensor<T> u, Handle hand) {
+    void setUTilde(Tensor<T> f, Tensor<T> u, Handle& hand) {
 
         KernelPrep kp = f.kernelPrep();
         setUTildeKernel<<<kp.gridDim, kp.blockDim, 0, hand>>>(u.toKernel3d(), eVals.toKernel2d(), f.toKernel3d());
@@ -92,7 +92,7 @@ private:
      * @param batchCount How many layers are there.
      * @param hand The handle.
      */
-    void multLayer(size_t index, const size_t stride, Mat<T> layer1, const bool transposeE, const bool transposeLayer, const size_t batchCount, Handle hand) {
+    void multLayer(size_t index, const size_t stride, Mat<T> layer1, const bool transposeE, const bool transposeLayer, const size_t batchCount, Handle& hand) {
         Mat<T>::batchMult(
             Singleton<T>::ONE,
             eVecs[index], 0,
@@ -104,9 +104,6 @@ private:
     }
 
     void multiplyEF(Handle& hand, Tensor<T>& f, bool transposeE) {
-
-        std::cout << "batchMult call with:\n";
-        std::cout << "  f: " << f._rows << "x" << f._cols << "x" << f._layers << " ld=" << f._ld << "\n";
 
         auto c1Front = f.layerRowCol(0);
         multLayer(0, f._rows, c1Front, transposeE, true, f._layers, hand);
@@ -122,7 +119,7 @@ public:
      * a space for every element in the grid.
      * @param stream
      */
-    FastDiagonalization(const CubeBoundary<T>& boundary, Vec<T>& x, Vec<T>& f, Handle hand) ://TODO: provide pre alocated memory
+    FastDiagonalization(const CubeBoundary<T>& boundary, Vec<T>& x, Vec<T>& f, Handle& hand) ://TODO: provide pre alocated memory
         Poisson<T>(boundary, f, hand),
         eVecs({SquareMat<T>::create(this->dim.cols), SquareMat<T>::create(this->dim.rows), SquareMat<T>::create(this->dim.layers)}),
         eVals(Mat<T>::create(std::max(this->dim.rows, std::max(this->dim.cols, this->dim.layers)),3))
@@ -131,12 +128,6 @@ public:
         for (size_t i = 0; i < 3; ++i) eigenL(i, hand);
 
         auto fTensor = f.tensor(this->dim.rows, this->dim.cols);
-        std::cout << "\n=== multiplyEF sanity check ===\n";
-        std::cout << "rows: " << fTensor._rows
-                  << " cols: " << fTensor._cols
-                  << " layers: " << fTensor._layers
-                  << " ld: " << fTensor._ld << std::endl;
-
 
         multiplyEF(hand, fTensor, true);
 

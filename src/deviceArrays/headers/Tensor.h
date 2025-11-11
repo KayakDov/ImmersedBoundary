@@ -26,6 +26,10 @@
  *
  *Warning: many methods are not yet implemented.
  *
+ * Memory layout is that each layer is beneath the layer above it when visualized in two dimensions,
+ * so ld >= rows*layers, and to map from flatIndex -> (row, col, layer) we have
+ * idx -> (idx % height, idx / (height * depth), (idx % (height * depth)) / height)
+ *
  * @tparam T The data type of tensor elements (e.g., float, double, int32_t).
  */
 template <typename T>

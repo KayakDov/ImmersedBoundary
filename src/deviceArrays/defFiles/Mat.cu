@@ -473,15 +473,6 @@ void Mat<T>::batchMult(
         n = transposeB ? b1._rows : b1._cols,
         k = transposeA ? a1._rows : a1._cols;
 
-    std::cout << "batchMult debug:\n"
-          << "  m=" << m << " n=" << n << " k=" << k << "\n"
-          << "  a1._rows=" << a1._rows << " a1._cols=" << a1._cols << " a1._ld=" << a1._ld << "\n"
-          << "  b1._rows=" << b1._rows << " b1._cols=" << b1._cols << " b1._ld=" << b1._ld << "\n"
-          << "  c1._rows=" << c1._rows << " c1._cols=" << c1._cols << " c1._ld=" << c1._ld << "\n"
-          << "  strideA=" << strideA << " strideB=" << strideB << " strideC=" << strideC << "\n"
-          << "  batchCount=" << batchCount << std::endl;
-
-
     cublasOperation_t transA = transposeA ? CUBLAS_OP_T : CUBLAS_OP_N,
         transB = transposeB ? CUBLAS_OP_T : CUBLAS_OP_N;
 
