@@ -349,8 +349,9 @@ void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> 
 
 template<typename T>
 Tensor<T> Vec<T>::tensor(size_t height, size_t layers) {
-    const size_t rows = size()/(height * layers);
-    return Tensor<T>(height, rows, layers, rows, this->_ptr);
+    const size_t ld = height * layers;
+    const size_t rows = size()/ld;
+    return Tensor<T>(height, rows, layers, ld, this->_ptr);
 }
 
 template<typename T>

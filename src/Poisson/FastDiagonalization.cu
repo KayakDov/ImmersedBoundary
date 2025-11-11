@@ -78,9 +78,12 @@ private:
 
     void multiplyEF(Handle& hand, Tensor<T>& f, bool transposeE) {
 
+        f.get(std::cout << "f:\n", true, false, &hand);
+
         auto c1Front = f.layerRowCol(0);
 
-        Mat<T>::batchMult(Singleton<T>::ONE,
+        Mat<T>::batchMult(
+            Singleton<T>::ONE,
             eVecs[0], 0,
             f.layerRowCol(0), f.layerSize(),
             Singleton<T>::ZERO, c1Front, f.layerSize(),
@@ -115,8 +118,6 @@ public:
         eVecs({SquareMat<T>::create(this->dim.cols), SquareMat<T>::create(this->dim.rows), SquareMat<T>::create(this->dim.layers)}),
         eVals(Mat<T>::create(std::max(this->dim.rows, std::max(this->dim.cols, this->dim.layers)),3))
     {
-
-        f.get(std::cout << "f:\n", true, false, &hand);
 
         Mat<T> temp = SquareMat<T>::create(std::max(this->dim.rows,this->dim.cols));
 

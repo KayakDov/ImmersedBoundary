@@ -55,3 +55,12 @@
 4	2267	1762876429212031314	CMakeFiles/PoissonFDM.dir/src/Poisson/DirectSolver.cu.o	9e96a108633f02bf
 2267	2499	1762876431475014428	CMakeFiles/PoissonFDM.dir/cmake_device_link.o	b57d1adc31c9ba45
 2499	2611	1762876431708012690	PoissonFDM	f74c4ec28f4e6e22
+3	1905	1762876497917518481	CMakeFiles/DiagnolizeMethod.dir/cmake_device_link.o	f2cedc0f3fcb9146
+1905	2022	1762876499819504279	DiagnolizeMethod	bd03386125e58cea
+3	3842	1762882293555433491	CMakeFiles/DiagnolizeMethod.dir/src/Poisson/FastDiagonalization.cu.o	d199baa46bb8a2ff
+3842	4043	1762882297394409285	CMakeFiles/DiagnolizeMethod.dir/cmake_device_link.o	f2cedc0f3fcb9146
+4044	4173	1762882297596408011	DiagnolizeMethod	bd03386125e58cea
+3	5632	1762883406981997732	CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o	14483d168bb5894f
+5632	5690	1762883412610964253	libBiCGSTAB_LIB.a	b3b27dec9520d52d
+5690	5851	1762883412668963908	CMakeFiles/DiagnolizeMethod.dir/cmake_device_link.o	f2cedc0f3fcb9146
+5851	5975	1762883412829962950	DiagnolizeMethod	bd03386125e58cea
