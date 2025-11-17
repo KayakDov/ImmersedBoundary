@@ -85,10 +85,10 @@ void SquareMat<T>::eigen(
 
     std::unique_ptr<Mat<T>> temp_mat_ptr;
     Mat<T>* copy = Mat<T>::_get_or_create_target(n, n, temp, temp_mat_ptr);
-    this->get(*copy, h->stream);
+    this->get(*copy, *h);
 
     std::unique_ptr<Vec<T>> temp_reEVal;
-    Vec<T>* eValsPtr = Vec<T>::_get_or_create_target(2*n, &eVals, temp_reEVal, h->stream);
+    Vec<T>* eValsPtr = Vec<T>::_get_or_create_target(2*n, &eVals, temp_reEVal, *h);
 
     size_t workDeviceBytes, workHostBytes;
     cudaDataType_t dataType;
@@ -99,7 +99,7 @@ void SquareMat<T>::eigen(
     cusolverEigMode_t findVectors = eVecs != nullptr ? CUSOLVER_EIG_MODE_VECTOR : CUSOLVER_EIG_MODE_NOVECTOR;
 
     CHECK_CUSOLVER_ERROR(cusolverDnXgeev_bufferSize(
-        h->cusolverHandle, nullptr,
+        *h, nullptr,
         CUSOLVER_EIG_MODE_NOVECTOR, findVectors, n,
         dataType, copy->toKernel2d(), copy->_ld,
         dataType, eValsPtr->toKernel1d(),
@@ -110,12 +110,12 @@ void SquareMat<T>::eigen(
         &workHostBytes
         ));
 
-    Vec<uint8_t> workspaceDevice = Vec<uint8_t>::create(workDeviceBytes, h->stream);
+    Vec<uint8_t> workspaceDevice = Vec<uint8_t>::create(workDeviceBytes, *h);
     std::vector<uint8_t> workspaceHost(workHostBytes);
-    Singleton<int32_t> info_dev = Singleton<int32_t>::create(h->stream);
+    Singleton<int32_t> info_dev = Singleton<int32_t>::create(*h);
 
     CHECK_CUSOLVER_ERROR(cusolverDnXgeev(
-        h->cusolverHandle, nullptr,
+        *h, nullptr,
         CUSOLVER_EIG_MODE_NOVECTOR, findVectors, n,
         dataType, copy->toKernel2d(), copy->_ld,
         dataType, eValsPtr->toKernel1d(),

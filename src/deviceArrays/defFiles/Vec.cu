@@ -52,9 +52,9 @@ void Vec<T>::mult(
 
 
     if constexpr (std::is_same_v<T, float>)
-        cublasSdot(h->handle, this->_cols, this->toKernel1d(), this->_ld, other.toKernel1d(), other._ld, result.toKernel1d());
+        cublasSdot(*h, this->_cols, this->toKernel1d(), this->_ld, other.toKernel1d(), other._ld, result.toKernel1d());
     else if constexpr (std::is_same_v<T, double>)
-        cublasDdot(h->handle, this->_cols, this->toKernel1d(), this->_ld, other.toKernel1d(), other._ld, result.toKernel1d());
+        cublasDdot(*h, this->_cols, this->toKernel1d(), this->_ld, other.toKernel1d(), other._ld, result.toKernel1d());
     else static_assert(!std::is_same_v<T, float> && !std::is_same_v<T, double>, "Vec::add unsupported type.");
 }
 
@@ -150,7 +150,7 @@ void Vec<T>::set(std::istream &input_stream, bool isText, bool isColMjr, Handle*
             helper.getChunkWidth(),
             1
         );
-        subVec.set(helper.getBuffer().data(), h->stream);
+        subVec.set(helper.getBuffer().data(), *h);
         helper.updateProgress();
     }
 }
@@ -164,7 +164,7 @@ std::ostream &Vec<T>::get(std::ostream &output_stream, bool isText, bool printCo
             helper.getChunkWidth(),
             1
         );
-        subArray.get(helper.getBuffer().data(), hand.stream);
+        subArray.get(helper.getBuffer().data(), hand);
         helper.writeChunk(isText);
         helper.updateProgress();
     }
@@ -204,9 +204,9 @@ void Vec<T>::add(const Vec<T> &x, const Singleton<T> *alpha, Handle *handle) {
     const Singleton<T> *a = Singleton<T>::_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
 
     if constexpr (std::is_same_v<T, float>)
-        cublasSaxpy(h->handle, this->_cols, a->toKernel1d(), x.toKernel1d(), x._ld, this->toKernel1d(), this->_ld);
+        cublasSaxpy(*h, this->_cols, a->toKernel1d(), x.toKernel1d(), x._ld, this->toKernel1d(), this->_ld);
     else if constexpr (std::is_same_v<T, double>)
-        cublasDaxpy(h->handle, this->_cols, a->toKernel1d(), x.toKernel1d(), x._ld, this->toKernel1d(), this->_ld);
+        cublasDaxpy(*h, this->_cols, a->toKernel1d(), x.toKernel1d(), x._ld, this->toKernel1d(), this->_ld);
     else throw std::invalid_argument("Vec::add unsupported type.");
 }
 
@@ -214,8 +214,8 @@ template<typename T>
 void Vec<T>::sub(const Vec<T> &x, const Singleton<T> *alpha, Handle *handle) {
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-    Singleton<T> a = Singleton<T>::create(h->stream);
-    a.set(-alpha->get(), h->stream);
+    Singleton<T> a = Singleton<T>::create(*h);
+    a.set(-alpha->get(), *h);
     this->add(x, &a, h);
 }
 
@@ -225,9 +225,9 @@ void Vec<T>::mult(const Singleton<T> &alpha, Handle *handle) {
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
     if constexpr (std::is_same_v<T, float>)
-        cublasSscal(h->handle, this->_cols, alpha.toKernel1d(), this->toKernel1d(), this->_ld);
+        cublasSscal(*h, this->_cols, alpha.toKernel1d(), this->toKernel1d(), this->_ld);
     else if constexpr (std::is_same_v<T, double>)
-        cublasDscal(h->handle, this->_cols, alpha.toKernel1d(), this->toKernel1d(), this->_ld);
+        cublasDscal(*h, this->_cols, alpha.toKernel1d(), this->toKernel1d(), this->_ld);
     else throw std::invalid_argument("Unsupported type.");
 }
 
@@ -266,14 +266,14 @@ void Vec<T>::fillRandom(Handle *handle) {
             devStates(rawDevStates, &cudaFreeDeleter);
 
     if constexpr (std::is_same_v<T, float>) {
-        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates.get(), 0, this->size(), this->_ld);
+        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), 0, this->size(), this->_ld);
         h->synch();
-        fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, h->stream>>>(
+        fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(
             this->toKernel1d(), devStates.get());
     } else if constexpr (std::is_same_v<T, double>) {
-        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(devStates.get(), 0, this->size(), this->_ld);
+        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), 0, this->size(), this->_ld);
         h->synch();
-        fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, h->stream>>>(
+        fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, *h>>>(
             this->toKernel1d(),  devStates.get());
     } else throw std::invalid_argument("Unsupported type.");
 }
@@ -314,7 +314,7 @@ void Vec<T>::setSum(const Vec<T> &a, const Vec<T> &b, const Singleton<T> &alpha,
 
     KernelPrep kp = this->kernelPrep();
 
-    setSumKernel<<<kp.gridDim, kp.blockDim, 0, h->stream>>>(
+    setSumKernel<<<kp.gridDim, kp.blockDim, 0, *h>>>(
         this->toKernel1d(), // Destination: 'this' vector
         a.toKernel1d(), // Input 1: 'a' vector
         b.toKernel1d(), // Input 2: 'b' vector
@@ -338,7 +338,7 @@ void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> 
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
     KernelPrep kp = this->kernelPrep();
-    setDifferenceKernel<<<kp.gridDim, kp.blockDim, 0, h->stream>>>(
+    setDifferenceKernel<<<kp.gridDim, kp.blockDim, 0, *h>>>(
         this->toKernel1d(), // Destination: 'this' vector
         a.toKernel1d(), // Input 1: 'a' vector
         b.toKernel1d(), // Input 2: 'b' vector

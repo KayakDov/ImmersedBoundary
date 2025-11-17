@@ -112,7 +112,7 @@ private:
     bool isSmall(const Vec<T>& v,  Singleton<T> preAlocated, const size_t streamInd){
 
             v.mult(v, preAlocated, handle + streamInd);
-            T vSq = preAlocated.get(handle[streamInd].stream);
+            T vSq = preAlocated.get(handle[streamInd]);
             synch(streamInd);
             return vSq < tolerance;
     }
@@ -125,7 +125,7 @@ private:
      * @param[in] streamInd The stream index to perform the copy on.
      */
     void set(Vec<T>& dst, const Vec<T>& src, const size_t streamInd){
-        dst.set(src, handle[streamInd].stream);
+        dst.set(src, handle[streamInd]);
     }
 
     /**
@@ -138,7 +138,7 @@ private:
         KernelPrep kp = p.kernelPrep();
 
         // Kernel launch performs: p = r + beta * (p - omega * v)
-        updatePKernel<<<kp.gridDim, kp.blockDim, 0, handle[streamInd].stream>>>(
+        updatePKernel<<<kp.gridDim, kp.blockDim, 0, handle[streamInd]>>>(
             p.toKernel1d(),       // d_p (Input/Output)
             r.toKernel1d(),       // d_r
             v.toKernel1d(),       // d_v
@@ -168,7 +168,7 @@ public:
       b(b),
       paM(preAllocated ? *preAllocated : Mat<T>::create(b.size(), 7)),
       r(paM.col(0)), r_tilde(paM.col(1)), p(paM.col(2)), v(paM.col(3)), s(paM.col(4)), t(paM.col(5)), h(paM.col(6)),
-      paV(Vec<T>::create(9, handle[0].stream)),
+      paV(Vec<T>::create(9, handle[0])),
       rho(paV.get(0)), alpha(paV.get(1)), omega(paV.get(2)), rho_new(paV.get(3)), beta(paV.get(4)), temp{{paV.get(5), paV.get(6), paV.get(7), paV.get(8)}},
       maxIterations(maxIterations)
     {
@@ -226,7 +226,7 @@ public:
             A.bandedMult(p, v, handle); // v = A * p
 
             r_tilde.mult(v, alpha, handle);
-            alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, handle[0].stream); //alpha = rho / (r_tilde * v)
+            alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, handle[0]); //alpha = rho / (r_tilde * v)
             record(0, {alphaReady});
 
             synch(1);
@@ -254,7 +254,7 @@ public:
             record(3, {prodTS});
             t.mult(t, omega, handle);
             wait(0, {prodTS});
-            omega.EBEPow(temp[3], Singleton<T>::MINUS_ONE, handle[0].stream); //omega = t * s / t * t;
+            omega.EBEPow(temp[3], Singleton<T>::MINUS_ONE, handle[0]); //omega = t * s / t * t;
 
             record(0, {omegaReady});
 
@@ -274,7 +274,7 @@ public:
 
             r_tilde.mult(r, rho_new, handle);
 
-            beta.setProductOfQuotients(rho_new, rho, alpha, omega, handle[0].stream); // beta = (rho_new / rho) * (alpha / omega);
+            beta.setProductOfQuotients(rho_new, rho, alpha, omega, handle[0]); // beta = (rho_new / rho) * (alpha / omega);
 
             set(rho, rho_new, 0);
 

@@ -53,9 +53,9 @@ void Mat<T>::mult(
     const Singleton<T>* b = Singleton<T>::_get_or_create_target(0, *h, beta, temp_b_ptr);
 
     if constexpr(std::is_same_v<T, float>)
-        cublasSgemv(h->handle, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->toKernel1d(), this->toKernel2d(), this->_ld, other.toKernel1d(), other._ld, b->toKernel1d(), result.toKernel1d(), result._ld);
+        cublasSgemv(*h, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->toKernel1d(), this->toKernel2d(), this->_ld, other.toKernel1d(), other._ld, b->toKernel1d(), result.toKernel1d(), result._ld);
     else if constexpr(std::is_same_v<T, double>)
-        cublasDgemv(h->handle, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->toKernel1d(), this->toKernel2d(), this->_ld, other.toKernel1d(), other._ld, b->toKernel1d(), result.toKernel1d(), result._ld);
+        cublasDgemv(*h, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->toKernel1d(), this->toKernel2d(), this->_ld, other.toKernel1d(), other._ld, b->toKernel1d(), result.toKernel1d(), result._ld);
     else throw std::invalid_argument("Unsupported type.");
 }
 
@@ -173,7 +173,7 @@ void Mat<T>::set(std::istream& input_stream, bool isText, bool isColMjr, Handle*
             helper.getChunkWidth()
         );
 
-        subMat.set(helper.getBuffer().data(), h->stream);
+        subMat.set(helper.getBuffer().data(), *h);
 
         h->synch();//TODO: this might be avoidable with multi threading
 
@@ -182,6 +182,7 @@ void Mat<T>::set(std::istream& input_stream, bool isText, bool isColMjr, Handle*
 }
 
 /**
+ *TODO: rewrite this so that it returns an object that holds the paramaters, and we can call ostream << objectThatHoldsParamaters for smoother code.  Also for istream.
  * Note, if gets to text, will print data as row major and is much slower.  If gets to binary data, will write as column major and is fast.
  */
 template <typename T>
@@ -242,7 +243,7 @@ Mat<T> Mat<T>::plus(
     
     if constexpr (std::is_same_v<T, float>)
         CHECK_CUBLAS_ERROR(cublasSgeam(
-            h->handle, 
+            *h,
             transposeA ? CUBLAS_OP_T : CUBLAS_OP_N,
             transposeB ? CUBLAS_OP_T : CUBLAS_OP_N,
             this->_rows, this->_cols, 
@@ -252,7 +253,7 @@ Mat<T> Mat<T>::plus(
         ));
     else if constexpr (std:: is_same_v<T, double>)
         CHECK_CUBLAS_ERROR(cublasDgeam(
-            h->handle, 
+            *h,
             transposeA ? CUBLAS_OP_T : CUBLAS_OP_N,
             transposeB ? CUBLAS_OP_T : CUBLAS_OP_N,
             this->_rows, this->_cols, 
@@ -304,7 +305,7 @@ void Mat<T>::mult(const Singleton<T>& alpha, Handle* handle) {
         (this->_rows + threadsPerBlock.y - 1) / threadsPerBlock.y
     );
 
-    scaleKernel<<<numBlocks, threadsPerBlock, 0, h->stream>>>(
+    scaleKernel<<<numBlocks, threadsPerBlock, 0, *h>>>(
         this->toKernel2d(),
         alpha.toKernel1d().data
     );
@@ -331,7 +332,7 @@ void Mat<T>::transpose(
     if constexpr (std::is_same_v<T, float>) {
 
         CHECK_CUBLAS_ERROR(cublasSgeam(
-            h->handle,
+            *h,
             CUBLAS_OP_T, // Transpose A
             CUBLAS_OP_N, // Don't transpose B (it's not used)
             this->_cols, // Result rows
@@ -343,7 +344,7 @@ void Mat<T>::transpose(
         ));
     } else if constexpr (std::is_same_v<T, double>) {
         CHECK_CUBLAS_ERROR(cublasDgeam(
-            h->handle,
+            *h,
             CUBLAS_OP_T, 
             CUBLAS_OP_N,
             this->_cols,
@@ -378,7 +379,7 @@ void Mat<T>::transpose(Handle* handle, Mat<T>* temp) {
     
     this->transpose(*temp_ptr, handle);
 
-    this->set(*temp_ptr, handle->stream);
+    this->set(*temp_ptr, *handle);
 }
 
 template <typename T>
@@ -455,7 +456,7 @@ void Mat<T>::normalizeCols(size_t setRowTo1, Handle* handle) {
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
     KernelPrep kp = this->kernelPrep();
-    normalizeByRowKernel<T><<<kp.gridDim, kp.blockDim, 0, h->stream>>>(this->toKernel2d(), setRowTo1);
+    normalizeByRowKernel<T><<<kp.gridDim, kp.blockDim, 0, *h>>>(this->toKernel2d(), setRowTo1);
 }
 
 template<typename T>

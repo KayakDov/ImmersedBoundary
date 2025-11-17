@@ -67,7 +67,7 @@ template <typename T>
 const Singleton<T>* Singleton<T>::_get_or_create_target(T defaultVal, Handle& hand, const Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) {
     if (result) return result;
     else {
-        out_ptr_unique = std::make_unique<Singleton<T>>(Singleton<T>::create(defaultVal, hand.stream));
+        out_ptr_unique = std::make_unique<Singleton<T>>(Singleton<T>::create(defaultVal, hand));
         return out_ptr_unique.get();
     }
 }

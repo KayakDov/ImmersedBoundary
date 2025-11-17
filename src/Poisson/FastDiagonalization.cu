@@ -135,26 +135,32 @@ public:
 
         auto fTensor = f.tensor(this->dim.rows, this->dim.cols), tempTensor = temp.tensor(this->dim.rows, this->dim.cols);
 
+        f.get(std::cout << "my compute f_tilde = \n", true, false, hand);
         multiplyEF(hand, fTensor, tempTensor, true);
-
-        // f.get(std::cout << "my compute f_tilde = \n", true, false, hand);
-
-        //----------------------TODO: It seems like the results of the following on an f that hasn't seen multiplyEF should give the same results as multiply EF.  I need to figure out why they are different.
-        //                      TODO: maybe it's because my batch multiply reads and writes to the same space?
-        // auto tempMat1 = Mat<T>::create(eVecs[0]._rows * eVecs[1]._rows, eVecs[0]._cols* eVecs[1]._cols);
-        // auto tempMat2 = Mat<T>::create(tempMat1._rows * eVecs[2]._rows, tempMat1._cols* eVecs[2]._cols);
-        // eVecs[0].multKronecker(eVecs[1], tempMat1, hand);
-        // tempMat1.multKronecker(eVecs[2], tempMat2, hand);
-        // tempMat2.mult(f, f, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false);
-        // f.get(std::cout << "my compute f_tilde = \n", true, false, hand);
-        //------------------------------------------------------------------------------------------------------------------
+        multiplyEF(hand, tempTensor, fTensor, false);//TODO;delete me
+        f.get(std::cout << "my compute f_tilde = \n", true, false, hand);
 
 
-        auto xTensor = x.tensor(this->dim.rows, this->dim.cols);
 
-        setUTilde(tempTensor, xTensor, hand);
 
-        multiplyEF(hand, tempTensor, xTensor, false);
+        //
+        // //----------------------TODO: It seems like the results of the following on an f that hasn't seen multiplyEF should give the same results as multiply EF.  I need to figure out why they are different.
+        // //                      TODO: maybe it's because my batch multiply reads and writes to the same space?
+        // // auto tempMat1 = Mat<T>::create(eVecs[0]._rows * eVecs[1]._rows, eVecs[0]._cols* eVecs[1]._cols);
+        // // auto tempMat2 = Mat<T>::create(tempMat1._rows * eVecs[2]._rows, tempMat1._cols* eVecs[2]._cols);
+        // // eVecs[0].multKronecker(eVecs[1], tempMat1, hand);
+        // // tempMat1.multKronecker(eVecs[2], tempMat2, hand);
+        // // tempMat2.get(std::cout << "tempMat2 = \n", true, false, hand);
+        // // tempMat2.mult(f, f, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false);
+        // // f.get(std::cout << "my compute f_tilde = \n", true, false, hand);
+        // //------------------------------------------------------------------------------------------------------------------
+        //
+        //
+        // auto xTensor = x.tensor(this->dim.rows, this->dim.cols);
+        //
+        // setUTilde(tempTensor, xTensor, hand);
+        //
+        // multiplyEF(hand, tempTensor, xTensor, false);
     }
 };
 
@@ -164,8 +170,6 @@ public:
  * @brief Main entry point to demonstrate the FastDiagonalizationMethod for a 2x2x2 grid.
  */
 int main() {
-
-    Handle handle;
 
     constexpr size_t dim = 2;
     Handle hand;

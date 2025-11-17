@@ -4,6 +4,16 @@
 
 #include "deviceArrays/headers/Mat.h"
 
+
+template<typename T>
+class DeviceCubeBoundary {
+public:
+    const DeviceData2d<T> front, back, left, right, top, bottom;
+    __host__ __device__ DeviceCubeBoundary(DeviceData2d<T> front, DeviceData2d<T> back, DeviceData2d<T> left, DeviceData2d<T> right, DeviceData2d<T> top, DeviceData2d<T> bottom):
+        front(front), back(back), left(left), right(right), top(top), bottom(bottom) {};
+};
+
+
 template<typename T>
 class CubeBoundary {
 public:
@@ -89,6 +99,21 @@ public:
     }
 
     /**
+     * A version of this class that is simplified and device friendly.
+     * @return
+     */
+    DeviceCubeBoundary<T> deviceCubeBoundary() const {
+        return DeviceCubeBoundary<T>(
+            frontBack.subMat(0, 0, frontBack._rows/2, frontBack._cols).toKernel2d(),
+            frontBack.subMat(frontBack._rows/2, 0, frontBack._rows/2, frontBack._cols).toKernel2d(),
+            leftRight.subMat(0, 0, leftRight._rows/2, leftRight._cols).toKernel2d(),
+            leftRight.subMat(leftRight._rows/2, 0, leftRight._rows/2, leftRight._cols).toKernel2d(),
+            topBottom.subMat(0, 0, topBottom._rows/2, topBottom._cols).toKernel2d(),
+            topBottom.subMat(topBottom._rows/2, 0, topBottom._rows/2, topBottom._cols).toKernel2d()
+            );
+    }
+
+    /**
      * @brief Calls releaseResources() on an arbitrary number of Mat<T> views.
      *
      * This function is useful for explicitly nullifying the pointers in non-owning
@@ -142,7 +167,4 @@ public:
 
         return CubeBoundary<T>(frontBack, leftRight, topBottom);
     }
-
-
 };
-

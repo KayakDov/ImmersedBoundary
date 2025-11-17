@@ -48,4 +48,23 @@ public:
 
 };
 
+
+/**
+ * @brief Global device method to compute the positive modulo (remainder).
+ *
+ * This function handles negative dividends, ensuring the result is always
+ * between 0 (inclusive) and n (exclusive).
+ *
+ * @tparam T Integer type.
+ * @param a The dividend (the number).
+ * @param n The divisor (the modulus). Must be positive.
+ * @return The positive remainder.
+ */
+template <typename T>
+__host__ __device__ T modPos(T a, T n) {
+    T result = a % n;
+    if (result < 0) result += n;
+    return result;
+}
+
 #endif //BICGSTAB_KERNELSUPPORT_CUH

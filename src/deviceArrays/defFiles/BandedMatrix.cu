@@ -86,7 +86,7 @@ void BandedMat<T>::bandedMult(
 
     if (transpose) (const_cast<Vec<int32_t>&>(_indices)).mult(Singleton<int32_t>::MINUS_ONE, h);
 
-    multVecKernel<<<this->_rows, this->_cols, 0, h->stream>>>(
+    multVecKernel<<<this->_rows, this->_cols, 0, *h>>>(
         this->toKernel2d(),
         _indices.toKernel1d().data,
         other.toKernel1d(),
@@ -122,7 +122,7 @@ void BandedMat<T>::getDense(SquareMat<T> dense, Handle *handle) const {//TODO: h
         (this->_indices.size() + blockDim.y - 1) / blockDim.y
     );
 
-    mapToDenseKernel<T><<<gridDim, blockDim, 0, h->stream>>>(
+    mapToDenseKernel<T><<<gridDim, blockDim, 0, *h>>>(
         dense.toKernel2d(),
         this->toKernel2d(),
         this->_indices.toKernel1d()
@@ -171,7 +171,7 @@ void BandedMat<T>::setFromDense(const SquareMat<T> &denseMat, Handle *handle) {
         (this->_rows + blockDim.y - 1) / blockDim.y
     );
 
-    mapDenseToBandedKernel<T><<<gridDim, blockDim, 0, h->stream>>>(
+    mapDenseToBandedKernel<T><<<gridDim, blockDim, 0, *h>>>(
         denseMat.toKernel2d(),
         this->toKernel2d(),
         this->_indices.toKernel1d()

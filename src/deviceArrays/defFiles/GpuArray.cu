@@ -71,7 +71,7 @@ void GpuArray<T>::mult(
             transB = transposeB ? CUBLAS_OP_T : CUBLAS_OP_N;
 
     if constexpr (std::is_same_v<T, float>)
-        CHECK_CUBLAS_ERROR(cublasSgemm(h->handle,
+        CHECK_CUBLAS_ERROR(cublasSgemm(*h,
         transA, transB,
         this->_rows, other._cols, this->_cols,
         a->toKernel1d(),
@@ -80,7 +80,7 @@ void GpuArray<T>::mult(
         b->toKernel1d(),
         result->data(), result->_ld));
     else if constexpr (std::is_same_v<T, double>)
-        CHECK_CUBLAS_ERROR(cublasDgemm(h->handle,
+        CHECK_CUBLAS_ERROR(cublasDgemm(*h,
         transA, transB,
         this->_rows, other._cols, this->_cols,
         a->toKernel1d(),

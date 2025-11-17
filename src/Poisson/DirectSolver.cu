@@ -26,11 +26,8 @@ public:
     /**
      * @brief Constructs the Set0 functor.
      *
-     * @param[in] mapDiagIndextoARow Device pointer mapping diagonal index (offset) to the row index in the banded matrix A.
      * @param[in,out] a Pointer to the banded matrix data on the device.
-     * @param[in] ldA The leading dimension of A.
-     * @param[in] idGrid The linear index of the current grid point (row in A).
-     * @param[in] widthA The width (number of columns) of A, equal to gridSize.
+     * @param[in] idGrid The flat index of the current grid point (row in A).
      */
     __device__ Set0(DeviceData2d<T>& a, const size_t idGrid) :
         a(a), idGrid(idGrid) {}
@@ -41,11 +38,11 @@ public:
      * This operator is called to check if a specific off-diagonal entry (corresponding to a neighbor)
      * should be set to 0 (internal point) or NAN (outside band storage).
      *
-     * @param[in] diagIndex The diagonal index (offset) corresponding to the neighbor being checked.
+     * @param[in] diagIndex The index of the diagonal corresponding to the neighbor being checked.
      */
     __device__ void operator()(const int32_t diagIndex, const size_t colInd) {
 
-        const size_t rowInd = ((static_cast<int32_t>(idGrid) + min(diagIndex , 0)) % static_cast<int32_t>(a.rows) + static_cast<int32_t>(a.rows)) % a.rows;
+        const size_t rowInd = modPos(static_cast<int32_t>(idGrid) + min(diagIndex , 0), static_cast<int32_t>(a.rows));
         if (rowInd < a.rows - abs(diagIndex)) a(rowInd, colInd) = static_cast<T>(0);
         else a(rowInd, colInd) = NAN;
     }
@@ -100,6 +97,7 @@ __global__ void setAKernel(DeviceData2d<T> a,
     else if (ind.col == g.cols - 1) set0(g.rows, rightCol);
     if (ind.layer == 0) set0(-static_cast<int32_t>(g.layerSize), frontCol);
     else if (ind.layer == g.layers - 1) set0(g.layerSize, backCol);
+
 
 }
 
@@ -216,7 +214,7 @@ public:
   * @param dimLength The length of an edge of the grid.  //up to 325 works on Dov's computer.  After that the size of
   * the initally allocated memory exceeds the available memory on the gpu.
   */
- void testPoisson(const size_t dimLength, cudaStream_t& stream) {
+ void testPoisson(const size_t dimLength, cudaStream_t stream) {
 
     auto boundary = CubeBoundary<double>::ZeroTo1(dimLength, stream);
 
@@ -255,7 +253,7 @@ int main(int argc, char *argv[]) {
 
     size_t i = 2;
         // std::cout << i << ", ";
-        testPoisson(i, hand.stream);
+        testPoisson(i, hand);
         // cudaDeviceSynchronize();
 
     // }

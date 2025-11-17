@@ -14,7 +14,7 @@ __device__ __host__ size_t GridDim::size() const {
 }
 
 __device__ size_t GridDim::operator()(const size_t row, const size_t col, const size_t layer) const {
-    return layer * (rows * cols) + col * rows + row;
+    return layer * rows + col * (rows * layers) + row;
 }
 
 __device__ GridInd3d GridDim::operator[](size_t idx) const {

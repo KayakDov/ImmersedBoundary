@@ -15,8 +15,12 @@
  *
  * This function is the backend of the CHECK_CUDA_ERROR macro.
  */
-void checkCudaErrors(cudaError_t err, const char* file, int line);
-void checkCublasErrors(cublasStatus_t status, const char* file, int line);
+void checkCudaErrors(cudaError_t err, const char *file, int line);
+
+void checkCublasErrors(cublasStatus_t status, const char *file, int line);
+
+void checkSolverErrors(cusolverStatus_t status, const char *file, int line);
+
 /**
  * @brief Macro to check a CUDA runtime error and throw a runtime exception if needed.
  * @param err CUDA runtime function call to check.
@@ -25,6 +29,27 @@ void checkCublasErrors(cublasStatus_t status, const char* file, int line);
  */
 #define CHECK_CUDA_ERROR(err) checkCudaErrors(err, __FILE__, __LINE__)
 #define CHECK_CUBLAS_ERROR(status) checkCublasErrors(status, __FILE__, __LINE__)
+#define CHECK_SOLVER_ERROR(status) checkSolverErrors(status, __FILE__, __LINE__)
+
+/** * @brief Custom deleter functor for cublasHandle_t.
+ * The implementation is in handle.cu.
+ */
+struct CublasDeleter {
+    void operator()(cublasHandle_t handle) const;
+};
+
+/** * @brief Custom deleter functor for cusolverDnHandle_t.
+ * The implementation is in handle.cu.
+ */
+struct CusolverDeleter {
+    void operator()(cusolverDnHandle_t handle) const;
+};
+
+// --- Type Aliases for Smart Pointers ---
+// We use unique_ptr with the raw pointer type and the custom deleter struct.
+using CublasHandlePtr = std::unique_ptr<std::remove_pointer<cublasHandle_t>::type, CublasDeleter>;
+using CusolverHandlePtr = std::unique_ptr<std::remove_pointer<cusolverDnHandle_t>::type, CusolverDeleter>;
+
 
 /**
  * @brief Wrapper class for managing cuBLAS, cuSOLVER, and CUDA streams.
@@ -38,10 +63,13 @@ void checkCublasErrors(cublasStatus_t status, const char* file, int line);
  * Ownership of the stream can either belong to the Handle instance or be external.
  */
 class Handle {
+private:
+    CublasHandlePtr handlePtr;
+    CusolverHandlePtr solverHandlePtr;
+    cudaStream_t stream;
 public:
-    cublasHandle_t handle;          ///< cuBLAS handle
-    cusolverDnHandle_t cusolverHandle; ///< cuSOLVER handle
-    cudaStream_t stream;            ///< CUDA stream associated with the handles
+
+
 
     /**
      * @brief Default constructor. Creates a new CUDA stream and initializes cuBLAS/cuSOLVER handles.
@@ -65,7 +93,7 @@ public:
      * @param out_ptr_unique Reference to a unique_ptr where a new Handle will be stored if needed.
      * @return Pointer to a valid Handle instance (either the input or a newly created one).
      */
-    static Handle* _get_or_create_handle(Handle* handle, std::unique_ptr<Handle>& out_ptr_unique);
+    static Handle *_get_or_create_handle(Handle *handle, std::unique_ptr<Handle> &out_ptr_unique);
 
     /**
      * @brief Destructor. Destroys cuBLAS and cuSOLVER handles.
@@ -84,9 +112,27 @@ public:
     void synch() const;
 
     operator cublasHandle_t() const;
+
     operator cublasHandle_t();
 
     operator cudaStream_t() const;
+
+    operator cusolverDnHandle_t() const;
+    //
+    // /**
+    //  * @brief Returns the raw cublasHandle_t pointer.
+    //  */
+    // [[nodiscard]] cublasHandle_t getHandle() const { return handlePtr.get(); }
+    //
+    // /**
+    //  * @brief Returns the raw cusolverDnHandle_t pointer.
+    //  */
+    // [[nodiscard]] cusolverDnHandle_t getSolverHand() const { return solverHandlePtr.get(); }
+    //
+    // /**
+    //  * @brief Returns the raw cudaStream_t pointer.
+    //  */
+    // [[nodiscard]] cudaStream_t getStream() const { return stream; }
 
 private:
     bool isOwner = false; ///< True if the Handle owns the CUDA stream and should destroy it

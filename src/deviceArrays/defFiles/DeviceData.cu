@@ -8,6 +8,8 @@
 #include "../headers/GridDim.cuh"
 #include <cstddef> // For size_t
 
+#include "deviceArrays/headers/KernelSupport.cuh"
+
 class DenseInd;
 class GridInd2d;
 class GridInd3d;
@@ -21,7 +23,7 @@ class DeviceData1d {
     friend Vec<T>;
 protected:
 
-    __host__ __device__  DeviceData1d(size_t cols, size_t ld, T* data): cols(cols), ld(ld), data(data) {}
+    __host__ __device__  DeviceData1d(const size_t cols, const size_t ld, T* data): cols(cols), ld(ld), data(data) {}
 
 public:
     const size_t cols, ld;
@@ -89,6 +91,10 @@ public:
      */
     __device__ size_t flat(size_t row, size_t col) const {
         return col * this->ld + row;
+    }
+
+    __host__ __device__ size_t size() const {
+        return rows * this->cols;
     }
     /**
      * @brief Provides 1D array access to the data using the logical flat index.

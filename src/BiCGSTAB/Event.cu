@@ -31,14 +31,14 @@ void Event::renew() {
 
 void Event::record(const Handle& h) {
     if (!valid) throw std::runtime_error("Attempted to record on invalid event");
-    if (cudaEventRecord(event, h.stream) != cudaSuccess) {
+    if (cudaEventRecord(event, h) != cudaSuccess) {
         throw std::runtime_error("Failed to record CUDA event");
     }
 }
 
 void Event::wait(const Handle& h) const {
     if (!valid) throw std::runtime_error("Attempted to wait on invalid event");
-    if (cudaStreamWaitEvent(h.stream, event, 0) != cudaSuccess) {
+    if (cudaStreamWaitEvent(h, event, 0) != cudaSuccess) {
         throw std::runtime_error("Failed to make stream wait on CUDA event");
     }
 }
