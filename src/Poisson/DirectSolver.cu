@@ -180,10 +180,10 @@ public:
         here(0, 0),
         up(1, 1),
         down(2, -1),
-        left(3, -this->dim.rows),
-        right(4, this->dim.rows),
-        front(5, -this->dim.rows * this->dim.cols),
-        back(6, this->dim.rows * this->dim.cols),
+        left(3, -this->dim.rows * this->dim.layers),
+        right(4, this->dim.rows * this->dim.layers),
+        front(5, -this->dim.rows),
+        back(6, this->dim.rows),
         A(setA(stream, preAlocatedForBandedA, prealocatedForIndices))
     {
     }
@@ -225,16 +225,44 @@ public:
 
     DirectSolver<double> solver(boundary, b, A, diagonalInds, hand);
 
-     A.get(std::cout << "DirectSolcer.cu::testPoission \nA  = \n", true, false, hand);
+     // A.get(std::cout << "DirectSolcer.cu::testPoission \nA  = \n", true, false, hand);
 
-     b.get(std::cout << "DirectSolcer.cu::testPoission \nb  = \n", true, false, hand);
+     // b.get(std::cout << "DirectSolcer.cu::testPoission \nb  = \n", true, false, hand);
 
     boundary.freeMem();
 
     solver.solve(x, prealocatedForBiCGSTAB);
 
-    x.get(std::cout << "DirectSolcer.cu::testPoission \nx  = \n", true, false, hand);
+    // x.get(std::cout << "DirectSolcer.cu::testPoission \nx  = \n", true, false, hand);
 }
+
+
+void testBiCGSTAB() {
+     Handle hand;
+
+     size_t denseMatDim = 4;
+
+     auto indices = Vec<int32_t>::create(2);
+     indices.get(0).set(1, hand);
+     indices.get(1).set(-1, hand);
+
+     auto bm = BandedMat<double>::create(denseMatDim, 2,indices);
+     bm.col(0).fill(3, hand);
+     bm.col(1).fill(-2, hand);
+
+     auto b = Vec<double>::create(denseMatDim, hand);
+     b.fill(1, hand);
+
+     auto x = Vec<double>::create(denseMatDim, hand);
+
+     BiCGSTAB<double> bs(b);
+
+     bs.solveUnpreconditionedBiCGSTAB(bm, x);
+
+     x.get(std::cout << "x = \n", true, false, hand);
+ }
+
+
 
 /**
  * @brief Main execution function for the Poisson FDM solver example.
@@ -264,5 +292,7 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+
 
 #endif //BICGSTAB_POISSONFDM_CUH

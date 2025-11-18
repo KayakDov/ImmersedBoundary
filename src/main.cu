@@ -208,29 +208,6 @@ int useCommandLineArgs(int argc, char const* argv[]){
 
 int main(int argc, char const* argv[]) {
 
-    // Handle hand;
-    //
-    // size_t denseMatDim = 4;
-    //
-    // auto indices = Vec<int32_t>::create(2);
-    // indices.get(0).set(1, hand);
-    // indices.get(1).set(-1, hand);
-    //
-    // auto bm = BandedMat<double>::create(denseMatDim, 2,indices);
-    // bm.col(0).fill(3, hand);
-    // bm.col(1).fill(-2, hand);
-    //
-    // auto b = Vec<double>::create(denseMatDim, hand);
-    // b.fill(1, hand);
-    //
-    // auto x = Vec<double>::create(denseMatDim, hand);
-    //
-    // BiCGSTAB<double> bs(b);
-    //
-    // bs.solveUnpreconditionedBiCGSTAB(bm, x);
-    //
-    // x.get(std::cout << "x = \n", true, false, &hand);
-
     return useCommandLineArgs(argc, argv);
 
 }
