@@ -379,144 +379,42 @@ public:
      */
     [[nodiscard]] KernelPrep kernelPrep() const;
 
+    /**
+     * @brief Extract a column vector from the matrix.
+     * @param index Column index.
+     * @return Column as a Vec<T>.
+     * @note Not yet implemented.
+     */
+    virtual Vec<T> col(size_t index);
+
+    /**
+     * @brief Extract a row vector from the matrix.
+     * @param index Row index.
+     * @return Row as a Vec<T>.
+     * @note Not yet implemented.
+     */
+    virtual Vec<T> row(size_t index);
+
+    /**
+     * @brief Gets the desired diagonal.  An index of 0 is the primary diagonal, a positive index indicates the start
+     * column of the super diagonal and a negative index is the start row of the sub diagonal.
+     *
+     * @param index
+     * @return The diagonal, as a vector.
+     */
+    virtual Vec<T> diag(int32_t index);
+
+
+    /**
+     * Creates a vector that is a window into part of this GpuArray, or the underlying data.
+     * Note: before using this method, make sure row, col, or diag don't meet your needs, as they are safer.
+     * @param offset The vector starts here relative to the first element of this matrix.
+     * @param ld The step size between vector elements.
+     * @param size The number of elements in the new vector.
+     * @return The new vector created that is a window into this matrix.
+     */
+    Vec<T> vec(size_t offset, size_t ld, size_t size);
+
 };
-//TODO: rewrite these with gets.
-// /**
-//  * @brief Input formatted data (space-separated values) into gpuArray1D<T> from a stream.
-//  * @tparam T Element type
-//  * @param is Input stream
-//  * @param arr Array to fill
-//  * @return Input stream
-//  */
-// template <typename T>
-// std::istream& operator>>(std::istream& is, Vec<T>& arr) {
-//
-//     std::vector<T> hostData(arr.size());
-//     for (size_t i = 0; i < hostData.size(); ++i) {
-//         is >> hostData[i];
-//         if (!is) {
-//             is.setstate(std::ios::badbit);
-//             break;
-//         }
-//     }
-//     arr.set(hostData.data());
-//     return is;
-// }
-//
-// /**
-//  * @brief Prints a gpuArray1D<T> to a stream.
-//  * @tparam T Element type
-//  * @param os Output stream
-//  * @param arr The gpuArray1D to print
-//  * @return Output stream
-//  */
-// template <typename T>
-// std::ostream& operator<<(std::ostream& os, const Vec<T>& arr) {
-//     std::vector<T> hostData(arr.size());
-//     Handle hand;
-//     arr.get(hostData.data(), hand.stream);
-//     hand.synch();
-//
-//     for (size_t i = 0; i < hostData.size(); ++i) {
-//         os << hostData[i];
-//         if (i + 1 < hostData.size()) {
-//             os << " ";
-//         }
-//     }
-//     os << "\n";
-//     return os;
-// }
-//
-// /**
-//  * @brief Prints a gpuArray2D<T> to a stream with improved formatting.
-//  *
-//  * This operator assumes a column-major memory layout and prints the matrix
-//  * row by row for a more readable output. It uses iomanip to format the
-//  * floating-point numbers to a fixed precision and set width.
-//  *
-//  * @tparam T Element type
-//  * @param os Output stream
-//  * @param arr The gpuArray2D to print
-//  * @return Output stream
-//  */
-// template <typename T>
-// std::ostream& operator<<(std::ostream& os, const Mat<T>& arr) {
-//     cudaDeviceSynchronize();
-//     std::vector<T> hostData(arr.size());
-//
-//     Handle hand;
-//     arr.get(hostData.data(), hand.stream);
-//     hand.synch();
-//
-//     for (size_t r = 0; r < arr._rows; ++r) {
-//         for (size_t c = 0; c < arr._cols; ++c) {
-//             // Contiguous column-major access
-//             os << hostData[c * arr._rows + r] << " ";
-//         }
-//         os << "\n";
-//     }
-//     return os;
-// }
-//
-//
-// /**
-//  * @brief Reads formatted data (column by column) into gpuArray2D<T> from a stream.
-//  *
-//  * This operator assumes the input stream is formatted in column-major order,
-//  * meaning it will read all elements of the first column, then the second, and so on.
-//  *
-//  * @tparam T Element type
-//  * @param is Input stream
-//  * @param arr Array to fill
-//  * @return Input stream
-//  */
-// template <typename T>
-// std::istream& operator>>(std::istream& is, Mat<T>& arr) {
-//     std::vector<T> hostData(arr.size());
-//     size_t ld = arr.getLD();
-//
-//     for (size_t c = 0; c < arr._cols; ++c) {
-//         for (size_t r = 0; r < arr._rows; ++r) {
-//             // Reading data in column-major order from the stream
-//             is >> hostData[c * ld + r];
-//             if (!is) {
-//                 is.setstate(std::ios::badbit);
-//                 return is;
-//             }
-//         }
-//     }
-//
-//     arr.set(hostData.data());
-//     return is;
-// }
-//
-// template <typename T>
-// /**
-//  * @brief Overloads the stream insertion operator for GpuArray instances.
-//  *
-//  * This function provides formatted output for GpuArray objects by determining
-//  * whether the array instance is one-dimensional (Vec) or two-dimensional (Mat).
-//  * It dynamically casts the input object to the appropriate type and delegates
-//  * stream formatting to the corresponding type's stream operator.
-//  *
-//  * @tparam T The data type of the elements in the GpuArray.
-//  * @param os The output stream to which the array's content will be written.
-//  * @param arr The GpuArray instance to be formatted and written to the stream.
-//  * @return A reference to the output stream with the formatted array content.
-//  *
-//  * @throws std::runtime_error If the function fails to determine whether the input
-//  * array is of type Vec or Mat, indicating the array's type is unsupported.
-//  *
-//  * @note The underlying implementation assumes that valid dynamic casting can
-//  * differentiate between one-dimensional and two-dimensional arrays derived
-//  * from the GpuArray base class.
-//  */
-// std::ostream& operator<<(std::ostream& os, const GpuArray<T>& arr) {
-//
-//     if (auto ptr1d = dynamic_cast<const Vec<T>*> (&arr)) return os << *ptr1d;
-//     else if (auto ptr2d = dynamic_cast<const Mat<T>*>(&arr)) return os << *ptr2d;
-//     else throw std::runtime_error("Unable to detect the type of array, 1d or 2d.");
-//     return os;
-// }
 
 #endif // GPUARRAY_H

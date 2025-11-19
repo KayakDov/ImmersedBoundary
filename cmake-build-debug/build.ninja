@@ -153,6 +153,14 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: CUDA
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
+build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o: CXX_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Streamable.cpp || cmake_object_order_depends_target_BiCGSTAB_LIB
+  CONFIG = Debug
+  DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o.d
+  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda-13/targets/x86_64-linux/include
+  OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
+  OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
+
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Tensor.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o.d
@@ -201,7 +209,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: CUDA_COMPILER__BiCGSTAB_
 #############################################
 # Link the static library libBiCGSTAB_LIB.a
 
-build libBiCGSTAB_LIB.a: CXX_STATIC_LIBRARY_LINKER__BiCGSTAB_LIB_Debug CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/BiCGSTAB.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o
+build libBiCGSTAB_LIB.a: CXX_STATIC_LIBRARY_LINKER__BiCGSTAB_LIB_Debug CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/BiCGSTAB.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o
   CONFIG = Debug
   LANGUAGE_COMPILE_FLAGS = -g
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
@@ -279,6 +287,14 @@ build CMakeFiles/PoissonFDM.dir/src/Poisson/DirectSolver.cu.o: CUDA_COMPILER__Po
   OBJECT_DIR = CMakeFiles/PoissonFDM.dir
   OBJECT_FILE_DIR = CMakeFiles/PoissonFDM.dir/src/Poisson
 
+build CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Streamable.cpp.o: CXX_COMPILER__PoissonFDM_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Streamable.cpp || cmake_object_order_depends_target_PoissonFDM
+  CONFIG = Debug
+  DEP_FILE = CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Streamable.cpp.o.d
+  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda-13/targets/x86_64-linux/include
+  OBJECT_DIR = CMakeFiles/PoissonFDM.dir
+  OBJECT_FILE_DIR = CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles
+
 
 # =============================================================================
 # Device Link build statements for EXECUTABLE target PoissonFDM
@@ -287,7 +303,7 @@ build CMakeFiles/PoissonFDM.dir/src/Poisson/DirectSolver.cu.o: CUDA_COMPILER__Po
 #############################################
 # Link the executable CMakeFiles/PoissonFDM.dir/cmake_device_link.o
 
-build CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKER__PoissonFDM_Debug CMakeFiles/PoissonFDM.dir/src/Poisson/DirectSolver.cu.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so || libBiCGSTAB_LIB.a
+build CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKER__PoissonFDM_Debug CMakeFiles/PoissonFDM.dir/src/Poisson/DirectSolver.cu.o CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Streamable.cpp.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so || libBiCGSTAB_LIB.a
   LANGUAGE_COMPILE_FLAGS = -g -arch=native
   LINK_LIBRARIES = libBiCGSTAB_LIB.a  -ldl /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a -lcudadevrt -lcudart_static -lrt -lpthread
   LINK_PATH = -L/usr/local/cuda-13/targets/x86_64-linux/lib/stubs  -L/usr/local/cuda-13/targets/x86_64-linux/lib
@@ -301,7 +317,7 @@ build CMakeFiles/PoissonFDM.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKE
 #############################################
 # Link the executable PoissonFDM
 
-build PoissonFDM: CXX_EXECUTABLE_LINKER__PoissonFDM_Debug CMakeFiles/PoissonFDM.dir/src/Poisson/DirectSolver.cu.o CMakeFiles/PoissonFDM.dir/cmake_device_link.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so || libBiCGSTAB_LIB.a
+build PoissonFDM: CXX_EXECUTABLE_LINKER__PoissonFDM_Debug CMakeFiles/PoissonFDM.dir/src/Poisson/DirectSolver.cu.o CMakeFiles/PoissonFDM.dir/src/deviceArrays/defFiles/Streamable.cpp.o CMakeFiles/PoissonFDM.dir/cmake_device_link.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so || libBiCGSTAB_LIB.a
   CONFIG = Debug
   DEP_FILE = CMakeFiles/PoissonFDM.dir/link.d
   FLAGS = -g
@@ -331,6 +347,14 @@ build CMakeFiles/DiagnolizeMethod.dir/src/Poisson/FastDiagonalization.cu.o: CUDA
   OBJECT_DIR = CMakeFiles/DiagnolizeMethod.dir
   OBJECT_FILE_DIR = CMakeFiles/DiagnolizeMethod.dir/src/Poisson
 
+build CMakeFiles/DiagnolizeMethod.dir/src/deviceArrays/defFiles/Streamable.cpp.o: CXX_COMPILER__DiagnolizeMethod_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Streamable.cpp || cmake_object_order_depends_target_DiagnolizeMethod
+  CONFIG = Debug
+  DEP_FILE = CMakeFiles/DiagnolizeMethod.dir/src/deviceArrays/defFiles/Streamable.cpp.o.d
+  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda-13/targets/x86_64-linux/include
+  OBJECT_DIR = CMakeFiles/DiagnolizeMethod.dir
+  OBJECT_FILE_DIR = CMakeFiles/DiagnolizeMethod.dir/src/deviceArrays/defFiles
+
 
 # =============================================================================
 # Device Link build statements for EXECUTABLE target DiagnolizeMethod
@@ -339,7 +363,7 @@ build CMakeFiles/DiagnolizeMethod.dir/src/Poisson/FastDiagonalization.cu.o: CUDA
 #############################################
 # Link the executable CMakeFiles/DiagnolizeMethod.dir/cmake_device_link.o
 
-build CMakeFiles/DiagnolizeMethod.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKER__DiagnolizeMethod_Debug CMakeFiles/DiagnolizeMethod.dir/src/Poisson/FastDiagonalization.cu.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so || libBiCGSTAB_LIB.a
+build CMakeFiles/DiagnolizeMethod.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKER__DiagnolizeMethod_Debug CMakeFiles/DiagnolizeMethod.dir/src/Poisson/FastDiagonalization.cu.o CMakeFiles/DiagnolizeMethod.dir/src/deviceArrays/defFiles/Streamable.cpp.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so || libBiCGSTAB_LIB.a
   LANGUAGE_COMPILE_FLAGS = -g -arch=native
   LINK_LIBRARIES = libBiCGSTAB_LIB.a  -ldl /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a -lcudadevrt -lcudart_static -lrt -lpthread
   LINK_PATH = -L/usr/local/cuda-13/targets/x86_64-linux/lib/stubs  -L/usr/local/cuda-13/targets/x86_64-linux/lib
@@ -353,7 +377,7 @@ build CMakeFiles/DiagnolizeMethod.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE
 #############################################
 # Link the executable DiagnolizeMethod
 
-build DiagnolizeMethod: CXX_EXECUTABLE_LINKER__DiagnolizeMethod_Debug CMakeFiles/DiagnolizeMethod.dir/src/Poisson/FastDiagonalization.cu.o CMakeFiles/DiagnolizeMethod.dir/cmake_device_link.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so || libBiCGSTAB_LIB.a
+build DiagnolizeMethod: CXX_EXECUTABLE_LINKER__DiagnolizeMethod_Debug CMakeFiles/DiagnolizeMethod.dir/src/Poisson/FastDiagonalization.cu.o CMakeFiles/DiagnolizeMethod.dir/src/deviceArrays/defFiles/Streamable.cpp.o CMakeFiles/DiagnolizeMethod.dir/cmake_device_link.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so || libBiCGSTAB_LIB.a
   CONFIG = Debug
   DEP_FILE = CMakeFiles/DiagnolizeMethod.dir/link.d
   FLAGS = -g

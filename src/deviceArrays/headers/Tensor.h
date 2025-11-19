@@ -16,6 +16,7 @@
 #include "../defFiles/DeviceData.cu"
 #include "Mat.h"
 
+
 /**
  * @class Tensor
  * @brief Represents a 3D tensor stored on GPU.
@@ -37,7 +38,6 @@ class Tensor final : public GpuArray<T> {
     friend Vec<T>;
 private:
 
-    Mat<T> utilityMatrix;
     /**
      * @brief Private constructor for internal use.
      *
@@ -53,6 +53,10 @@ private:
     Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::shared_ptr<T> _ptr);
 
 public:
+    /**
+     * This matrix is the tensor laid out with one layer above another.
+     */
+    Mat<T> utilityMatrix;
 
     const size_t _layers;
 
@@ -145,6 +149,8 @@ public:
 
     operator DeviceData3d<T>();
     operator DeviceData3d<T>() const;
+
+    KernelPrep kernelPrep() const;
 
     KernelPrep kernelPrep();
 

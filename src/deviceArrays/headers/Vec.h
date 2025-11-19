@@ -31,6 +31,7 @@ class Vec : public GpuArray<T> {
 private:
     friend /*Vec<T> */Mat<T>;//::vec(size_t offset, size_t ld, size_t size);//TODO: friend just the relivent method, except that seems to create a circular dependency, so work on this another time.
     friend /*Vec<T> */Tensor<T>;//::depth(size_t row, size_t col);
+    friend GpuArray<T>;
 
 
 protected:

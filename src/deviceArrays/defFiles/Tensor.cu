@@ -84,7 +84,7 @@ Tensor<T>::operator DeviceData3d<T>() const{
 }
 
 template<typename T>
-KernelPrep Tensor<T>::kernelPrep() {
+KernelPrep Tensor<T>::kernelPrep() const {
     return KernelPrep(this->_cols, this->_rows, this->_layers);
 }
 

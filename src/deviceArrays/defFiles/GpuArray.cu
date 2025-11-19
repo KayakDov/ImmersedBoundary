@@ -174,7 +174,6 @@ DeviceData2d<T> GpuArray<T>::toKernel2d() { return DeviceData2d<T>(this->_rows, 
 template <typename T>
 DeviceData2d<T> GpuArray<T>::toKernel2d() const { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
 
-
 template class GpuArray<float>;
 template class GpuArray<double>;
 template class GpuArray<int32_t>;

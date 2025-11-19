@@ -71,10 +71,7 @@ Vec<T> Mat<T>::operator*(const Vec<T>& other) const {
     return result;
 }
 
-template<typename T>
-Vec<T> Mat<T>::vec(size_t offset, size_t ld, size_t size) {
-    return Vec<T>(size, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + offset), ld);
-}
+
 
 template <typename T>
 Mat<T>* Mat<T>::_get_or_create_target(const size_t rows, const size_t cols, Mat<T>* result, std::unique_ptr<Mat<T>>& out_ptr_unique) {
@@ -403,33 +400,6 @@ Mat<T> Mat<T>::subMat(const size_t startRow, const size_t startCol, const size_t
     );
 }
 
-
-template <typename T>
-Vec<T> Mat<T>::col(const size_t index){
-    if (index >= this->_cols) throw std::out_of_range("Out of range");
-    return this->vec(index * this->_ld, 1, this->_rows);
-
-}
-template <typename T>
-Vec<T> Mat<T>::row(const size_t index){
-    if (index > this->_rows) throw std::out_of_range("Out of range");
-    return this->vec(index, this->_ld, this->_cols);
-}
-
-template<typename T>
-Vec<T> Mat<T>::diag(int32_t index) {
-
-    if (index >= 0) {
-        if (index >= this-> _cols) throw std::out_of_range("Out of range");
-        const size_t size = std::min(this->_rows, this->_cols - index);
-        return this->vec(index * this->_ld, this->_ld + 1, size);
-    } else {
-        if (-index >= this->_rows) throw std::out_of_range("Out of range.");
-        const size_t size = std::min(this->_cols, this->_rows + index);
-        return this->vec(-index, this->_ld + 1, size);
-    }
-}
-
 /**
  * This method multiplies each column by a constant so that the selected row has a 1 in it.
  * @tparam T  The type of data.
@@ -461,14 +431,14 @@ void Mat<T>::normalizeCols(size_t setRowTo1, Handle* handle) {
 
 template<typename T>
 void Mat<T>::batchMult(
-    const Singleton<T>& alpha,
-    const Mat<T>& a1, const size_t strideA,
-    const Mat<T>& b1, const size_t strideB,
-    const Singleton<T>& beta,
-    Mat<T>& c1, const size_t strideC,
+    const Mat<T>& a1,
+    const size_t strideA, const Mat<T>& b1,
+    const size_t strideB, Mat<T>& c1,
+    const size_t strideC,
     const bool transposeA, const bool transposeB,
-    Handle& hand, const size_t batchCount
-    ) {
+    Handle& hand, const size_t batchCount,
+    const Singleton<T>& alpha, const Singleton<T>& beta
+) {
 
     const size_t m = transposeA ? a1._cols : a1._rows,
         n = transposeB ? b1._rows : b1._cols,

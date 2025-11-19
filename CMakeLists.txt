@@ -33,7 +33,9 @@ list(FILTER ALL_PROJECT_SOURCES EXCLUDE REGEX ".*FastDiagonalization\\.cu$")
 
 # --- 1. Shared Static Library Target ---
 # Create a library from all shared code that does NOT contain a main() function.
-add_library(BiCGSTAB_LIB STATIC ${ALL_PROJECT_SOURCES})
+add_library(BiCGSTAB_LIB STATIC ${ALL_PROJECT_SOURCES}
+        src/deviceArrays/defFiles/Streamable.cpp
+        src/deviceArrays/headers/Streamable.h)
 target_include_directories(BiCGSTAB_LIB PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
 # Configure CUDA for the shared library
@@ -61,7 +63,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 
 # --- 3. Test Executable (PoissonFDM) ---
 # Use only 'src/Poisson/FiniteDiffMethodPoisson.cu' and link the shared library.
-add_executable(PoissonFDM src/Poisson/DirectSolver.cu)
+add_executable(PoissonFDM src/Poisson/DirectSolver.cu
+        src/deviceArrays/defFiles/Streamable.cpp
+        src/deviceArrays/headers/Streamable.h)
 target_include_directories(PoissonFDM PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(PoissonFDM PRIVATE BiCGSTAB_LIB)
 
@@ -71,7 +75,9 @@ set_target_properties(PoissonFDM PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # --- 4. Test Executable (DiagnolizeMethod) ---
 # Use only 'src/Poisson/FastDiagonalizationMethod.cu' and link the shared library.
-add_executable(DiagnolizeMethod src/Poisson/FastDiagonalization.cu)
+add_executable(DiagnolizeMethod src/Poisson/FastDiagonalization.cu
+        src/deviceArrays/defFiles/Streamable.cpp
+        src/deviceArrays/headers/Streamable.h)
 target_include_directories(DiagnolizeMethod PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(DiagnolizeMethod PRIVATE BiCGSTAB_LIB)
 

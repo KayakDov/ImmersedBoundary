@@ -8,6 +8,8 @@
 #include <iostream>
 #include <array>
 
+#include "deviceArrays/headers/Streamable.h"
+
 template <typename T>
 __device__ constexpr T PI = static_cast<T>(3.14159265358979323846);
 
@@ -57,7 +59,7 @@ private:
 
     }
 
-    void setUTilde(Tensor<T> f, Tensor<T> u, Handle& hand) {
+    void setUTilde(const Tensor<T>& f, Tensor<T>& u, Handle& hand) {
 
         KernelPrep kp = f.kernelPrep();
         setUTildeKernel<<<kp.gridDim, kp.blockDim, 0, hand>>>(u.toKernel3d(), eVals.toKernel2d(), f.toKernel3d());
@@ -95,25 +97,44 @@ private:
      */
     void multLayer(size_t index, const size_t stride, Mat<T>& layer1, Mat<T>& dst1, const bool transposeE, const bool transposeLayer, const size_t batchCount, Handle& hand) {
         Mat<T>::batchMult(
-            Singleton<T>::ONE,
-            eVecs[index], 0,
-            layer1, stride,
-            Singleton<T>::ZERO, dst1, stride,
-            transposeE, transposeLayer, hand,
-            batchCount
-            );
+            eVecs[index],
+            0, layer1,
+            stride, dst1,
+            stride, transposeE, transposeLayer,
+            hand, batchCount, Singleton<T>::ONE,
+            Singleton<T>::ZERO
+        );
 
     }
 
     void multiplyEF(Handle& hand, Tensor<T>& f, Tensor<T>& dst, bool transposeE) {
 
-        auto xFront = f.layerRowCol(0), dstFront = dst.layerRowCol(0);
+        auto xFront = f.layerRowCol(0), dstFront1 = dst.layerRowCol(0);
+        Mat<T>::batchMult(
+            xFront, f._rows,
+            eVecs[0], 0,
+            dstFront1, dst._rows,
+            false, !transposeE,
+            hand, f._layers
+            );
 
-        multLayer(0, f._rows, xFront, dstFront, transposeE, true, f._layers, hand);
-        multLayer(1, f._rows, dstFront, xFront, transposeE, false, f._layers, hand);
+        auto yFront = dst.layerRowCol(0), dstFront2 = f.layerRowCol(0);
 
-        auto xSide = f.layerColDepth(0), dstSide = dst.layerColDepth(0);
-        multLayer(2, f._ld, xSide, dstSide, transposeE, true, f._cols, hand);
+        Mat<T>::batchMult(
+            eVecs[1], 0,
+            yFront, yFront._rows,
+            dstFront2, dstFront2._rows,
+            transposeE, false,
+            hand, f._layers);
+
+        auto zSide = f.layerColDepth(0), dstSide = dst.layerColDepth(0);
+
+        Mat<T>::batchMult(
+            zSide, f._ld,
+            eVecs[0], 0,
+            dstSide, dst._ld,
+            false, !transposeE,
+            hand, f._cols);
     }
 public:
     /**
@@ -122,10 +143,10 @@ public:
      * @param x The solution will be placed here.  This should have a space for every element in the grid.
      * @param f The RHS of the laplace equation.  Whatever you have written here, we will overwrite it. Thi should have
      * a space for every element in the grid.
-     * @param temp temporary storage the same size as f and x.
+     * @param fTilda temporary storage the same size as f and x.
      * @param stream
      */
-    FastDiagonalization(const CubeBoundary<T>& boundary, Vec<T>& x, Vec<T>& f, Vec<T>& temp, Handle& hand) ://TODO: provide pre alocated memory
+    FastDiagonalization(const CubeBoundary<T>& boundary, Vec<T>& x, Vec<T>& f, Vec<T>& fTilda, Handle& hand) ://TODO: provide pre alocated memory
         Poisson<T>(boundary, f, hand),
         eVecs({SquareMat<T>::create(this->dim.cols), SquareMat<T>::create(this->dim.rows), SquareMat<T>::create(this->dim.layers)}),
         eVals(Mat<T>::create(std::max(this->dim.rows, std::max(this->dim.cols, this->dim.layers)),3))
@@ -133,34 +154,45 @@ public:
 
         for (size_t i = 0; i < 3; ++i) eigenL(i, hand);
 
-        auto fTensor = f.tensor(this->dim.rows, this->dim.cols), tempTensor = temp.tensor(this->dim.rows, this->dim.cols);
+        // eVecs[0].get(std::cout << "\neVecs[0] = \n", true, false, hand);
+        // eVecs[1].get(std::cout << "\neVecs[1] = \n", true, false, hand);
+        // eVecs[2].get(std::cout << "\neVecs[2] = \n", true, false, hand);
 
-        f.get(std::cout << "my compute f_tilde = \n", true, false, hand);
-        multiplyEF(hand, fTensor, tempTensor, true);
-        multiplyEF(hand, tempTensor, fTensor, false);//TODO;delete me
-        f.get(std::cout << "my compute f_tilde = \n", true, false, hand);
+        auto fTensor = f.tensor(this->dim.rows, this->dim.cols), fTildaTensor = fTilda.tensor(this->dim.rows, this->dim.cols);
 
 
+        // std::cout << "f = " << Streamable<double>(hand, fTensor) << std::endl;
+        multiplyEF(hand, fTensor, fTildaTensor, true); //line must be included
+
+        // multiplyEF(hand, fTildaTensor, fTensor, false);//TODO;delete me
+        // std::cout << "f = " << Streamable<double>(hand, fTensor) << std::endl;
 
 
         //
         // //----------------------TODO: It seems like the results of the following on an f that hasn't seen multiplyEF should give the same results as multiply EF.  I need to figure out why they are different.
         // //                      TODO: maybe it's because my batch multiply reads and writes to the same space?
-        // // auto tempMat1 = Mat<T>::create(eVecs[0]._rows * eVecs[1]._rows, eVecs[0]._cols* eVecs[1]._cols);
-        // // auto tempMat2 = Mat<T>::create(tempMat1._rows * eVecs[2]._rows, tempMat1._cols* eVecs[2]._cols);
-        // // eVecs[0].multKronecker(eVecs[1], tempMat1, hand);
-        // // tempMat1.multKronecker(eVecs[2], tempMat2, hand);
-        // // tempMat2.get(std::cout << "tempMat2 = \n", true, false, hand);
-        // // tempMat2.mult(f, f, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false);
-        // // f.get(std::cout << "my compute f_tilde = \n", true, false, hand);
+        //
+
+        //
+        // auto tempMat1 = Mat<T>::create(eVecs[0]._rows * eVecs[1]._rows, eVecs[0]._cols* eVecs[1]._cols);
+        // auto tempMat2 = Mat<T>::create(tempMat1._rows * eVecs[2]._rows, tempMat1._cols* eVecs[2]._cols);
+        //
+        // eVecs[0].multKronecker(eVecs[1], tempMat1, hand);
+        //
+        // tempMat1.get(std::cout << "\ntempMat1 = \n", true, false, hand);
+        //
+        // tempMat1.multKronecker(eVecs[2], tempMat2, hand);
+        // tempMat2.get(std::cout << "tempMat2 = \n", true, false, hand);
+        // tempMat2.mult(f, fTilda, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false);
+        // fTilda.get(std::cout << "my compute f_tilde = \n", true, false, hand);
         // //------------------------------------------------------------------------------------------------------------------
-        //
-        //
-        // auto xTensor = x.tensor(this->dim.rows, this->dim.cols);
-        //
-        // setUTilde(tempTensor, xTensor, hand);
-        //
-        // multiplyEF(hand, tempTensor, xTensor, false);
+
+
+        setUTilde(fTildaTensor, fTensor, hand);
+
+        auto xTensor = x.tensor(this->dim.rows, this->dim.cols);
+
+        multiplyEF(hand, fTensor, xTensor, false);
     }
 };
 
@@ -182,7 +214,7 @@ int main() {
     auto f = memAloc.col(1);
     auto temp = memAloc.col(2);
 
-    f.fill(0, hand.stream);
+    f.fill(0, hand);
 
     FastDiagonalization<double> fdm(boundary, x, f, temp, hand);
 
@@ -198,4 +230,24 @@ int main() {
 //     L[i].diag(0).fill(static_cast<T>(-2), stream);
 //     L[i].diag(1).fill(static_cast<T>(1), stream);
 //     L[i].diag(-1).fill(static_cast<T>(1), stream);
+// }
+
+
+
+
+
+// void multiplyEF(Handle& hand, Tensor<T>& f, Tensor<T>& dst, bool transposeE) {
+//
+//     auto xFront = f.layerRowCol(0), dstFront = dst.layerRowCol(0);
+//
+//     f.get(std::cout << "my compute f_tilde 1 = \n", true, false, hand);
+//     eVecs[0].get(std::cout << "eVecs x = \n", true, false, hand);
+//     multLayer(0, f._rows, xFront, dstFront, transposeE, true, f._layers, hand);//Note: the result is transposed of what we want.
+//
+//     dst.get(std::cout << "my compute f_tilde 2 = \n", true, false, hand);
+//
+//     multLayer(1, f._rows, dstFront, xFront, transposeE, true, f._layers, hand);  //Here the layer is transposed to set it back to the untransposed position.
+//
+//     auto xSide = f.layerColDepth(0), dstSide = dst.layerColDepth(0);
+//     multLayer(2, f._ld, xSide, dstSide, transposeE, true, f._cols, hand);//Here the result again is in the transposed position
 // }

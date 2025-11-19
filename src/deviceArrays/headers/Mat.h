@@ -35,15 +35,6 @@ protected:
 
 public:
 
-    /**
-     * Creates a vector that is a window into part of this matrix, or the underlying data.
-     * Note: before using this method, make sure row, col, or diag don't meet your needs, as they are safer.
-     * @param offset The vector starts here relative to the first element of this matrix.
-     * @param ld The step size between vector elements.
-     * @param size The number of elements in the new vector.
-     * @return The new vector created that is a window into this matrix.
-     */
-    Vec<T> vec(size_t offset, size_t ld, size_t size);
 
     /**
      * @brief Retrieves or creates a target matrix with the specified dimensions.
@@ -184,30 +175,7 @@ public:
      */
     [[nodiscard]] virtual Mat<T> subMat(size_t startRow, size_t startCol, size_t height, size_t width) const;
 
-    /**
-     * @brief Extract a column vector from the matrix.
-     * @param index Column index.
-     * @return Column as a Vec<T>.
-     * @note Not yet implemented.
-     */
-    virtual Vec<T> col(size_t index);
 
-    /**
-     * @brief Extract a row vector from the matrix.
-     * @param index Row index.
-     * @return Row as a Vec<T>.
-     * @note Not yet implemented.
-     */
-    virtual Vec<T> row(size_t index);
-
-    /**
-     * @brief Gets the desired diagonal.  An index of 0 is the primary diagonal, a positive index indicates the start
-     * column of the super diagonal and a negative index is the start row of the sub diagonal.
-     *
-     * @param index
-     * @return The diagonal, as a vector.
-     */
-    virtual Vec<T> diag(int32_t index);
     /**
      * @brief Normalize the columns of the matrix, setting a specific row to 1.
      * @param setRowTo1 Index of the row that should be set to 1.
@@ -225,10 +193,11 @@ public:
     Tensor<T> tensor(size_t layers);
 
 
-    static void batchMult(const Singleton<T> &alpha, const Mat &a1, size_t strideA,
-                          const Mat &b1, size_t strideB, const Singleton<T> &beta,
-                          Mat &c1, size_t strideC,
-                          bool transposeA, bool transposeB, Handle &hand, size_t batchCount);
+    static void batchMult(const Mat &a1, size_t strideA, const Mat &b1,
+                          size_t strideB, Mat &c1, size_t strideC,
+                          bool transposeA, bool transposeB,
+                          Handle &hand, size_t batchCount,
+                          const Singleton<T> &alpha = Singleton<T>::ONE, const Singleton<T> &beta = Singleton<T>::ZERO);
 
 
     KernelPrep kernelPrep();

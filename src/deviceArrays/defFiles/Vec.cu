@@ -379,6 +379,36 @@ KernelPrep Vec<T>::kernelPrep() {
     return KernelPrep(this->size());
 }
 
+template<typename T>
+Vec<T> GpuArray<T>::vec(size_t offset, size_t ld, size_t size) {
+    return Vec<T>(size, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + offset), ld);
+}
+
+template <typename T>
+Vec<T> GpuArray<T>::col(const size_t index){
+    if (index >= this->_cols) throw std::out_of_range("Out of range");
+    return this->vec(index * this->_ld, 1, this->_rows);
+
+}
+template <typename T>
+Vec<T> GpuArray<T>::row(const size_t index){
+    if (index > this->_rows) throw std::out_of_range("Out of range");
+    return this->vec(index, this->_ld, this->_cols);
+}
+
+template<typename T>
+Vec<T> GpuArray<T>::diag(int32_t index) {
+
+    if (index >= 0) {
+        if (index >= this-> _cols) throw std::out_of_range("Out of range");
+        const size_t size = std::min(this->_rows, this->_cols - index);
+        return this->vec(index * this->_ld, this->_ld + 1, size);
+    } else {
+        if (-index >= this->_rows) throw std::out_of_range("Out of range.");
+        const size_t size = std::min(this->_cols, this->_rows + index);
+        return this->vec(-index, this->_ld + 1, size);
+    }
+}
 
 template class Vec<float>;
 template class Vec<double>;
