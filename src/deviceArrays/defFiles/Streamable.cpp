@@ -1,69 +1,40 @@
 #include "deviceArrays/headers/Streamable.h"
+#include "../headers/Vec.h"
+#include "../headers/Tensor.h"
 #include <vector>
 #include <stdexcept>
 #include <iostream>
 #include <iomanip>
 
-template<typename T>
-Streamable<T>::Streamable(const cudaStream_t& stream, GpuArray<T>& src, const bool isText, const bool columnMjr)
-    : isText(isText), colMajor(columnMjr), stream(stream), src(src) {}
+// ----------------------------------------------------------------------
+// GpuArrayReader Constructors
+// ----------------------------------------------------------------------
 
 template<typename T>
-Streamable<T>::Streamable(const cudaStream_t &hand, Tensor<T> &src, bool isText, bool isColMjr): Streamable(hand, src.utilityMatrix, isText, isColMjr) {
+StreamContext<T>::StreamContext(const cudaStream_t &s, bool text, bool colMjr): stream(s), isText(text), colMajor(colMjr) {
 }
 
-/**
- * @brief Writes the contents of the wrapped GpuArray to an output stream.
- *
- * It pulls data row-by-row or column-by-column to the host and streams it in
- * either text or binary format.
- *
- * @tparam T The data type.
- * @param os The output stream.
- * @return A reference to the output stream.
- */
-template <typename T>
-std::ostream& Streamable<T>::write(std::ostream& os) const {
-    size_t outer_dim = colMajor ? src._cols : src._rows;
-    size_t inner_dim = colMajor ? src._rows : src._cols;
-
-    for (size_t i = 0; i < outer_dim; ++i) {
-
-        Vec<T> view = colMajor ? src.col(i) : src.row(i);
-
-        std::vector<T> host_buffer(view.size());
-
-        view.get(host_buffer.data(), stream);
-        cudaStreamSynchronize(stream);
-
-        if (isText) {
-            for (size_t j = 0; j < inner_dim; ++j) os << host_buffer[j] << ", ";
-            os << "\n";
-        } else os.write(reinterpret_cast<const char*>(host_buffer.data()), inner_dim * sizeof(T));
-    }
-    return os;
+template<typename T>
+GpuIn<T>::GpuIn(GpuArray<T> &src, const cudaStream_t &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(src){
 }
 
-/**
- * @brief Reads data from an input stream into the wrapped GpuArray.
- *
- * It reads data into a host array row-by-row or column-by-column and pushes
- * it to the device memory.
- *
- * @tparam T The data type.
- * @param is The input stream.
- * @return A reference to the input stream.
- */
+template<typename T>
+GpuIn<T>::GpuIn(Tensor<T>& src, const cudaStream_t &stream, bool isText, bool columnMjr)
+    : GpuIn<T>(src.utilityMatrix, stream, isText, columnMjr) {}
+
+
 template <typename T>
-std::istream& Streamable<T>::read(std::istream& is) {
-    size_t outer_dim = colMajor ? src._cols : src._rows;
-    size_t inner_dim = colMajor ? src._rows : src._cols;
+std::istream& GpuIn<T>::read(std::istream& is) {
+    size_t outer_dim = this->colMajor ? this->src._cols : this->src._rows;
+    size_t inner_dim = this->colMajor ? this->src._rows : this->src._cols;
+
+    const cudaStream_t current_stream = this->stream;
 
     for (size_t i = 0; i < outer_dim; ++i) {
-        Vec<T> view = colMajor ? src.col(i) : src.row(i);
+        Vec<T> view = this->colMajor ? this->src.col(i) : this->src.row(i);
         std::vector<T> host_buffer(view.size());
 
-        if (isText) {
+        if (this->isText) {
             for (size_t j = 0; j < inner_dim; ++j) {
                 if (!(is >> host_buffer[j])) {
                     is.setstate(std::ios::failbit);
@@ -76,8 +47,8 @@ std::istream& Streamable<T>::read(std::istream& is) {
         }
 
         try {
-            view.set(host_buffer.data(), stream);
-            cudaStreamSynchronize(stream);
+            view.set(host_buffer.data(), current_stream);
+            cudaStreamSynchronize(current_stream);
         } catch (const std::exception& e) {
             std::cerr << "Error during Host to GPU transfer for streaming: " << e.what() << std::endl;
             throw;
@@ -86,9 +57,67 @@ std::istream& Streamable<T>::read(std::istream& is) {
     return is;
 }
 
+// ----------------------------------------------------------------------
+// GpuArrayWriter Constructors
+// ----------------------------------------------------------------------
 
-template class Streamable<float>;
-template class Streamable<double>;
-template class Streamable<size_t>;
-template class Streamable<int32_t>;
-template class Streamable<unsigned char>;
+template<typename T>
+GpuOut<T>::GpuOut(const GpuArray<T> &src, const cudaStream_t &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(src) {
+}
+
+template<typename T>
+GpuOut<T>::GpuOut(const Tensor<T>& src, const cudaStream_t &stream, bool isText, bool columnMjr)
+    : GpuOut<T>(src.utilityMatrix, stream, isText, columnMjr) {}
+
+
+template <typename T>
+std::ostream& GpuOut<T>::write(std::ostream& os) const {
+    size_t outer_dim = this->colMajor ? this->src._cols : this->src._rows;
+    size_t inner_dim = this->colMajor ? this->src._rows : this->src._cols;
+
+    const cudaStream_t current_stream = this->stream;
+
+    for (size_t i = 0; i < outer_dim; ++i) {
+        Vec<T> view = this->colMajor ? this->src.col(i) : this->src.row(i);
+
+        std::vector<T> host_buffer(view.size());
+
+        view.get(host_buffer.data(), current_stream);
+        cudaStreamSynchronize(current_stream);
+
+        if (this->isText) {
+            for (size_t j = 0; j < inner_dim; ++j) {
+                os << host_buffer[j];
+                if (j < inner_dim - 1) {
+                    os << ", ";
+                }
+            }
+            os << "\n";
+        } else {
+            os.write(reinterpret_cast<const char*>(host_buffer.data()), inner_dim * sizeof(T));
+        }
+    }
+    return os;
+}
+
+
+
+// float
+template class GpuIn<float>;
+template class GpuOut<float>;
+
+// double
+template class GpuIn<double>;
+template class GpuOut<double>;
+
+// size_t
+template class GpuIn<size_t>;
+template class GpuOut<size_t>;
+
+// int32_t
+template class GpuIn<int32_t>;
+template class GpuOut<int32_t>;
+
+// unsigned char
+template class GpuIn<unsigned char>;
+template class GpuOut<unsigned char>;

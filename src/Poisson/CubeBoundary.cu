@@ -134,15 +134,24 @@ public:
         topBottom.freeMem();
     }
 
+    /**
+     *  generates a sample boundary condition.  The front face is 1, the back face is 0, and the other faces linearly
+     *  transition from front value to back value.
+     * @param dim The length of each side of the cube.
+     * @param stream The stream used to create the boundaries.
+     * @return A cube boundary.
+     */
+    static CubeBoundary<T> ZeroTo1(const size_t dim, cudaStream_t stream) {
+        return CubeBoundary<T>(dim, dim, dim, stream);
+    }
 
     /**
      *  generates a sample boundary condition.  The front face is 1, the back face is 0, and the other faces linearly
      *  transition from front value to back value.
-     * @param dimLength The length of each side of the cube.
      * @return A cube boundary.
      */
-    static CubeBoundary<T> ZeroTo1(const size_t dimLength, cudaStream_t stream) {
-        const size_t height = dimLength, width = dimLength, depth = dimLength;
+    static CubeBoundary<T> ZeroTo1(const size_t height, const size_t width, const size_t depth, cudaStream_t stream) {
+
         constexpr T frontFaceVal = 1;
 
         auto boundaries = Mat<T>::create(

@@ -387,6 +387,8 @@ public:
      */
     virtual Vec<T> col(size_t index);
 
+    Vec<T> col(size_t index) const;
+
     /**
      * @brief Extract a row vector from the matrix.
      * @param index Row index.
@@ -394,6 +396,8 @@ public:
      * @note Not yet implemented.
      */
     virtual Vec<T> row(size_t index);
+
+    Vec<T> row(size_t index) const;
 
     /**
      * @brief Gets the desired diagonal.  An index of 0 is the primary diagonal, a positive index indicates the start
@@ -403,6 +407,8 @@ public:
      * @return The diagonal, as a vector.
      */
     virtual Vec<T> diag(int32_t index);
+
+    Vec<T> diag(int32_t index) const;
 
 
     /**
@@ -415,6 +421,7 @@ public:
      */
     Vec<T> vec(size_t offset, size_t ld, size_t size);
 
+    Vec<T> vec(size_t offset, size_t ld, size_t size) const;
 };
 
 #endif // GPUARRAY_H

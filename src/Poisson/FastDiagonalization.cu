@@ -165,7 +165,7 @@ public:
         multiplyEF(hand, fTensor, fTildaTensor, true); //line must be included
 
         // multiplyEF(hand, fTildaTensor, fTensor, false);//TODO;delete me
-        std::cout << "f = \n" << Streamable<double>(hand, fTildaTensor) << std::endl;
+
 
 
         //
@@ -183,9 +183,9 @@ public:
 
         setUTilde(fTildaTensor, fTensor, hand);
 
-        std::cout << "eigenvalues = \n" << Streamable<double>(hand, eVals) << std::endl;
+        std::cout << "eigenvalues = \n" << GpuOut<double>(eVals, hand) << std::endl;
 
-        std::cout << "u = \n" << Streamable<double>(hand, fTensor) << std::endl;
+        std::cout << "u = \n" << GpuOut<double>(fTensor, hand) << std::endl;
 
         auto xTensor = x.tensor(this->dim.rows, this->dim.cols);
 
@@ -203,7 +203,11 @@ int main() {
     constexpr size_t dim = 2;
     Handle hand;
 
-    const auto boundary = CubeBoundary<double>::ZeroTo1(dim, hand);
+    const auto boundary = CubeBoundary<double>::ZeroTo1(2, 2, 4, hand);
+
+    std::cout << "boundary frontBack = \n" << GpuOut<double>(boundary.frontBack, hand) << std::endl;
+    std::cout << "boundary topBottom = \n" << GpuOut<double>(boundary.topBottom, hand) << std::endl;
+    std::cout << "boundary leftRight = \n" << GpuOut<double>(boundary.leftRight, hand) << std::endl;
 
     auto memAloc = Mat<double>::create(boundary.internalSize(), 3);
 

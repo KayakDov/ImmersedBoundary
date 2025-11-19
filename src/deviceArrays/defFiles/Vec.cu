@@ -388,14 +388,20 @@ template <typename T>
 Vec<T> GpuArray<T>::col(const size_t index){
     if (index >= this->_cols) throw std::out_of_range("Out of range");
     return this->vec(index * this->_ld, 1, this->_rows);
-
+}
+template <typename T>
+Vec<T> GpuArray<T>::col(const size_t index) const {
+    return (const_cast<GpuArray<T>*>(this))->col(index);
 }
 template <typename T>
 Vec<T> GpuArray<T>::row(const size_t index){
     if (index > this->_rows) throw std::out_of_range("Out of range");
     return this->vec(index, this->_ld, this->_cols);
 }
-
+template <typename T>
+Vec<T> GpuArray<T>::row(const size_t index) const{
+    return (const_cast<GpuArray<T>*>(this))->row(index);
+}
 template<typename T>
 Vec<T> GpuArray<T>::diag(int32_t index) {
 
@@ -409,9 +415,26 @@ Vec<T> GpuArray<T>::diag(int32_t index) {
         return this->vec(-index, this->_ld + 1, size);
     }
 }
+template<typename T>
+Vec<T> GpuArray<T>::diag(int32_t index) const {
+    return (const_cast<GpuArray<T>*>(this))->diag(index);
+}
 
 template class Vec<float>;
 template class Vec<double>;
 template class Vec<size_t>;
 template class Vec<int32_t>;
 template class Vec<unsigned char>;
+
+template Vec<float> GpuArray<float>::col(size_t) const;
+template Vec<double> GpuArray<double>::col(size_t) const;
+template Vec<size_t> GpuArray<size_t>::col(size_t) const; // Maps to 'unsigned long' in the error
+template Vec<int> GpuArray<int>::col(size_t) const;
+template Vec<unsigned char> GpuArray<unsigned char>::col(size_t) const;
+
+// Instantiate GpuArray::row(size_t) const for all necessary types
+template Vec<float> GpuArray<float>::row(size_t) const;
+template Vec<double> GpuArray<double>::row(size_t) const;
+template Vec<size_t> GpuArray<size_t>::row(size_t) const; // Maps to 'unsigned long' in the error
+template Vec<int> GpuArray<int>::row(size_t) const;
+template Vec<unsigned char> GpuArray<unsigned char>::row(size_t) const;
