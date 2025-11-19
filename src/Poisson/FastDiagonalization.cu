@@ -31,7 +31,7 @@ template <typename T>
 __global__ void setUTildeKernel(DeviceData3d<T> uTilde, const DeviceData2d<T> eVals, const DeviceData3d<T> fTilde) {
 
     if (GridInd3d ind; ind < uTilde)
-        uTilde[ind] = fTilde[ind]/(eVals(0, ind.col) + eVals(1, ind.row) + eVals(2,ind.layer));
+        uTilde[ind] = fTilde[ind]/(eVals(ind.col, 0) + eVals(ind.row, 1) + eVals(ind.layer, 2));
 }
 
 template <typename T>
@@ -165,30 +165,27 @@ public:
         multiplyEF(hand, fTensor, fTildaTensor, true); //line must be included
 
         // multiplyEF(hand, fTildaTensor, fTensor, false);//TODO;delete me
-        // std::cout << "f = " << Streamable<double>(hand, fTensor) << std::endl;
+        std::cout << "f = \n" << Streamable<double>(hand, fTildaTensor) << std::endl;
 
 
         //
         // //----------------------TODO: It seems like the results of the following on an f that hasn't seen multiplyEF should give the same results as multiply EF.  I need to figure out why they are different.
         // //                      TODO: maybe it's because my batch multiply reads and writes to the same space?
-        //
-
-        //
         // auto tempMat1 = Mat<T>::create(eVecs[0]._rows * eVecs[1]._rows, eVecs[0]._cols* eVecs[1]._cols);
         // auto tempMat2 = Mat<T>::create(tempMat1._rows * eVecs[2]._rows, tempMat1._cols* eVecs[2]._cols);
         //
-        // eVecs[0].multKronecker(eVecs[1], tempMat1, hand);
+        // kronecker3(eVecs[0], eVecs[1], eVecs[2], tempMat1, tempMat2, hand);
         //
-        // tempMat1.get(std::cout << "\ntempMat1 = \n", true, false, hand);
-        //
-        // tempMat1.multKronecker(eVecs[2], tempMat2, hand);
-        // tempMat2.get(std::cout << "tempMat2 = \n", true, false, hand);
         // tempMat2.mult(f, fTilda, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false);
-        // fTilda.get(std::cout << "my compute f_tilde = \n", true, false, hand);
+        // std::cout << "f = \n" << Streamable<double>(hand, fTildaTensor) << std::endl;
         // //------------------------------------------------------------------------------------------------------------------
 
 
         setUTilde(fTildaTensor, fTensor, hand);
+
+        std::cout << "eigenvalues = \n" << Streamable<double>(hand, eVals) << std::endl;
+
+        std::cout << "u = \n" << Streamable<double>(hand, fTensor) << std::endl;
 
         auto xTensor = x.tensor(this->dim.rows, this->dim.cols);
 
