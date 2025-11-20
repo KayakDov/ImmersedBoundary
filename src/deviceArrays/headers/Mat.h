@@ -56,6 +56,8 @@ public:
     static Mat<T> *_get_or_create_target(size_t rows, size_t cols, Mat<T> *result,
                                   std::unique_ptr<Mat<T>> &out_ptr_unique);
 
+    [[nodiscard]] KernelPrep kernelPrep() const override;
+
     /**
      * @copydoc GpuArray::size
      */
@@ -198,9 +200,6 @@ public:
                           bool transposeA, bool transposeB,
                           Handle &hand, size_t batchCount,
                           const Singleton<T> &alpha = Singleton<T>::ONE, const Singleton<T> &beta = Singleton<T>::ZERO);
-
-
-    KernelPrep kernelPrep();
 
     /**
      * @brief Retrieves a pointer to the underlying GPU memory data.

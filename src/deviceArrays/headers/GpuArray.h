@@ -377,7 +377,7 @@ public:
      * Prepares default grid and block sizes for a kernel.
      * @return
      */
-    [[nodiscard]] KernelPrep kernelPrep() const;
+    [[nodiscard]] virtual KernelPrep kernelPrep() const;
 
     /**
      * @brief Extract a column vector from the matrix.

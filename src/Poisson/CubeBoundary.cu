@@ -38,6 +38,11 @@ public:
      * (Front, Left, Top). For any pair, the $i^{th}$ element of the second matrix corresponds to the element
      * directly "behind" the $i^{th}$ element of the first matrix in the 3D grid.
      *
+     * So column index 0 is adjacent to the back face for both left and right faces.
+     * And row index 0 is adjacent to the top face.  For both top and bottom faces, row index 0 is adjacent to
+     * the back face, and column index 0 is adjacent to the left face.  For front and back faces, row index 0 is
+     * adjacent to the top face, and column index 0 is adjacent to the left face.
+     *
      * ---
      *
      * ### 2. Physical Orientation (Which Way is Up/Back)

@@ -42,7 +42,7 @@ __global__ void setUTildeKernel(DeviceData3d<T> uTilde, const DeviceData2d<T> eV
 }
 
 template <typename T>
-class FastDiagonalization: public Poisson<T>{
+class FastDiagonalization: public Poisson<T> {
 private:
 
     /**
@@ -93,17 +93,33 @@ private:
             );
     }
 
+    void multEX(const Mat<T>& srcFront1, Mat<T>& dstFront1, Handle& hand, bool transposeE) {
+        multE(0, transposeE, true, srcFront1, dstFront1, srcFront1._rows, hand, this->dim.layers);
+    }
+
+    void multEY(const Mat<T>& srcFront1, Mat<T>& dstFront1, Handle& hand, bool transposeE) {
+        multE(1, transposeE, false, srcFront1, dstFront1, srcFront1._rows, hand, this->dim.layers);
+    }
+
+    void multEZ(const Mat<T>& srcSide1, Mat<T>& dstFSide1, Handle& hand, bool transposeE) {
+        multE(2, transposeE, true, srcSide1, dstFSide1, this->dim.layers * this->dim.rows, hand, this->dim.cols);
+    }
 
     void multiplyEF(Handle& hand, Tensor<T>& src, Tensor<T>& dst, bool transposeE) {
 
         auto xFront = src.layerRowCol(0), dstFront1 = dst.layerRowCol(0);
-        multE(0, transposeE, true, xFront, dstFront1, src._rows, hand, src._layers);
-
         auto yFront = dst.layerRowCol(0), dstFront2 = src.layerRowCol(0);
-        multE(1, transposeE, false, yFront, dstFront2, yFront._rows, hand, src._layers);
-
         auto zSide = src.layerColDepth(0), dstSide = dst.layerColDepth(0);
-        multE(2, transposeE, true, zSide, dstSide, src._ld, hand, src._cols);
+
+        if (transposeE) {
+            multEX(xFront, dstFront1, hand, transposeE);
+            multEY(yFront, dstFront2, hand, transposeE);
+            multEZ(zSide, dstSide, hand, transposeE);
+        } else {
+            multEZ(zSide, dstSide, hand, transposeE);
+            multEY(yFront, dstFront2, hand, transposeE);
+            multEX(xFront, dstFront1, hand, transposeE);
+        }
     }
 public:
     /**
@@ -120,26 +136,16 @@ public:
         eVecs({SquareMat<T>::create(this->dim.cols), SquareMat<T>::create(this->dim.rows), SquareMat<T>::create(this->dim.layers)}),
         eVals(Mat<T>::create(std::max(this->dim.rows, std::max(this->dim.cols, this->dim.layers)),3))
     {
+        std::cout << "b = \n" << GpuOut<T>(f, hand) << std::endl;
 
         for (size_t i = 0; i < 3; ++i) eigenL(i, hand);
 
-        std::cout << "eVecs[0] = \n" << GpuOut<T>(eVecs[0], hand) << std::endl;
-        std::cout << "eVecs[1] = \n" << GpuOut<T>(eVecs[1], hand) << std::endl;
-        std::cout << "eVecs[2] = \n" << GpuOut<T>(eVecs[2], hand) << std::endl;
-
-        std::cout << "eVals = \n" << GpuOut<T>(eVals, hand) << std::endl;
-
-        std::cout << "b = \n" << GpuOut<T>(f, hand) << std::endl;
-
-        auto fTensor = f.tensor(this->dim.rows, this->dim.layers), fTildaTensor = fTilda.tensor(this->dim.rows, this->dim.layers);
+        auto fTensor = f.tensor(this->dim.rows, this->dim.layers),
+            fTildaTensor = fTilda.tensor(this->dim.rows, this->dim.layers);
 
         multiplyEF(hand, fTensor, fTildaTensor, true);
 
-        std::cout << "f tilda = \n" << GpuOut<T>(fTildaTensor, hand) << std::endl;
-
         setUTilde(fTildaTensor, fTensor, hand);
-
-        std::cout << "u tilda = \n" << GpuOut<T>(fTensor, hand) << std::endl;
 
         auto xTensor = x.tensor(this->dim.rows, this->dim.layers);
 

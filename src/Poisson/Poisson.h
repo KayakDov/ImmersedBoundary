@@ -9,6 +9,10 @@
 #include "deviceArrays/headers/GridDim.cuh"
 
 
+/**
+ * Note, this is for the 3d problem.  All dimensions are assumed to be greater than 1.
+ * @tparam T
+ */
 template <typename T>
 class Poisson {
 

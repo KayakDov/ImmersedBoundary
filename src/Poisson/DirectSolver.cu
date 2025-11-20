@@ -5,9 +5,10 @@
 #include "../deviceArrays/headers/BandedMat.h"
 #include "../BiCGSTAB/BiCGSTAB.cu"
 #include "../deviceArrays/headers/DeviceMemory.h"
+#include "deviceArrays/headers/Streamable.h"
 
 
-/**
+ /**
  * @brief Device-side functor to set off-diagonal entries of the system matrix A to 0 or NAN.
  *
  * This is used inside the setAKernel3d kernel to handle the six neighbors for each interior
@@ -210,9 +211,9 @@ public:
   * @param dimLength The length of an edge of the grid.  //up to 325 works on Dov's computer.  After that the size of
   * the initally allocated memory exceeds the available memory on the gpu.
   */
- void testPoisson(const size_t dimLength, Handle& hand) {
+ void testPoisson(const size_t height, size_t width, size_t depth, Handle& hand) {
 
-    auto boundary = CubeBoundary<double>::ZeroTo1(dimLength, hand);
+    auto boundary = CubeBoundary<double>::ZeroTo1(height, width, depth, hand);
 
     auto longVecs = Mat<double>::create(boundary.internalSize(), 2 + numDiagonals + 7);
     auto b = longVecs.col(0);
@@ -225,15 +226,12 @@ public:
 
     DirectSolver<double> solver(boundary, b, A, diagonalInds, hand);
 
-     // A.get(std::cout << "DirectSolcer.cu::testPoission \nA  = \n", true, false, hand);
-
-     // b.get(std::cout << "DirectSolcer.cu::testPoission \nb  = \n", true, false, hand);
-
     boundary.freeMem();
 
     solver.solve(x, prealocatedForBiCGSTAB);
 
-    // x.get(std::cout << "DirectSolcer.cu::testPoission \nx  = \n", true, false, hand);
+     std::cout << "x = \n" << GpuOut<double>(x, hand) << std::endl;
+
 }
 
 
@@ -259,7 +257,7 @@ void testBiCGSTAB() {
 
      bs.solveUnpreconditionedBiCGSTAB(bm, x);
 
-     x.get(std::cout << "x = \n", true, false, hand);
+     std::cout << "x = \n" << GpuOut<double>(x, hand) << std::endl;
  }
 
 
@@ -278,12 +276,12 @@ int main(int argc, char *argv[]) {
 
     Handle hand;
 
-    std::cout << "dimension size, number of iterations, total time" << std::endl;
-    // for (size_t i = 2; i < 350; ++i) {
+     testPoisson(2, 2, 2, hand);
 
-    size_t i = 2;
+    // std::cout << "dimension size, number of iterations, total time" << std::endl;
+    // for (size_t i = 2; i < 350; ++i) {
         // std::cout << i << ", ";
-        testPoisson(i, hand);
+        // testPoisson(i, hand);
         // cudaDeviceSynchronize();
 
     // }
