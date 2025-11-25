@@ -138,25 +138,48 @@ void benchMarkEigenDecompSolver(size_t dim, Handle hand3[]) {
 }
 
 /**
- * @brief Main entry point to de onstrate the FastDiagonalizationMethod
+ * @brief Main entry point to demonstrate the FastDiagonalizationMethod
  *        for a 2x2x2 grid.
  */
 int main() {
-    Handle hand[3]{};
+    // Handle hand[3]{};
 
-    constexpr size_t numTests = 1;
+    // constexpr size_t numTests = 6;
 
-    std::cout << "dim, time" << std::endl;
-    for (size_t dim = 3; true; dim++) {
-        std::cout << dim << ", ";
+    // std::cout << "dim, time" << std::endl;
+    // for (size_t dim = 3; dim < 5000; dim++) {
+    //     std::cout << dim << ", ";
+    //
+    //     for (size_t i = 0; i < numTests; i++) {
+    //         benchMarkEigenDecompSolver<double>(dim, hand);
+    //         // cudaDeviceSynchronize();
+    //     }
+        // for (size_t i = 0; i < numTests; i++) {
+        //
+        //     testPoisson(dim, hand[0]); //TODO: When I run this twice in row for 4 it seems to crash.  Also, BiCGSTAB is now running to fast.
+        // }
+        // std::cout << std::endl;
+    // }
 
-        for (size_t i = 0; i < numTests; i++) benchMarkEigenDecompSolver<double>(dim, hand);
-        for (size_t i = 0; i < numTests; i++) testPoisson(dim, hand[0]);
-        std::cout << std::endl;
-    }
+    // benchMarkEigenDecompSolver<double>(3, hand);
+    // testPoisson(3, hand[0]);
 
-    // benchMarkEigenDecompSolver<double>(162, hand);
-        // testPoisson(162, hand[0]);
+
+    auto A = SquareMat<double>::create(2);
+    auto rhs =  Mat<double>::create(2, 1);
+
+    std::vector<double> rhsHost = {5, 6};
+    std::vector<double> AHost = {1, 2, 3,4};
+    Handle hand;
+    rhs.set(rhsHost.data(), hand);
+    A.set(AHost.data(), hand);
+    std::cout << "A = \n" << GpuOut<double>(A, hand) << std::endl;
+    std::cout << "b = \n" << GpuOut<double>(rhs, hand) << std::endl;
+
+    A.solve(rhs, &hand);
+
+
+    std::cout << "x = \n" << GpuOut<double>(rhs, hand) << std::endl;
 
 
     return 0;

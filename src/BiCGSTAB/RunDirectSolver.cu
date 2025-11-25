@@ -19,6 +19,8 @@ void testPoisson(const size_t height, size_t width, size_t depth, Handle& hand) 
 
     auto boundary = CubeBoundary<double>::ZeroTo1(height, width, depth, hand);
 
+
+
     auto longVecs = Mat<double>::create(boundary.internalSize(), 2 + numDiagonals + 7);
     auto b = longVecs.col(0);
     b.fill(0, hand);
@@ -34,7 +36,7 @@ void testPoisson(const size_t height, size_t width, size_t depth, Handle& hand) 
 
     solver.solve(x, prealocatedForBiCGSTAB);
 
-    // std::cout << "x = \n" << GpuOut<double>(x, hand) << std::endl;
+    std::cout << "x = \n" << GpuOut<double>(x.tensor(height, depth), hand) << std::endl;
 
 }
 
@@ -47,48 +49,3 @@ void testPoisson(size_t dim, Handle& hand) {
     testPoisson(dim, dim, dim, hand);
 }
 
-/**
- * @brief Main execution function for the Poisson FDM solver example.
- *
- * Sets up a simple 3D grid problem with constant boundary conditions,
- * initializes the RHS and solution vectors, and calls the solver.
- *
- * @param[in] argc Argument count (unused).
- * @param[in] argv Argument vector (unused).
- * @return 0 on successful execution.
- *///TODO:Similarly for any memory allocated by bicgstab.
-// int main(int argc, char *argv[]) {
-//
-//     Handle hand;
-//
-//     testPoisson(2, 2, 2, hand);
-//
-//     // std::cout << "dimension size, number of iterations, total time" << std::endl;
-//     // for (size_t i = 2; i < 350; ++i) {
-//     // std::cout << i << ", ";
-//     // testPoisson(i, hand);
-//     // cudaDeviceSynchronize();int main(int argc, char *argv[]) {
-//
-//     Handle hand;
-//
-//     testPoisson(2, 2, 2, hand);
-//
-//     // std::cout << "dimension size, number of iterations, total time" << std::endl;
-//     // for (size_t i = 2; i < 350; ++i) {
-//     // std::cout << i << ", ";
-//     // testPoisson(i, hand);
-//     // cudaDeviceSynchronize();
-//
-//     // }
-//
-//
-//
-//     return 0;
-// }
-//
-//     // }
-//
-//
-//
-//     return 0;
-// }

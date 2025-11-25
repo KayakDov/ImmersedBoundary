@@ -137,8 +137,6 @@ private:
      */
     BandedMat<T> setA(cudaStream_t& stream, Mat<T>& preAlocatedForA, Vec<int32_t>& prealocatedForIndices) {
 
-        // std::cout << "DirectSolver::setA preAlocatedForA size = " << preAlocatedForA
-
         preAlocatedForA.subMat(0, 1, preAlocatedForA._rows, preAlocatedForA._cols - 1).fill(1, stream);
 
         KernelPrep kp(this->dim.cols, this->dim.rows, this->dim.layers);
@@ -150,6 +148,13 @@ private:
         CHECK_CUDA_ERROR(cudaGetLastError());
 
         loadMapRowToDiag(prealocatedForIndices, stream);
+
+        cudaDeviceSynchronize();
+        Handle hand;
+        auto dense = SquareMat<T>::create(27);
+        BandedMat<T> banded(preAlocatedForA, prealocatedForIndices);
+        banded.getDense(dense, &hand);
+        std::cout << GpuOut<T>(dense, hand) << std::endl;
 
         return BandedMat<T> (preAlocatedForA, prealocatedForIndices);
     }
@@ -200,7 +205,9 @@ public:
      */
     void solve(Vec<T>& x, Mat<T> prealocatedForBiCGSTAB) {
 
+        cudaDeviceSynchronize();
         BiCGSTAB<T> solver(this->_b, &prealocatedForBiCGSTAB);
+
 
         solver.solveUnpreconditionedBiCGSTAB(A, x);
     }

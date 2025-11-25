@@ -511,6 +511,38 @@ DeviceData2d<T> Mat<T>::toKernel2d() { return DeviceData2d<T>(this->_rows, this-
 template <typename T>
 DeviceData2d<T> Mat<T>::toKernel2d() const { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
 
+template<typename T>
+void Mat<T>::factorLU(Handle *hand, Vec<int32_t> *rowSwaps, Singleton<int32_t> *info, Vec<T> *workSpace) {
+
+    std::unique_ptr<Handle> temp_hand_ptr;
+    auto h = Handle::_get_or_create_handle(hand, temp_hand_ptr);
+    int32_t* lwork;
+
+    if (!workSpace) {
+        if constexpr (std::is_same_v<T, double>)
+            CHECK_CUSOLVER_ERROR(cusolverDnDgetrf_bufferSize(*h, this->_rows, this->_cols, this->toKernel2d(), this->_ld, lwork));
+        else if constexpr (std::is_same_v<T, float>)
+            CHECK_CUSOLVER_ERROR(cusolverDnSgetrf_bufferSize(*h, this->_rows, this->_cols, this->toKernel2d(), this->_ld, lwork));
+        else throw std::invalid_argument("Unsupported type.");
+    }
+
+    std::unique_ptr<Vec<T>> temp_workSpace_ptr;
+    auto ws = Vec<T>::_get_or_create_target(*lwork, workSpace, temp_workSpace_ptr, *h);
+
+    std::unique_ptr<Vec<int32_t>> temp_rr;
+    auto rr = Vec<int32_t>::_get_or_create_target(this->_rows, rowSwaps, temp_rr, *h);
+
+    std::unique_ptr<Singleton<int32_t>> temp_info;
+    auto inf = Singleton<int32_t>::_get_or_create_target(info, temp_info, *h);
+
+    if constexpr (std::is_same_v<T, double>)
+        CHECK_CUSOLVER_ERROR(cusolverDnDgetrf(*h, this->_rows, this->_cols, this->data(), this->_ld, ws->data(), rr->data(), inf->data()));
+    else if constexpr (std::is_same_v<T, float>)
+        CHECK_CUSOLVER_ERROR(cusolverDnSgetrf(*h, this->_rows, this->_cols, this->data(), this->_ld, ws->data(), rr->data(), inf->data()));
+
+
+}
+
 
 template class Mat<float>;
 template class Mat<double>;

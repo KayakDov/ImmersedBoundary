@@ -163,7 +163,7 @@ public:
     explicit BiCGSTAB(
         const Vec<T>& b,
         Mat<T>* preAllocated = nullptr,
-        T tolerance = std::is_same_v<T,double> ? T(1e-12) : T(1e-6),
+        T tolerance = std::is_same_v<T,double> ? T(1e-15) : T(1e-6),//TODO: answer seems to be incorrect for 3x3x3 grid.  It's almost correct, but not quite right.
         size_t maxIterations = 1500
         ):tolerance(tolerance),
       b(b),
@@ -187,6 +187,8 @@ public:
     void preamable(const BandedMat<T>& A, Vec<T>& x) {
 
         x.fillRandom(&handle[0]); // set x randomly
+        // x.fill(1, handle[0]);
+
         record(0, xReady);
 
         set(r, b, 0);
@@ -223,8 +225,6 @@ public:
         double totalTime = 0;
         size_t numIterations = 0;
         for(;numIterations < maxIterations; numIterations++) {
-
-
 
             A.bandedMult(p, v, handle); // v = A * p
 

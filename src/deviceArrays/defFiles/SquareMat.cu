@@ -68,6 +68,7 @@ inline void processInfo(const Singleton<int32_t>& info_dev,
 
 
 // Wrapper for cusolverDnXgeev
+//TODO:Get this working for floats
 template <typename T>
 void SquareMat<T>::eigen(
     Vec<T>& eVals,     // Real part of eigenvalues
@@ -162,9 +163,39 @@ SquareMat<T> Mat<T>::sqSubMat(size_t startRow, size_t startCol, size_t dim) cons
     return SquareMat<T>(dim, this->_ld, offset(startRow, startCol));
 }
 
+template<typename T>
+void SquareMat<T>::solveLUDecomposed(Mat<T> &b, Vec<int32_t>& rowSwaps, Handle *handle, Singleton<int32_t>* info, bool transpose) {
+
+    std::unique_ptr<Handle> tempHand;
+    auto h = Handle::_get_or_create_handle(handle, tempHand);
+    std::unique_ptr<Singleton<int32_t>> tempinfo;
+    auto inf = Singleton<int32_t>::_get_or_create_target(info, tempinfo, *h);
+
+    const cublasOperation_t transp = transpose ? CUBLAS_OP_T: CUBLAS_OP_N;
+
+    if constexpr(std::is_same_v<T, double>)
+        CHECK_CUSOLVER_ERROR(cusolverDnDgetrs(*h, transp, this->_rows, b._cols, this -> data(), this -> _ld, rowSwaps.data(), b.data(), b._ld, inf->toKernel1d()));
+    else if constexpr(std::is_same_v<T, float>)
+        CHECK_CUSOLVER_ERROR(cusolverDnSgetrs(*h, transp, this->_rows, b._cols, this -> data(), this -> _ld, rowSwaps.data(), b.data(), b._ld, inf->toKernel1d()));
+    else throw std::invalid_argument("Unsupported type.");
+}
+
+template<typename T>
+void SquareMat<T>::solve(Mat<T>& b, Handle *handle, Singleton<int32_t> *info, Vec<T> *workspace, Vec<int32_t> *rowSwaps) {
+    std::unique_ptr<Handle> tempHand;
+    auto h = Handle::_get_or_create_handle(handle, tempHand);
+    std::unique_ptr<Singleton<int32_t>> tempinfo;
+    auto inf = Singleton<int32_t>::_get_or_create_target(info, tempinfo, *h);
+    std::unique_ptr<Vec<int32_t>> tempRowSwapsPointer;
+    auto rs = Vec<int32_t>::_get_or_create_target(this->_rows ,rowSwaps, tempRowSwapsPointer, *h);
+
+    this->factorLU(h, rs, inf, workspace);
+    solveLUDecomposed(b, *rs, h, inf, false);
+}
+
 template class SquareMat<float>;
 template class SquareMat<double>;
-template class SquareMat<size_t>;
+template class SquareMat<unsigned long>;
 template class SquareMat<int32_t>;
 template class SquareMat<unsigned char>;
 

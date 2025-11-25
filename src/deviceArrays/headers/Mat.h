@@ -253,6 +253,24 @@ public:
     DeviceData2d<T> toKernel2d() const;
 
 
+    /**
+     * @brief Performs the in-place LU factorization ($A=LU$) of the current matrix using cuSOLVER's cusolverDnDgetrf.
+     * @warning Automatic Memory Management (Leak-Free): If any pointer parameter (hand, reorderRecord, info, or
+     *
+     * workSpace) is nullptr, the necessary resource is automatically allocated on the device (or handle created),
+     * used, and then safely freed upon exit. Pre-allocate parameters to persist or reuse the results.
+     * @tparam T The element type (e.g., float, double).
+     * @param hand Input/Output Handle: A pointer to an existing Handle (cuSOLVER/cuBLAS handle).
+     * @param rowSwaps Input/Output Pivot Array: A device Vec<int32_t> of size N (rows) to store the pivot indices.
+     * @param info Input/Output Status Flag: A device Singleton<int32_t> for the status. $0$ is success; $i>0$ means the matrix is singular (zero pivot at index $i$).
+     * @param workSpace Input/Output Workspace: A device Vec<T> used as scratch space, sized dynamically via cusolverDnDgetrf_bufferSize.
+     * @pre The current matrix (this) must be square ($\text{rows} = \text{cols}$).
+     * @post The internal data of the matrix object (this) is overwritten with the L and U factors.
+     *
+     */
+    void factorLU(Handle *hand = nullptr, Vec<int32_t> *rowSwaps = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workSpace =
+                          nullptr);
+
     __host__ __device__ operator DeviceData2d<T>();
     __host__ __device__ operator DeviceData2d<T>() const;
 };
