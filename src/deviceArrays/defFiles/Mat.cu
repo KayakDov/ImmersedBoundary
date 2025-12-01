@@ -516,18 +516,20 @@ void Mat<T>::factorLU(Handle *hand, Vec<int32_t> *rowSwaps, Singleton<int32_t> *
 
     std::unique_ptr<Handle> temp_hand_ptr;
     auto h = Handle::_get_or_create_handle(hand, temp_hand_ptr);
-    int32_t* lwork;
+
+
+    int32_t lwork = workSpace?workSpace->size():0;
 
     if (!workSpace) {
         if constexpr (std::is_same_v<T, double>)
-            CHECK_CUSOLVER_ERROR(cusolverDnDgetrf_bufferSize(*h, this->_rows, this->_cols, this->toKernel2d(), this->_ld, lwork));
+            CHECK_CUSOLVER_ERROR(cusolverDnDgetrf_bufferSize(*h, this->_rows, this->_cols, this->toKernel2d(), this->_ld, &lwork));
         else if constexpr (std::is_same_v<T, float>)
-            CHECK_CUSOLVER_ERROR(cusolverDnSgetrf_bufferSize(*h, this->_rows, this->_cols, this->toKernel2d(), this->_ld, lwork));
+            CHECK_CUSOLVER_ERROR(cusolverDnSgetrf_bufferSize(*h, this->_rows, this->_cols, this->toKernel2d(), this->_ld, &lwork));
         else throw std::invalid_argument("Unsupported type.");
     }
 
     std::unique_ptr<Vec<T>> temp_workSpace_ptr;
-    auto ws = Vec<T>::_get_or_create_target(*lwork, workSpace, temp_workSpace_ptr, *h);
+    auto ws = Vec<T>::_get_or_create_target( lwork, workSpace, temp_workSpace_ptr, *h);
 
     std::unique_ptr<Vec<int32_t>> temp_rr;
     auto rr = Vec<int32_t>::_get_or_create_target(this->_rows, rowSwaps, temp_rr, *h);
@@ -542,6 +544,14 @@ void Mat<T>::factorLU(Handle *hand, Vec<int32_t> *rowSwaps, Singleton<int32_t> *
 
 
 }
+template<typename T>
+Vec<T>::operator Mat<T>() {
+    return Mat<T>(this->_rows, this->_cols, this->_ld, this->_ptr);
+}
+template<typename T>
+Vec<T>::operator Mat<T>() const{
+    return Mat<T>(this->_rows, this->_cols, this->_ld, this->_ptr);
+}
 
 
 template class Mat<float>;
@@ -555,3 +565,15 @@ template void Vec<double>::mult(const Mat<double>&, Vec<double>&, Handle*, const
 template void Vec<size_t>::mult(const Mat<size_t>&, Vec<size_t>&, Handle*, const Singleton<size_t>*, const Singleton<size_t>*, bool) const;
 template void Vec<int32_t>::mult(const Mat<int32_t>&, Vec<int32_t>&, Handle*, const Singleton<int32_t>*, const Singleton<int32_t>*, bool) const;
 template void Vec<unsigned char>::mult(const Mat<unsigned char>&, Vec<unsigned char>&, Handle*, const Singleton<unsigned char>*, const Singleton<unsigned char>*, bool) const;
+
+template Vec<float>::operator Mat<float>();
+template Vec<double>::operator Mat<double>();
+template Vec<size_t>::operator Mat<size_t>();
+template Vec<int32_t>::operator Mat<int32_t>();
+template Vec<unsigned char>::operator Mat<unsigned char>();
+
+template Vec<float>::operator Mat<float>() const;
+template Vec<double>::operator Mat<double>() const;
+template Vec<size_t>::operator Mat<size_t>() const;
+template Vec<int32_t>::operator Mat<int32_t>() const;
+template Vec<unsigned char>::operator Mat<unsigned char>() const;

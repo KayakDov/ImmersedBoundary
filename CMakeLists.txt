@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.24)
 
-# Set default CUDA architectures if not set
+# Add the correct library path to the global linker flags
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/cuda/lib64")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/local/cuda/lib64")
 
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES OR CMAKE_CUDA_ARCHITECTURES STREQUAL "")
   set(CMAKE_CUDA_ARCHITECTURES native)
 endif()
+
 
 project(BiCGSTAB LANGUAGES CXX CUDA)
 set(CMAKE_CXX_STANDARD 17)
@@ -14,7 +17,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(CUDAToolkit REQUIRED)
 find_package(Threads REQUIRED)
-
+# Add the correct CUDA 13.0 library path to the linker search paths
+link_directories(/usr/local/cuda/lib64)
 # --- 1. Gather all source files for the library ---
 
 file(GLOB_RECURSE LIB_SOURCES
@@ -49,6 +53,8 @@ target_link_libraries(BiCGSTAB_LIB PUBLIC
         CUDA::cudart
         CUDA::cublas
         CUDA::cusolver
+        # Explicitly link the missing library using its absolute path
+        "/usr/local/cuda/targets/x86_64-linux/lib/libculibos.a"
 )
 
 # --- 3. Main Executable: BiCGSTAB ---

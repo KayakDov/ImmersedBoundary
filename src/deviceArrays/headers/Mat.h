@@ -41,6 +41,7 @@ class Mat : public GpuArray<T> {
                        size_t height,
                        size_t width,
                        size_t depth);
+    friend Vec<T>;
 
 protected:
     /**

@@ -17,7 +17,7 @@
 rule CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug
   depfile = $DEP_FILE
   deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}/usr/local/cuda-13/bin/nvcc -forward-unknown-to-host-compiler $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -x cu -rdc=true -c $in -o $out
+  command = ${LAUNCHER}${CODE_CHECK}/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -x cu -rdc=true -c $in -o $out
   description = Building CUDA object $out
 
 
@@ -35,7 +35,7 @@ rule CXX_COMPILER__BiCGSTAB_LIB_unscanned_Debug
 # Rule for linking CXX static library.
 
 rule CXX_STATIC_LIBRARY_LINKER__BiCGSTAB_LIB_Debug
-  command = $PRE_LINK && /snap/clion/393/bin/cmake/linux/x64/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/ranlib $TARGET_FILE && $POST_BUILD
+  command = $PRE_LINK && /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
 
@@ -46,7 +46,7 @@ rule CXX_STATIC_LIBRARY_LINKER__BiCGSTAB_LIB_Debug
 rule CUDA_COMPILER__BiCGSTAB_unscanned_Debug
   depfile = $DEP_FILE
   deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}/usr/local/cuda-13/bin/nvcc -forward-unknown-to-host-compiler $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -x cu -c $in -o $out
+  command = ${LAUNCHER}${CODE_CHECK}/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -x cu -c $in -o $out
   description = Building CUDA object $out
 
 
@@ -54,7 +54,7 @@ rule CUDA_COMPILER__BiCGSTAB_unscanned_Debug
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_DEVICE_LINKER__BiCGSTAB_Debug
-  command = /usr/local/cuda-13/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES
+  command = /usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -76,7 +76,7 @@ rule CXX_EXECUTABLE_LINKER__BiCGSTAB_Debug
 rule CUDA_COMPILER__EigenDecomp_unscanned_Debug
   depfile = $DEP_FILE
   deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}/usr/local/cuda-13/bin/nvcc -forward-unknown-to-host-compiler $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -x cu -rdc=true -c $in -o $out
+  command = ${LAUNCHER}${CODE_CHECK}/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -x cu -rdc=true -c $in -o $out
   description = Building CUDA object $out
 
 
@@ -84,7 +84,7 @@ rule CUDA_COMPILER__EigenDecomp_unscanned_Debug
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_DEVICE_LINKER__EigenDecomp_Debug
-  command = /usr/local/cuda-13/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES
+  command = /usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -106,7 +106,7 @@ rule CXX_EXECUTABLE_LINKER__EigenDecomp_Debug
 rule CUDA_COMPILER__DirectSolver_unscanned_Debug
   depfile = $DEP_FILE
   deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}/usr/local/cuda-13/bin/nvcc -forward-unknown-to-host-compiler $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -x cu -rdc=true -c $in -o $out
+  command = ${LAUNCHER}${CODE_CHECK}/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -x cu -rdc=true -c $in -o $out
   description = Building CUDA object $out
 
 
@@ -114,7 +114,7 @@ rule CUDA_COMPILER__DirectSolver_unscanned_Debug
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_DEVICE_LINKER__DirectSolver_Debug
-  command = /usr/local/cuda-13/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES
+  command = /usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -142,7 +142,7 @@ rule CUSTOM_COMMAND
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /snap/clion/393/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S/home/dov/Documents/TelAvivU -B/home/dov/Documents/TelAvivU/cmake-build-debug
+  command = /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S/home/dov/Documents/TelAvivU -B/home/dov/Documents/TelAvivU/cmake-build-debug
   description = Re-running CMake...
   generator = 1
 
@@ -151,7 +151,7 @@ rule RERUN_CMAKE
 # Rule for cleaning all built files.
 
 rule CLEAN
-  command = /snap/clion/393/bin/ninja/linux/x64/ninja $FILE_ARG -t clean $TARGETS
+  command = /opt/CLion-2025.2.5/clion-2025.2.5/bin/ninja/linux/x64/ninja $FILE_ARG -t clean $TARGETS
   description = Cleaning all built files...
 
 
@@ -159,6 +159,6 @@ rule CLEAN
 # Rule for printing all primary targets available.
 
 rule HELP
-  command = /snap/clion/393/bin/ninja/linux/x64/ninja -t targets
+  command = /opt/CLion-2025.2.5/clion-2025.2.5/bin/ninja/linux/x64/ninja -t targets
   description = All primary targets available:
 

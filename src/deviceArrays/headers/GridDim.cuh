@@ -4,6 +4,7 @@
 
 #ifndef BICGSTAB_GRIDDIM_H
 #define BICGSTAB_GRIDDIM_H
+#include "KernelPrep.cuh"
 
 #ifndef __CUDACC__
 #define __host__
@@ -75,6 +76,13 @@ public:
      * @return
      */
     __device__ [[nodiscard]] size_t operator[](const GridInd3d& ind) const;
+
+
+    /**
+     *
+     * @return kernel threading for every node of this grid.
+     */
+    [[nodiscard]]KernelPrep kernelPrep() const;
 
 };
 

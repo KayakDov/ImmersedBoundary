@@ -247,6 +247,9 @@ public:
     __host__ __device__ operator DeviceData1d<T>() const;
 
     KernelPrep kernelPrep();
+
+    operator Mat<T>();
+    operator Mat<T>() const;
 };
 
 #endif //BICGSTAB_VEC_H

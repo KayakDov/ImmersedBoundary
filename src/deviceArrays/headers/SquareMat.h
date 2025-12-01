@@ -97,6 +97,9 @@ public:
     void solve(Mat<T> &b, Handle *handle = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workspace = nullptr, Vec<int32_t> *
                        rowSwaps = nullptr);
 
+    void solve(Vec<T> &b, Handle *handle = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workspace = nullptr, Vec<int32_t> *
+                       rowSwaps = nullptr);
+
 };
 
 #endif //BICGSTAB_SQUAREMAT_H

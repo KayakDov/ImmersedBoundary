@@ -25,6 +25,10 @@ __device__ size_t GridDim::operator[](const GridInd3d& ind) const {
     return this->operator()(ind.row, ind.col, ind.layer);
 }
 
+KernelPrep GridDim::kernelPrep() const {
+    return {cols, rows, layers};
+}
+
 __device__ bool operator<(const GridInd3d &ind, const GridDim &dim) {
     return ind.row < dim.rows && ind.col < dim.cols && ind.layer < dim.layers;
 }

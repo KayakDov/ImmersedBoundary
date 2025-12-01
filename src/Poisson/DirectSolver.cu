@@ -8,6 +8,19 @@
 #include "deviceArrays/headers/Streamable.h"
 
 
+struct AdjacencyInd {
+    /**
+     * The column in the banded matrix.
+     */
+    const size_t col;
+    /**
+     * The index of the diagonal that is held by that column.
+     */
+    const int32_t diag;
+    __device__ __host__ AdjacencyInd(const size_t row, const int32_t diag) : col(row), diag(diag) {
+    }
+};
+
  /**
  * @brief Device-side functor to set off-diagonal entries of the system matrix A to 0 or NAN.
  *
@@ -39,20 +52,14 @@ public:
      * This operator is called to check if a specific off-diagonal entry (corresponding to a neighbor)
      * should be set to 0 (internal point) or NAN (outside band storage).
      *
-     * @param[in] diagIndex The index of the diagonal corresponding to the neighbor being checked.
+     * @param[in] aInd The index of the diagonal corresponding to the neighbor being checked.
      */
-    __device__ void operator()(const int32_t diagIndex, const size_t colInd) {
+    __device__ void operator()(const AdjacencyInd aInd) {
 
-        const size_t rowInd = modPos(static_cast<int32_t>(idGrid) + min(diagIndex , 0), static_cast<int32_t>(a.rows));
-        if (rowInd < a.rows - abs(diagIndex)) a(rowInd, colInd) = static_cast<T>(0);
-        else a(rowInd, colInd) = NAN;
+        const size_t rowInd = modPos(static_cast<int32_t>(idGrid) + min(aInd.diag, 0), static_cast<int32_t>(a.rows));
+        if (rowInd < a.rows - abs(aInd.diag)) a(rowInd, aInd.col) = static_cast<T>(0);
+        else a(rowInd, aInd.col) = NAN;
     }
-};
-
-struct AdjacencyIndexing {
-    const size_t row;
-    const int32_t diag;
-    AdjacencyIndexing(const size_t row, const int32_t diag): row(row), diag(diag) {}
 };
 
 /**
@@ -64,24 +71,13 @@ struct AdjacencyIndexing {
  * unused band elements to NAN.
  *
  * @tparam T Floating-point type (float or double).
- * @param[out] A Pointer to the banded (or dense) matrix storage on the device.
- * @param[in] ldA The leading dimension of the matrix A.
- * @param[in] heightA The width (number of columns) of A, equal to gridSize.
- * @param[in] gHeight Interior grid height.
- * @param[in] gWidth Interior grid width.
- * @param[in] gDepth Interior grid depth.
- * @param[in] mapDiagIndextoARow A device array mapping the diagonal index offset to the row index within the banded storage format of A.
+ *
  */
 template <typename T>
 __global__ void setAKernel(DeviceData2d<T> a,
     const GridDim g,
-    const size_t hereCol,
-    const size_t upCol,
-    const size_t downCol,
-    const size_t leftCol,
-    const size_t rightCol,
-    const size_t frontCol,
-    const size_t backCol
+    const AdjacencyInd here, const AdjacencyInd up, const AdjacencyInd down, const AdjacencyInd left,
+    const AdjacencyInd right, const AdjacencyInd front, const AdjacencyInd back
     ) {
     const GridInd3d ind;
 
@@ -89,15 +85,17 @@ __global__ void setAKernel(DeviceData2d<T> a,
 
     const size_t idGrid = g[ind];
 
-    a(idGrid, hereCol) = -6;
+    a(idGrid, here.col) = -6;
     Set0<T> set0(a, idGrid);
 
-    if (ind.row == 0) set0(-1, upCol);
-    else if (ind.row == g.rows - 1) set0(1, downCol);
-    if (ind.col == 0) set0(-static_cast<int32_t>(g.rows*g.layers), leftCol);
-    else if (ind.col == g.cols - 1) set0(g.rows*g.layers , rightCol);
-    if (ind.layer == 0) set0(-static_cast<int32_t>(g.rows), frontCol);
-    else if (ind.layer == g.layers - 1) set0(g.rows, backCol);
+    if (ind.row == 0) set0(up);
+    else if (ind.row == g.rows - 1) set0(down);
+
+    if (ind.col == 0) set0(left);
+    else if (ind.col == g.cols - 1) set0(right);
+
+    if (ind.layer == 0) set0(front);
+    else if (ind.layer == g.layers - 1) set0(back);
 }
 
 /**
@@ -116,16 +114,10 @@ template <typename T>
 class DirectSolver : public Poisson<T> {
 
 public:
-    const AdjacencyIndexing here, up, down, left, right, back, front;
+    const AdjacencyInd here, up, down, left, right, back, front;
 
 private:
     const BandedMat<T> A;
-
-    static inline dim3 makeGridDim(size_t x, size_t y, size_t z, dim3 block) {
-        return dim3( (unsigned)((x + block.x - 1) / block.x),
-                     (unsigned)((y + block.y - 1) / block.y),
-                     (unsigned)((z + block.z - 1) / block.z) );
-    }
 
     /**
      * @brief Launch kernel that assembles A in banded/dense storage.
@@ -135,39 +127,32 @@ private:
      * @param handle contains the stream to run on.
      * @param preAlocatedForA Provide prealocated memory here to be written to, numDiagonals x _b.size().
      */
-    BandedMat<T> setA(cudaStream_t& stream, Mat<T>& preAlocatedForA, Vec<int32_t>& prealocatedForIndices) {
+    BandedMat<T> setA(cudaStream_t& stream, Mat<T>& preAlocatedForA, Vec<int32_t>& preAlocatedForIndices) {
 
         preAlocatedForA.subMat(0, 1, preAlocatedForA._rows, preAlocatedForA._cols - 1).fill(1, stream);
 
-        KernelPrep kp(this->dim.cols, this->dim.rows, this->dim.layers);
+        const KernelPrep kp = this->dim.kernelPrep();
         setAKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
             preAlocatedForA.toKernel2d(), this->dim,
-            here.row, up.row, down.row, left.row, right.row, front.row, back.row
+            here, up, down, left, right, front, back
         );
 
         CHECK_CUDA_ERROR(cudaGetLastError());
 
-        loadMapRowToDiag(prealocatedForIndices, stream);
+        loadMapRowToDiag(preAlocatedForIndices, stream);
 
-        cudaDeviceSynchronize();
-        Handle hand;
-        auto dense = SquareMat<T>::create(27);
-        BandedMat<T> banded(preAlocatedForA, prealocatedForIndices);
-        banded.getDense(dense, &hand);
-        std::cout << GpuOut<T>(dense, hand) << std::endl;
-
-        return BandedMat<T> (preAlocatedForA, prealocatedForIndices);
+        return BandedMat<T> (preAlocatedForA, preAlocatedForIndices);
     }
 
     void loadMapRowToDiag(Vec<int32_t> diags, const cudaStream_t stream) const {
         int32_t diagsCpu[diags.size()];
-        diagsCpu[up.row] = up.diag;
-        diagsCpu[down.row] = down.diag;
-        diagsCpu[left.row] = left.diag;
-        diagsCpu[right.row] = right.diag;
-        diagsCpu[back.row] = back.diag;
-        diagsCpu[front.row] = front.diag;
-        diagsCpu[here.row] = here.diag;
+        diagsCpu[up.col] = up.diag;
+        diagsCpu[down.col] = down.diag;
+        diagsCpu[left.col] = left.diag;
+        diagsCpu[right.col] = right.diag;
+        diagsCpu[back.col] = back.diag;
+        diagsCpu[front.col] = front.diag;
+        diagsCpu[here.col] = here.diag;
         diags.set(diagsCpu, stream);
     }
 public:
@@ -185,15 +170,14 @@ public:
     DirectSolver(const CubeBoundary<T>& boundary, Vec<T>& b, Mat<T>& preAlocatedForBandedA, Vec<int32_t>& prealocatedForIndices, cudaStream_t stream):
         Poisson<T>(boundary, b, stream),
         here(0, 0),
-        up(1, 1),
-        down(2, -1),
+        up(1, -1),
+        down(2, 1),
         left(3, -this->dim.rows * this->dim.layers),
         right(4, this->dim.rows * this->dim.layers),
         front(5, -this->dim.rows),
         back(6, this->dim.rows),
         A(setA(stream, preAlocatedForBandedA, prealocatedForIndices))
-    {
-    }
+    {}
     /**
      * @brief Solves the Poisson equation for the grid.
      *

@@ -142,7 +142,7 @@ void benchMarkEigenDecompSolver(size_t dim, Handle hand3[]) {
  *        for a 2x2x2 grid.
  */
 int main() {
-    // Handle hand[3]{};
+    Handle hand[3]{};
 
     // constexpr size_t numTests = 6;
 
@@ -162,24 +162,24 @@ int main() {
     // }
 
     // benchMarkEigenDecompSolver<double>(3, hand);
-    // testPoisson(3, hand[0]);
+    testPoisson(3, hand[0]);
 
-
-    auto A = SquareMat<double>::create(2);
-    auto rhs =  Mat<double>::create(2, 1);
-
-    std::vector<double> rhsHost = {5, 6};
-    std::vector<double> AHost = {1, 2, 3,4};
-    Handle hand;
-    rhs.set(rhsHost.data(), hand);
-    A.set(AHost.data(), hand);
-    std::cout << "A = \n" << GpuOut<double>(A, hand) << std::endl;
-    std::cout << "b = \n" << GpuOut<double>(rhs, hand) << std::endl;
-
-    A.solve(rhs, &hand);
-
-
-    std::cout << "x = \n" << GpuOut<double>(rhs, hand) << std::endl;
+    //
+    // auto A = SquareMat<double>::create(2);
+    // auto rhs =  Mat<double>::create(2, 1);
+    //
+    // std::vector<double> rhsHost = {5, 6};
+    // std::vector<double> AHost = {1, 2, 3,4};
+    // Handle hand;
+    // rhs.set(rhsHost.data(), hand);
+    // A.set(AHost.data(), hand);
+    // std::cout << "A = \n" << GpuOut<double>(A, hand) << std::endl;
+    // std::cout << "b = \n" << GpuOut<double>(rhs, hand) << std::endl;
+    //
+    // A.solve(rhs, &hand);
+    //
+    //
+    // std::cout << "x = \n" << GpuOut<double>(rhs, hand) << std::endl;
 
 
     return 0;

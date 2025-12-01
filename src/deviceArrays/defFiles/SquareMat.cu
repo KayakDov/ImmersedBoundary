@@ -193,6 +193,13 @@ void SquareMat<T>::solve(Mat<T>& b, Handle *handle, Singleton<int32_t> *info, Ve
     solveLUDecomposed(b, *rs, h, inf, false);
 }
 
+template<typename T>
+void SquareMat<T>::solve(Vec<T> &b, Handle *handle, Singleton<int32_t> *info, Vec<T> *workspace,
+    Vec<int32_t> *rowSwaps) {
+    Mat<T> mat = static_cast<Mat<T>>(b);
+    solve(mat, handle, info, workspace, rowSwaps);
+}
+
 template class SquareMat<float>;
 template class SquareMat<double>;
 template class SquareMat<unsigned long>;

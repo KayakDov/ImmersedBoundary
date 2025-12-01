@@ -222,7 +222,6 @@ public:
         TimePoint start = std::chrono::steady_clock::now();
         preamable(A, x);
 
-        double totalTime = 0;
         size_t numIterations = 0;
         for(;numIterations < maxIterations; numIterations++) {
 

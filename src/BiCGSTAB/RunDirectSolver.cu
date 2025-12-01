@@ -19,8 +19,6 @@ void testPoisson(const size_t height, size_t width, size_t depth, Handle& hand) 
 
     auto boundary = CubeBoundary<double>::ZeroTo1(height, width, depth, hand);
 
-
-
     auto longVecs = Mat<double>::create(boundary.internalSize(), 2 + numDiagonals + 7);
     auto b = longVecs.col(0);
     b.fill(0, hand);

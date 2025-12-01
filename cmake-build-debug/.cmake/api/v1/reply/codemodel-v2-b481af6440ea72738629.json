@@ -1,0 +1,87 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.24"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "BiCGSTAB",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "BiCGSTAB::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-BiCGSTAB-Debug-23527156027aecd7badf.json",
+					"name" : "BiCGSTAB",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "BiCGSTAB_LIB::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-BiCGSTAB_LIB-Debug-3328ad26de1d10ec6086.json",
+					"name" : "BiCGSTAB_LIB",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "DirectSolver::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-DirectSolver-Debug-ba0330f0132ec2f35fae.json",
+					"name" : "DirectSolver",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "EigenDecomp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-EigenDecomp-Debug-98bae13cbc8a7871a69d.json",
+					"name" : "EigenDecomp",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/dov/Documents/TelAvivU/cmake-build-debug",
+		"source" : "/home/dov/Documents/TelAvivU"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 8
+	}
+}

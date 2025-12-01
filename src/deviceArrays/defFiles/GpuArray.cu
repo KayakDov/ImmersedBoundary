@@ -27,7 +27,7 @@ size_t GpuArray<T>::bytes() const {
 
 template <typename T>
 __global__ void fill2dKernel(DeviceData2d<T> a, const T val){
-    if (const GridInd2d ind; ind < a) a[ind] = val;
+    if (const GridInd2dT ind; ind < a) a[ind] = val;
 }
 
 template <typename T>
