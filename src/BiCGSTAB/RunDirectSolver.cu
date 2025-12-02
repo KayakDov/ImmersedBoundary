@@ -22,6 +22,10 @@ void testPoisson(const size_t height, size_t width, size_t depth, Handle& hand) 
     auto longVecs = Mat<double>::create(boundary.internalSize(), 2 + numDiagonals + 7);
     auto b = longVecs.col(0);
     b.fill(0, hand);
+
+    // std::cout << "RunDirectSolver testPoisson b: " << b.size() << std::endl << GpuOut<double>(b, hand) << std::endl;
+
+
     auto x = longVecs.col(1);
     auto A = longVecs.subMat(0, 2, boundary.internalSize(), numDiagonals);
     auto prealocatedForBiCGSTAB = longVecs.subMat(0, 2 + numDiagonals, boundary.internalSize(), 7);

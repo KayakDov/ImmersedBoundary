@@ -102,20 +102,24 @@ void eigenDecompSolver(const T *frontBack, const size_t fbLd,
         );
     }
 } // extern "C"
+
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 template<typename T>
-void benchMarkEigenDecompSolver(size_t dim, Handle hand3[]) {
-    const auto boundary = CubeBoundary<double>::ZeroTo1(dim, hand3[0]);
+void benchMarkEigenDecompSolver(size_t height, size_t width, size_t depth, Handle hand3[]) {
+    const auto boundary = CubeBoundary<double>::ZeroTo1(height, width, depth, hand3[0]);
 
     auto memAlocFX = Mat<double>::create(boundary.internalSize(), 2);
 
-    Mat<T> eigenStorage = Mat<T>::create(dim, 3 * dim + 3);
-    SquareMat<T> eX = eigenStorage.sqSubMat(0, 0, dim),
-            eY = eigenStorage.sqSubMat(0, dim, dim),
-            eZ = eigenStorage.sqSubMat(0, 2 * dim, dim);
-    Mat<T> vals = eigenStorage.subMat(0, 3 * dim, dim, 3);
 
+    size_t maxDim = std::max(width, std::max(height, depth));
+
+    Mat<T> eigenStorage = Mat<T>::create(maxDim, width + height + depth + 3);
+    SquareMat<T> eX = eigenStorage.sqSubMat(0, 0, width),
+            eY = eigenStorage.sqSubMat(0, width, height),
+            eZ = eigenStorage.sqSubMat(0, width + height, depth);
+
+    Mat<T> vals = eigenStorage.subMat(0, width + height + depth, maxDim, 3);
 
     auto x = memAlocFX.col(0);
     auto f = memAlocFX.col(1);
@@ -134,7 +138,12 @@ void benchMarkEigenDecompSolver(size_t dim, Handle hand3[]) {
 
     std::cout << iterationTime << ", ";
 
-    // std::cout << "x = \n" << GpuOut<double>(x.tensor(dim, dim), hand3[0]) << std::endl;
+    std::cout << "x = \n" << GpuOut<double>(x.tensor(height, depth), hand3[0]) << std::endl;
+}
+
+template<typename T>
+void benchMarkEigenDecompSolver(size_t dim, Handle hand3[]) {
+    benchMarkEigenDecompSolver<T>(dim, dim, dim, hand3);
 }
 
 /**
@@ -162,7 +171,8 @@ int main() {
     // }
 
     // benchMarkEigenDecompSolver<double>(3, hand);
-    testPoisson(3, hand[0]);
+    testPoisson(2, 2, 4, hand[0]);
+    // benchMarkEigenDecompSolver<double>(2, 2, 4, hand);
 
     //
     // auto A = SquareMat<double>::create(2);

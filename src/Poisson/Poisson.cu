@@ -13,23 +13,46 @@ __global__ void setRHSKernel(DeviceData1d<T> b, const DeviceData2d<T> topBottom,
 
     const GridInd2d ind;
 
-    if (ind < frontBack)
-        b[grid(ind.row % grid.rows, ind.col, ind.row >= grid.rows ? grid.layers - 1 : 0)] -= frontBack[ind];
+    if (ind < frontBack) {
+        const size_t row = ind.row % grid.rows;
+        const size_t layer = ind.row >= grid.rows ? grid.layers - 1 : 0;
+        const size_t col = ind.col;
+        atomicAdd(&b[grid(row, col, layer)], -frontBack[ind]);
+    }
 
-    if (ind < leftRight)
-        b[grid(ind.row % grid.rows, ind.row >= grid.rows ? grid.cols - 1 : 0, grid.layers - 1 - ind.col)] -= leftRight[ind];
+    if (ind < leftRight) {
+        const size_t row = ind.row % grid.rows;
+        const size_t col = ind.row >= grid.rows ? grid.cols - 1 : 0;
+        const size_t layer = grid.layers - 1 - ind.col;
+        atomicAdd(&b[grid(row, col, layer)], -leftRight[ind]);
+    }
 
-    if (ind < topBottom)
-        b[grid(ind.row >= grid.layers ? grid.rows - 1 : 0, ind.col, grid.layers - 1 - (ind.row % grid.layers))] -= topBottom[ind];
+    if (ind < topBottom) {
+        const size_t row = ind.row >= grid.layers ? grid.rows - 1 : 0;
+        const size_t col = ind.col;
+        const size_t layer = grid.layers - 1 - (ind.row % grid.layers);
+        atomicAdd(&b[grid(row, col, layer)], -topBottom[ind]);
+    }
 }
 
 
 template <typename T>
 void Poisson<T>::setB(const CubeBoundary<T>& boundary, cudaStream_t stream) {
 
-    KernelPrep kp(std::max(dim.cols, dim.layers), std::max(dim.rows, dim.layers));
-    setRHSKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(_b.toKernel1d(), boundary.topBottom.toKernel2d(), boundary.leftRight.toKernel2d(), boundary.frontBack.toKernel2d(), dim);
+    cudaDeviceSynchronize();
+
+    KernelPrep kp(std::max(dim.cols, dim.layers), 2 * std::max(dim.rows, dim.layers));
+    setRHSKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
+        _b.toKernel1d(),
+        boundary.topBottom.toKernel2d(),
+        boundary.leftRight.toKernel2d(),
+        boundary.frontBack.toKernel2d(),
+        dim
+        );
     CHECK_CUDA_ERROR(cudaGetLastError());
+
+    cudaDeviceSynchronize();
+
 }
 
 template <typename T>

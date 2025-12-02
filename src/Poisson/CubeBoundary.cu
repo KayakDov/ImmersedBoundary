@@ -5,6 +5,10 @@
 
 #include "CubeBoundary.h"
 
+#include <iostream>
+
+#include "deviceArrays/headers/Streamable.h"
+
 template<typename T>
 CubeBoundary<T>::CubeBoundary(Mat<T>& frontBack_, Mat<T>& leftRight_, Mat<T>& topBottom_)
     : frontBack(frontBack_), leftRight(leftRight_), topBottom(topBottom_) {}
@@ -59,6 +63,9 @@ CubeBoundary<T> CubeBoundary<T>::ZeroTo1(const size_t height, const size_t width
         bottom.row(layerInd).fill(val, stream);
     }
 
+    // std::cout << "CubeBoundary<T>::zeroTo1 front back\n" << GpuOut<T>(frontBack, stream) << std::endl;
+    // std::cout << "CubeBoundary<T>::zeroTo1 left right\n" << GpuOut<T>(leftRight, stream) << std::endl;
+    // std::cout << "CubeBoundary<T>::zeroTo1 top bottom\n" << GpuOut<T>(topBottom, stream) << std::endl;
     return CubeBoundary<T>(frontBack, leftRight, topBottom);
 }
 
