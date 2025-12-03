@@ -163,12 +163,12 @@ public:
     * It assumes the RHS vector $\mathbf{b}$ is pre-loaded with the source term $f$.
     *
     * @param boundary The boundary conditions.
-    * @param[in] b The initial right-hand side vector, pre-loaded with the source term $f$.
+    * @param[in] f The initial right-hand side vector, pre-loaded with the source term $f$.  This will be overwritten.
     * This vector is modified by the solver to include boundary contributions.
     * @param prealocatedForIndices
     */
-    DirectSolver(const CubeBoundary<T>& boundary, Vec<T>& b, Mat<T>& preAlocatedForBandedA, Vec<int32_t>& prealocatedForIndices, cudaStream_t stream):
-        Poisson<T>(boundary, b, stream),
+    DirectSolver(const CubeBoundary<T>& boundary, Vec<T>& f, Mat<T>& preAlocatedForBandedA, Vec<int32_t>& prealocatedForIndices, cudaStream_t stream):
+        Poisson<T>(boundary, f, stream),
         here(0, 0),
         up(1, -1),
         down(2, 1),
@@ -178,6 +178,7 @@ public:
         back(6, this->dim.rows),
         A(setA(stream, preAlocatedForBandedA, prealocatedForIndices))
     {}
+
     /**
      * @brief Solves the Poisson equation for the grid.
      *
@@ -191,7 +192,6 @@ public:
 
         cudaDeviceSynchronize();
         BiCGSTAB<T> solver(this->_b, &prealocatedForBiCGSTAB);
-
 
         solver.solveUnpreconditionedBiCGSTAB(A, x);
     }

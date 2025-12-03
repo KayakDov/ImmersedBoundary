@@ -54,7 +54,7 @@ private:
 protected:
     /**
      * @brief Protected constructor for internal use or friend classes.
-     * 
+     *
      * @param size Length of the vector.
      * @param _ptr Shared pointer to underlying GPU memory.
      * @param stride Stride for elements (for views/subvectors).
@@ -70,6 +70,17 @@ public:
      * @return Vec<T> instance.
      */
     static Vec<T> create(size_t length, cudaStream_t stream = nullptr);
+
+    /**
+     * @brief Factory method to create a new vector of given length.
+     *
+     * @param length Number of elements.
+     * @param stride The number of element between each element here.
+     * @param pointer Pointer to device memory. Memory management must be handled externally for vecs created here.
+     * @param stream Optional CUDA stream.
+     * @return Vec<T> instance.
+     */
+    static Vec<T> create(size_t length, size_t stride, T* pointer);
 
     /**
      * @brief Returns a subvector view of this vector.

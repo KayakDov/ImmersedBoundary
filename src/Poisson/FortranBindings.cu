@@ -4,22 +4,7 @@
 #include "BiCGSTAB/RunDirectSolver.cu"
 
 
-/**
- * @brief Wrap a raw GPU pointer in a non-owning shared_ptr.
- *
- * The returned shared_ptr does **not take ownership** of the
- * underlying CUDA device memory. No deallocation occurs when the
- * shared_ptr goes out of scope.
- *
- * @tparam T Element type
- * @param p Raw CUDA device pointer
- * @return std::shared_ptr<T> with no-op deleter
- */
-template<typename T>
-std::shared_ptr<T> nonOwningGpuPtr(T *p) {
-    return std::shared_ptr<T>(p, [](T *) {
-    });
-}
+
 
 
 /**
@@ -64,43 +49,43 @@ void eigenDecompSolver(const T *frontBack, const size_t fbLd,
 //                    EXPORTED SYMBOLS FOR FORTRAN
 // ============================================================================
 
-    extern "C" {
-    void eigenDecompSolver_float_(
-        const float *frontBack, const size_t *fbLd,
-        const float *leftRight, const size_t *lrLd,
-        const float *topBottom, const size_t *tbLd,
-        float *f, const size_t *fStride,
-        float *x, const size_t *xStride,
-        const size_t *height, const size_t *width,
-        const size_t *depth) {
-        eigenDecompSolver<float>(
-            frontBack, *fbLd,
-            leftRight, *lrLd,
-            topBottom, *tbLd,
-            f, *fStride,
-            x, *xStride,
-            *height, *width, *depth
-        );
-    }
+extern "C" {
+void eigenDecompSolver_float_(
+    const float *frontBack, const size_t *fbLd,
+    const float *leftRight, const size_t *lrLd,
+    const float *topBottom, const size_t *tbLd,
+    float *f, const size_t *fStride,
+    float *x, const size_t *xStride,
+    const size_t *height, const size_t *width,
+    const size_t *depth) {
+    eigenDecompSolver<float>(
+        frontBack, *fbLd,
+        leftRight, *lrLd,
+        topBottom, *tbLd,
+        f, *fStride,
+        x, *xStride,
+        *height, *width, *depth
+    );
+}
 
 
-    void eigenDecompSolver_double_(
-        const double *frontBack, const size_t *fbLd,
-        const double *leftRight, const size_t *lrLd,
-        const double *topBottom, const size_t *tbLd,
-        double *f, const size_t *fStride,
-        double *x, const size_t *xStride,
-        const size_t *height, const size_t *width,
-        const size_t *depth) {
-        eigenDecompSolver<double>(
-            frontBack, *fbLd,
-            leftRight, *lrLd,
-            topBottom, *tbLd,
-            f, *fStride,
-            x, *xStride,
-            *height, *width, *depth
-        );
-    }
+void eigenDecompSolver_double_(
+    const double *frontBack, const size_t *fbLd,
+    const double *leftRight, const size_t *lrLd,
+    const double *topBottom, const size_t *tbLd,
+    double *f, const size_t *fStride,
+    double *x, const size_t *xStride,
+    const size_t *height, const size_t *width,
+    const size_t *depth) {
+    eigenDecompSolver<double>(
+        frontBack, *fbLd,
+        leftRight, *lrLd,
+        topBottom, *tbLd,
+        f, *fStride,
+        x, *xStride,
+        *height, *width, *depth
+    );
+}
 } // extern "C"
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
@@ -138,7 +123,7 @@ void benchMarkEigenDecompSolver(size_t height, size_t width, size_t depth, Handl
 
     std::cout << iterationTime << ", ";
 
-    std::cout << "x = \n" << GpuOut<double>(x.tensor(height, depth), hand3[0]) << std::endl;
+    // std::cout << "x = \n" << GpuOut<double>(x.tensor(height, depth), hand3[0]) << std::endl;
 }
 
 template<typename T>
@@ -153,44 +138,24 @@ void benchMarkEigenDecompSolver(size_t dim, Handle hand3[]) {
 int main() {
     Handle hand[3]{};
 
-    // constexpr size_t numTests = 6;
+    constexpr size_t maxDimensions = 5000;
 
-    // std::cout << "dim, time" << std::endl;
-    // for (size_t dim = 3; dim < 5000; dim++) {
-    //     std::cout << dim << ", ";
-    //
-    //     for (size_t i = 0; i < numTests; i++) {
-    //         benchMarkEigenDecompSolver<double>(dim, hand);
-    //         // cudaDeviceSynchronize();
-    //     }
-        // for (size_t i = 0; i < numTests; i++) {
-        //
-        //     testPoisson(dim, hand[0]); //TODO: When I run this twice in row for 4 it seems to crash.  Also, BiCGSTAB is now running to fast.
-        // }
-        // std::cout << std::endl;
+    std::cout << "dim, time" << std::endl;
+
+    for (size_t dim = 355; dim < maxDimensions; dim++) {
+        std::cout << dim << ", ";
+        benchMarkEigenDecompSolver<double>(dim, hand);
+        cudaDeviceSynchronize();
+
+        testPoisson(dim, hand[0]);
+        std::cout << std::endl;
+    }
+
+
+    // for (size_t i = 0; i < numTests; i++) {
+    //     testPoisson(dim, hand[0]);
+    //     cudaDeviceSynchronize();
     // }
-
-    // benchMarkEigenDecompSolver<double>(3, hand);
-    testPoisson(2, 2, 4, hand[0]);
-    // benchMarkEigenDecompSolver<double>(2, 2, 4, hand);
-
-    //
-    // auto A = SquareMat<double>::create(2);
-    // auto rhs =  Mat<double>::create(2, 1);
-    //
-    // std::vector<double> rhsHost = {5, 6};
-    // std::vector<double> AHost = {1, 2, 3,4};
-    // Handle hand;
-    // rhs.set(rhsHost.data(), hand);
-    // A.set(AHost.data(), hand);
-    // std::cout << "A = \n" << GpuOut<double>(A, hand) << std::endl;
-    // std::cout << "b = \n" << GpuOut<double>(rhs, hand) << std::endl;
-    //
-    // A.solve(rhs, &hand);
-    //
-    //
-    // std::cout << "x = \n" << GpuOut<double>(rhs, hand) << std::endl;
-
 
     return 0;
 }

@@ -76,6 +76,18 @@ public:
     static BandedMat create(size_t denseSqMatDim, size_t numDiagonals, const Vec<int32_t> &indices);
 
     /**
+     *
+     * @param denseSqMatDim The height and width of the dense square matrix.
+     * @param numDiagonals The number of diagonals.
+     * @param ld The number of elements between the first element of each diagonal.  Diagonals are stored consecutively.
+     * @param data The values in the diagonals.
+     * @param indices The indices of each diagonal.  The offeset from the primary diagonal.
+     * @param indsStride The stride of the indices data.
+     * @return A vanded matrix.  Memory management must be handled externally for banded matrices created here.
+     */
+    static BandedMat create(size_t denseSqMatDim, size_t numDiagonals, size_t ld, const T* data, const int32_t* indices, size_t indsStride);
+
+    /**
     * @brief Extracts diagonals from a dense square matrix and writes them
     *        into the columns of this matrix.  Be sure the indices set for this matrix match the diagonals of the
     *        square matrix passed here.

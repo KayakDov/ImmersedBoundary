@@ -21,6 +21,11 @@ Vec<T> Vec<T>::create(size_t length, cudaStream_t stream) {
 }
 
 template<typename T>
+Vec<T> Vec<T>::create(size_t length, size_t stride, T *pointer) {
+    return Vec<T>(length, nonOwningGpuPtr(pointer), stride);
+}
+
+template<typename T>
 Vec<T> Vec<T>::subVec(const size_t offset, const size_t length, const size_t stride) const {
     return Vec<T>(
         length,

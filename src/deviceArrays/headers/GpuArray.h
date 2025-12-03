@@ -24,6 +24,24 @@ inline void cudaFreeDeleter(void* ptr) {
 }
 
 /**
+ * @brief Wrap a raw GPU pointer in a non-owning shared_ptr.
+ *
+ * The returned shared_ptr does **not take ownership** of the
+ * underlying CUDA device memory. No deallocation occurs when the
+ * shared_ptr goes out of scope.  This method should be used to create a shared pointer for gpuMemory when the
+ * repsonsabuility of memory mmanagement is on someone else.  Use with caution.
+ *
+ * @tparam T Element type
+ * @param p Raw CUDA device pointer
+ * @return std::shared_ptr<T> with no-op deleter
+ */
+template<typename T>
+std::shared_ptr<T> nonOwningGpuPtr(T *p) {
+    return std::shared_ptr<T>(p, [](T *) {
+    });
+}
+
+/**
  * @brief A class representing a GPU-accelerated multidimensional array.
  *
  * The GpuArray class provides functionality for creating, managing, and performing

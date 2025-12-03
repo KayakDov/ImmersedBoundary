@@ -159,12 +159,13 @@ public:
      * @param[in] tolerance The stopping tolerance (defaults to $10^{-12}$ for double, $10^{-6}$ for float).
      * @param[in] maxIterations Maximum number of iterations (defaults to $5 \times$ vector size).
      * @param[in] preAllocated Optional pointer to a pre-allocated matrix for internal vectors.
+     * Should have at least 7 columns and b.size() rows.
      */
     explicit BiCGSTAB(
         const Vec<T>& b,
         Mat<T>* preAllocated = nullptr,
-        T tolerance = std::is_same_v<T,double> ? T(1e-15) : T(1e-6),//TODO: answer seems to be incorrect for 3x3x3 grid.  It's almost correct, but not quite right.
-        size_t maxIterations = 1500
+        const T tolerance = std::is_same_v<T,double> ? T(1e-15) : T(1e-6),
+        const size_t maxIterations = 1500
         ):tolerance(tolerance),
       b(b),
       paM(preAllocated ? *preAllocated : Mat<T>::create(b.size(), 7)),
@@ -176,6 +177,41 @@ public:
         static_assert(std::is_same_v<T,float> || std::is_same_v<T,double>,
                 "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
         cudaDeviceSynchronize();
+    }
+
+    static void solve(
+        const BandedMat<T>& A,
+        Vec<T>& x,
+        const Vec<T>& b,
+        Mat<T>* preAllocated = nullptr,
+        const T tolerance = std::is_same_v<T,double> ? T(1e-15) : T(1e-6),
+        const size_t maxIterations = 1500
+    ) {
+        BiCGSTAB solver(b, preAllocated, tolerance, maxIterations);
+        solver.solve(A, x);
+    }
+
+    static void solve(
+        const T* A,
+        const T* aLd,
+        const size_t* inds,
+        const size_t indsStride,
+        const size_t numInds,
+        const T* x,
+        const size_t xStride,
+        const T* b,
+        const size_t bStride,
+        const size_t bSize,
+        T* prealocated, //size x 7 matrix
+        const size_t prealocatedLd,
+        size_t maxIterations = 1500,
+        T tolerance = std::is_same_v<T,double> ? T(1e-15) : T(1e-6)
+    ){
+        Mat<T> preAlocatedMat = Mat<T>::create(bSize, 7, prealocatedLd, prealocated);
+        Vec<T> bVec = Vec<T>::create(bSize, b, bStride);
+        auto ABanded = BandedMat<T>::create(bSize, numInds, aLd, A, inds, indsStride);//rows cols pointer VecIndices
+        auto xVec = Vec<T>::create(bSize, b, xStride);
+        solve(ABanded, xVec, bVec, &preAlocatedMat, tolerance, maxIterations);
     }
 
     /**

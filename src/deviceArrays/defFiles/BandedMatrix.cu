@@ -140,6 +140,11 @@ BandedMat<T> BandedMat<T>::create(size_t denseSqMatDim, size_t numDiagonals, con
     return BandedMat<T>(Mat<T>::create(denseSqMatDim, numDiagonals), indices);
 }
 
+template<typename T>
+BandedMat<T> BandedMat<T>::create(size_t denseSqMatDim, size_t numDiagonals, const size_t ld, const T *data, const int32_t *indices, size_t indsStride) {
+    return BandedMat<T>(Mat<T>::create(denseSqMatDim, numDiagonals, ld, data), Vec<T>::create(numDiagonals, indsStride, indices));
+}
+
 template <typename T>
 __global__ void mapDenseToBandedKernel(
     const DeviceData2d<T> dense,

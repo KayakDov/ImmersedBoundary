@@ -197,6 +197,16 @@ public:
     static Mat<T> create(size_t rows, size_t cols);
 
     /**
+     * @brief Static factory method to create a new matrix.
+     * @param rows Number of rows.
+     * @param cols Number of columns.
+     * @param ld The distance between the first elements of each column.
+     * @param devicePointer The created matrix will not handle memory management if created with this pointer.
+     * @return New Mat<T> instance with allocated GPU memory.
+     */
+    static Mat<T> create(size_t rows, size_t cols, size_t ld, T* devicePointer);
+
+    /**
      * @brief Extract a submatrix from this matrix.
      * @param startRow Row index of top-left corner.
      * @param startCol Column index of top-left corner.
