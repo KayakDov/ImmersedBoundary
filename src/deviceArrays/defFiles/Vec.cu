@@ -443,3 +443,6 @@ template Vec<double> GpuArray<double>::row(size_t) const;
 template Vec<size_t> GpuArray<size_t>::row(size_t) const; // Maps to 'unsigned long' in the error
 template Vec<int> GpuArray<int>::row(size_t) const;
 template Vec<unsigned char> GpuArray<unsigned char>::row(size_t) const;
+
+// template Vec<float> Vec<float>::create(size_t, size_t, float const*);
+// template Vec<double> Vec<double>::create(size_t, size_t, double const*);

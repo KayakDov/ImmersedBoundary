@@ -7,8 +7,6 @@
 
 #include "Vec.h"
 #include "Singleton.h"
-#include <array>
-#include <vector>
 
 /**
  * @brief Represents a square matrix stored in banded (diagonal) format.
@@ -85,7 +83,7 @@ public:
      * @param indsStride The stride of the indices data.
      * @return A vanded matrix.  Memory management must be handled externally for banded matrices created here.
      */
-    static BandedMat create(size_t denseSqMatDim, size_t numDiagonals, size_t ld, const T* data, const int32_t* indices, size_t indsStride);
+    static BandedMat create(size_t denseSqMatDim, size_t numDiagonals, size_t ld, T* data, int32_t* indices, size_t indsStride);
 
     /**
     * @brief Extracts diagonals from a dense square matrix and writes them

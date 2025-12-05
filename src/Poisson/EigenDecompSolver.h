@@ -128,7 +128,8 @@ public:
      * @param hand 3 CUDA cuBLAS/cusolver handles.
      */
     EigenDecompSolver(const CubeBoundary<T> &boundary, Vec<T> &x, Vec<T> &f, SquareMat<T> &rowsXRows,
-                      SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3, std::array<Handle, 3> hand3);
+                      SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3,
+                      std::array<Handle, 3>& hand3);
 
     /**
      * @brief Construct and immediately solve the Poisson problem.
@@ -173,15 +174,14 @@ public:
      * @param maxDimX3 A space to work in.
      * @param maxDimX3Ld
      */
-    EigenDecompSolver(const T *frontBack, size_t fbLd, const T *leftRight, size_t lrLd, const T *topBottom, size_t tbLd,
-                      T *f, size_t fStride, T *x, size_t xStride,
-                      size_t height, size_t width, size_t depth,
-                      T *rowsXRows, size_t rowsXRowsLd,
-                      T *colsXCols, size_t colsXColsLd,
-                      T *depthsXDepths, size_t depthsXDepthsLd,
-                      T *maxDimX3, size_t maxDimX3Ld
-                      );
-
+     static void solve(T *frontBack, size_t fbLd, T *leftRight, size_t lrLd, T *topBottom, size_t tbLd,
+                       T *f, size_t fStride, T *x, size_t xStride,
+                       size_t height, size_t width, size_t depth,
+                       T *rowsXRows, size_t rowsXRowsLd,
+                       T *colsXCols, size_t colsXColsLd,
+                       T *depthsXDepths, size_t depthsXDepthsLd,
+                       T *maxDimX3, size_t maxDimX3Ld
+     );
 };
 
 

@@ -54,7 +54,7 @@ rule CUDA_COMPILER__BiCGSTAB_unscanned_Debug
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_DEVICE_LINKER__BiCGSTAB_Debug
-  command = /usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES
+  command = /usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES -L"/usr/local/cuda/lib64"
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -84,7 +84,7 @@ rule CUDA_COMPILER__EigenDecomp_unscanned_Debug
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_DEVICE_LINKER__EigenDecomp_Debug
-  command = /usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES
+  command = /usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES -L"/usr/local/cuda/lib64"
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -114,7 +114,7 @@ rule CUDA_COMPILER__DirectSolver_unscanned_Debug
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_DEVICE_LINKER__DirectSolver_Debug
-  command = /usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES
+  command = /usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler $LANGUAGE_COMPILE_FLAGS $LINK_FLAGS -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES -L"/usr/local/cuda/lib64"
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 

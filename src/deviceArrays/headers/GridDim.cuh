@@ -6,11 +6,12 @@
 #define BICGSTAB_GRIDDIM_H
 #include "KernelPrep.cuh"
 
-#ifndef __CUDACC__
-#define __host__
-#define __device__
-#define __global__
-#endif
+//I have no idea why I need this.  TODO:delete this if everything seems to be working.
+// #ifndef __CUDACC__
+// #define __host__
+// #define __device__
+// #define __global__
+// #endif
 
 
 #include <cstddef>

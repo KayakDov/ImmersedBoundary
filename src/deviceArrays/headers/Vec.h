@@ -36,6 +36,7 @@ template<typename T> void eigenDecompSolver(const T* frontBack,  size_t fbLd,
 template <typename T>
 class Vec : public GpuArray<T> {
     using GpuArray<T>::mult;
+    using GpuArray<T>::kernelPrep;
 
 private:
     friend /*Vec<T> */Mat<T>;//::vec(size_t offset, size_t ld, size_t size);//TODO: friend just the relivent method, except that seems to create a circular dependency, so work on this another time.
@@ -81,6 +82,16 @@ public:
      * @return Vec<T> instance.
      */
     static Vec<T> create(size_t length, size_t stride, T* pointer);
+    /**
+     * @brief Factory method to create a new vector of given length.
+     *
+     * @param length Number of elements.
+     * @param stride The number of element between each element here.
+     * @param pointer Pointer to device memory. Memory management must be handled externally for vecs created here.
+     * @param stream Optional CUDA stream.
+     * @return Vec<T> instance.
+     */
+    static Vec<T> create(size_t length, size_t stride, const T* pointer);
 
     /**
      * @brief Returns a subvector view of this vector.

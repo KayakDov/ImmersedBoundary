@@ -43,6 +43,7 @@ add_library(BiCGSTAB_LIB STATIC
         src/Poisson/DirectSolver.cu
         src/Poisson/EigenDecompSolver.h
         src/Poisson/CubeBoundary.h
+        src/BiCGSTAB/BiCGSTAB.cuh
 )
 target_include_directories(BiCGSTAB_LIB PUBLIC ${CMAKE_SOURCE_DIR}/src)
 set_target_properties(BiCGSTAB_LIB PROPERTIES CUDA_SEPARABLE_COMPILATION ON)

@@ -1,26 +1,4 @@
 /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/opt/CLion-2025.2.5/clion-2025.2.5/bin/ninja/linux/x64/ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G Ninja -S /home/dov/Documents/TelAvivU -B /home/dov/Documents/TelAvivU/cmake-build-debug
--- The CXX compiler identification is GNU 13.3.0
--- The CUDA compiler identification is NVIDIA 13.0.88 with host compiler GNU 13.3.0
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: /usr/bin/g++ - skipped
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Detecting CUDA compiler ABI info
--- Detecting CUDA compiler ABI info - done
--- Check for working CUDA compiler: /usr/local/cuda/bin/nvcc - skipped
--- Detecting CUDA compile features
--- Detecting CUDA compile features - done
--- Found CUDAToolkit: /usr/local/cuda/targets/x86_64-linux/include (found version "13.0.88")
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
--- Found Threads: TRUE
--- Configuring done (5.5s)
+-- Configuring done (0.1s)
 -- Generating done (0.0s)
-CMake Warning:
-  Manually-specified variables were not used by the project:
-
-    CMAKE_C_COMPILER
-
-
 -- Build files have been written to: /home/dov/Documents/TelAvivU/cmake-build-debug

@@ -55,7 +55,7 @@ public:
      * @param stream CUDA stream for memory operations
      * @return CubeBoundary instance
      */
-    static CubeBoundary<T> ZeroTo1(const size_t dim, cudaStream_t stream);
+    static CubeBoundary<T> ZeroTo1(size_t dim, cudaStream_t stream);
 
     /**
      * @brief Generates a sample cube boundary with front=1, back=0, and linear transitions.
@@ -65,5 +65,5 @@ public:
      * @param stream CUDA stream for memory operations
      * @return CubeBoundary instance
      */
-    static CubeBoundary<T> ZeroTo1(const size_t height, const size_t width, const size_t depth, cudaStream_t stream);
+    static CubeBoundary<T> ZeroTo1(size_t height, size_t width, size_t depth, cudaStream_t stream);
 };

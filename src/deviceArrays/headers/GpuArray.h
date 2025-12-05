@@ -150,7 +150,6 @@ protected:
      */
     GpuArray(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr);
 
-
     /**
      * @brief Performs matrix multiplication with optional transposition, scaling factors, and result storage.
      *

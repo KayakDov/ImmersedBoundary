@@ -36,6 +36,9 @@
 template <typename T>
 class Tensor final : public GpuArray<T> {
     friend Vec<T>;
+    using GpuArray<T>::kernelPrep;
+    using GpuArray<T>::col;
+    using GpuArray<T>::row;
 private:
 
     /**

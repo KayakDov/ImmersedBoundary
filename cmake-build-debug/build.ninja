@@ -56,8 +56,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/BiCGSTAB.cu.o: CUDA_COMPILER__BiC
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/BiCGSTAB/Event.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -66,8 +64,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o: CUDA_COMPILER__BiCGST
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/Poisson/CubeBoundary.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -76,8 +72,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: CUDA_COMPILER__
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/Poisson/DirectSolver.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -86,8 +80,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: CUDA_COMPILER__
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/EigenDecompSolver.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/Poisson/EigenDecompSolver.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -96,8 +88,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/EigenDecompSolver.cu.o: CUDA_COMPI
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/Poisson/Poisson.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -106,8 +96,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: CUDA_COMPILER__BiCGS
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/BandedMatrix.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -116,8 +104,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: C
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/DeviceData.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -126,8 +112,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o: CUD
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/DeviceMemory.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -136,8 +120,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o: C
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/GpuArray.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -146,8 +128,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o: CUDA_
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/GridDim.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -156,8 +136,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o: CUDA_C
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/KernelPrep.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -166,8 +144,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o: CUD
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Mat.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -176,8 +152,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o: CUDA_COMPI
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Singleton.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -186,8 +160,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: CUDA
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/SquareMat.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -196,8 +168,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: CUDA
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o: CXX_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Streamable.cpp || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -206,8 +176,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o: CX
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Tensor.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -216,8 +184,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: CUDA_CO
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Vec.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -226,8 +192,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o: CUDA_COMPI
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/handle.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -236,8 +200,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o: CUDA_CO
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: CXX_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/streamHelper.cpp || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -246,8 +208,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: 
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 build CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/testMethods.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
   CONFIG = Debug
@@ -256,8 +216,6 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: CUDA_COMPILER__BiCGSTAB_
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
 
 
 # =============================================================================
@@ -273,9 +231,8 @@ build libBiCGSTAB_LIB.a: CXX_STATIC_LIBRARY_LINKER__BiCGSTAB_LIB_Debug CMakeFile
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB_LIB.dir/BiCGSTAB_LIB.pdb
   TARGET_FILE = libBiCGSTAB_LIB.a
-  TARGET_PDB = libBiCGSTAB_LIB.pdb
+  TARGET_PDB = BiCGSTAB_LIB.a.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target BiCGSTAB
@@ -293,8 +250,6 @@ build CMakeFiles/BiCGSTAB.dir/src/main.cu.o: CUDA_COMPILER__BiCGSTAB_unscanned_D
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB.dir/src
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB.dir/
-  TARGET_PDB = BiCGSTAB.pdb
 
 
 # =============================================================================
@@ -309,9 +264,7 @@ build CMakeFiles/BiCGSTAB.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKER_
   LINK_LIBRARIES = libBiCGSTAB_LIB.a  -ldl /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda/targets/x86_64-linux/lib/libculibos.a -lcudadevrt -lcudart_static -lrt -lpthread
   LINK_PATH = -L/usr/local/cuda/targets/x86_64-linux/lib/stubs
   OBJECT_DIR = CMakeFiles/BiCGSTAB.dir
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB.dir/
   TARGET_FILE = CMakeFiles/BiCGSTAB.dir/cmake_device_link.o
-  TARGET_PDB = BiCGSTAB.pdb
 
 # =============================================================================
 # Link build statements for EXECUTABLE target BiCGSTAB
@@ -330,9 +283,8 @@ build BiCGSTAB: CXX_EXECUTABLE_LINKER__BiCGSTAB_Debug CMakeFiles/BiCGSTAB.dir/sr
   OBJECT_DIR = CMakeFiles/BiCGSTAB.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = CMakeFiles/BiCGSTAB.dir/
   TARGET_FILE = BiCGSTAB
-  TARGET_PDB = BiCGSTAB.pdb
+  TARGET_PDB = BiCGSTAB.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target EigenDecomp
@@ -350,8 +302,6 @@ build CMakeFiles/EigenDecomp.dir/src/Poisson/FortranBindings.cu.o: CUDA_COMPILER
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/EigenDecomp.dir
   OBJECT_FILE_DIR = CMakeFiles/EigenDecomp.dir/src/Poisson
-  TARGET_COMPILE_PDB = CMakeFiles/EigenDecomp.dir/
-  TARGET_PDB = EigenDecomp.pdb
 
 
 # =============================================================================
@@ -366,9 +316,7 @@ build CMakeFiles/EigenDecomp.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINK
   LINK_LIBRARIES = libBiCGSTAB_LIB.a  -ldl /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda/targets/x86_64-linux/lib/libculibos.a -lcudadevrt -lcudart_static -lrt -lpthread
   LINK_PATH = -L/usr/local/cuda/targets/x86_64-linux/lib/stubs
   OBJECT_DIR = CMakeFiles/EigenDecomp.dir
-  TARGET_COMPILE_PDB = CMakeFiles/EigenDecomp.dir/
   TARGET_FILE = CMakeFiles/EigenDecomp.dir/cmake_device_link.o
-  TARGET_PDB = EigenDecomp.pdb
 
 # =============================================================================
 # Link build statements for EXECUTABLE target EigenDecomp
@@ -387,9 +335,8 @@ build EigenDecomp: CXX_EXECUTABLE_LINKER__EigenDecomp_Debug CMakeFiles/EigenDeco
   OBJECT_DIR = CMakeFiles/EigenDecomp.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = CMakeFiles/EigenDecomp.dir/
   TARGET_FILE = EigenDecomp
-  TARGET_PDB = EigenDecomp.pdb
+  TARGET_PDB = EigenDecomp.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target DirectSolver
@@ -407,8 +354,6 @@ build CMakeFiles/DirectSolver.dir/src/BiCGSTAB/RunDirectSolver.cu.o: CUDA_COMPIL
   INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/DirectSolver.dir
   OBJECT_FILE_DIR = CMakeFiles/DirectSolver.dir/src/BiCGSTAB
-  TARGET_COMPILE_PDB = CMakeFiles/DirectSolver.dir/
-  TARGET_PDB = DirectSolver.pdb
 
 
 # =============================================================================
@@ -423,9 +368,7 @@ build CMakeFiles/DirectSolver.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LIN
   LINK_LIBRARIES = libBiCGSTAB_LIB.a  -ldl /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda/targets/x86_64-linux/lib/libculibos.a -lcudadevrt -lcudart_static -lrt -lpthread
   LINK_PATH = -L/usr/local/cuda/targets/x86_64-linux/lib/stubs
   OBJECT_DIR = CMakeFiles/DirectSolver.dir
-  TARGET_COMPILE_PDB = CMakeFiles/DirectSolver.dir/
   TARGET_FILE = CMakeFiles/DirectSolver.dir/cmake_device_link.o
-  TARGET_PDB = DirectSolver.pdb
 
 # =============================================================================
 # Link build statements for EXECUTABLE target DirectSolver
@@ -444,9 +387,8 @@ build DirectSolver: CXX_EXECUTABLE_LINKER__DirectSolver_Debug CMakeFiles/DirectS
   OBJECT_DIR = CMakeFiles/DirectSolver.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = CMakeFiles/DirectSolver.dir/
   TARGET_FILE = DirectSolver
-  TARGET_PDB = DirectSolver.pdb
+  TARGET_PDB = DirectSolver.dbg
 
 
 #############################################
@@ -493,14 +435,14 @@ build all: phony libBiCGSTAB_LIB.a BiCGSTAB EigenDecomp DirectSolver
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja /home/dov/Documents/TelAvivU/cmake-build-debug/cmake_install.cmake: RERUN_CMAKE | /home/dov/Documents/TelAvivU/CMakeLists.txt /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCUDACompiler.cmake.in /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCUDACompilerABI.cu /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCUDAInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCXXCompiler.cmake.in /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCXXCompilerABI.cpp /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCXXInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCommonLanguageInclude.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCompilerIdDetection.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCUDACompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCXXCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCompilerABI.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCompilerId.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCompilerSupport.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineSystem.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeFindBinUtils.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeGenericSystem.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeInitializeConfigs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeLanguageInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeParseImplicitIncludeInfo.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeParseImplicitLinkInfo.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeParseLibraryArchitecture.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystem.cmake.in /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystemSpecificInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystemSpecificInitialize.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeTestCUDACompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeTestCXXCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeTestCompilerCommon.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckCXXSourceCompiles.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckIncludeFileCXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckLibraryExists.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/ADSP-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/ARMCC-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/ARMClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/AppleClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Borland-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Bruce-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/CMakeCommonCompilerMacros.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Clang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Clang-DetermineCompilerInternal.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Compaq-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Compaq-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Cray-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/CrayClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Embarcadero-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Fujitsu-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/FujitsuClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GHS-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-CXX-CXXImportStd.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-FindBinUtils.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/HP-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/HP-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IAR-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IBMClang-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IBMClang-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Intel-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IntelLLVM-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/LCC-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/LCC-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/MSVC-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVHPC-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/OrangeC-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/PGI-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/PathScale-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/SCO-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/SDCC-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/SunPro-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/SunPro-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/TI-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/TIClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Tasking-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/TinyCC-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/VisualAge-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/VisualAge-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Watcom-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/XL-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/XL-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/XLClang-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/XLClang-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/zOS-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/zOS-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindCUDAToolkit.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindPackageHandleStandardArgs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindPackageMessage.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindThreads.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAArchitecturesAll.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAArchitecturesNative.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAArchitecturesValidate.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAFilterImplicitLibs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAFindToolkit.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDALinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCXXLinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCommonLinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeDetermineLinkerId.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeInspectCUDALinker.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeInspectCXXLinker.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeNVCCFilterImplicitInfo.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeNVCCParseImplicitInfo.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CheckSourceCompiles.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/FeatureTesting.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-Determine-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-Initialize.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-NVIDIA-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/UnixPaths.cmake CMakeCache.txt CMakeFiles/4.0.2/CMakeCUDACompiler.cmake CMakeFiles/4.0.2/CMakeCXXCompiler.cmake CMakeFiles/4.0.2/CMakeSystem.cmake
+build build.ninja /home/dov/Documents/TelAvivU/cmake-build-debug/cmake_install.cmake: RERUN_CMAKE | /home/dov/Documents/TelAvivU/CMakeLists.txt /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCUDAInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCXXInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCommonLanguageInclude.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeGenericSystem.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeInitializeConfigs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeLanguageInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystemSpecificInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystemSpecificInitialize.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckCXXSourceCompiles.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckIncludeFileCXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckLibraryExists.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/CMakeCommonCompilerMacros.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindCUDAToolkit.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindPackageHandleStandardArgs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindPackageMessage.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindThreads.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCXXLinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCommonLinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CheckSourceCompiles.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-Initialize.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-NVIDIA-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/UnixPaths.cmake CMakeCache.txt CMakeFiles/4.0.2/CMakeCUDACompiler.cmake CMakeFiles/4.0.2/CMakeCXXCompiler.cmake CMakeFiles/4.0.2/CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build /home/dov/Documents/TelAvivU/CMakeLists.txt /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCUDACompiler.cmake.in /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCUDACompilerABI.cu /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCUDAInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCXXCompiler.cmake.in /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCXXCompilerABI.cpp /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCXXInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCommonLanguageInclude.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCompilerIdDetection.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCUDACompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCXXCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCompilerABI.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCompilerId.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineCompilerSupport.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeDetermineSystem.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeFindBinUtils.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeGenericSystem.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeInitializeConfigs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeLanguageInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeParseImplicitIncludeInfo.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeParseImplicitLinkInfo.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeParseLibraryArchitecture.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystem.cmake.in /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystemSpecificInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystemSpecificInitialize.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeTestCUDACompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeTestCXXCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeTestCompilerCommon.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckCXXSourceCompiles.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckIncludeFileCXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckLibraryExists.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/ADSP-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/ARMCC-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/ARMClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/AppleClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Borland-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Bruce-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/CMakeCommonCompilerMacros.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Clang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Clang-DetermineCompilerInternal.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Compaq-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Compaq-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Cray-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/CrayClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Embarcadero-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Fujitsu-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/FujitsuClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GHS-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-CXX-CXXImportStd.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-FindBinUtils.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/HP-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/HP-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IAR-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IBMClang-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IBMClang-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Intel-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/IntelLLVM-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/LCC-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/LCC-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/MSVC-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVHPC-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/OrangeC-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/PGI-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/PathScale-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/SCO-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/SDCC-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/SunPro-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/SunPro-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/TI-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/TIClang-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Tasking-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/TinyCC-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/VisualAge-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/VisualAge-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/Watcom-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/XL-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/XL-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/XLClang-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/XLClang-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/zOS-C-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/zOS-CXX-DetermineCompiler.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindCUDAToolkit.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindPackageHandleStandardArgs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindPackageMessage.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindThreads.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAArchitecturesAll.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAArchitecturesNative.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAArchitecturesValidate.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAFilterImplicitLibs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDAFindToolkit.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCUDALinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCXXLinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCommonLinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeDetermineLinkerId.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeInspectCUDALinker.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeInspectCXXLinker.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeNVCCFilterImplicitInfo.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeNVCCParseImplicitInfo.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CheckSourceCompiles.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/FeatureTesting.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-Determine-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-Initialize.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-NVIDIA-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/UnixPaths.cmake CMakeCache.txt CMakeFiles/4.0.2/CMakeCUDACompiler.cmake CMakeFiles/4.0.2/CMakeCXXCompiler.cmake CMakeFiles/4.0.2/CMakeSystem.cmake: phony
+build /home/dov/Documents/TelAvivU/CMakeLists.txt /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCUDAInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCXXInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeCommonLanguageInclude.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeGenericSystem.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeInitializeConfigs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeLanguageInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystemSpecificInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CMakeSystemSpecificInitialize.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckCXXSourceCompiles.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckIncludeFileCXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/CheckLibraryExists.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/CMakeCommonCompilerMacros.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Compiler/NVIDIA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindCUDAToolkit.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindPackageHandleStandardArgs.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindPackageMessage.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/FindThreads.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCXXLinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CMakeCommonLinkerInformation.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Internal/CheckSourceCompiles.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Linker/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linker/Linux-GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-GNU-CXX.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-GNU.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-Initialize.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux-NVIDIA-CUDA.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/Linux.cmake /opt/CLion-2025.2.5/clion-2025.2.5/bin/cmake/linux/x64/share/cmake-4.0/Modules/Platform/UnixPaths.cmake CMakeCache.txt CMakeFiles/4.0.2/CMakeCUDACompiler.cmake CMakeFiles/4.0.2/CMakeCXXCompiler.cmake CMakeFiles/4.0.2/CMakeSystem.cmake: phony
 
 
 #############################################
