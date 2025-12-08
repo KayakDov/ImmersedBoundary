@@ -96,7 +96,7 @@ void solveAndWriteOutput(BandedMat<T>& A, Vec<T>& b, const string& x_dest_file, 
     Mat<T> space = Mat<T>::create(b.size(), 7);
 
     BiCGSTAB setup(b, &space, static_cast<T>(epsilon), maxIter);
-    setup.solveUnpreconditionedBiCGSTAB(A, x);
+    setup.solveUnpreconditionedBiCGSTAB(A);
 
     ofstream x_fs(x_dest_file);
     if (!x_fs.is_open()) throw runtime_error("Could not open destination file: " + x_dest_file);

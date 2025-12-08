@@ -1,0 +1,8 @@
+Read yaml solverToFortran.yaml
+library C wrappers
+namespace poisson_gpu
+library Fortran wrappers
+namespace poisson_gpu
+Close wrapfpoisson_gpu.f
+Close utilpoisson_gpu.cpp
+Close typespoisson_gpu.h

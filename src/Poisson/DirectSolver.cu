@@ -188,12 +188,10 @@ public:
      * @param A Pre-allocated memory that will be used to compute the solution.  It should be numDiagonals rows and _b.size() columns.
      * @param[in] hand The CUDA handle (stream/context) to manage the computation.
      */
-    void solve(Vec<T>& x, Mat<T> prealocatedForBiCGSTAB) {
+    void solve(Mat<T> prealocatedForBiCGSTAB) {
 
         cudaDeviceSynchronize();
-        BiCGSTAB<T> solver(this->_b, &prealocatedForBiCGSTAB);
-
-        solver.solveUnpreconditionedBiCGSTAB(A, x);
+        BiCGSTAB<T>::solve(A, this->_b, &prealocatedForBiCGSTAB);
     }
 };
 

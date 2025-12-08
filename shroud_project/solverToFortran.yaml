@@ -1,0 +1,88 @@
+# solverToFortran.yaml
+library: poisson_gpu
+language: c++
+
+format:
+  CXX_T_FLOAT: float
+  CXX_T_DOUBLE: double
+
+# ---------------------------
+# solveDecomp: templated free function
+# ---------------------------
+functions:
+  - decl: |
+      template<typename T>
+      void solveDecomp(
+          T *frontBack, const size_t fbLd,
+          T *leftRight, const size_t lrLd,
+          T *topBottom, const size_t tbLd,
+          T *f, const size_t fStride,
+          T *x, const size_t xStride,
+          const size_t height, const size_t width, const size_t depth,
+          T *rowsXRows, const size_t rowsXRowsLd,
+          T *colsXCols, const size_t colsXColsLd,
+          T *depthsXDepths, const size_t depthsXDepthsLd,
+          T *maxDimX3, const size_t maxDimX3Ld
+      )
+    cxx_template:
+      T: [float, double]
+    fortran_generic: solve_decomp
+    parameters:
+      frontBack:      { role: array, intent: in }
+      fbLd:           { intent: in }
+      leftRight:      { role: array, intent: in }
+      lrLd:           { intent: in }
+      topBottom:      { role: array, intent: in }
+      tbLd:           { intent: in }
+      f:              { role: array, intent: inout }
+      fStride:        { intent: in }
+      x:              { role: array, intent: inout }
+      xStride:        { intent: in }
+      height:         { intent: in }
+      width:          { intent: in }
+      depth:          { intent: in }
+      rowsXRows:      { role: array, intent: inout }
+      rowsXRowsLd:    { intent: in }
+      colsXCols:      { role: array, intent: inout }
+      colsXColsLd:    { intent: in }
+      depthsXDepths:  { role: array, intent: inout }
+      depthsXDepthsLd:{ intent: in }
+      maxDimX3:       { role: array, intent: inout }
+      maxDimX3Ld:     { intent: in }
+
+# ---------------------------
+# solveBiCGSTAB: templated free function
+# ---------------------------
+  - decl: |
+      template<typename T>
+      void solveBiCGSTAB(
+          T *A,
+          const size_t aLd,
+          int32_t *inds,
+          const size_t indsStride,
+          const size_t numInds,
+          T *b,
+          const size_t bStride,
+          const size_t bSize,
+          T *prealocatedSizeX7,
+          const size_t prealocatedLd,
+          size_t maxIterations,
+          T tolerance
+      )
+    cxx_template:
+      T: [float, double]
+    fortran_generic: solve_bicgstab
+    parameters:
+      A:                   { role: array, intent: in }
+      aLd:                 { intent: in }
+      inds:                { role: array, intent: in }
+      indsStride:          { intent: in }
+      numInds:             { intent: in }
+      b:                   { role: array, intent: inout }
+      bStride:             { intent: in }
+      bSize:               { intent: in }
+      prealocatedSizeX7:   { role: array, intent: inout }
+      prealocatedLd:       { intent: in }
+      maxIterations:       { intent: in }
+      tolerance:           { intent: in }
+

@@ -1,0 +1,140 @@
+[
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/BiCGSTAB/BiCGSTAB.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/BiCGSTAB.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/BiCGSTAB/BiCGSTAB.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/BiCGSTAB.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/BiCGSTAB/Event.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/BiCGSTAB/Event.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/Poisson/CubeBoundary.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/Poisson/CubeBoundary.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/Poisson/DirectSolver.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/Poisson/DirectSolver.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/Poisson/EigenDecompSolver.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/EigenDecompSolver.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/Poisson/EigenDecompSolver.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/EigenDecompSolver.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/Poisson/Poisson.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/Poisson/Poisson.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/BandedMatrix.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/BandedMatrix.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/DeviceData.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/DeviceData.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/DeviceMemory.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/DeviceMemory.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/GpuArray.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/GpuArray.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/GridDim.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/GridDim.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/KernelPrep.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/KernelPrep.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Mat.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Mat.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Singleton.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Singleton.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/SquareMat.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/SquareMat.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/bin/g++ -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=gnu++17 -fdiagnostics-color=always -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Streamable.cpp",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Streamable.cpp",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Tensor.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Tensor.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Vec.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/Vec.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/handle.cu -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/handle.cu",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/bin/g++ -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=gnu++17 -fdiagnostics-color=always -o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o -c /home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/streamHelper.cpp",
+  "file": "/home/dov/Documents/TelAvivU/src/deviceArrays/defFiles/streamHelper.cpp",
+  "output": "CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -G -lineinfo -Xcompiler -fno-inline -x cu -c /home/dov/Documents/TelAvivU/src/main.cu -o CMakeFiles/BiCGSTAB.dir/src/main.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/main.cu",
+  "output": "CMakeFiles/BiCGSTAB.dir/src/main.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/testMethods.cu -o CMakeFiles/EigenDecomp.dir/src/testMethods.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/testMethods.cu",
+  "output": "CMakeFiles/EigenDecomp.dir/src/testMethods.cu.o"
+},
+{
+  "directory": "/home/dov/Documents/TelAvivU/cmake-build-debug",
+  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include -g -std=c++17 -arch=native -x cu -rdc=true -c /home/dov/Documents/TelAvivU/src/BiCGSTAB/RunDirectSolver.cu -o CMakeFiles/DirectSolver.dir/src/BiCGSTAB/RunDirectSolver.cu.o",
+  "file": "/home/dov/Documents/TelAvivU/src/BiCGSTAB/RunDirectSolver.cu",
+  "output": "CMakeFiles/DirectSolver.dir/src/BiCGSTAB/RunDirectSolver.cu.o"
+}
+]

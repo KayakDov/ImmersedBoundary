@@ -172,45 +172,6 @@ CubeBoundary<T> getCubeBoundary(T *frontBack, const size_t fbLd,
 
     return CubeBoundary<T>(frontBackMat, leftRightMat, topBottomMat);
 }
-//
-// /**
-//  * Creates 3 handles.
-//  * @return 3 handles
-//  */
-// std::array<Handle, 3> getDefaultHandles() {
-//     return {Handle(), Handle(), Handle()};
-// }
-
-template<typename T>
-void EigenDecompSolver<T>::solve(
-    T *frontBack, const size_t fbLd,
-    T *leftRight, const size_t lrLd,
-    T *topBottom, const size_t tbLd,
-    T *f, const size_t fStride,
-    T *x, const size_t xStride,
-    const size_t height, const size_t width, const size_t depth,
-    T *rowsXRows, const size_t rowsXRowsLd,
-    T *colsXCols, const size_t colsXColsLd,
-    T *depthsXDepths, const size_t depthsXDepthsLd,
-    T *maxDimX3, const size_t maxDimX3Ld
-) {
-    const size_t n = height * width * depth;
-    const auto cb = getCubeBoundary(frontBack, fbLd, leftRight, lrLd, topBottom, tbLd, height, width, depth);
-
-
-    std::array<Handle, 3> hands{};
-
-    auto xVec = Vec<T>::create(n, xStride, x);
-    auto fVec = Vec<T>::create(n, fStride, f);
-    auto xMat = SquareMat<T>::create(width, colsXColsLd, colsXCols);
-    auto yMat = SquareMat<T>::create(height, rowsXRowsLd, rowsXRows);
-    auto zMat = SquareMat<T>::create(depth, depthsXDepthsLd, depthsXDepths);
-    auto maxDimX3Mat = Mat<T>::create(n, 3, depthsXDepthsLd, maxDimX3);
-
-    EigenDecompSolver(cb, xVec, fVec, yMat, xMat, zMat, maxDimX3Mat, hands);
-
-    cudaDeviceSynchronize();
-}
 
 template class EigenDecompSolver<double>;
 template class EigenDecompSolver<float>;

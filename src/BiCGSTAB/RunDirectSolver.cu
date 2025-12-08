@@ -19,16 +19,14 @@ void testPoisson(const size_t height, size_t width, size_t depth, Handle& hand) 
 
     auto boundary = CubeBoundary<double>::ZeroTo1(height, width, depth, hand);
 
-    auto longVecs = Mat<double>::create(boundary.internalSize(), 2 + numDiagonals + 7);
+    auto longVecs = Mat<double>::create(boundary.internalSize(), 1 + numDiagonals + 7);
     auto b = longVecs.col(0);
     b.fill(0, hand);
 
     // std::cout << "RunDirectSolver testPoisson b: " << b.size() << std::endl << GpuOut<double>(b, hand) << std::endl;
 
-
-    auto x = longVecs.col(1);
-    auto A = longVecs.subMat(0, 2, boundary.internalSize(), numDiagonals);
-    auto prealocatedForBiCGSTAB = longVecs.subMat(0, 2 + numDiagonals, boundary.internalSize(), 7);
+    auto A = longVecs.subMat(0, 1, boundary.internalSize(), numDiagonals);
+    auto prealocatedForBiCGSTAB = longVecs.subMat(0, 1 + numDiagonals, boundary.internalSize(), 7);
 
     auto diagonalInds = Vec<int32_t>::create(numDiagonals);
 
@@ -36,7 +34,7 @@ void testPoisson(const size_t height, size_t width, size_t depth, Handle& hand) 
 
     boundary.freeMem();
 
-    solver.solve(x, prealocatedForBiCGSTAB);
+    solver.solve(prealocatedForBiCGSTAB);
 
     // std::cout << "x = \n" << GpuOut<double>(x.tensor(height, depth), hand) << std::endl;
 

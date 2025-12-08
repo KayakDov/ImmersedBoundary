@@ -91,49 +91,24 @@ BiCGSTAB<T>::BiCGSTAB(
 template<typename T>
 void BiCGSTAB<T>::solve(
     const BandedMat<T> &A,
-    Vec<T> &x,
-    const Vec<T> &b,
+    Vec<T> &b,
     Mat<T> *preAllocated,
     const T tolerance,
     const size_t maxIterations
 ) {
     BiCGSTAB solver(b, preAllocated, tolerance, maxIterations);
-    solver.solveUnpreconditionedBiCGSTAB(A, x);
+    solver.solveUnpreconditionedBiCGSTAB(A);
 }
 
 template<typename T>
-void BiCGSTAB<T>::solve(
-    T *A,
-    const size_t aLd,
-    int32_t *inds,
-    const size_t indsStride,
-    const size_t numInds,
-    T *x,
-    const size_t xStride,
-    T *b,
-    const size_t bStride,
-    const size_t bSize,
-    T *prealocatedSizeX7, //size x 7 matrix
-    const size_t prealocatedLd,
-    size_t maxIterations,
-    T tolerance
-) {
-    Mat<T> preAlocatedMat = Mat<T>::create(bSize, 7, prealocatedLd, prealocatedSizeX7);
-    Vec<T> bVec = Vec<T>::create(bSize, bStride, b);
-    const auto ABanded = BandedMat<T>::create(bSize, numInds, aLd, A, inds, indsStride); //rows cols pointer VecIndices
-    auto xVec = Vec<T>::create(bSize, xStride, b);
-    BiCGSTAB<T>::solve(ABanded, xVec, bVec, &preAlocatedMat, tolerance, maxIterations);
-}
-
-template<typename T>
-void BiCGSTAB<T>::preamable(const BandedMat<T> &A, Vec<T> &x) {
-    x.fillRandom(&handle[0]); // set x randomly
-    // x.fill(1, handle[0]);
-
-    record(0, xReady);
+void BiCGSTAB<T>::preamable(const BandedMat<T> &A) {
 
     set(r, b, 0);
-    A.bandedMult(x, r, handle, Singleton<T>::MINUS_ONE, Singleton<T>::ONE); // r = b - A * x
+
+    b.fillRandom(&handle[0]); // set x randomly      // x.fill(1, handle[0]);
+    record(0, xReady);
+
+    A.bandedMult(b, r, handle, Singleton<T>::MINUS_ONE, Singleton<T>::ONE); // r = b - A * x
 
     set(r_tilde, r, 0); //r_tilde = r
 
@@ -145,10 +120,10 @@ void BiCGSTAB<T>::preamable(const BandedMat<T> &A, Vec<T> &x) {
 }
 
 template<typename T>
-void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A, Vec<T> &x) {
+void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A) {
     cudaDeviceSynchronize();
     TimePoint start = std::chrono::steady_clock::now();
-    preamable(A, x);
+    preamable(A);
 
     size_t numIterations = 0;
     for (; numIterations < maxIterations; numIterations++) {
@@ -162,7 +137,7 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A, Vec<T> &x
         omegaReady.renew();
         wait(1, {alphaReady});
 
-        set(h, x, 1);
+        set(h, b, 1);
         synch(1);
         renew({alphaReady, xReady});
         h.add(p, &alpha, handle + 1); // h = x + alpha * p
@@ -172,7 +147,7 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A, Vec<T> &x
 
         wait(2, {sReady, hReady});
         if (isSmall(s, temp[2], 2)) {
-            set(x, h, 2);
+            set(b, h, 2);
             break;
         }
         renew({sReady, hReady});
@@ -188,7 +163,7 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A, Vec<T> &x
         record(0, {omegaReady});
 
         wait(1, {omegaReady});
-        x.setSum(h, s, Singleton<T>::ONE, omega, handle + 1); // x = h + omega * s
+        b.setSum(h, s, Singleton<T>::ONE, omega, handle + 1); // x = h + omega * s
         record(1, {xReady});
 
         synch(0);

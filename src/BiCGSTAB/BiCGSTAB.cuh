@@ -37,7 +37,7 @@ private:
     const T tolerance;
     Handle handle[4]{};
     Event alphaReady, sReady, hReady, omegaReady, rReady, xReady, prodTS;
-    const Vec<T> b;
+    Vec<T> b;
     Mat<T> paM;
     Vec<T> r, r_tilde, p, v, s, t, h;
     Vec<T> paV;
@@ -85,7 +85,7 @@ private:
  *
  * @brief Initalizes variables r_tilde, r, b, p, and rx.ho
  */
-    void preamable(const BandedMat<T> &A, Vec<T> &x);
+    void preamable(const BandedMat<T> &A);
 
 public:
     /**
@@ -103,51 +103,17 @@ public:
      */
     static void solve(
         const BandedMat<T> &A,
-        Vec<T> &x,
-        const Vec<T> &b,
+        Vec<T> &b,
         Mat<T> *preAllocated = nullptr,
-        const T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
-        const size_t maxIterations = 1500
-    );
-
-    /**
-     * Solves Ax = b
-     * @param A The banded matrix.  Each column represents a diagonal of a sparse matrix.  Shorter diagonals will have
-     * trailing padding, but never leading padding.  There should be as many columns as there are diagonals in the
-     * square sparse matrix, and as many rows as there are rows in the square sparse matrix.
-     * @param aLd The leading dimension of A.  It is the distance between the first elements of each column.  Must be
-     * at least the number of rows in A, but may be more if there's padding.
-     * @param inds The ith element is the diagonal index of the ith column in A.  Super diagonals have positive indices,
-     * and subdiagonals have negative indices.  The absolute value of the index is the distance of the diagonal from the
-     * primary diagonal.
-     * @param indsStride  The distance between elements of inds.  This is usually 1.
-     * @param numInds The number of diagonals.
-     * @param x The solution will be put here.
-     * @param xStride The distance between elements of x.
-     * @param b The RHS of Ax=b.
-     * @param bStride The distance between elements of b.
-     * @param bSize The number of elements in b, x, and the number of rows in A.
-     * @param prealocatedSizeX7 should have bSize rows and 7 columns.  Will be overwritten.
-     * @param prealocatedLd The distance between the first elements of each column of prealocatedSizeX7.
-     * @param maxIterations The maximum number of iterations.
-     * @param tolerance What's close enough to 0.
-     */
-    static void solve(
-        T *A, size_t aLd,
-        int32_t *inds, size_t indsStride, size_t numInds,
-        T *x, size_t xStride,
-        T *b, size_t bStride, size_t bSize,
-        T *prealocatedSizeX7,
-        size_t prealocatedLd,
-        size_t maxIterations = 1500,
-        T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6)
+        T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
+        size_t maxIterations = 1500
     );
 
     /**
      * @brief Solves the linear system $A\mathbf{x} = \mathbf{b}$ using the
      * unpreconditioned BiCGSTAB algorithm.
      */
-    void solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A, Vec<T> &x);
+    void solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A);
 };
 
 #endif // BICGSTAB_H

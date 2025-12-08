@@ -53,7 +53,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/BiCGSTAB.cu.o: CUDA_COMPILER__BiC
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/BiCGSTAB.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB
 
@@ -61,7 +61,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o: CUDA_COMPILER__BiCGST
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB
 
@@ -69,7 +69,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o: CUDA_COMPILER__
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson
 
@@ -77,7 +77,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o: CUDA_COMPILER__
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson
 
@@ -85,7 +85,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/EigenDecompSolver.cu.o: CUDA_COMPI
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/EigenDecompSolver.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson
 
@@ -93,7 +93,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o: CUDA_COMPILER__BiCGS
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson
 
@@ -101,7 +101,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o: C
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -109,7 +109,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o: CUD
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -117,7 +117,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o: C
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -125,7 +125,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o: CUDA_
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -133,7 +133,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o: CUDA_C
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -141,7 +141,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o: CUD
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -149,7 +149,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o: CUDA_COMPI
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -157,7 +157,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o: CUDA
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -165,7 +165,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o: CUDA
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -173,7 +173,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o: CX
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o.d
   FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -181,7 +181,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o: CUDA_CO
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -189,7 +189,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o: CUDA_COMPI
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -197,7 +197,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o: CUDA_CO
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
 
@@ -205,17 +205,9 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: 
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o.d
   FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles
-
-build CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: CUDA_COMPILER__BiCGSTAB_LIB_unscanned_Debug /home/dov/Documents/TelAvivU/src/testMethods.cu || cmake_object_order_depends_target_BiCGSTAB_LIB
-  CONFIG = Debug
-  DEP_FILE = CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o.d
-  FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
-  OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
-  OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB_LIB.dir/src
 
 
 # =============================================================================
@@ -225,7 +217,7 @@ build CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o: CUDA_COMPILER__BiCGSTAB_
 #############################################
 # Link the static library libBiCGSTAB_LIB.a
 
-build libBiCGSTAB_LIB.a: CXX_STATIC_LIBRARY_LINKER__BiCGSTAB_LIB_Debug CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/BiCGSTAB.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/EigenDecompSolver.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o CMakeFiles/BiCGSTAB_LIB.dir/src/testMethods.cu.o
+build libBiCGSTAB_LIB.a: CXX_STATIC_LIBRARY_LINKER__BiCGSTAB_LIB_Debug CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/BiCGSTAB.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/BiCGSTAB/Event.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/CubeBoundary.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/DirectSolver.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/EigenDecompSolver.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/Poisson/Poisson.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceData.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GpuArray.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/GridDim.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/KernelPrep.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Mat.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Singleton.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/SquareMat.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Streamable.cpp.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Tensor.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/Vec.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/handle.cu.o CMakeFiles/BiCGSTAB_LIB.dir/src/deviceArrays/defFiles/streamHelper.cpp.o
   CONFIG = Debug
   LANGUAGE_COMPILE_FLAGS = -g
   OBJECT_DIR = CMakeFiles/BiCGSTAB_LIB.dir
@@ -247,7 +239,7 @@ build CMakeFiles/BiCGSTAB.dir/src/main.cu.o: CUDA_COMPILER__BiCGSTAB_unscanned_D
   CONFIG = Debug
   DEP_FILE = CMakeFiles/BiCGSTAB.dir/src/main.cu.o.d
   FLAGS = -g -std=c++17 -arch=native -G -lineinfo -Xcompiler -fno-inline
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/BiCGSTAB.dir
   OBJECT_FILE_DIR = CMakeFiles/BiCGSTAB.dir/src
 
@@ -295,13 +287,13 @@ build BiCGSTAB: CXX_EXECUTABLE_LINKER__BiCGSTAB_Debug CMakeFiles/BiCGSTAB.dir/sr
 
 build cmake_object_order_depends_target_EigenDecomp: phony || cmake_object_order_depends_target_BiCGSTAB_LIB
 
-build CMakeFiles/EigenDecomp.dir/src/Poisson/FortranBindings.cu.o: CUDA_COMPILER__EigenDecomp_unscanned_Debug /home/dov/Documents/TelAvivU/src/Poisson/FortranBindings.cu || cmake_object_order_depends_target_EigenDecomp
+build CMakeFiles/EigenDecomp.dir/src/testMethods.cu.o: CUDA_COMPILER__EigenDecomp_unscanned_Debug /home/dov/Documents/TelAvivU/src/testMethods.cu || cmake_object_order_depends_target_EigenDecomp
   CONFIG = Debug
-  DEP_FILE = CMakeFiles/EigenDecomp.dir/src/Poisson/FortranBindings.cu.o.d
+  DEP_FILE = CMakeFiles/EigenDecomp.dir/src/testMethods.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/EigenDecomp.dir
-  OBJECT_FILE_DIR = CMakeFiles/EigenDecomp.dir/src/Poisson
+  OBJECT_FILE_DIR = CMakeFiles/EigenDecomp.dir/src
 
 
 # =============================================================================
@@ -311,7 +303,7 @@ build CMakeFiles/EigenDecomp.dir/src/Poisson/FortranBindings.cu.o: CUDA_COMPILER
 #############################################
 # Link the executable CMakeFiles/EigenDecomp.dir/cmake_device_link.o
 
-build CMakeFiles/EigenDecomp.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKER__EigenDecomp_Debug CMakeFiles/EigenDecomp.dir/src/Poisson/FortranBindings.cu.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so /usr/local/cuda/targets/x86_64-linux/lib/libculibos.a || libBiCGSTAB_LIB.a
+build CMakeFiles/EigenDecomp.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKER__EigenDecomp_Debug CMakeFiles/EigenDecomp.dir/src/testMethods.cu.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so /usr/local/cuda/targets/x86_64-linux/lib/libculibos.a || libBiCGSTAB_LIB.a
   LANGUAGE_COMPILE_FLAGS = -g -arch=native
   LINK_LIBRARIES = libBiCGSTAB_LIB.a  -ldl /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda/targets/x86_64-linux/lib/libculibos.a -lcudadevrt -lcudart_static -lrt -lpthread
   LINK_PATH = -L/usr/local/cuda/targets/x86_64-linux/lib/stubs
@@ -325,7 +317,7 @@ build CMakeFiles/EigenDecomp.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINK
 #############################################
 # Link the executable EigenDecomp
 
-build EigenDecomp: CXX_EXECUTABLE_LINKER__EigenDecomp_Debug CMakeFiles/EigenDecomp.dir/src/Poisson/FortranBindings.cu.o CMakeFiles/EigenDecomp.dir/cmake_device_link.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so /usr/local/cuda/targets/x86_64-linux/lib/libculibos.a || libBiCGSTAB_LIB.a
+build EigenDecomp: CXX_EXECUTABLE_LINKER__EigenDecomp_Debug CMakeFiles/EigenDecomp.dir/src/testMethods.cu.o CMakeFiles/EigenDecomp.dir/cmake_device_link.o | libBiCGSTAB_LIB.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcudart.so /usr/lib/x86_64-linux-gnu/librt.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusolver.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublas.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libculibos.a /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcublasLt.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libcusparse.so /usr/local/cuda-13.0/targets/x86_64-linux/lib/libnvJitLink.so /usr/local/cuda/targets/x86_64-linux/lib/libculibos.a || libBiCGSTAB_LIB.a
   CONFIG = Debug
   DEP_FILE = CMakeFiles/EigenDecomp.dir/link.d
   FLAGS = -g
@@ -351,7 +343,7 @@ build CMakeFiles/DirectSolver.dir/src/BiCGSTAB/RunDirectSolver.cu.o: CUDA_COMPIL
   CONFIG = Debug
   DEP_FILE = CMakeFiles/DirectSolver.dir/src/BiCGSTAB/RunDirectSolver.cu.o.d
   FLAGS = -g -std=c++17 -arch=native
-  INCLUDES = -I/home/dov/Documents/TelAvivU/src -isystem /usr/local/cuda/targets/x86_64-linux/include
+  INCLUDES = -I/home/dov/Documents/TelAvivU/src -I/home/dov/Documents/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/TelAvivU/src/Poisson -isystem /usr/local/cuda/targets/x86_64-linux/include
   OBJECT_DIR = CMakeFiles/DirectSolver.dir
   OBJECT_FILE_DIR = CMakeFiles/DirectSolver.dir/src/BiCGSTAB
 
