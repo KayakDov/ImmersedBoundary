@@ -12,6 +12,31 @@ extern "C" {
 // splicer begin C_definitions
 // splicer end C_definitions
 
+void FOR_solveBiCGSTAB_float(float *A, const size_t aLd, int32_t *inds,
+    const size_t indsStride, const size_t numInds, float *b,
+    const size_t bStride, const size_t bSize, float *prealocatedSizeX7,
+    const size_t prealocatedLd, size_t maxIterations, float tolerance)
+{
+    // splicer begin function.solveBiCGSTAB_float
+    solveBiCGSTAB<float>(A, aLd, inds, indsStride, numInds, b, bStride,
+        bSize, prealocatedSizeX7, prealocatedLd, maxIterations,
+        tolerance);
+    // splicer end function.solveBiCGSTAB_float
+}
+
+void FOR_solveBiCGSTAB_double(double *A, const size_t aLd,
+    int32_t *inds, const size_t indsStride, const size_t numInds,
+    double *b, const size_t bStride, const size_t bSize,
+    double *prealocatedSizeX7, const size_t prealocatedLd,
+    size_t maxIterations, double tolerance)
+{
+    // splicer begin function.solveBiCGSTAB_double
+    solveBiCGSTAB<double>(A, aLd, inds, indsStride, numInds, b, bStride,
+        bSize, prealocatedSizeX7, prealocatedLd, maxIterations,
+        tolerance);
+    // splicer end function.solveBiCGSTAB_double
+}
+
 void FOR_solveDecomp_float(float *frontBack, const size_t fbLd,
     float *leftRight, const size_t lrLd, float *topBottom,
     const size_t tbLd, float *f, const size_t fStride, float *x,
@@ -44,28 +69,6 @@ void FOR_solveDecomp_double(double *frontBack, const size_t fbLd,
         rowsXRowsLd, colsXCols, colsXColsLd, depthsXDepths,
         depthsXDepthsLd, maxDimX3, maxDimX3Ld);
     // splicer end function.solveDecomp_double
-}
-
-void FOR_solveBiCGSTAB_float(float *A, const size_t aLd, int32_t *inds,
-    const size_t indsStride, const size_t numInds, float *b,
-    const size_t bSize, float *prealocatedSizeX7,
-    const size_t prealocatedLd, size_t maxIterations, float tolerance)
-{
-    // splicer begin function.solveBiCGSTAB_float
-    solveBiCGSTAB<float>(A, aLd, inds, indsStride, numInds, b, bSize,
-        prealocatedSizeX7, prealocatedLd, maxIterations, tolerance);
-    // splicer end function.solveBiCGSTAB_float
-}
-
-void FOR_solveBiCGSTAB_double(double *A, const size_t aLd,
-    int32_t *inds, const size_t indsStride, const size_t numInds,
-    double *b, const size_t bSize, double *prealocatedSizeX7,
-    const size_t prealocatedLd, size_t maxIterations, double tolerance)
-{
-    // splicer begin function.solveBiCGSTAB_double
-    solveBiCGSTAB<double>(A, aLd, inds, indsStride, numInds, b, bSize,
-        prealocatedSizeX7, prealocatedLd, maxIterations, tolerance);
-    // splicer end function.solveBiCGSTAB_double
 }
 
 }  // extern "C"

@@ -28,6 +28,17 @@ extern "C" {
 // splicer begin C_declarations
 // splicer end C_declarations
 
+void FOR_solveBiCGSTAB_float(float *A, const size_t aLd, int32_t *inds,
+    const size_t indsStride, const size_t numInds, float *b,
+    const size_t bStride, const size_t bSize, float *prealocatedSizeX7,
+    const size_t prealocatedLd, size_t maxIterations, float tolerance);
+
+void FOR_solveBiCGSTAB_double(double *A, const size_t aLd,
+    int32_t *inds, const size_t indsStride, const size_t numInds,
+    double *b, const size_t bStride, const size_t bSize,
+    double *prealocatedSizeX7, const size_t prealocatedLd,
+    size_t maxIterations, double tolerance);
+
 void FOR_solveDecomp_float(float *frontBack, const size_t fbLd,
     float *leftRight, const size_t lrLd, float *topBottom,
     const size_t tbLd, float *f, const size_t fStride, float *x,
@@ -45,16 +56,6 @@ void FOR_solveDecomp_double(double *frontBack, const size_t fbLd,
     double *colsXCols, const size_t colsXColsLd, double *depthsXDepths,
     const size_t depthsXDepthsLd, double *maxDimX3,
     const size_t maxDimX3Ld);
-
-void FOR_solveBiCGSTAB_float(float *A, const size_t aLd, int32_t *inds,
-    const size_t indsStride, const size_t numInds, float *b,
-    const size_t bSize, float *prealocatedSizeX7,
-    const size_t prealocatedLd, size_t maxIterations, float tolerance);
-
-void FOR_solveBiCGSTAB_double(double *A, const size_t aLd,
-    int32_t *inds, const size_t indsStride, const size_t numInds,
-    double *b, const size_t bSize, double *prealocatedSizeX7,
-    const size_t prealocatedLd, size_t maxIterations, double tolerance);
 
 #ifdef __cplusplus
 }

@@ -3,50 +3,46 @@ cxx_header: "FortranBindings.hpp"
 
 declarations:
 - decl: |
-      template<typename T>
-      void solveDecomp(
-          T *frontBack +deref(pointer),
-          const size_t fbLd,
-          T *leftRight +deref(pointer),
-          const size_t lrLd,
-          T *topBottom +deref(pointer),
-          const size_t tbLd,
-          T *f +deref(pointer),
-          const size_t fStride,
-          T *x +deref(pointer),
-          const size_t xStride,
-          const size_t height,
-          const size_t width,
-          const size_t depth,
-          T *rowsXRows +deref(pointer),
-          const size_t rowsXRowsLd,
-          T *colsXCols +deref(pointer),
-          const size_t colsXColsLd,
-          T *depthsXDepths +deref(pointer),
-          const size_t depthsXDepthsLd,
-          T *maxDimX3 +deref(pointer),
-          const size_t maxDimX3Ld
-      )
+    template<typename T>
+    void solveBiCGSTAB(
+            T* A,
+            const size_t aLd,
+            int32_t* inds,
+            const size_t indsStride,
+            const size_t numInds,
+            T* b,
+            const size_t bStride,
+            const size_t bSize,
+            T* prealocatedSizeX7,
+            const size_t prealocatedLd,
+            size_t maxIterations,
+            T tolerance
+        )
+      
   cxx_template:
   - instantiation: <float>
   - instantiation: <double>
+  fortran:
+      pass_as: c_ptr  # <-- this makes it a C pointer in Fortran
+      array_style: pointer
 
 - decl: |
-      template<typename T>
-      void solveBiCGSTAB(
-          T *A +deref(pointer),
-          const size_t aLd,
-          int32_t *inds +deref(pointer),
-          const size_t indsStride,
-          const size_t numInds,
-          T *b +deref(pointer),
-          const size_t bSize,
-          T *prealocatedSizeX7 +deref(pointer),
-          const size_t prealocatedLd,
-          size_t maxIterations,
-          T tolerance
-      )
+    template<typename T>
+    void solveDecomp(
+        T* frontBack, const size_t fbLd,
+        T* leftRight, const size_t lrLd,
+        T* topBottom, const size_t tbLd,
+        T* f, const size_t fStride,
+        T* x, const size_t xStride,
+        const size_t height, const size_t width, const size_t depth,
+        T* rowsXRows, const size_t rowsXRowsLd,
+        T* colsXCols, const size_t colsXColsLd,
+        T* depthsXDepths, const size_t depthsXDepthsLd,
+        T* maxDimX3, const size_t maxDimX3Ld
+    )
   cxx_template:
   - instantiation: <float>
   - instantiation: <double>
-
+  fortran:
+      pass_as: c_ptr  # <-- this makes it a C pointer in Fortran
+      array_style: pointer

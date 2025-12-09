@@ -23,51 +23,54 @@
  *
  * This constructor is meant to be run as a fortran method.
  *
- * @param frontBackPtr A pointer to the device front and back boundaries.  The back boundary matrix should be below the
+ * @param frontBack A pointer to the device front and back boundaries.  The back boundary matrix should be below the
  * front boundary matrix.  This will not be changed.
  * @param fbLd The leading dimension of the frontBack matrix.  The distance between the first element of each column.
- * @param leftRightPtr This will not be changed.
+ * @param leftRight This will not be changed.
  * @param lrLd
- * @param topBottomPtr this will not be changed.
+ * @param topBottom this will not be changed.
  * @param tbLd
- * @param xPtr Output buffer for the solution. No padding is permitted.
+ * @param x Output buffer for the solution. No padding is permitted.
  * @param xStride The distance between elements of the output data.
  * @param height Height of the grid.
  * @param width Width of the grid.
  * @param depth Depth of the grid.
- * @param fPtr Right-hand-side of the Poisson equation (will be overwritten).  No padding is permitted.
+ * @param f Right-hand-side of the Poisson equation (will be overwritten).  No padding is permitted.
  * @param fStride The distance between elements of the f vector.
- * @param rowsXRowsPtr A space to work in.  Will be changed.
+ * @param rowsXRows A space to work in.  Will be changed.
  * @param rowsXRowsLd
- * @param colsXColsPtr A space to work in.  Will be changed.
+ * @param colsXCols A space to work in.  Will be changed.
  * @param colsXColsLd
- * @param depthsXDepthsPtr A space to work in.  Will be changed.
+ * @param depthsXDepths A space to work in.  Will be changed.
  * @param depthsXDepthsLd
- * @param maxDimX3Ptr A space to work in.  Will be changed.
+ * @param maxDimX3 A space to work in.  Will be changed.
  * @param maxDimX3Ld
  */
 template<typename T>
 void solveDecomp(
-    intptr_t frontBack, const size_t fbLd,
-    intptr_t leftRight, const size_t lrLd,
-    intptr_t topBottom, const size_t tbLd,
-    intptr_t f, const size_t fStride,
-    intptr_t x, const size_t xStride,
+    T* frontBack, const size_t fbLd,
+    T* leftRight, const size_t lrLd,
+    T* topBottom, const size_t tbLd,
+    T* f, const size_t fStride,
+    T* x, const size_t xStride,
     const size_t height, const size_t width, const size_t depth,
-    intptr_t rowsXRows, const size_t rowsXRowsLd,
-    intptr_t colsXCols, const size_t colsXColsLd,
-    intptr_t depthsXDepths, const size_t depthsXDepthsLd,
-    intptr_t maxDimX3, const size_t maxDimX3Ld
+    T* rowsXRows, const size_t rowsXRowsLd,
+    T* colsXCols, const size_t colsXColsLd,
+    T* depthsXDepths, const size_t depthsXDepthsLd,
+    T *maxDimX3, const size_t maxDimX3Ld
 ) {
     const size_t n = height * width * depth;
-    const auto cb = getCubeBoundary(reinterpret_cast<T*>(frontBack), fbLd, reinterpret_cast<T*>(leftRight), lrLd,  reinterpret_cast<T*>(topBottom), tbLd, height, width, depth);
+    auto frontBackMat = Mat<T>::create(2*height, width, fbLd, frontBack);
+    auto leftRightMat = Mat<T>::create(2*height, depth, lrLd, leftRight);
+    auto topBottomMat = Mat<T>::create(2*depth, width, tbLd, topBottom);
+    const CubeBoundary cb(frontBackMat, leftRightMat, topBottomMat);
     std::array<Handle, 3> hands{};
-    auto xVec = Vec<T>::create(n, xStride, reinterpret_cast<T*>(x));
-    auto fVec = Vec<T>::create(n, fStride, reinterpret_cast<T*>(f));
-    auto xMat = SquareMat<T>::create(width, colsXColsLd, reinterpret_cast<T*>(colsXCols));
-    auto yMat = SquareMat<T>::create(height, rowsXRowsLd, reinterpret_cast<T*>(rowsXRows));
-    auto zMat = SquareMat<T>::create(depth, depthsXDepthsLd, reinterpret_cast<T*>(depthsXDepths));
-    auto maxDimX3Mat = Mat<T>::create(n, 3, depthsXDepthsLd, reinterpret_cast<T*>(maxDimX3));
+    auto xVec = Vec<T>::create(n, xStride, x);
+    auto fVec = Vec<T>::create(n, fStride, f);
+    auto xMat = SquareMat<T>::create(width, colsXColsLd, colsXCols);
+    auto yMat = SquareMat<T>::create(height, rowsXRowsLd, rowsXRows);
+    auto zMat = SquareMat<T>::create(depth, depthsXDepthsLd, depthsXDepths);
+    auto maxDimX3Mat = Mat<T>::create(n, 3, depthsXDepthsLd, maxDimX3);
 
     cudaDeviceSynchronize();
     EigenDecompSolver(cb, xVec, fVec, yMat, xMat, zMat, maxDimX3Mat, hands);
@@ -96,16 +99,16 @@ void solveDecomp(
  * @param tolerance What's close enough to 0.
  */
 template<typename T>
-void solveBiCGSTAB(//TODO: convert code to use intptr
-    intptr_t A,
+void solveBiCGSTAB(
+    T* A,
     const size_t aLd,
-    intptr_t inds,
+    int32_t* inds,
     const size_t indsStride,
     const size_t numInds,
-    intptr_t b,
+    T* b,
     const size_t bStride,
     const size_t bSize,
-    intptr_t prealocatedSizeX7, //size x 7 matrix
+    T* prealocatedSizeX7, //size x 7 matrix
     const size_t prealocatedLd,
     size_t maxIterations,
     T tolerance
@@ -113,5 +116,5 @@ void solveBiCGSTAB(//TODO: convert code to use intptr
     Mat<T> preAlocatedMat = Mat<T>::create(bSize, 7, prealocatedLd, prealocatedSizeX7);
     Vec<T> bVec = Vec<T>::create(bSize, bStride, b);
     const auto ABanded = BandedMat<T>::create(bSize, numInds, aLd, A, inds, indsStride); //rows cols pointer VecIndices
-    BiCGSTAB<T>::solve(ABanded,&preAlocatedMat, tolerance, maxIterations);
+    BiCGSTAB<T>::solve(ABanded,bVec, &preAlocatedMat, tolerance, maxIterations);
 }
