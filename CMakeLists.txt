@@ -25,8 +25,8 @@ include_directories(
 
 # Collect all source files
 file(GLOB_RECURSE ALL_SRC
-        "${CMAKE_CURRENT_SOURCE_DIR}/*.cu"
-        "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cu"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
 # Remove all possible main files except testMethods.cu
@@ -38,9 +38,10 @@ set(MAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/testMethods.cu")
 
 
 add_executable(testMethods
-        ${MAIN_FILE}
         ${ALL_SRC}
 )
+
+
 
 # Enable separable compilation
 set_target_properties(testMethods PROPERTIES

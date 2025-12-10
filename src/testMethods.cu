@@ -1,7 +1,7 @@
 
 #include <chrono>
-#include <Poisson/CubeBoundary.h>
-#include <Poisson/EigenDecompSolver.h>
+#include "Poisson/CubeBoundary.h"
+#include "Poisson/EigenDecompSolver.h"
 #include "Poisson/DirectSolver.cuh"
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;

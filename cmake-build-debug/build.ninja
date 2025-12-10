@@ -49,62 +49,6 @@ cmake_ninja_workdir = /home/dov/Documents/CudaBanded/TelAvivU/cmake-build-debug/
 
 build cmake_object_order_depends_target_testMethods: phony || .
 
-build CMakeFiles/testMethods.dir/src/testMethods.cu.o: CUDA_COMPILER__testMethods_unscanned_Debug /home/dov/Documents/CudaBanded/TelAvivU/src/testMethods.cu || cmake_object_order_depends_target_testMethods
-  CONFIG = Debug
-  DEP_FILE = CMakeFiles/testMethods.dir/src/testMethods.cu.o.d
-  FLAGS = -g -std=c++17 "--generate-code=arch=compute_86,code=[compute_86,sm_86]" --expt-relaxed-constexpr
-  INCLUDES = -I/home/dov/Documents/CudaBanded/TelAvivU/src -I/home/dov/Documents/CudaBanded/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/CudaBanded/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/CudaBanded/TelAvivU/src/Poisson -I/usr/local/cuda/include
-  OBJECT_DIR = CMakeFiles/testMethods.dir
-  OBJECT_FILE_DIR = CMakeFiles/testMethods.dir/src
-
-build CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA/CMakeCUDACompilerId.cu.o: CUDA_COMPILER__testMethods_unscanned_Debug /home/dov/Documents/CudaBanded/TelAvivU/cmake-build-debug/CMakeFiles/4.0.2/CompilerIdCUDA/CMakeCUDACompilerId.cu || cmake_object_order_depends_target_testMethods
-  CONFIG = Debug
-  DEP_FILE = CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA/CMakeCUDACompilerId.cu.o.d
-  FLAGS = -g -std=c++17 "--generate-code=arch=compute_86,code=[compute_86,sm_86]" --expt-relaxed-constexpr
-  INCLUDES = -I/home/dov/Documents/CudaBanded/TelAvivU/src -I/home/dov/Documents/CudaBanded/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/CudaBanded/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/CudaBanded/TelAvivU/src/Poisson -I/usr/local/cuda/include
-  OBJECT_DIR = CMakeFiles/testMethods.dir
-  OBJECT_FILE_DIR = CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA
-
-build CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA/tmp/CMakeCUDACompilerId.cudafe1.cpp.o: CXX_COMPILER__testMethods_unscanned_Debug /home/dov/Documents/CudaBanded/TelAvivU/cmake-build-debug/CMakeFiles/4.0.2/CompilerIdCUDA/tmp/CMakeCUDACompilerId.cudafe1.cpp || cmake_object_order_depends_target_testMethods
-  CONFIG = Debug
-  DEP_FILE = CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA/tmp/CMakeCUDACompilerId.cudafe1.cpp.o.d
-  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
-  INCLUDES = -I/home/dov/Documents/CudaBanded/TelAvivU/src -I/home/dov/Documents/CudaBanded/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/CudaBanded/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/CudaBanded/TelAvivU/src/Poisson -I/usr/local/cuda/include
-  OBJECT_DIR = CMakeFiles/testMethods.dir
-  OBJECT_FILE_DIR = CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA/tmp
-
-build CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCXX/CMakeCXXCompilerId.cpp.o: CXX_COMPILER__testMethods_unscanned_Debug /home/dov/Documents/CudaBanded/TelAvivU/cmake-build-debug/CMakeFiles/4.0.2/CompilerIdCXX/CMakeCXXCompilerId.cpp || cmake_object_order_depends_target_testMethods
-  CONFIG = Debug
-  DEP_FILE = CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCXX/CMakeCXXCompilerId.cpp.o.d
-  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
-  INCLUDES = -I/home/dov/Documents/CudaBanded/TelAvivU/src -I/home/dov/Documents/CudaBanded/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/CudaBanded/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/CudaBanded/TelAvivU/src/Poisson -I/usr/local/cuda/include
-  OBJECT_DIR = CMakeFiles/testMethods.dir
-  OBJECT_FILE_DIR = CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCXX
-
-build CMakeFiles/testMethods.dir/hello_thrust.cu.o: CUDA_COMPILER__testMethods_unscanned_Debug /home/dov/Documents/CudaBanded/TelAvivU/hello_thrust.cu || cmake_object_order_depends_target_testMethods
-  CONFIG = Debug
-  DEP_FILE = CMakeFiles/testMethods.dir/hello_thrust.cu.o.d
-  FLAGS = -g -std=c++17 "--generate-code=arch=compute_86,code=[compute_86,sm_86]" --expt-relaxed-constexpr
-  INCLUDES = -I/home/dov/Documents/CudaBanded/TelAvivU/src -I/home/dov/Documents/CudaBanded/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/CudaBanded/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/CudaBanded/TelAvivU/src/Poisson -I/usr/local/cuda/include
-  OBJECT_DIR = CMakeFiles/testMethods.dir
-  OBJECT_FILE_DIR = CMakeFiles/testMethods.dir
-
-build CMakeFiles/testMethods.dir/shroud_project/utilFortranBindings.cpp.o: CXX_COMPILER__testMethods_unscanned_Debug /home/dov/Documents/CudaBanded/TelAvivU/shroud_project/utilFortranBindings.cpp || cmake_object_order_depends_target_testMethods
-  CONFIG = Debug
-  DEP_FILE = CMakeFiles/testMethods.dir/shroud_project/utilFortranBindings.cpp.o.d
-  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
-  INCLUDES = -I/home/dov/Documents/CudaBanded/TelAvivU/src -I/home/dov/Documents/CudaBanded/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/CudaBanded/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/CudaBanded/TelAvivU/src/Poisson -I/usr/local/cuda/include
-  OBJECT_DIR = CMakeFiles/testMethods.dir
-  OBJECT_FILE_DIR = CMakeFiles/testMethods.dir/shroud_project
-
-build CMakeFiles/testMethods.dir/shroud_project/wrapFortranBindings.cpp.o: CXX_COMPILER__testMethods_unscanned_Debug /home/dov/Documents/CudaBanded/TelAvivU/shroud_project/wrapFortranBindings.cpp || cmake_object_order_depends_target_testMethods
-  CONFIG = Debug
-  DEP_FILE = CMakeFiles/testMethods.dir/shroud_project/wrapFortranBindings.cpp.o.d
-  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
-  INCLUDES = -I/home/dov/Documents/CudaBanded/TelAvivU/src -I/home/dov/Documents/CudaBanded/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/CudaBanded/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/CudaBanded/TelAvivU/src/Poisson -I/usr/local/cuda/include
-  OBJECT_DIR = CMakeFiles/testMethods.dir
-  OBJECT_FILE_DIR = CMakeFiles/testMethods.dir/shroud_project
-
 build CMakeFiles/testMethods.dir/src/BiCGSTAB/BiCGSTAB.cu.o: CUDA_COMPILER__testMethods_unscanned_Debug /home/dov/Documents/CudaBanded/TelAvivU/src/BiCGSTAB/BiCGSTAB.cu || cmake_object_order_depends_target_testMethods
   CONFIG = Debug
   DEP_FILE = CMakeFiles/testMethods.dir/src/BiCGSTAB/BiCGSTAB.cu.o.d
@@ -265,6 +209,14 @@ build CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: C
   OBJECT_DIR = CMakeFiles/testMethods.dir
   OBJECT_FILE_DIR = CMakeFiles/testMethods.dir/src/deviceArrays/defFiles
 
+build CMakeFiles/testMethods.dir/src/testMethods.cu.o: CUDA_COMPILER__testMethods_unscanned_Debug /home/dov/Documents/CudaBanded/TelAvivU/src/testMethods.cu || cmake_object_order_depends_target_testMethods
+  CONFIG = Debug
+  DEP_FILE = CMakeFiles/testMethods.dir/src/testMethods.cu.o.d
+  FLAGS = -g -std=c++17 "--generate-code=arch=compute_86,code=[compute_86,sm_86]" --expt-relaxed-constexpr
+  INCLUDES = -I/home/dov/Documents/CudaBanded/TelAvivU/src -I/home/dov/Documents/CudaBanded/TelAvivU/src/deviceArrays/headers -I/home/dov/Documents/CudaBanded/TelAvivU/src/BiCGSTAB -I/home/dov/Documents/CudaBanded/TelAvivU/src/Poisson -I/usr/local/cuda/include
+  OBJECT_DIR = CMakeFiles/testMethods.dir
+  OBJECT_FILE_DIR = CMakeFiles/testMethods.dir/src
+
 
 # =============================================================================
 # Device Link build statements for EXECUTABLE target testMethods
@@ -273,7 +225,7 @@ build CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/streamHelper.cpp.o: C
 #############################################
 # Link the executable CMakeFiles/testMethods.dir/cmake_device_link.o
 
-build CMakeFiles/testMethods.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKER__testMethods_Debug CMakeFiles/testMethods.dir/src/testMethods.cu.o CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA/CMakeCUDACompilerId.cu.o CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA/tmp/CMakeCUDACompilerId.cudafe1.cpp.o CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCXX/CMakeCXXCompilerId.cpp.o CMakeFiles/testMethods.dir/hello_thrust.cu.o CMakeFiles/testMethods.dir/shroud_project/utilFortranBindings.cpp.o CMakeFiles/testMethods.dir/shroud_project/wrapFortranBindings.cpp.o CMakeFiles/testMethods.dir/src/BiCGSTAB/BiCGSTAB.cu.o CMakeFiles/testMethods.dir/src/BiCGSTAB/Event.cu.o CMakeFiles/testMethods.dir/src/Poisson/CubeBoundary.cu.o CMakeFiles/testMethods.dir/src/Poisson/DirectSolver.cu.o CMakeFiles/testMethods.dir/src/Poisson/EigenDecompSolver.cu.o CMakeFiles/testMethods.dir/src/Poisson/Poisson.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/DeviceData.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/GpuArray.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/GridDim.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/KernelPrep.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Mat.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Singleton.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/SquareMat.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Streamable.cpp.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Tensor.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Vec.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/handle.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/streamHelper.cpp.o
+build CMakeFiles/testMethods.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINKER__testMethods_Debug CMakeFiles/testMethods.dir/src/BiCGSTAB/BiCGSTAB.cu.o CMakeFiles/testMethods.dir/src/BiCGSTAB/Event.cu.o CMakeFiles/testMethods.dir/src/Poisson/CubeBoundary.cu.o CMakeFiles/testMethods.dir/src/Poisson/DirectSolver.cu.o CMakeFiles/testMethods.dir/src/Poisson/EigenDecompSolver.cu.o CMakeFiles/testMethods.dir/src/Poisson/Poisson.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/DeviceData.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/GpuArray.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/GridDim.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/KernelPrep.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Mat.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Singleton.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/SquareMat.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Streamable.cpp.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Tensor.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Vec.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/handle.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/streamHelper.cpp.o CMakeFiles/testMethods.dir/src/testMethods.cu.o
   LANGUAGE_COMPILE_FLAGS = -g "--generate-code=arch=compute_86,code=[compute_86,sm_86]"
   LINK_LIBRARIES = -lcublas -lcusolver -lcuda -lcudadevrt -lcudart_static -lrt -lpthread -ldl -lstdc++ -lm -lgcc_s -lgcc -lc
   LINK_PATH = -L/usr/local/cuda/targets/x86_64-linux/lib/stubs  -L/usr/local/cuda/targets/x86_64-linux/lib  -L/usr/lib/gcc/x86_64-linux-gnu/13
@@ -287,7 +239,7 @@ build CMakeFiles/testMethods.dir/cmake_device_link.o: CXX_EXECUTABLE_DEVICE_LINK
 #############################################
 # Link the executable testMethods
 
-build testMethods: CXX_EXECUTABLE_LINKER__testMethods_Debug CMakeFiles/testMethods.dir/src/testMethods.cu.o CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA/CMakeCUDACompilerId.cu.o CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCUDA/tmp/CMakeCUDACompilerId.cudafe1.cpp.o CMakeFiles/testMethods.dir/CMakeFiles/4.0.2/CompilerIdCXX/CMakeCXXCompilerId.cpp.o CMakeFiles/testMethods.dir/hello_thrust.cu.o CMakeFiles/testMethods.dir/shroud_project/utilFortranBindings.cpp.o CMakeFiles/testMethods.dir/shroud_project/wrapFortranBindings.cpp.o CMakeFiles/testMethods.dir/src/BiCGSTAB/BiCGSTAB.cu.o CMakeFiles/testMethods.dir/src/BiCGSTAB/Event.cu.o CMakeFiles/testMethods.dir/src/Poisson/CubeBoundary.cu.o CMakeFiles/testMethods.dir/src/Poisson/DirectSolver.cu.o CMakeFiles/testMethods.dir/src/Poisson/EigenDecompSolver.cu.o CMakeFiles/testMethods.dir/src/Poisson/Poisson.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/DeviceData.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/GpuArray.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/GridDim.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/KernelPrep.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Mat.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Singleton.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/SquareMat.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Streamable.cpp.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Tensor.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Vec.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/handle.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/streamHelper.cpp.o CMakeFiles/testMethods.dir/cmake_device_link.o
+build testMethods: CXX_EXECUTABLE_LINKER__testMethods_Debug CMakeFiles/testMethods.dir/src/BiCGSTAB/BiCGSTAB.cu.o CMakeFiles/testMethods.dir/src/BiCGSTAB/Event.cu.o CMakeFiles/testMethods.dir/src/Poisson/CubeBoundary.cu.o CMakeFiles/testMethods.dir/src/Poisson/DirectSolver.cu.o CMakeFiles/testMethods.dir/src/Poisson/EigenDecompSolver.cu.o CMakeFiles/testMethods.dir/src/Poisson/Poisson.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/BandedMatrix.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/DeviceData.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/DeviceMemory.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/GpuArray.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/GridDim.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/KernelPrep.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Mat.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Singleton.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/SquareMat.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Streamable.cpp.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Tensor.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/Vec.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/handle.cu.o CMakeFiles/testMethods.dir/src/deviceArrays/defFiles/streamHelper.cpp.o CMakeFiles/testMethods.dir/src/testMethods.cu.o CMakeFiles/testMethods.dir/cmake_device_link.o
   CONFIG = Debug
   FLAGS = -g
   LINK_LIBRARIES = -lcublas  -lcusolver  -lcuda  -lcudadevrt  -lcudart_static  -lrt  -lpthread  -ldl  -lstdc++  -lm  -lgcc_s  -lgcc  -lc  -lgcc_s  -lgcc
