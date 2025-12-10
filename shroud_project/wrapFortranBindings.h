@@ -11,10 +11,8 @@
 
 #ifdef __cplusplus
 #include <cstddef>
-#include <cstdint>
 #else
 #include <stddef.h>
-#include <stdint.h>
 #endif
 #include "typesFortranBindings.h"
 
@@ -28,34 +26,35 @@ extern "C" {
 // splicer begin C_declarations
 // splicer end C_declarations
 
-void FOR_solveBiCGSTAB_float(float *A, const size_t aLd, int32_t *inds,
-    const size_t indsStride, const size_t numInds, float *b,
-    const size_t bStride, const size_t bSize, float *prealocatedSizeX7,
+void FOR_solveDecomp_float(size_t frontBackPtr, const size_t fbLd,
+    size_t leftRightPtr, const size_t lrLd, size_t topBottomPtr,
+    const size_t tbLd, size_t fPtr, const size_t fStride, size_t xPtr,
+    const size_t xStride, const size_t height, const size_t width,
+    const size_t depth, size_t rowsXRowsPtr, const size_t rowsXRowsLd,
+    size_t colsXColsPtr, const size_t colsXColsLd,
+    size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
+    size_t maxDimX3Ptr, const size_t maxDimX3Ld);
+
+void FOR_solveDecomp_double(size_t frontBackPtr, const size_t fbLd,
+    size_t leftRightPtr, const size_t lrLd, size_t topBottomPtr,
+    const size_t tbLd, size_t fPtr, const size_t fStride, size_t xPtr,
+    const size_t xStride, const size_t height, const size_t width,
+    const size_t depth, size_t rowsXRowsPtr, const size_t rowsXRowsLd,
+    size_t colsXColsPtr, const size_t colsXColsLd,
+    size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
+    size_t maxDimX3Ptr, const size_t maxDimX3Ld);
+
+void FOR_solveBiCGSTAB_float(size_t APtr, const size_t aLd,
+    size_t indsPtrInt32_t, const size_t indsStride,
+    const size_t numInds, size_t bPtr, const size_t bStride,
+    const size_t bSize, size_t prealocatedSizeX7Ptr,
     const size_t prealocatedLd, size_t maxIterations, float tolerance);
 
-void FOR_solveBiCGSTAB_double(double *A, const size_t aLd,
-    int32_t *inds, const size_t indsStride, const size_t numInds,
-    double *b, const size_t bStride, const size_t bSize,
-    double *prealocatedSizeX7, const size_t prealocatedLd,
-    size_t maxIterations, double tolerance);
-
-void FOR_solveDecomp_float(float *frontBack, const size_t fbLd,
-    float *leftRight, const size_t lrLd, float *topBottom,
-    const size_t tbLd, float *f, const size_t fStride, float *x,
-    const size_t xStride, const size_t height, const size_t width,
-    const size_t depth, float *rowsXRows, const size_t rowsXRowsLd,
-    float *colsXCols, const size_t colsXColsLd, float *depthsXDepths,
-    const size_t depthsXDepthsLd, float *maxDimX3,
-    const size_t maxDimX3Ld);
-
-void FOR_solveDecomp_double(double *frontBack, const size_t fbLd,
-    double *leftRight, const size_t lrLd, double *topBottom,
-    const size_t tbLd, double *f, const size_t fStride, double *x,
-    const size_t xStride, const size_t height, const size_t width,
-    const size_t depth, double *rowsXRows, const size_t rowsXRowsLd,
-    double *colsXCols, const size_t colsXColsLd, double *depthsXDepths,
-    const size_t depthsXDepthsLd, double *maxDimX3,
-    const size_t maxDimX3Ld);
+void FOR_solveBiCGSTAB_double(size_t APtr, const size_t aLd,
+    size_t indsPtrInt32_t, const size_t indsStride,
+    const size_t numInds, size_t bPtr, const size_t bStride,
+    const size_t bSize, size_t prealocatedSizeX7Ptr,
+    const size_t prealocatedLd, size_t maxIterations, double tolerance);
 
 #ifdef __cplusplus
 }

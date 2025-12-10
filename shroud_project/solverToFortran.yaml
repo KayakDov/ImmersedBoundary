@@ -2,47 +2,41 @@ library: FortranBindings
 cxx_header: "FortranBindings.hpp"
 
 declarations:
-- decl: |
-    template<typename T>
-    void solveBiCGSTAB(
-            T* A,
-            const size_t aLd,
-            int32_t* inds,
-            const size_t indsStride,
-            const size_t numInds,
-            T* b,
-            const size_t bStride,
-            const size_t bSize,
-            T* prealocatedSizeX7,
-            const size_t prealocatedLd,
-            size_t maxIterations,
-            T tolerance
-        )
-      
-  cxx_template:
-  - instantiation: <float>
-  - instantiation: <double>
-  fortran:
-      pass_as: c_ptr  # <-- this makes it a C pointer in Fortran
-      array_style: pointer
+  - decl: |
+      template<typename T>
+      void solveDecomp(
+          size_t frontBackPtr, const size_t fbLd,
+          size_t leftRightPtr, const size_t lrLd,
+          size_t topBottomPtr, const size_t tbLd,
+          size_t fPtr, const size_t fStride,
+          size_t xPtr, const size_t xStride,
+          const size_t height, const size_t width, const size_t depth,
+          size_t rowsXRowsPtr, const size_t rowsXRowsLd,
+          size_t colsXColsPtr, const size_t colsXColsLd,
+          size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
+          size_t maxDimX3Ptr, const size_t maxDimX3Ld
+      )
 
-- decl: |
-    template<typename T>
-    void solveDecomp(
-        T* frontBack, const size_t fbLd,
-        T* leftRight, const size_t lrLd,
-        T* topBottom, const size_t tbLd,
-        T* f, const size_t fStride,
-        T* x, const size_t xStride,
-        const size_t height, const size_t width, const size_t depth,
-        T* rowsXRows, const size_t rowsXRowsLd,
-        T* colsXCols, const size_t colsXColsLd,
-        T* depthsXDepths, const size_t depthsXDepthsLd,
-        T* maxDimX3, const size_t maxDimX3Ld
-    )
-  cxx_template:
-  - instantiation: <float>
-  - instantiation: <double>
-  fortran:
-      pass_as: c_ptr  # <-- this makes it a C pointer in Fortran
-      array_style: pointer
+    cxx_template:
+      - instantiation: <float>
+      - instantiation: <double>
+
+  - decl: |
+      template<typename T>
+      void solveBiCGSTAB(
+          size_t APtr,
+          const size_t aLd,
+          size_t indsPtrInt32_t,
+          const size_t indsStride,
+          const size_t numInds,
+          size_t bPtr,
+          const size_t bStride,
+          const size_t bSize,
+          size_t prealocatedSizeX7Ptr,
+          const size_t prealocatedLd,
+          size_t maxIterations,
+          T tolerance
+      )
+    cxx_template:
+      - instantiation: <float>
+      - instantiation: <double>

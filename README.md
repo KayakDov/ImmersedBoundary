@@ -9,24 +9,47 @@ The Fortran bindings require that the core C++/CUDA solver library is built firs
 From your project root directory, follow these steps:
 
 1. **Navigate to the Build Directory**  
-   
-2. **Build the EigenDecomp Target**  
-   The target containing the Fortran interface logic is EigenDecomp. Compile it using the CMake build system:  
-   cmake \--build . \--target EigenDecomp
 
-   This process generates the necessary object files and links them into the required executable/library components (like libBiCGSTAB\_LIB.a and the final EigenDecomp binary). The output will be located within this cmake-build-debug directory.  Ignore the warnings; this is a work in progress.
+2. **Build the EigenDecomp Target**  The Fortran bindings rely on the `CudaBandedLib` library, which contains the core C++/CUDA solver logic as well as the Fortran wrapper.
+
+   From the project root directory:
+
+   ```bash
+   mkdir build
+   cd build
+   cmake ..
+   cmake --build . -j$(nproc)
+
+3. This will build both the **static library** `libCudaBandedLib.a.
+
+4. The library and executable are located in the build directory (e.g., `cmake-build-debug`).
 
 ## **Using the Fortran Module**
 
-The interface is contained within the eigendecomp\_interface module.
+The interface is contained in the `fortranbindings_mod` module (from `wrapffortranbindings.f90`).
 
-To access the solver from your Fortran code, simply add the use statement:
+To use the solver in your Fortran program:
 
-program my\_fortran\_app  
-use eigendecomp\_interface  
-implicit none  
-\! ...  
-end program my\_fortran\_app
+```
+program my_fortran_app
+    use fortranbindings_mod
+    implicit none
+
+    ! Declare and initialize your arrays
+    ! Call the solver subroutines
+end program my_fortran_app
+```
+
+### Available Subroutines
+
+- The module exposes **four main subroutines**, two for BiCGSTAB solving and two for decomposition:
+
+  | Subroutine               | Precision                 | Description                                                  |
+  | ------------------------ | ------------------------- | ------------------------------------------------------------ |
+  | `solve_bi_cgstab_float`  | single (`real(C_FLOAT)`)  | Calls the BiCGSTAB solver with single-precision arrays.      |
+  | `solve_bi_cgstab_double` | double (`real(C_DOUBLE)`) | Calls the BiCGSTAB solver with double-precision arrays.      |
+  | `solve_decomp_float`     | single (`real(C_FLOAT)`)  | Calls the 3D Poisson eigen decomposition solver with single-precision arrays. |
+  | `solve_decomp_double`    | double (`real(C_DOUBLE)`) | Calls the 3D Poisson eigen decomposition solver with double-precision arrays. |
 
 # **3D Poisson Solver: Eigen Decomposition Summary**
 
@@ -73,15 +96,42 @@ The first row of the front and back boundary matrices is up against the top.  Th
 The first row of the left and right matrices is up against the top.  The first column of the left and right matrices is up against the back.
 The first row the top and bottom matrices is up against the back boundary.  The first column up against the left boundary.
 
-| Argument Name | Intent | Data Type (Fortran Kind) | Description                                                                                                                                                                                                                                                                                                                                              |
-| :---- | :---- | :---- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| frontBack, leftRight, topBottom | in | real(c\_float) / real(c\_double) | The boundaries of the grid on which the Poisson operator is defined.  frontBack has height x width = 2H * W, leftRight has height x width = 2H * D, and topBottom has height x width 2D * W.  The height of each matrix is doubled because the front boundary is stored above the back boundary, the left above the right, and the top above the bottom. |
-| fbLd, lrLd, tbLd | value | integer(c\_size\_t) | The stride or **Leading Dimension (LD)** for the corresponding input boundary matrices (fbLD is the leading dimension for frontBakc, lrLD the leading dimension for leftRight).  This is the distance between columns of the matrix, and should be greater than or equal to the height of the matrix, allowing for padding.                              |
-| f | out | real(c\_float) / real(c\_double) | This should be the right hand side of the Poisson operator.  It should have H*W*D elements stored in column major order as described above where the next column is in the next layer, not adjacent within the same layer. Values stored here will be overwritten with scratch work.                                                                     |
-| fStride | value | integer(c\_size\_t) | The stride for f. The amount of space for one element of f to the next.  Typically 1.  This is stored as a vector, not a matrix.                                                                                                                                                                                                                         |
-| x | out | real(c\_float) / real(c\_double) | Output array.  Should have H*W*D elements.  This is stored as a vector, not a matrix.  Use the column major order described above.                                                                                                                                                                                                                       |
-| xStride | value | integer(c\_size\_t) | The stride for the output array x. Typically 1.                                                                                                                                                                                                                                                                                                          |
-| height, width, depth | value | integer(c\_size\_t) | The dimensions of the 3D computational grid: **Height (**$H$**)**, **Width (**$W$**)**, and **Depth (**$D$**)**.                                                                                                                                                                                                                                         |
+## 3. Data Layout and Argument Conventions
+
+### BiCGSTAB Solver (`solve_bi_cgstab_*`)
+
+Arguments:
+
+| Argument Name     | Type              | Description                               |
+| ----------------- | ----------------- | ----------------------------------------- |
+| A                 | real array        | Matrix for the linear system (in/out).    |
+| aLd               | integer(C_SIZE_T) | Leading dimension of `A`.                 |
+| inds              | integer array     | Index array (in/out).                     |
+| indsStride        | integer(C_SIZE_T) | Stride for `inds`.                        |
+| numInds           | integer(C_SIZE_T) | Number of indices.                        |
+| b                 | real array        | Right-hand side vector (in/out).          |
+| bStride           | integer(C_SIZE_T) | Stride of `b`.                            |
+| bSize             | integer(C_SIZE_T) | Size of `b`.                              |
+| prealocatedSizeX7 | real array        | Scratch space of size N×7 (in/out).       |
+| prealocatedLd     | integer(C_SIZE_T) | Leading dimension of `prealocatedSizeX7`. |
+| maxIterations     | integer(C_SIZE_T) | Maximum number of BiCGSTAB iterations.    |
+| tolerance         | real              | Convergence tolerance.                    |
+
+### Decomposition Solver (`solve_decomp_*`)
+
+Arguments:
+
+| Argument Name                                         | Type              | Description                                                  |
+| ----------------------------------------------------- | ----------------- | ------------------------------------------------------------ |
+| frontBack, leftRight, topBottom                       | real array        | Boundary matrices of the 3D grid. Each has **two layers**: front/back, left/right, top/bottom. |
+| fbLd, lrLd, tbLd                                      | integer(C_SIZE_T) | Leading dimensions for the corresponding boundary arrays.    |
+| f                                                     | real array        | Right-hand side vector (in/out).                             |
+| fStride                                               | integer(C_SIZE_T) | Stride of `f`.                                               |
+| x                                                     | real array        | Output solution vector.                                      |
+| xStride                                               | integer(C_SIZE_T) | Stride of `x`.                                               |
+| height, width, depth                                  | integer(C_SIZE_T) | Dimensions of the 3D grid.                                   |
+| rowsXRows, colsXCols, depthsXDepths, maxDimX3         | real arrays       | Precomputed eigenmatrices for the 3D decomposition.          |
+| rowsXRowsLd, colsXColsLd, depthsXDepthsLd, maxDimX3Ld | integer(C_SIZE_T) | Leading dimensions of the corresponding eigenmatrices.       |
 
 ## **Linking Your Fortran Program**
 

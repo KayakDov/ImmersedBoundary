@@ -12,63 +12,64 @@ extern "C" {
 // splicer begin C_definitions
 // splicer end C_definitions
 
-void FOR_solveBiCGSTAB_float(float *A, const size_t aLd, int32_t *inds,
-    const size_t indsStride, const size_t numInds, float *b,
-    const size_t bStride, const size_t bSize, float *prealocatedSizeX7,
-    const size_t prealocatedLd, size_t maxIterations, float tolerance)
-{
-    // splicer begin function.solveBiCGSTAB_float
-    solveBiCGSTAB<float>(A, aLd, inds, indsStride, numInds, b, bStride,
-        bSize, prealocatedSizeX7, prealocatedLd, maxIterations,
-        tolerance);
-    // splicer end function.solveBiCGSTAB_float
-}
-
-void FOR_solveBiCGSTAB_double(double *A, const size_t aLd,
-    int32_t *inds, const size_t indsStride, const size_t numInds,
-    double *b, const size_t bStride, const size_t bSize,
-    double *prealocatedSizeX7, const size_t prealocatedLd,
-    size_t maxIterations, double tolerance)
-{
-    // splicer begin function.solveBiCGSTAB_double
-    solveBiCGSTAB<double>(A, aLd, inds, indsStride, numInds, b, bStride,
-        bSize, prealocatedSizeX7, prealocatedLd, maxIterations,
-        tolerance);
-    // splicer end function.solveBiCGSTAB_double
-}
-
-void FOR_solveDecomp_float(float *frontBack, const size_t fbLd,
-    float *leftRight, const size_t lrLd, float *topBottom,
-    const size_t tbLd, float *f, const size_t fStride, float *x,
+void FOR_solveDecomp_float(size_t frontBackPtr, const size_t fbLd,
+    size_t leftRightPtr, const size_t lrLd, size_t topBottomPtr,
+    const size_t tbLd, size_t fPtr, const size_t fStride, size_t xPtr,
     const size_t xStride, const size_t height, const size_t width,
-    const size_t depth, float *rowsXRows, const size_t rowsXRowsLd,
-    float *colsXCols, const size_t colsXColsLd, float *depthsXDepths,
-    const size_t depthsXDepthsLd, float *maxDimX3,
-    const size_t maxDimX3Ld)
+    const size_t depth, size_t rowsXRowsPtr, const size_t rowsXRowsLd,
+    size_t colsXColsPtr, const size_t colsXColsLd,
+    size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
+    size_t maxDimX3Ptr, const size_t maxDimX3Ld)
 {
     // splicer begin function.solveDecomp_float
-    solveDecomp<float>(frontBack, fbLd, leftRight, lrLd, topBottom,
-        tbLd, f, fStride, x, xStride, height, width, depth, rowsXRows,
-        rowsXRowsLd, colsXCols, colsXColsLd, depthsXDepths,
-        depthsXDepthsLd, maxDimX3, maxDimX3Ld);
+    solveDecomp<float>(frontBackPtr, fbLd, leftRightPtr, lrLd,
+        topBottomPtr, tbLd, fPtr, fStride, xPtr, xStride, height, width,
+        depth, rowsXRowsPtr, rowsXRowsLd, colsXColsPtr, colsXColsLd,
+        depthsXDepthsPtr, depthsXDepthsLd, maxDimX3Ptr, maxDimX3Ld);
     // splicer end function.solveDecomp_float
 }
 
-void FOR_solveDecomp_double(double *frontBack, const size_t fbLd,
-    double *leftRight, const size_t lrLd, double *topBottom,
-    const size_t tbLd, double *f, const size_t fStride, double *x,
+void FOR_solveDecomp_double(size_t frontBackPtr, const size_t fbLd,
+    size_t leftRightPtr, const size_t lrLd, size_t topBottomPtr,
+    const size_t tbLd, size_t fPtr, const size_t fStride, size_t xPtr,
     const size_t xStride, const size_t height, const size_t width,
-    const size_t depth, double *rowsXRows, const size_t rowsXRowsLd,
-    double *colsXCols, const size_t colsXColsLd, double *depthsXDepths,
-    const size_t depthsXDepthsLd, double *maxDimX3,
-    const size_t maxDimX3Ld)
+    const size_t depth, size_t rowsXRowsPtr, const size_t rowsXRowsLd,
+    size_t colsXColsPtr, const size_t colsXColsLd,
+    size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
+    size_t maxDimX3Ptr, const size_t maxDimX3Ld)
 {
     // splicer begin function.solveDecomp_double
-    solveDecomp<double>(frontBack, fbLd, leftRight, lrLd, topBottom,
-        tbLd, f, fStride, x, xStride, height, width, depth, rowsXRows,
-        rowsXRowsLd, colsXCols, colsXColsLd, depthsXDepths,
-        depthsXDepthsLd, maxDimX3, maxDimX3Ld);
+    solveDecomp<double>(frontBackPtr, fbLd, leftRightPtr, lrLd,
+        topBottomPtr, tbLd, fPtr, fStride, xPtr, xStride, height, width,
+        depth, rowsXRowsPtr, rowsXRowsLd, colsXColsPtr, colsXColsLd,
+        depthsXDepthsPtr, depthsXDepthsLd, maxDimX3Ptr, maxDimX3Ld);
     // splicer end function.solveDecomp_double
+}
+
+void FOR_solveBiCGSTAB_float(size_t APtr, const size_t aLd,
+    size_t indsPtrInt32_t, const size_t indsStride,
+    const size_t numInds, size_t bPtr, const size_t bStride,
+    const size_t bSize, size_t prealocatedSizeX7Ptr,
+    const size_t prealocatedLd, size_t maxIterations, float tolerance)
+{
+    // splicer begin function.solveBiCGSTAB_float
+    solveBiCGSTAB<float>(APtr, aLd, indsPtrInt32_t, indsStride, numInds,
+        bPtr, bStride, bSize, prealocatedSizeX7Ptr, prealocatedLd,
+        maxIterations, tolerance);
+    // splicer end function.solveBiCGSTAB_float
+}
+
+void FOR_solveBiCGSTAB_double(size_t APtr, const size_t aLd,
+    size_t indsPtrInt32_t, const size_t indsStride,
+    const size_t numInds, size_t bPtr, const size_t bStride,
+    const size_t bSize, size_t prealocatedSizeX7Ptr,
+    const size_t prealocatedLd, size_t maxIterations, double tolerance)
+{
+    // splicer begin function.solveBiCGSTAB_double
+    solveBiCGSTAB<double>(APtr, aLd, indsPtrInt32_t, indsStride,
+        numInds, bPtr, bStride, bSize, prealocatedSizeX7Ptr,
+        prealocatedLd, maxIterations, tolerance);
+    // splicer end function.solveBiCGSTAB_double
 }
 
 }  // extern "C"
