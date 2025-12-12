@@ -14,7 +14,6 @@ program test_bicgstab_device
 
     integer :: istat
 
-    type(c_ptr) :: pA, pInds, pB, pWork
     integer(c_size_t) :: A_addr, inds_addr, b_addr, work_addr
 
     ! Leading dimensions

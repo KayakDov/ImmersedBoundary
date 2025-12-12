@@ -8,21 +8,22 @@ The Fortran bindings require that the core C++/CUDA solver library is built firs
 
 From your project root directory, follow these steps:
 
-1. **Navigate to the Build Directory**  
+1. **Build the EigenDecomp Target**  The Fortran bindings rely on the `CudaBandedLib` library, which contains the core C++/CUDA solver logic as well as the Fortran wrapper.
 
-2. **Build the EigenDecomp Target**  The Fortran bindings rely on the `CudaBandedLib` library, which contains the core C++/CUDA solver logic as well as the Fortran wrapper.
-
-   From the project root directory:
+   **Navigate to the Build Directory**  From the project root directory:
 
    ```bash
    mkdir build
    cd build
    cmake ..
    cmake --build . -j$(nproc)
+   ```
 
-3. This will build both the **static library** `libCudaBandedLib.a.
+2. **Locate Assets:** This process creates the necessary C++ static library and the Fortran module file.  You'll also need to link :
 
-4. The library and executable are located in the build directory (e.g., `cmake-build-debug`).
+   - **Library Path:** `TelAvivU/cmake-build-debug/libCudaBandedLib.a`
+   - **Module Path:** `TelAvivU/cmake-build-debug/fortranbindings_mod.mod`
+   - **The Wrapper:**  `TelAvivU/shroud_project/wrapffortranbindings.f90`
 
 ## **Using the Fortran Module**
 
@@ -39,6 +40,8 @@ program my_fortran_app
     ! Call the solver subroutines
 end program my_fortran_app
 ```
+
+See   `TelAvivU/FortranTest/*`for an example of a CMakeLists.txt and main.f90 the use the library.
 
 ### Available Subroutines
 
@@ -95,6 +98,8 @@ The boundary matrices frontBack, leftRight, and topBottom are stored as three-di
 The first row of the front and back boundary matrices is up against the top.  The first column of the front and back matrices is up against the left boundary.
 The first row of the left and right matrices is up against the top.  The first column of the left and right matrices is up against the back.
 The first row the top and bottom matrices is up against the back boundary.  The first column up against the left boundary.
+
+All pointers are passed by their physical addresses, in C_SIZE_T data types.  In Fortran, extract from a device array, x, its address, x_addr, as follows: x_addr    = transfer(c_loc(x), x_addr).
 
 ## 3. Data Layout and Argument Conventions
 
