@@ -27,16 +27,16 @@ void DirectSolver<T>::solve(Mat<T> prealocatedForBiCGSTAB) {
 void testPoisson(const size_t height, size_t width, size_t depth, Handle &hand) {
     auto boundary = CubeBoundary<double>::ZeroTo1(height, width, depth, hand);
 
-    auto longVecs = Mat<double>::create(boundary.internalSize(), 1 + numDiagonals + 7);
+    auto longVecs = Mat<double>::create(boundary.internalSize(), 1 + numDiagonals3d + 7);
     auto b = longVecs.col(0);
     b.fill(0, hand);
 
     // std::cout << "RunDirectSolver testPoisson b: " << b.size() << std::endl << GpuOut<double>(b, hand) << std::endl;
 
-    auto A = longVecs.subMat(0, 1, boundary.internalSize(), numDiagonals);
-    auto prealocatedForBiCGSTAB = longVecs.subMat(0, 1 + numDiagonals, boundary.internalSize(), 7);
+    auto A = longVecs.subMat(0, 1, boundary.internalSize(), numDiagonals3d);
+    auto prealocatedForBiCGSTAB = longVecs.subMat(0, 1 + numDiagonals3d, boundary.internalSize(), 7);
 
-    auto diagonalInds = Vec<int32_t>::create(numDiagonals);
+    auto diagonalInds = Vec<int32_t>::create(numDiagonals3d);
 
     DirectSolver<double> solver(boundary, b, A, diagonalInds, hand);
 

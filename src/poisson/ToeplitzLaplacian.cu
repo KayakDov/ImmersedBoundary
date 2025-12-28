@@ -47,6 +47,32 @@ public:
 };
 
 /**
+ * Sets the laplacian values for 2d.
+ * @tparam T
+ * @param a The A matrix.
+ * @param ind The index of the value to be set.
+ * @param g The dimesnsions of the grid.
+ * @param up
+ * @param down
+ * @param left
+ * @param right
+ * @param set0
+ */
+template<typename T>
+__device__ void setA2d(DeviceData2d<T> a,
+                       const GridInd3d &ind,
+                       const GridDim &g,
+                       const AdjacencyInd &up, const AdjacencyInd &down,
+                       const AdjacencyInd &left, const AdjacencyInd &right, Set0<T>& set0) {
+
+    if (ind.row == 0) set0(up);
+    else if (ind.row == g.rows - 1) set0(down);
+
+    if (ind.col == 0) set0(left);
+    else if (ind.col == g.cols - 1) set0(right);
+}
+
+/**
  * @brief CUDA kernel to set up the system matrix A for the 3D Poisson FDM problem.
  *
  * Each thread handles one unknown point $(gRow, gCol, gLayer)$ in the interior grid,
@@ -58,75 +84,87 @@ public:
  *
  */
 template<typename T>
-__global__ void setAKernel(DeviceData2d<T> a,
-                           const GridDim g,
-                           const AdjacencyInd here, const AdjacencyInd up, const AdjacencyInd down,
-                           const AdjacencyInd left, const AdjacencyInd right, const AdjacencyInd front,
-                           const AdjacencyInd back
+__global__ void setAKernel2d(DeviceData2d<T> a,
+                             const GridDim g,
+                             const AdjacencyInd here, const AdjacencyInd up, const AdjacencyInd down,
+                             const AdjacencyInd left, const AdjacencyInd right) {
+    const GridInd3d ind;
+
+    if (ind >= g) return;
+    const size_t idGrid = g[ind];
+    a(idGrid, here.col) = -4;
+    Set0<T> set0(a, idGrid);
+
+    setA2d(a, ind, g, up, down, left, right, set0);
+}
+
+/**
+ * @brief CUDA kernel to set up the system matrix A for the 3D Poisson FDM problem.
+ *
+ * Each thread handles one unknown point $(gRow, gCol, gLayer)$ in the interior grid,
+ * setting the main diagonal entry ($A_{i,i} = -6$) and using the Set0 functor to handle
+ * the 6 off-diagonal entries (neighbors) and enforce boundary conditions by setting
+ * unused band elements to NAN.
+ *
+ * @tparam T Floating-point type (float or double).
+ *
+ */
+template<typename T>
+__global__ void setAKernel3d(DeviceData2d<T> a,
+                             const GridDim g,
+                             const AdjacencyInd here, const AdjacencyInd up, const AdjacencyInd down,
+                             const AdjacencyInd left, const AdjacencyInd right, const AdjacencyInd front,
+                             const AdjacencyInd back
 ) {
     const GridInd3d ind;
 
     if (ind >= g) return;
 
     const size_t idGrid = g[ind];
-
-    a(idGrid, here.col) = -6;
     Set0<T> set0(a, idGrid);
 
-    if (ind.row == 0) set0(up);
-    else if (ind.row == g.rows - 1) set0(down);
+    a(idGrid, here.col) = -6;
 
-    if (ind.col == 0) set0(left);
-    else if (ind.col == g.cols - 1) set0(right);
+    setA2d(a, ind, g, up, down, left, right, set0);
 
     if (ind.layer == 0) set0(front);
     else if (ind.layer == g.layers - 1) set0(back);
 }
 
 template<typename T>
-ToeplitzLaplacian<T>::ToeplitzLaplacian(GridDim dim):
-    dim(dim),
-    adjInds{
-        AdjacencyInd(0, 0),
-        AdjacencyInd(1, -1),
-        AdjacencyInd(2, 1),
-        AdjacencyInd(3, -dim.rows * dim.layers),
-        AdjacencyInd(4, dim.rows * dim.layers),
-        AdjacencyInd(5, -dim.rows),
-        AdjacencyInd(6, dim.rows)
-    }{
+ToeplitzLaplacian<T>::ToeplitzLaplacian(GridDim dim) : dim(dim),
+                                                       adjInds{
+                                                           AdjacencyInd(0, 0),
+                                                           AdjacencyInd(1, -1),
+                                                           AdjacencyInd(2, 1),
+                                                           AdjacencyInd(3, -dim.rows * dim.layers),
+                                                           AdjacencyInd(4, dim.rows * dim.layers),
+                                                           AdjacencyInd(5, -dim.rows),
+                                                           AdjacencyInd(6, dim.rows)
+                                                       } {
 }
 
 template<typename T>
 void ToeplitzLaplacian<T>::loadMapRowToDiag(Vec<int32_t> diags, const cudaStream_t stream) {
-    int32_t diagsCpu[numDiagonals];
-    for (size_t i = 0; i < numDiagonals; i++) diagsCpu[adjInds[i].col] = adjInds[i].diag;
+    int32_t diagsCpu[numDiagonals3d];
+    for (size_t i = 0; i < numDiagonals3d; i++) diagsCpu[adjInds[i].col] = adjInds[i].diag;
     diags.set(diagsCpu, stream);
 }
 
-/**
- * @brief Solves the 3D Poisson equation $\nabla^2 u = f$ using the Finite Difference Method (FDM)
- * and the BiCGSTAB iterative solver on the resulting linear system $A\mathbf{x} = \mathbf{b}$.
- *
- * This class handles the construction of the FDM linear system for a 3D grid,
- * including setting up the system matrix $A$ (as a banded matrix), calculating
- * the right-hand side vector $\mathbf{b}$ (incorporating boundary conditions),
- * and leveraging the BiCGSTAB solver for the solution. The class assumes a uniform
- * grid spacing (which is absorbed into the matrix $A$ coefficients).
- *
- * @tparam T Floating-point type used for the computation (typically float or double).
- */
 template<typename T>
-BandedMat<T> ToeplitzLaplacian<T>::setA(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) {
-
-    if (preAlocatedForA._cols != numDiagonals || preAlocatedForIndices.size() != numDiagonals) throw std::invalid_argument("Number of diagonals != 7");
-
-    preAlocatedForA.subMat(0, 1, preAlocatedForA._rows, preAlocatedForA._cols - 1).fill(1, stream);//TODO: move this to inside kernel if appropriate
+BandedMat<T> ToeplitzLaplacian<T>::setA(cudaStream_t stream, Mat<T> &preAlocatedForA,
+                                        Vec<int32_t> &preAlocatedForIndices) {
+    preAlocatedForA.subMat(0, 1, preAlocatedForA._rows, preAlocatedForA._cols - 1).fill(1, stream);
+    //TODO: move this to inside kernel if appropriate
 
     const KernelPrep kp = dim.kernelPrep();
-    setAKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
+    if (dim.layers > 1) setAKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
         preAlocatedForA.toKernel2d(), dim,
         adjInds[0], adjInds[1], adjInds[2], adjInds[3], adjInds[4], adjInds[5], adjInds[6]
+    );
+    else setAKernel2d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
+        preAlocatedForA.toKernel2d(), dim,
+        adjInds[0], adjInds[1], adjInds[2], adjInds[3], adjInds[4]
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());

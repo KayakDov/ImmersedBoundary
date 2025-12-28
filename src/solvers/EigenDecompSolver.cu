@@ -152,6 +152,9 @@ EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T
     this->eigenL(0, delta.x, hand2[0]);
     doneEigen.wait(hand2[0]);
 
+    std::cout << "Eigen x vecs = \n" << GpuOut<T>(this->eVecs[0], hand2[0]) << std::endl;
+    std::cout << "Eigen y vecs = \n" << GpuOut<T>(this->eVecs[0], hand2[0]) << std::endl;
+    std::cout << "Eigen vals = \n" << GpuOut<T>(this->eVals, hand2[0]) << std::endl;
 }
 
 template<typename T>
@@ -188,13 +191,33 @@ void EigenDecompSolver2d<T>::solve(Vec<T> &x, Vec<T> &b, Handle &hand) const {
     auto bM = b.matrix(this->dim.rows);
     auto xM = x.matrix(this->dim.rows);
 
+    std::cout << "b = " << GpuOut<T>(b, hand) << std::endl;
+    std::cout << "x = " << GpuOut<T>(b, hand) << std::endl;
+
     bM.mult(this->eVecs[0], &xM, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false, false);
+
+    std::cout << "b = " << GpuOut<T>(b, hand) << std::endl;
+    std::cout << "x = " << GpuOut<T>(b, hand) << std::endl;
+
     this->eVecs[1].mult(xM, &bM, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, true, false);
+
+    std::cout << "b = " << GpuOut<T>(b, hand) << std::endl;
+    std::cout << "x = " << GpuOut<T>(b, hand) << std::endl;
 
     setUTilde(bM, xM, hand);
 
+    std::cout << "b = " << GpuOut<T>(b, hand) << std::endl;
+    std::cout << "x = " << GpuOut<T>(b, hand) << std::endl;
+
     this->eVecs[1].mult(xM, &bM, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false, false);
+
+    std::cout << "b = " << GpuOut<T>(b, hand) << std::endl;
+    std::cout << "x = " << GpuOut<T>(b, hand) << std::endl;
+
     bM.mult(this->eVecs[0], &xM, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false, true);
+
+    std::cout << "b = " << GpuOut<T>(b, hand) << std::endl;
+    std::cout << "x = " << GpuOut<T>(b, hand) << std::endl;
 }
 
 template class EigenDecompSolver<double>;
@@ -203,3 +226,5 @@ template class EigenDecompSolver3d<double>;
 template class EigenDecompSolver3d<float>;
 template class EigenDecompSolver2d<double>;
 template class EigenDecompSolver2d<float>;
+
+// My b vector is (1,2,3,4,5,6)^T.  Let's walk through my code step by step, you tell me what you think my values should be, and I'll take a look at the debugger and

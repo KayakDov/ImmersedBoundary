@@ -56,9 +56,12 @@ void testEigenDecompNoPoisson() {
 
     Handle hand;
 
-    GridDim dim(2, 3, 2);
-    auto preA = Mat<T>::create(dim.size(), 7);
-    auto preInds = Vec<int32_t>::create(7);
+    GridDim dim(2, 3, 1);
+
+    size_t numDiags = dim.layers == 1? 5 : 7;
+    auto preA = Mat<T>::create(dim.size(), numDiags);
+
+    auto preInds = Vec<int32_t>::create(numDiags);
 
     BandedMat<T> A = ToeplitzLaplacian<T>(dim).setA(hand, preA, preInds);
 
@@ -83,14 +86,15 @@ void testEigenDecompNoPoisson() {
     auto valsMat = Mat<T>::create(dim.size(), 3);
 
     cudaDeviceSynchronize();
-    std::array<Handle, 3> hand3{};
+    std::array<Handle, 2/*3*/> hand3{};
 
-    EigenDecompSolver3d<T> eds(rowsMat, colsMat, layersMat, valsMat, hand3);
+    EigenDecompSolver2d<T> eds(rowsMat, colsMat/*, layersMat*/, valsMat, hand3);
 
     eds.solve(x, b, hand3[0]);
 
     std::cout << "x = \n" << GpuOut(x, hand) << std::endl;
-    std::cout << -241.0/238 << ", " << -145.0/119 << ", " << -339.0/238 << ", " << -194.0/119 << std::endl;
+    std::cout << "3d results should be\n" << -241.0/238 << ", " << -145.0/119 << ", " << -339.0/238 << ", " << -194.0/119 << std::endl;
+    std::cout << "2d results should be\n" << -83.0/69 << ", " << -101.0/69 << ", " << -54.0/23 << std::endl;
     //x_1=(-241)/238
     // x_2=(-145)/119
     // x_3=(-339)/238

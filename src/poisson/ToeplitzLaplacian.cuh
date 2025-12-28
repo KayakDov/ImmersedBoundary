@@ -8,9 +8,10 @@
 #include <cuda_runtime.h>
 #include "BandedMat.h"
 
-constexpr  size_t numDiagonals = 7;
+constexpr size_t numDiagonals3d = 7;
+constexpr size_t numDiagonals2d = 5;
 
-struct AdjacencyInd {
+struct AdjacencyInd {//TODO: Account for distance between grid points not equal to 1.
     /**
      * The column in the banded matrix.
      */
@@ -23,12 +24,13 @@ struct AdjacencyInd {
     }
 };
 
-template <typename T>
-class ToeplitzLaplacian{
-    const std::array<AdjacencyInd, numDiagonals> adjInds;//here, up, down, left, right, back, front;
+template<typename T>
+class ToeplitzLaplacian {
+    const std::array<AdjacencyInd, numDiagonals3d> adjInds; //here, up, down, left, right, back, front;
     const GridDim dim;
 
     void loadMapRowToDiag(Vec<int32_t> diags, cudaStream_t stream);
+
 public:
     /**
      * Creates the LHS matrix of the linear system used for solving the Poisson equation.
@@ -37,13 +39,13 @@ public:
     ToeplitzLaplacian(GridDim dim);
 
     /**
-     * @brief Launch kernel that assembles A in banded/dense storage.
-     *
-     * @param numInds The number of indices.
-     * @param mindices device pointer to the int32_t offsets array (length numNonZeroDiags).
-     * @param handle contains the stream to run on.
-     * @param preAlocatedForA Provide prealocated memory here to be written to, numDiagonals x _b.size().
-     * @param dim
+     * Sets the values into the laplacian
+     * @param stream
+     * @param preAlocatedForA This matrix should be height * width * depth X (5 if 2d grid or 7 if 3d grid).
+     * The laplacian will be placed here.
+     * @param preAlocatedForIndices This vector will store the indices of the diagonals in A.
+     * If the grid is 2d there should be 5 values here, if the grid is 3d there should be 7.
+     * @return
      */
     BandedMat<T> setA(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices);
 };
