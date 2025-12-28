@@ -7,6 +7,7 @@
 #include <array>
 #include <cuda_runtime.h>
 #include "BandedMat.h"
+#include "math/Real3d.h"
 
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;
@@ -47,7 +48,7 @@ public:
      * If the grid is 2d there should be 5 values here, if the grid is 3d there should be 7.
      * @return
      */
-    BandedMat<T> setA(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices);
+    BandedMat<T> setA(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices, const Real3d& delta = Real3d(1, 1, 1));
 };
 
 #endif //CUDABANDED_POISSONLHS_H
