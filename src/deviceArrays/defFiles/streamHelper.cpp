@@ -89,6 +89,7 @@ template class StreamHelper<double>;
 template class StreamHelper<int32_t>;
 template class StreamHelper<size_t>;
 template class StreamHelper<unsigned char>;
+template class StreamHelper<uint32_t>;
 
 // SetFromFile
 template class StreamSet<float>;
@@ -96,6 +97,7 @@ template class StreamSet<double>;
 template class StreamSet<int32_t>;
 template class StreamSet<size_t>;
 template class StreamSet<unsigned char>;
+template class StreamSet<uint32_t>;
 
 // GetToFile
 template class StreamGet<float>;
@@ -103,3 +105,4 @@ template class StreamGet<double>;
 template class StreamGet<int32_t>;
 template class StreamGet<size_t>;
 template class StreamGet<unsigned char>;
+template class StreamGet<uint32_t>;

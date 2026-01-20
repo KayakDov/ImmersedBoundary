@@ -22,7 +22,7 @@ template<typename T>
 void BiCGSTAB<T>::wait(const size_t streamIndex,
                        const std::initializer_list<std::reference_wrapper<Event> > evs) const {
     for (auto &ref_e: evs)
-        ref_e.get().wait(handle[streamIndex]);
+        ref_e.get().wait(hand4[streamIndex]);
 }
 
 template<typename T>
@@ -34,25 +34,25 @@ void BiCGSTAB<T>::renew(const std::initializer_list<std::reference_wrapper<Event
 
 template<typename T>
 void BiCGSTAB<T>::record(size_t streamIndex, Event &e) const {
-    e.record(handle[streamIndex]);
+    e.record(hand4[streamIndex]);
 }
 
 template<typename T>
 void BiCGSTAB<T>::synch(const size_t streamInd) const {
-    handle[streamInd].synch();
+    hand4[streamInd].synch();
 }
 
 template<typename T>
 bool BiCGSTAB<T>::isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd) {
-    v.mult(v, preAlocated, handle + streamInd);
-    T vSq = preAlocated.get(handle[streamInd]);
+    v.mult(v, preAlocated, hand4 + streamInd);
+    T vSq = preAlocated.get(hand4[streamInd]);
     synch(streamInd);
     return vSq < tolerance;
 }
 
 template<typename T>
 void BiCGSTAB<T>::set(Vec<T> &dst, const Vec<T> &src, const size_t streamInd) {
-    dst.set(src, handle[streamInd]);
+    dst.set(src, hand4[streamInd]);
 }
 
 template<typename T>
@@ -60,7 +60,7 @@ void BiCGSTAB<T>::pUpdate(const size_t streamInd) {
     KernelPrep kp = p.kernelPrep();
 
     // Kernel launch performs: p = r + beta * (p - omega * v)
-    updatePKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, handle[streamInd]>>>(
+    updatePKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand4[streamInd]>>>(
         p.toKernel1d(), // d_p (Input/Output)
         r.toKernel1d(), // d_r
         v.toKernel1d(), // d_v
@@ -72,16 +72,19 @@ void BiCGSTAB<T>::pUpdate(const size_t streamInd) {
 template<typename T>
 BiCGSTAB<T>::BiCGSTAB(
     const Vec<T> &b,
-    Mat<T> *preAllocated,
+    Handle* hand4,
+    Mat<T> *allocatedBHeightX7,
+    Vec<T> *allocated9,
     const T tolerance,
     const size_t maxIterations
 ) : tolerance(tolerance),
     b(b),
-    paM(preAllocated ? *preAllocated : Mat<T>::create(b.size(), 7)),
-    r(paM.col(0)), r_tilde(paM.col(1)), p(paM.col(2)), v(paM.col(3)), s(paM.col(4)), t(paM.col(5)), h(paM.col(6)),
-    paV(Vec<T>::create(9, handle[0])),
-    rho(paV.get(0)), alpha(paV.get(1)), omega(paV.get(2)), rho_new(paV.get(3)), beta(paV.get(4)),
-    temp{{paV.get(5), paV.get(6), paV.get(7), paV.get(8)}},
+    hand4(hand4),
+    bHeightX7(allocatedBHeightX7 ? *allocatedBHeightX7 : Mat<T>::create(b.size(), 7)),
+    r(bHeightX7.col(0)), r_tilde(bHeightX7.col(1)), p(bHeightX7.col(2)), v(bHeightX7.col(3)), s(bHeightX7.col(4)), t(bHeightX7.col(5)), h(bHeightX7.col(6)),
+    a9(allocated9 ? *allocated9 : Vec<T>::create(9, hand4[0])),
+    rho(a9.get(0)), alpha(a9.get(1)), omega(a9.get(2)), rho_new(a9.get(3)), beta(a9.get(4)),
+    temp{{a9.get(5), a9.get(6), a9.get(7), a9.get(8)}},
     maxIterations(maxIterations) {
     static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>,
                   "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
@@ -89,30 +92,18 @@ BiCGSTAB<T>::BiCGSTAB(
 }
 
 template<typename T>
-void BiCGSTAB<T>::solve(
-    const BandedMat<T> &A,
-    Vec<T> &b,
-    Mat<T> *preAllocated,
-    const T tolerance,
-    const size_t maxIterations
-) {
-    BiCGSTAB solver(b, preAllocated, tolerance, maxIterations);
-    solver.solveUnpreconditionedBiCGSTAB(A);
-}
-
-template<typename T>
-void BiCGSTAB<T>::preamable(const BandedMat<T> &A) {
+void BiCGSTAB<T>::preamble(Vec<T>& result) {
 
     set(r, b, 0);
 
-    b.fillRandom(&handle[0]); // set x randomly      // x.fill(1, handle[0]);
+    result.fillRandom(&hand4[0]); // set x randomly      // x.fill(1, handle[0]);
     record(0, xReady);
 
-    A.bandedMult(b, r, handle, Singleton<T>::MINUS_ONE, Singleton<T>::ONE); // r = b - A * x
+    mult(result, r, hand4[0], Singleton<T>::MINUS_ONE, Singleton<T>::ONE); // r = b - A * x
 
     set(r_tilde, r, 0); //r_tilde = r
 
-    r_tilde.mult(r, rho, handle); //rho = r_tilde * r
+    r_tilde.mult(r, rho, hand4); //rho = r_tilde * r
 
     set(p, r, 0);
 
@@ -120,55 +111,55 @@ void BiCGSTAB<T>::preamable(const BandedMat<T> &A) {
 }
 
 template<typename T>
-void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A) {
+void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& result) {
     cudaDeviceSynchronize();
     TimePoint start = std::chrono::steady_clock::now();
-    preamable(A);
+    preamable(result);
 
     size_t numIterations = 0;
     for (; numIterations < maxIterations; numIterations++) {
-        A.bandedMult(p, v, handle); // v = A * p
+        mult(p, v, hand4[0]); // v = A * p
 
-        r_tilde.mult(v, alpha, handle);
-        alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, handle[0]); //alpha = rho / (r_tilde * v)
+        r_tilde.mult(v, alpha, hand4);
+        alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, hand4[0]); //alpha = rho / (r_tilde * v)
         record(0, {alphaReady});
 
         synch(1);
         omegaReady.renew();
         wait(1, {alphaReady});
 
-        set(h, b, 1);
+        set(h, result, 1);
         synch(1);
         renew({alphaReady, xReady});
-        h.add(p, &alpha, handle + 1); // h = x + alpha * p
+        h.add(p, &alpha, hand4 + 1); // h = x + alpha * p
 
-        s.setDifference(r, v, Singleton<T>::ONE, alpha, handle); // s = r - alpha * v
+        s.setDifference(r, v, Singleton<T>::ONE, alpha, hand4); // s = r - alpha * v
         record(0, {sReady});
 
         wait(2, {sReady, hReady});
         if (isSmall(s, temp[2], 2)) {
-            set(b, h, 2);
+            set(result, h, 2);
             break;
         }
         renew({sReady, hReady});
 
-        A.bandedMult(s, t, handle); // t = A * s
+        mult(s, t, hand4[0]); // t = A * s
 
-        t.mult(s, temp[3], handle + 3);
+        t.mult(s, temp[3], hand4 + 3);
         record(3, {prodTS});
-        t.mult(t, omega, handle);
+        t.mult(t, omega, hand4);
         wait(0, {prodTS});
-        omega.EBEPow(temp[3], Singleton<T>::MINUS_ONE, handle[0]); //omega = t * s / t * t;
+        omega.EBEPow(temp[3], Singleton<T>::MINUS_ONE, hand4[0]); //omega = t * s / t * t;
 
         record(0, {omegaReady});
 
         wait(1, {omegaReady});
-        b.setSum(h, s, Singleton<T>::ONE, omega, handle + 1); // x = h + omega * s
+        result.setSum(h, s, Singleton<T>::ONE, omega, hand4 + 1); // x = h + omega * s
         record(1, {xReady});
 
         synch(0);
         prodTS.renew();
-        r.setDifference(s, t, Singleton<T>::ONE, omega, handle); // r = s - omega * t
+        r.setDifference(s, t, Singleton<T>::ONE, omega, hand4); // r = s - omega * t
         record(0, {rReady});
 
         wait(2, {xReady, rReady});
@@ -176,9 +167,9 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A) {
         if (isSmall(r, temp[2], 2)) break;
         rReady.renew();
 
-        r_tilde.mult(r, rho_new, handle);
+        r_tilde.mult(r, rho_new, hand4);
 
-        beta.setProductOfQuotients(rho_new, rho, alpha, omega, handle[0]); // beta = (rho_new / rho) * (alpha / omega);
+        beta.setProductOfQuotients(rho_new, rho, alpha, omega, hand4[0]); // beta = (rho_new / rho) * (alpha / omega);
 
         set(rho, rho_new, 0);
 
@@ -188,36 +179,40 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A) {
     const TimePoint end = std::chrono::steady_clock::now();
     const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
 
+    std::cout<< "BiCGSTAB #iterations = " << numIterations << std::endl;
     if (numIterations >= maxIterations)
         std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
     std::cout << time << ", ";
 }
 
+template<typename T>
+BCGBanded<T>::BCGBanded(Handle* hand4, BandedMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T>* allocated9, const T &tolerance,
+size_t maxIterations): BiCGSTAB<T>(b, hand4, allocatedBSizeX7, allocated9, tolerance, maxIterations), A(A){
+}
 
-//
-// void testBiCGSTAB() {
-//     Handle hand;
-//
-//     size_t denseMatDim = 4;
-//
-//     auto indices = Vec<int32_t>::create(2);
-//     indices.get(0).set(1, hand);
-//     indices.get(1).set(-1, hand);
-//
-//     auto bm = BandedMat<double>::create(denseMatDim, 2,indices);
-//     bm.col(0).fill(3, hand);
-//     bm.col(1).fill(-2, hand);
-//
-//     auto b = Vec<double>::create(denseMatDim, hand);
-//     b.fill(1, hand);
-//
-//     auto x = Vec<double>::create(denseMatDim, hand);
-//
-//     BiCGSTAB<double> bs(b);
-//
-//     bs.solveUnpreconditionedBiCGSTAB(bm, x);
-//
-//     std::cout << "x = \n" << GpuOut<double>(x, hand) << std::endl;
-// }
+template<typename T>
+void BCGBanded<T>::mult(Vec<T>& vec, Vec<T>& product, Handle& hand, Singleton<T> multProduct, Singleton<T> preMultResult) const {
+    return A.bandedMult(vec, product, &hand, multProduct, preMultResult);
+}
+
+
+template<typename T>
+void BCGBanded<T>::solve(
+    Handle* hand4,
+    const BandedMat<T> &A,
+    Vec<T>& result,
+    const Vec<T> &b,
+    Mat<T> *allocatedBHeightX7,
+    Vec<T>* allocated9,
+    const T tolerance,
+    const size_t maxIterations
+) {
+    BCGBanded<T> solver(hand4, A, b, allocatedBHeightX7, allocated9, tolerance, maxIterations);
+    solver.solveUnpreconditionedBiCGSTAB(result);
+}
+
 template class BiCGSTAB<double>;
 template class BiCGSTAB<float>;
+
+template class BCGBanded<double>;
+template class BCGBanded<float>;

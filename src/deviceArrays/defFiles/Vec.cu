@@ -9,8 +9,7 @@
 
 
 template<typename T>
-Vec<T>::Vec(const size_t size, const std::shared_ptr<T> ptr, const size_t stride) : GpuArray<T>(
-    static_cast<size_t>(1), size, stride, ptr) {
+Vec<T>::Vec(const size_t size, const std::shared_ptr<T> ptr, const size_t stride) : GpuArray<T>(1, size, stride, ptr) {
 }
 
 template<typename T>
@@ -352,15 +351,16 @@ void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> 
     );
 }
 
+
 template<typename T>
-Tensor<T> Vec<T>::tensor(size_t height, size_t layers) {
+Tensor<T> Vec<T>::tensor(size_t height, size_t layers) const{
     const size_t ld = height * layers;
     const size_t rows = size()/ld;
     return Tensor<T>(height, rows, layers, ld, this->_ptr);
 }
 
 template<typename T>
-Mat<T> Vec<T>::matrix(size_t height) {
+Mat<T> Vec<T>::matrix(size_t height) const{
     return Mat<T>(height, size()/height, height, this->_ptr);
 }
 
@@ -390,18 +390,30 @@ KernelPrep Vec<T>::kernelPrep() {
 }
 
 template<typename T>
+void Vec<T>::absSum(Singleton<T> result, Handle *handle) {
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+
+    if constexpr (std::is_same_v<T, float>)
+        cublasSasum(*h, size(), this->toKernel1d(), this->_ld, result.toKernel1d());
+    else if constexpr (std::is_same_v<T, double>)
+        cublasDasum(*h, size(), this->toKernel1d(), this->_ld, result.toKernel1d());
+    else throw std::invalid_argument("Vec::add unsupported type.");
+}
+
+template<typename T>
 Vec<T> GpuArray<T>::vec(size_t offset, size_t ld, size_t size) {
     return Vec<T>(size, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + offset), ld);
 }
 
 template <typename T>
-Vec<T> GpuArray<T>::col(const size_t index){
+SimpleArray<T> GpuArray<T>::col(const size_t index){
     if (index >= this->_cols) throw std::out_of_range("Out of range");
-    return this->vec(index * this->_ld, 1, this->_rows);
+    return SimpleArray<T>(this->vec(index * this->_ld, 1, this->_rows));
 }
 template <typename T>
-Vec<T> GpuArray<T>::col(const size_t index) const {
-    return (const_cast<GpuArray<T>*>(this))->col(index);
+SimpleArray<T> GpuArray<T>::col(const size_t index) const {
+    return SimpleArray<T>((const_cast<GpuArray<T>*>(this))->col(index));
 }
 template <typename T>
 Vec<T> GpuArray<T>::row(const size_t index){
@@ -435,12 +447,14 @@ template class Vec<double>;
 template class Vec<size_t>;
 template class Vec<int32_t>;
 template class Vec<unsigned char>;
+template class Vec<uint32_t>;
 
 template Vec<float> GpuArray<float>::col(size_t) const;
 template Vec<double> GpuArray<double>::col(size_t) const;
 template Vec<size_t> GpuArray<size_t>::col(size_t) const; // Maps to 'unsigned long' in the error
 template Vec<int> GpuArray<int>::col(size_t) const;
 template Vec<unsigned char> GpuArray<unsigned char>::col(size_t) const;
+template Vec<uint32_t> GpuArray<uint32_t>::col(size_t) const;
 
 // Instantiate GpuArray::row(size_t) const for all necessary types
 template Vec<float> GpuArray<float>::row(size_t) const;
@@ -448,6 +462,7 @@ template Vec<double> GpuArray<double>::row(size_t) const;
 template Vec<size_t> GpuArray<size_t>::row(size_t) const; // Maps to 'unsigned long' in the error
 template Vec<int> GpuArray<int>::row(size_t) const;
 template Vec<unsigned char> GpuArray<unsigned char>::row(size_t) const;
+template Vec<uint32_t> GpuArray<uint32_t>::row(size_t) const;
 
 // template Vec<float> Vec<float>::create(size_t, size_t, float const*);
 // template Vec<double> Vec<double>::create(size_t, size_t, double const*);

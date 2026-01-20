@@ -1,4 +1,0 @@
-/home/usr/Documents/TelAvivU/cmake-build-debug/CMakeFiles/CudaBandedLib.dir
-/home/usr/Documents/TelAvivU/cmake-build-debug/CMakeFiles/testMethods.dir
-/home/usr/Documents/TelAvivU/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/usr/Documents/TelAvivU/cmake-build-debug/CMakeFiles/rebuild_cache.dir

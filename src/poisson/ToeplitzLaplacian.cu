@@ -148,16 +148,22 @@ void ToeplitzLaplacian<T>::loadMapRowToDiag(Vec<int32_t> diags, const cudaStream
     diags.set(diagsCpu, stream);
 }
 
+template <typename T>
+T invSq(T x) {
+    return 1/(x*x);
+}
+
 template<typename T>
-BandedMat<T> ToeplitzLaplacian<T>::setA(cudaStream_t stream, Mat<T> &preAlocatedForA,
+BandedMat<T> ToeplitzLaplacian<T>::setL(cudaStream_t stream, Mat<T> &preAlocatedForA,
                                         Vec<int32_t> &preAlocatedForIndices, const Real3d& delta) {
-    T   denDx2 = 1 / (delta.x * delta.x),
-        denDy2 = 1 / (delta.y * delta.y),
-        denDz2 = 1 / (delta.z * delta.z);
+
+    T denDx2 = invSq(delta.x), denDy2 = invSq(delta.y), denDz2 = invSq(delta.z);
+
     preAlocatedForA.col(0).fill(-2*(denDx2 + denDy2 + (dim.layers > 1 ? denDz2 : 0)), stream);
+
     preAlocatedForA.subMat(0,1,preAlocatedForA._rows, 2).fill(denDy2, stream);
     preAlocatedForA.subMat(0,3,preAlocatedForA._rows, 2).fill(denDx2, stream);
-    if (delta.z > 1) preAlocatedForA.subMat(0,5,preAlocatedForA._rows, 2).fill(denDz2, stream);
+    if (this->dim.layers > 1) preAlocatedForA.subMat(0,5,preAlocatedForA._rows, 2).fill(denDz2, stream);
 
     const KernelPrep kp = dim.kernelPrep();
     if (dim.layers > 1) setAKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(

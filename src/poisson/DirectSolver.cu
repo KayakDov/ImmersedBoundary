@@ -10,13 +10,13 @@ template<typename T>
 DirectSolver<T>::DirectSolver(const CubeBoundary<T> &boundary, Vec<T> &f, Mat<T> &preAlocatedForBandedA,
                               Vec<int32_t> &prealocatedForIndices,
                               cudaStream_t stream) : PoissonRHS<T>(boundary, f, stream),
-                                                     A(ToeplitzLaplacian<T>(this->dim).setA(stream, preAlocatedForBandedA, prealocatedForIndices)) {
+                                                     A(ToeplitzLaplacian<T>(this->dim).setL(stream, preAlocatedForBandedA, prealocatedForIndices)) {
 }
 
 template<typename T>
 void DirectSolver<T>::solve(Mat<T> prealocatedForBiCGSTAB) {
     cudaDeviceSynchronize();
-    BiCGSTAB<T>::solve(A, this->_b, &prealocatedForBiCGSTAB);
+    BCGBanded<T>::solve(A, this->_b, this->_b, &prealocatedForBiCGSTAB);
 }
 
 /**

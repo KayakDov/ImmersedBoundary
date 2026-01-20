@@ -17,7 +17,7 @@ void eigenDecompSolver(const T* frontBack, size_t fbLd,
                        size_t width,
                        size_t depth);
 
-
+using DnMatDescrPtr = std::shared_ptr<std::remove_pointer<cusparseDnMatDescr_t>::type>;
 /**
  * @brief Abstract base class for GPU-backed matrices.
  *
@@ -31,6 +31,8 @@ void eigenDecompSolver(const T* frontBack, size_t fbLd,
 template <typename T>
 class Mat : public GpuArray<T> {
     using GpuArray<T>::mult;
+    using GpuArray<T>::col;
+    using GpuArray<T>::row;
 
     friend Tensor<T>;
     friend void eigenDecompSolver<T>(const T* frontBack,  size_t fbLd,
@@ -43,6 +45,7 @@ class Mat : public GpuArray<T> {
                        size_t depth);
     friend Vec<T>;
 
+    mutable DnMatDescrPtr dnMatDescr;
 protected:
     /**
      * @brief Protected constructor. Use static create() method or derived classes.
@@ -140,6 +143,12 @@ public:
      */
     virtual Mat<T> mult(const Mat<T>& other, Mat<T>* result, Handle* handle, const Singleton<T> *alpha, const
                         Singleton<T> *beta, bool transposeA, bool transposeB) const;
+
+    /**
+     * default alpha = 1, beta = 0.
+     * @copydoc GpuArray::mult
+     */
+    virtual Mat<T> mult(const Mat<T>& other, Mat<T>* result, Handle* handle,  bool transposeA, bool transposeB) const;
     /**
      * @brief Multiply this matrix with a vector.
      * @copydoc GpuArray::mult
@@ -281,6 +290,8 @@ public:
      */
     void factorLU(Handle *hand = nullptr, Vec<int32_t> *rowSwaps = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workSpace =
                           nullptr);
+
+    cusparseDnMatDescr_t getDescr() const;
 
     __host__ __device__ operator DeviceData2d<T>();
     __host__ __device__ operator DeviceData2d<T>() const;

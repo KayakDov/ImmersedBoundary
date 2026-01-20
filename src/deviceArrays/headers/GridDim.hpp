@@ -17,6 +17,8 @@
 #include <cstddef>
 #include <device_launch_parameters.h>
 
+#include "math/Real3d.h"
+
 __device__ inline size_t idx(){return blockIdx.x * blockDim.x + threadIdx.x;}
 __device__ inline size_t idy(){return blockIdx.y * blockDim.y + threadIdx.y;}
 
@@ -54,6 +56,20 @@ class GridDim {
 public:
     const size_t rows, cols, layers, layerSize;
     __host__ __device__ inline  GridDim(size_t height, size_t width, size_t depth): cols(width), rows(height), layers(depth), layerSize(rows * cols) {}
+
+    [[nodiscard]] size_t maxDim() const {
+        return std::max(std::max(rows, cols),  layers);
+    }
+    [[nodiscard]] size_t minDim() const {
+        return std::min(std::min(rows, cols),  layers);
+    }
+
+    [[nodiscard]] size_t numDims() const {
+        return 2 + (layers > 1);
+    }
+    [[nodiscard]] size_t volume() const {
+        return rows * cols * layers;
+    }
 
     /**
      *
@@ -96,6 +112,9 @@ public:
         return {cols, rows, layers};
     }
 
+    [[nodiscard]] Real3d center() const{
+        return {cols/2.0, rows/2.0, layers/2.0};
+    }
 };
 
 /**

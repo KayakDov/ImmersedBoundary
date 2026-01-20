@@ -77,6 +77,9 @@ template <typename T>
 const Singleton<T> Singleton<T>::ONE = Singleton<T>::create(static_cast<T>(1));
 
 template <typename T>
+const Singleton<T> Singleton<T>::TWO = Singleton<T>::create(static_cast<T>(2));
+
+template <typename T>
 const Singleton<T> Singleton<T>::ZERO = Singleton<T>::create(static_cast<T>(0));
 
 template <typename T>
@@ -88,3 +91,5 @@ template class Singleton<size_t>;
 template class Singleton<float>;
 template class Singleton<double>;
 template class Singleton<unsigned char>;
+template class Singleton<uint32_t>;
+

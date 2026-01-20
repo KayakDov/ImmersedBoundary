@@ -46,12 +46,12 @@ void GpuArray<T>::fill(T val, cudaStream_t stream) {
 
 template<typename T>
 std::shared_ptr<T> GpuArray<T>::ptr() const{
-    return _ptr;
+    return this->_ptr;
 }
 
 template<typename T>
 void GpuArray<T>::freeMem() {
-    _ptr.reset();
+    this->_ptr.reset();
 }
 
 template <typename T>
@@ -140,13 +140,13 @@ void GpuArray<T>::multKronecker(const GpuArray<T>& other, GpuArray<T>& result, c
 }
 
 template<typename T>
-T * GpuArray<T>::data() {
-    return _ptr.get();
+T* GpuArray<T>::data() {
+    return this->_ptr.get();
 }
 
 template<typename T>
-const T * GpuArray<T>::data() const {
-    return _ptr.get();
+const T* GpuArray<T>::data() const {
+    return this->_ptr.get();
 }
 
 template<typename T>
@@ -185,3 +185,4 @@ template class GpuArray<double>;
 template class GpuArray<int32_t>;
 template class GpuArray<size_t>;
 template class GpuArray<unsigned char>;
+template class GpuArray<uint32_t>;

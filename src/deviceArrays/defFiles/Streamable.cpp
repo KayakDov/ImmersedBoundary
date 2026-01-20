@@ -15,12 +15,12 @@ StreamContext<T>::StreamContext(const cudaStream_t &s, bool text, bool colMjr): 
 }
 
 template<typename T>
-GpuIn<T>::GpuIn(GpuArray<T> &src, const cudaStream_t &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(src){
+GpuIn<T>::GpuIn(GpuArray<T> &dst, const cudaStream_t &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(dst){
 }
 
 template<typename T>
-GpuIn<T>::GpuIn(Tensor<T>& src, const cudaStream_t &stream, bool isText, bool columnMjr)
-    : GpuIn<T>(src.utilityMatrix, stream, isText, columnMjr) {}
+GpuIn<T>::GpuIn(Tensor<T>& dst, const cudaStream_t &stream, bool isText, bool columnMjr)
+    : GpuIn<T>(dst.utilityMatrix, stream, isText, columnMjr) {}
 
 
 template <typename T>
@@ -121,3 +121,6 @@ template class GpuOut<int32_t>;
 // unsigned char
 template class GpuIn<unsigned char>;
 template class GpuOut<unsigned char>;
+
+template class GpuIn<uint32_t>;
+template class GpuOut<uint32_t>;

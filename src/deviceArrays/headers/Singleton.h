@@ -32,6 +32,7 @@ public:
     /// Predefined constants for convenience
     static const Singleton<T> ONE;       ///< Singleton containing 1
     static const Singleton<T> ZERO;      ///< Singleton containing 0
+    static const Singleton<T> TWO;
     static const Singleton<T> MINUS_ONE; ///< Singleton containing -1
 
     using Vec<T>::get;  ///< Inherit Vec<T>::get methods

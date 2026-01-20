@@ -41,6 +41,9 @@ class Tensor final : public GpuArray<T> {
     using GpuArray<T>::row;
 private:
 
+
+public:
+
     /**
      * @brief Private constructor for internal use.
      *
@@ -55,7 +58,6 @@ private:
      */
     Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::shared_ptr<T> _ptr);
 
-public:
     /**
      * This matrix is the tensor laid out with one layer above another.
      */
@@ -66,9 +68,10 @@ public:
     /**
      * This method is a bit dangerous to call without understanding data layout, so bet to see if one of the other layer
      * methods meets your needs first.
+     * Make sure that if this is const, then the resulting mat is const as well.  TODO return const pointer
      * @return A matrix extracted from this tensor.
      */
-    Mat<T> subMatrix(size_t startRow, size_t startCol, size_t startLayer, size_t height, size_t width, size_t ld);
+    Mat<T> subMatrix(size_t startRow, size_t startCol, size_t startLayer, size_t height, size_t width, size_t ld) const;
 
     /**
      * @brief Factory method to create a Tensor of given dimensions.
@@ -86,10 +89,12 @@ public:
     /**
      * @brief Returns a specific layer of the tensor as a Mat<T>.
      *
+     *  Be careful about giving access to const.  Target should be const.
+     *
      * @param deptIndex Layer index (0-based).
      * @return Mat<T> representing the requested layer.
      */
-    Mat<T> layerRowCol(size_t deptIndex);
+    Mat<T> layerRowCol(size_t deptIndex) const;
 
     /**
      * @brief Returns a specific layer of the tensor as a Mat<T>.  This layer is perpendicular
@@ -100,7 +105,7 @@ public:
      * @param colIndex The index of the column.(0-based).
      * @return Mat<T> representing the requested layer.
      */
-    Mat<T> layerColDepth(size_t colIndex);
+    Mat<T> layerColDepth(size_t colIndex) const;
 
     /**
      * @brief Returns a column-depth vector at the given row and column.

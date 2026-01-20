@@ -38,9 +38,9 @@ class GpuIn : public StreamContext<T> {
 public:
     GpuArray<T>& src;
 
-    GpuIn(GpuArray<T>& src, const cudaStream_t &stream, bool isText = true, bool columnMjr = false);
+    GpuIn(GpuArray<T>& dst, const cudaStream_t &stream, bool isText = true, bool columnMjr = false);
 
-    GpuIn(Tensor<T>& src, const cudaStream_t &stream, bool isText = true, bool columnMjr = false);
+    GpuIn(Tensor<T>& dst, const cudaStream_t &stream, bool isText = true, bool columnMjr = false);
 
     /**
      * @brief The core reading logic implemented in the .cu file.
@@ -99,7 +99,7 @@ std::ostream& operator<<(std::ostream& output_stream, const GpuOut<T>& wrapper) 
  * @return A reference to the input stream.
  */
 template <typename T>
-std::istream& operator>>(std::istream& input_stream, GpuIn<T>& wrapper) {
+std::istream& operator>>(std::istream& input_stream, GpuIn<T>&& wrapper) {
     return wrapper.read(input_stream);
 }
 

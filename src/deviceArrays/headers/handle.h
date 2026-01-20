@@ -4,6 +4,7 @@
 #include <cublas_v2.h>
 #include <cusolverDn.h>
 #include <memory>
+#include <cusparse.h>
 
 /**
  * @brief Checks a CUDA runtime error and throws a std::runtime_error if an error occurred.
@@ -21,6 +22,8 @@ void checkCublasErrors(cublasStatus_t status, const char *file, int line);
 
 void checkSolverErrors(cusolverStatus_t status, const char *file, int line);
 
+void checkSparseErrors(cusparseStatus_t status, const char *file, int line);
+
 /**
  * @brief Macro to check a CUDA runtime error and throw a runtime exception if needed.
  * @param err CUDA runtime function call to check.
@@ -30,6 +33,7 @@ void checkSolverErrors(cusolverStatus_t status, const char *file, int line);
 #define CHECK_CUDA_ERROR(err) checkCudaErrors(err, __FILE__, __LINE__)
 #define CHECK_CUBLAS_ERROR(status) checkCublasErrors(status, __FILE__, __LINE__)
 #define CHECK_SOLVER_ERROR(status) checkSolverErrors(status, __FILE__, __LINE__)
+#define CHECK_SPARSE_ERROR(status) checkSparseErrors(status, __FILE__, __LINE__)
 
 /** * @brief Custom deleter functor for cublasHandle_t.
  * The implementation is in handle.cu.
@@ -45,10 +49,16 @@ struct CusolverDeleter {
     void operator()(cusolverDnHandle_t handle) const;
 };
 
+struct CusparseDeleter {
+    void operator()(cusparseHandle_t handle) const;
+};
+
 // --- Type Aliases for Smart Pointers ---
 // We use unique_ptr with the raw pointer type and the custom deleter struct.
 using CublasHandlePtr = std::unique_ptr<std::remove_pointer<cublasHandle_t>::type, CublasDeleter>;
 using CusolverHandlePtr = std::unique_ptr<std::remove_pointer<cusolverDnHandle_t>::type, CusolverDeleter>;
+using CusparseHandlePtr = std::unique_ptr<std::remove_pointer<cusparseHandle_t>::type, CusparseDeleter>;
+
 
 
 /**
@@ -66,6 +76,7 @@ class Handle {
 private:
     CublasHandlePtr handlePtr;
     CusolverHandlePtr solverHandlePtr;
+    CusparseHandlePtr sparseHandlePtr;
     cudaStream_t stream;
 public:
 
@@ -118,21 +129,8 @@ public:
     operator cudaStream_t() const;
 
     operator cusolverDnHandle_t() const;
-    //
-    // /**
-    //  * @brief Returns the raw cublasHandle_t pointer.
-    //  */
-    // [[nodiscard]] cublasHandle_t getHandle() const { return handlePtr.get(); }
-    //
-    // /**
-    //  * @brief Returns the raw cusolverDnHandle_t pointer.
-    //  */
-    // [[nodiscard]] cusolverDnHandle_t getSolverHand() const { return solverHandlePtr.get(); }
-    //
-    // /**
-    //  * @brief Returns the raw cudaStream_t pointer.
-    //  */
-    // [[nodiscard]] cudaStream_t getStream() const { return stream; }
+
+    operator cusparseHandle_t() const;
 
 private:
     bool isOwner = false; ///< True if the Handle owns the CUDA stream and should destroy it

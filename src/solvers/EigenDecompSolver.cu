@@ -28,20 +28,18 @@ __global__ void eigenValLKernel(DeviceData1d<T> eVals, T delta) {
 
 template<typename T>
 __global__ void setUTildeKernel3d(DeviceData3d<T> uTilde,
-                                const DeviceData2d<T> eVals,
-                                const DeviceData3d<T> fTilde) {
+                                  const DeviceData2d<T> eVals,
+                                  const DeviceData3d<T> fTilde) {
     if (GridInd3d ind; ind < uTilde)
         uTilde[ind] = fTilde[ind] / (eVals(ind.col, 0) + eVals(ind.row, 1) + eVals(ind.layer, 2));
-
 }
 
 template<typename T>
 __global__ void setUTildeKernel2d(DeviceData2d<T> uTilde,
-                                const DeviceData2d<T> eVals,
-                                const DeviceData2d<T> fTilde) {
+                                  const DeviceData2d<T> eVals,
+                                  const DeviceData2d<T> fTilde) {
     if (GridInd2d ind; ind < uTilde)
         uTilde[ind] = fTilde[ind] / (eVals(ind.col, 0) + eVals(ind.row, 1));
-
 }
 
 // ============================================================================
@@ -49,7 +47,7 @@ __global__ void setUTildeKernel2d(DeviceData2d<T> uTilde,
 // ============================================================================
 
 template<typename T>
-void EigenDecompSolver<T>::eigenL(size_t i, double delta, cudaStream_t stream) {
+void EigenDecompSolver<T>::eigenL(size_t i, const double delta, cudaStream_t stream) {//TODO: avoid redundant computation when eigen matrices are the same size
     KernelPrep kpVec = eVecs[i].kernelPrep();
     eigenMatLKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, stream>>>(
         eVecs[i].toKernel2d());
@@ -59,21 +57,22 @@ void EigenDecompSolver<T>::eigenL(size_t i, double delta, cudaStream_t stream) {
     eigenValLKernel<T><<<kpVal.numBlocks, kpVal.threadsPerBlock, 0, stream>>>(
         eVals.col(i).subVec(0, n, 1).toKernel1d(),
         delta
-        );
+    );
 }
 
 template<typename T>
 void EigenDecompSolver3d<T>::setUTilde(const Tensor<T> &f,
-                                     Tensor<T> &u,
-                                     Handle &hand) const{
+                                       Tensor<T> &u,
+                                       Handle &hand) const {
     KernelPrep kp = f.kernelPrep();
     setUTildeKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         u.toKernel3d(),
         this->eVals.toKernel2d(),
         f.toKernel3d());
 }
+
 template<typename T>
-void EigenDecompSolver2d<T>::setUTilde(const Mat<T> &f, Mat<T> &u, Handle &hand) const{
+void EigenDecompSolver2d<T>::setUTilde(const Mat<T> &f, Mat<T> &u, Handle &hand) const {
     KernelPrep kp = f.kernelPrep();
     setUTildeKernel2d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         u.toKernel2d(),
@@ -84,13 +83,13 @@ void EigenDecompSolver2d<T>::setUTilde(const Mat<T> &f, Mat<T> &u, Handle &hand)
 
 template<typename T>
 void EigenDecompSolver3d<T>::multE(size_t i,
-                                 bool transposeEigen,
-                                 bool transpose,
-                                 const Mat<T> &a1,
-                                 Mat<T> &dst1,
-                                 size_t stride,
-                                 Handle &hand,
-                                 size_t batchCount) const{
+                                   bool transposeEigen,
+                                   bool transpose,
+                                   const Mat<T> &a1,
+                                   Mat<T> &dst1,
+                                   size_t stride,
+                                   Handle &hand,
+                                   size_t batchCount) const {
     Mat<T>::batchMult(
         transpose ? a1 : this->eVecs[i], transpose ? stride : 0,
         transpose ? this->eVecs[i] : a1, transpose ? 0 : stride,
@@ -102,25 +101,29 @@ void EigenDecompSolver3d<T>::multE(size_t i,
 }
 
 template<typename T>
-void EigenDecompSolver3d<T>::multEX(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const{
+void EigenDecompSolver3d<T>::multEX(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const {
     multE(0, transposeE, true, src, dst, src._rows, hand, this->dim.layers);
 }
 
 template<typename T>
-void EigenDecompSolver3d<T>::multEY(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const{
+void EigenDecompSolver3d<T>::multEY(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const {
     multE(1, transposeE, false, src, dst, src._rows, hand, this->dim.layers);
 }
 
 template<typename T>
-void EigenDecompSolver3d<T>::multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const{
+void EigenDecompSolver3d<T>::multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const {
     multE(2, transposeE, true, src, dst, this->dim.layers * this->dim.rows, hand, this->dim.cols);
 }
 
 template<typename T>
-void EigenDecompSolver3d<T>::multiplyEF(Handle &hand, Tensor<T> &src, Tensor<T> &dst, bool transposeE) const{
-    auto xF = src.layerRowCol(0), dx1 = dst.layerRowCol(0),
-            yF = dst.layerRowCol(0), dyF = src.layerRowCol(0),
-            zS = src.layerColDepth(0), dzS = dst.layerColDepth(0);
+void EigenDecompSolver3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, Tensor<T> &dst, bool transposeE) const {
+    const auto xF = src.layerRowCol(0);
+    auto dx1 = dst.layerRowCol(0);
+    auto yF = dst.layerRowCol(0);
+    auto sizeOfBT = this->sizeOfB.tensor(this->dim.rows, this->dim.layers);
+    auto dyF = sizeOfBT.layerRowCol(0);
+    auto zS = sizeOfBT.layerColDepth(0);
+    auto dzS = dst.layerColDepth(0);
 
     if (transposeE) {
         multEX(xF, dx1, hand, transposeE);
@@ -134,18 +137,19 @@ void EigenDecompSolver3d<T>::multiplyEF(Handle &hand, Tensor<T> &src, Tensor<T> 
 }
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(std::vector<SquareMat<T>> eMats,
-                                        Mat<T> &maxDimX2Or3):
-    dim(eMats[1]._rows, eMats[0]._cols, maxDimX2Or3._cols == 3? eMats[2]._rows: 0),
-    eVecs(eMats),
-    eVals(maxDimX2Or3) {
-
+EigenDecompSolver<T>::EigenDecompSolver(std::vector<SquareMat<T> > eMats,
+                                        Mat<T> &maxDimX2Or3,
+                                        SimpleArray<T> &sizeOfB) : dim(eMats[1]._rows, eMats[0]._cols,
+                                                                       maxDimX2Or3._cols == 3 ? eMats[2]._rows : 0),
+                                                                   eVecs(eMats),
+                                                                   eVals(maxDimX2Or3),
+                                                                   sizeOfB(sizeOfB) {
 }
 
 template<typename T>
-EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2, std::array<Handle, 2> &hand2, Real2d delta)
-    : EigenDecompSolver<T>({colsXCols, rowsXRows}, maxDimX2) {
-
+EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2,
+                                            SimpleArray<T> &sizeOfB, Handle* hand2, const Real2d delta)
+    : EigenDecompSolver<T>({colsXCols, rowsXRows}, maxDimX2, sizeOfB) {
     Event doneEigen;
     this->eigenL(1, delta.y, hand2[1]);
     doneEigen.record(hand2[1]);
@@ -154,8 +158,10 @@ EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T
 }
 
 template<typename T>
-EigenDecompSolver3d<T>::EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3, std::array<Handle, 3> &hand3, Real3d delta):
-    EigenDecompSolver<T>({colsXCols, rowsXRows, depthsXDepths}, maxDimX3){
+EigenDecompSolver3d<T>::EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols,
+                                            SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3, SimpleArray<T> &sizeOfB,
+                                            Handle* hand3, Real3d delta) : EigenDecompSolver<T>(
+    {colsXCols, rowsXRows, depthsXDepths}, maxDimX3, sizeOfB) {
     Event doneEigen[2]{};
 
     this->eigenL(0, delta.x, hand3[1]);
@@ -171,29 +177,32 @@ EigenDecompSolver3d<T>::EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T
 
 
 template<typename T>
-void EigenDecompSolver3d<T>::solve(Vec<T> &x, Vec<T> &b, Handle &hand) const {
-    auto bT = b.tensor(this->dim.rows, this->dim.layers);
+void EigenDecompSolver3d<T>::solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const {
+    const auto bT = b.tensor(this->dim.rows, this->dim.layers);
+    auto bWorkSpaceT = this->sizeOfB.tensor(this->dim.rows, this->dim.layers);
     auto xT = x.tensor(this->dim.rows, this->dim.layers);
 
     this->multiplyEF(hand, bT, xT, true);
 
-    this->setUTilde(xT, bT, hand);
+    this->setUTilde(xT, bWorkSpaceT, hand);
 
-    this->multiplyEF(hand, bT, xT, false);
+    this->multiplyEF(hand, bWorkSpaceT, xT, false);
 }
 
 template<typename T>
-void EigenDecompSolver2d<T>::solve(Vec<T> &x, Vec<T> &b, Handle &hand) const {//TODO:There's some redundant code here.
-    auto bM = b.matrix(this->dim.rows);
+void EigenDecompSolver2d<T>::solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const {
+
+    const auto bM = b.matrix(this->dim.rows);
+    auto soBM = this->sizeOfB.matrix(this->dim.rows);
     auto xM = x.matrix(this->dim.rows);
 
-    bM.mult(this->eVecs[0], &xM, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false, false);
-    this->eVecs[1].mult(xM, &bM, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, true, false);
+    bM.mult(this->eVecs[0], &xM, &hand, false, false);
+    this->eVecs[1].mult(xM, &soBM, &hand, true, false);
 
-    setUTilde(bM, xM, hand);
+    setUTilde(soBM, xM, hand);
 
-    this->eVecs[1].mult(xM, &bM, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false, false);
-    bM.mult(this->eVecs[0], &xM, &hand, &Singleton<T>::ONE, &Singleton<T>::ZERO, false, true);
+    this->eVecs[1].mult(xM, &soBM, &hand, false, false);
+    soBM.mult(this->eVecs[0], &xM, &hand, false, true);
 }
 
 template class EigenDecompSolver<double>;
@@ -202,5 +211,3 @@ template class EigenDecompSolver3d<double>;
 template class EigenDecompSolver3d<float>;
 template class EigenDecompSolver2d<double>;
 template class EigenDecompSolver2d<float>;
-
-// My b vector is (1,2,3,4,5,6)^T.  Let's walk through my code step by step, you tell me what you think my values should be, and I'll take a look at the debugger and

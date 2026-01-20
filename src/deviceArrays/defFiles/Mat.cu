@@ -34,6 +34,11 @@ Mat<T> Mat<T>::mult(
     return *resPtr;
 }
 
+template<typename T>
+Mat<T> Mat<T>::mult(const Mat<T> &other, Mat<T> *result, Handle *handle, bool transposeA, bool transposeB) const {
+    return mult(other, result, handle, &Singleton<T>::ONE, &Singleton<T>::ZERO, transposeA, transposeB);
+}
+
 
 template <typename T>
 void Mat<T>::mult(
@@ -386,7 +391,7 @@ Mat<T> Mat<T>::create(size_t rows, size_t cols){
 
     CHECK_CUDA_ERROR(cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols));//Note: there does not seem to be an asynchronos version of this method.
 
-    return Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter));;
+    return Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter));
 }
 
 template<typename T>
@@ -479,7 +484,7 @@ void Mat<T>::batchMult(
 }
 
 
-template<typename T>//Note, this is meant to be a Vec method here, not an oversite.  This is needed so that Math<T>::mult can be called here.
+template<typename T>
 void Vec<T>::mult(
     const Mat<T> &other,
     Vec<T> &result,
@@ -546,9 +551,8 @@ void Mat<T>::factorLU(Handle *hand, Vec<int32_t> *rowSwaps, Singleton<int32_t> *
         CHECK_CUSOLVER_ERROR(cusolverDnDgetrf(*h, this->_rows, this->_cols, this->data(), this->_ld, ws->data(), rr->data(), inf->data()));
     else if constexpr (std::is_same_v<T, float>)
         CHECK_CUSOLVER_ERROR(cusolverDnSgetrf(*h, this->_rows, this->_cols, this->data(), this->_ld, ws->data(), rr->data(), inf->data()));
-
-
 }
+
 template<typename T>
 Vec<T>::operator Mat<T>() {
     return Mat<T>(this->_rows, this->_cols, this->_ld, this->_ptr);
@@ -558,11 +562,35 @@ Vec<T>::operator Mat<T>() const{
     return Mat<T>(this->_rows, this->_cols, this->_ld, this->_ptr);
 }
 
+template<typename T>
+cusparseDnMatDescr_t Mat<T>::getDescr() const {
+    if (!dnMatDescr) {
+        cusparseDnMatDescr_t rawDescr;
+        const cudaDataType valueType = cuValueType<T>();
+
+        CHECK_SPARSE_ERROR(cusparseCreateDnMat(
+            &rawDescr,
+            this->_rows,         // Number of rows
+            this->_cols,         // Number of columns
+            this->_ld,           // Leading dimension (can be > rows)
+            const_cast<void*>(static_cast<const void*>(this->data())),
+            valueType,
+            CUSPARSE_ORDER_COL    // Change to CUSPARSE_ORDER_ROW if C-style
+        ));
+
+        // Use the same smart pointer pattern as your SimpleArray
+        dnMatDescr = DnMatDescrPtr(rawDescr, [](const cusparseDnMatDescr_t p) {
+            if (p) cusparseDestroyDnMat(p);
+        });
+    }
+    return dnMatDescr.get();
+}
 
 template class Mat<float>;
 template class Mat<double>;
 template class Mat<size_t>;
 template class Mat<int32_t>;
+template class Mat<uint32_t>;
 template class Mat<unsigned char>;
 
 template void Vec<float>::mult(const Mat<float>&, Vec<float>&, Handle*, const Singleton<float>*, const Singleton<float>*, bool) const;
@@ -570,15 +598,18 @@ template void Vec<double>::mult(const Mat<double>&, Vec<double>&, Handle*, const
 template void Vec<size_t>::mult(const Mat<size_t>&, Vec<size_t>&, Handle*, const Singleton<size_t>*, const Singleton<size_t>*, bool) const;
 template void Vec<int32_t>::mult(const Mat<int32_t>&, Vec<int32_t>&, Handle*, const Singleton<int32_t>*, const Singleton<int32_t>*, bool) const;
 template void Vec<unsigned char>::mult(const Mat<unsigned char>&, Vec<unsigned char>&, Handle*, const Singleton<unsigned char>*, const Singleton<unsigned char>*, bool) const;
+template void Vec<uint32_t>::mult(const Mat<uint32_t>&, Vec<uint32_t>&, Handle*, const Singleton<uint32_t>*, const Singleton<uint32_t>*, bool) const;
 
 template Vec<float>::operator Mat<float>();
 template Vec<double>::operator Mat<double>();
 template Vec<size_t>::operator Mat<size_t>();
 template Vec<int32_t>::operator Mat<int32_t>();
 template Vec<unsigned char>::operator Mat<unsigned char>();
+template Vec<uint32_t>::operator Mat<uint32_t>();
 
 template Vec<float>::operator Mat<float>() const;
 template Vec<double>::operator Mat<double>() const;
 template Vec<size_t>::operator Mat<size_t>() const;
 template Vec<int32_t>::operator Mat<int32_t>() const;
 template Vec<unsigned char>::operator Mat<unsigned char>() const;
+template Vec<uint32_t>::operator Mat<uint32_t>() const;

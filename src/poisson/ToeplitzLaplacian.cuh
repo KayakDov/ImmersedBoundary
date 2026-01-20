@@ -1,6 +1,3 @@
-//
-// Created by usr on 12/24/25.
-//
 
 #ifndef CUDABANDED_POISSONLHS_H
 #define CUDABANDED_POISSONLHS_H
@@ -48,7 +45,7 @@ public:
      * If the grid is 2d there should be 5 values here, if the grid is 3d there should be 7.
      * @return
      */
-    BandedMat<T> setA(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices, const Real3d& delta = Real3d(1, 1, 1));
+    BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices, const Real3d& delta = Real3d(1, 1, 1));
 };
 
 #endif //CUDABANDED_POISSONLHS_H

@@ -7,7 +7,6 @@
 #include "../poisson/PoissonRHS.h"
 #include "deviceArrays/headers/Streamable.h"
 
-#include <array>
 #include <cstddef>
 #include <vector>
 
@@ -18,7 +17,21 @@
  *
  * This class diagonalizes the 3D discrete Laplacian operator using the
  * Kronecker structure:
- *
+ *static EigenDecompSolver<Real>* createEDS(
+        SquareMat<Real>& dim,
+        Mat<Real>& maxDim,
+        SimpleArray<Real>& sizeP,
+        Handle* hand,
+        Real3d delta)
+    {
+        if (maxDim._cols == 3) {
+            // Standard 3D construction
+            return new EigenDecompSolver3d<Real>(dim, dim, dim, maxDim, sizeP, hand, delta);
+        } else {
+            // Explicitly slice Real3d to Real2d to satisfy the 2D constructor
+            return new EigenDecompSolver2d<Real>(dim, dim, maxDim, sizeP, hand, Real2d(delta.x, delta.y));
+        }
+    }
  *     L = L_x ⊕ L_y ⊕ L_z
  *
  * where each L_i is diagonalized as:
@@ -56,6 +69,11 @@ protected:
     Mat<T> eVals;
 
     /**
+     * A workspace the size of b = L_cols.  You may store b itself here, but it will be overwritten.
+     */
+    mutable SimpleArray<T> sizeOfB;
+
+    /**
      * @brief Compute eigenvalues and eigenvectors for L[i].
      *
      * @param i Index (0=x, 1=y, 2=z).
@@ -75,16 +93,12 @@ public:
      *
      * A must be the standard second-difference (Toeplitz) discrete Laplacian on a uniform grid with homogeneous Dirichlet boundary conditions.
      *
-     * @param boundary Boundary conditions for the grid.
-
-     * @param rowsXRows A space to work in.
-     * @param colsXCols A space to work in.
-     * @param depthsXDepths A space to work in.
-     * @param maxDimX3 A space to work in.
-     * @param delta the distance between grid points
-     * @param hand 3 CUDA cuBLAS/cusolver handles.
+     * @param eMats n X n matrices where n = rows, cols, and layers. Or n = rows and cols for 2d.
+     * @param maxDimX2Or3 A workspace the maximal dimension size of the grid X the number of dimensions of the grid.
+     * These matrices will be overwritten.
+     * @param sizeOfB An array the size of b that will be overwritten.  You may use b for this.
      */
-    EigenDecompSolver(std::vector<SquareMat<T>> eMats, Mat<T> &maxDimX2Or3);
+    EigenDecompSolver(std::vector<SquareMat<T>> eMats, Mat<T> &maxDimX2Or3, SimpleArray<T>& sizeOfB);
 
     /**
      * Solves for A x = b
@@ -96,7 +110,7 @@ public:
      * @param b Right-hand-side vector (will be overwritten).
      * @param hand
      */
-    virtual void solve(Vec<T> &x, Vec<T> &b, Handle &hand) const = 0;
+    virtual void solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const = 0;
 };
 
 template<typename T>
@@ -111,31 +125,12 @@ private:
      */
     void setUTilde(const Mat<T> &f, Mat<T> &u, Handle &hand) const;
 public:
-    EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2, std::array<Handle, 2> &hand2, Real2d delta = Real2d(1, 1));
-    void solve(Vec<T> &x, Vec<T> &b, Handle &hand) const;
+    EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2, SimpleArray<T>& sizeOfB, Handle* hand2, Real2d delta = Real2d(1, 1));
+    void solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const;
 };
 
 template<typename T>
 class EigenDecompSolver3d: public EigenDecompSolver<T> {
-public:
-
-    /**
-     * @brief Apply full transform:
-     *        f → E_zᵀ E_yᵀ E_xᵀ f    (forward)
-     *        or
-     *        u ← E_x E_y E_z ũ      (inverse)
-     *
-     * @param hand CUDA handle.
-     * @param src Input 3D tensor.   Will be overwritten.
-     * @param dst Output 3D tensor.
-     * @param transposeE Whether to apply Eᵀ instead of E.
-     */
-    void multiplyEF(Handle &hand, Tensor<T> &src, Tensor<T> &dst, bool transposeE) const;
-
-    EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3
-                        , std::array<Handle, 3> &hand3, Real3d delta = Real3d(1, 1, 1));
-
-    void solve(Vec<T> &x, Vec<T> &b, Handle &hand) const;
 
 
     /**
@@ -172,6 +167,26 @@ public:
 
     /** @brief Apply E_z or E_zᵀ across all x-y slices. */
     void multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const;
+
+    /**
+     * @brief Apply full transform:
+     *        f → E_zᵀ E_yᵀ E_xᵀ f    (forward)
+     *        or
+     *        u ← E_x E_y E_z ũ      (inverse)
+     *
+     * @param hand CUDA handle.
+     * @param src Input 3D tensor.   Will be overwritten.
+     * @param dst Output 3D tensor.
+     * @param transposeE Whether to apply Eᵀ instead of E.
+     */
+    void multiplyEF(Handle &hand, const Tensor<T> &src, Tensor<T> &dst, bool transposeE) const;
+
+public:
+
+    EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3,
+        SimpleArray<T>& sizeOfB, Handle* hand3, Real3d delta = Real3d(1, 1, 1));
+
+    void solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const;
 
 };
 

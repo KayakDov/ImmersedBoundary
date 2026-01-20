@@ -137,27 +137,12 @@ void SquareMat<T>::eigen(
     // processInfo(info_dev);
 }
 
-template <typename T>
-__global__ void setToIdentityKernel(DeviceData2d<T> mat) {
-
-    if (const GridInd2d ind; ind < mat)
-        mat[ind] = ind.row == ind.col ? 1 : 0;
-
-}
 
 template<typename T>
 SquareMat<T> SquareMat<T>::setToIdentity(cudaStream_t stream) {
 
-    constexpr dim3 blockDim(16, 16);
-
-    const dim3 gridDim(
-        (this->_cols + blockDim.x - 1) / blockDim.x,
-        (this->_rows + blockDim.y - 1) / blockDim.y
-    );
-
-    setToIdentityKernel<T><<<gridDim, blockDim, 0, stream>>>(
-        this->toKernel2d()
-    );
+    this->fill(0, stream);
+    this->diag(0).fill(1, stream);
     return *this;
 }
 

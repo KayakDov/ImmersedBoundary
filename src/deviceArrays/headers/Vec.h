@@ -10,8 +10,10 @@
 #ifndef BICGSTAB_VEC_H
 #define BICGSTAB_VEC_H
 #include "GpuArray.h"
+#include "SimpleArray.h"
 #include "../defFiles/DeviceData.cu"
 #include  "Tensor.h"
+
 
 template <typename T> class Mat;
 template <typename T> class Tensor;
@@ -23,6 +25,7 @@ template<typename T> void eigenDecompSolver(const T* frontBack,  size_t fbLd,
                        size_t height,
                        size_t width,
                        size_t depth);
+
 
 /**
  * @class Vec
@@ -50,7 +53,6 @@ private:
                        const size_t height,
                        const size_t width,
                        const size_t depth);
-
 
 protected:
     /**
@@ -81,17 +83,11 @@ public:
      * @param stream Optional CUDA stream.
      * @return Vec<T> instance.
      */
+    // Inside Vec.h
     static Vec<T> create(size_t length, size_t stride, T* pointer);
-    /**
-     * @brief Factory method to create a new vector of given length.
-     *
-     * @param length Number of elements.
-     * @param stride The number of element between each element here.
-     * @param pointer Pointer to device memory. Memory management must be handled externally for vecs created here.
-     * @param stream Optional CUDA stream.
-     * @return Vec<T> instance.
-     */
-    static Vec<T> create(size_t length, size_t stride, const T* pointer);
+
+    template<typename U = T, typename = std::enable_if_t<!std::is_const_v<U>>>
+    static Vec<const U> create(size_t length, size_t stride, const U* pointer);
 
     /**
      * @brief Returns a subvector view of this vector.
@@ -255,30 +251,43 @@ public:
     /**
      * Creates a tensor that is a window into this data.
      * Be sure that size is divisible by height * layers.
+     *
+     * This method may create a window to chnage a const object, so be sure to set recipiant of this to const. TODO: set this to pass a type of const pointer, but be prepared for a const cascade.
+     *
      * @param layers The number of layers in the tensor.
      * @param height The length of each column.
      * @return a tensor that is a window into this data.
      */
-    [[nodiscard]] Tensor<T> tensor(size_t height, size_t layers);
+    [[nodiscard]] Tensor<T> tensor(size_t height, size_t layers) const;
+
+
 
     /**
      * The data in this vector reorganized as a matrix.
      * @param height The height of the matrix created. This should be a divisor of size.
      * @return A matrix containing the data in this vector.
      */
-    [[nodiscard]] Mat<T> matrix(size_t height);
+    [[nodiscard]] Mat<T> matrix(size_t height) const;//TODO: make this pass a conts pointer, be prepared for const cascade.
 
     [[nodiscard]] DeviceData1d<T> toKernel1d();
 
     [[nodiscard]] DeviceData1d<T> toKernel1d() const;
 
-    __host__ __device__ operator DeviceData1d<T>();
-    __host__ __device__ operator DeviceData1d<T>() const;
+    operator DeviceData1d<T>();
+    operator DeviceData1d<T>() const;
 
     KernelPrep kernelPrep();
 
+    /**
+     * The sum of all the elements in this vector.
+     * @param result
+     * @param handle
+     */
+    void absSum(Singleton<T> result, Handle* handle);
+
     operator Mat<T>();
     operator Mat<T>() const;
+
 };
 
 #endif //BICGSTAB_VEC_H

@@ -1,0 +1,11 @@
+.idea/
+.vscode/
+cmake-build-debug/
+build/
+bin/
+obj/
+*.o
+*.obj
+*.exe
+*.out
+dataFromYuri/*.bin

@@ -37,7 +37,7 @@ file(GLOB_RECURSE ALL_SRC
 list(FILTER ALL_SRC EXCLUDE REGEX ".*/main\\.cu$")
 
 # Explicitly add the main file
-set(MAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/testMethods.cu")
+set(MAIN_FILE "src/immersedBoundary/YuriWork.cu")
 
 # Collect Shroud wrapper C++ files
 set(SHROUD_CPPf
@@ -51,6 +51,14 @@ set(FORTRAN_WRAPPER
         src/poisson/ToeplitzLaplacian.cuh
         src/math/Real3d.cpp
         src/math/Real3d.h
+        src/immersedBoundary/YuriWork.cu
+        src/deviceArrays/defFiles/Sparse.cu
+        src/deviceArrays/headers/SparseCSC.cuh
+        src/deviceArrays/defFiles/SimpleArray.cu
+        src/deviceArrays/headers/SimpleArray.h
+        src/immersedBoundary/BaseData.cpp
+        src/immersedBoundary/BaseData.h
+        src/immersedBoundary/IBDataFactory.hpp
 )
 
 add_library(CudaBandedLib STATIC
@@ -76,6 +84,7 @@ target_link_libraries(testMethods PRIVATE
         cublas
         cusolver
         cuda
+        cusparse
 )
 
 target_link_libraries(testMethods PRIVATE

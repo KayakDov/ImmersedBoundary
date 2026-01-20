@@ -10,6 +10,7 @@
 #include <iomanip>
 #include "DeviceMemory.h"
 #include "KernelPrep.cuh"
+#include "SimpleArray.h"
 
 
 template <typename T> class Vec;
@@ -405,9 +406,9 @@ public:
      * @return Column as a Vec<T>.
      * @note Not yet implemented.
      */
-    virtual Vec<T> col(size_t index);
+    virtual SimpleArray<T> col(size_t index);
 
-    Vec<T> col(size_t index) const;
+    SimpleArray<T> col(size_t index) const;
 
     /**
      * @brief Extract a row vector from the matrix.

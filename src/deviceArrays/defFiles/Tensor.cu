@@ -6,7 +6,7 @@ Tensor<T>::Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::share
 
 
 template<typename T>
-Mat<T> Tensor<T>::subMatrix(size_t startRow, size_t startCol, size_t startLayer, size_t height, size_t width, size_t ld) {
+Mat<T> Tensor<T>::subMatrix(size_t startRow, size_t startCol, size_t startLayer, size_t height, size_t width, size_t ld) const{
     return Mat<T>(
         height,
         width,
@@ -23,12 +23,12 @@ Tensor<T> Tensor<T>::create(size_t rows, size_t cols, size_t layers, cudaStream_
 
 
 template<typename T>
-Mat<T> Tensor<T>::layerRowCol(size_t deptIndex) {
+Mat<T> Tensor<T>::layerRowCol(size_t deptIndex) const{
     return subMatrix(0, 0, deptIndex, this->_rows, this->_cols, this->_ld);
 }
 
 template<typename T>
-Mat<T> Tensor<T>::layerColDepth(size_t colIndex) {
+Mat<T> Tensor<T>::layerColDepth(size_t colIndex) const {
     return subMatrix(0, colIndex, 0, this->_rows, this->_layers, this->_rows);
 }
 
@@ -129,3 +129,4 @@ template class Tensor<double>;
 template class Tensor<size_t>;
 template class Tensor<int32_t>;
 template class Tensor<unsigned char>;
+template class Tensor<uint32_t>;

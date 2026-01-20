@@ -67,17 +67,18 @@ void solveDecomp(
         reinterpret_cast<T *>(topBottomPtr), tbLd,
         height, width, depth
     );
-    std::array<Handle, 3> hands{};
+    Handle hands[3];
     auto xVec = Vec<T>::create(n, xStride, reinterpret_cast<T *>(xPtr));
     auto fVec = Vec<T>::create(n, fStride, reinterpret_cast<T *>(fPtr));
     auto xMat = SquareMat<T>::create(width, colsXColsLd, reinterpret_cast<T *>(colsXColsPtr));
     auto yMat = SquareMat<T>::create(height, rowsXRowsLd, reinterpret_cast<T *>(rowsXRowsPtr));
     auto zMat = SquareMat<T>::create(depth, depthsXDepthsLd, reinterpret_cast<T *>(depthsXDepthsPtr));
     auto maxDimX3Mat = Mat<T>::create(n, 3, depthsXDepthsLd, reinterpret_cast<T *>(maxDimX3Ptr));
+    auto sizeOfB = SimpleArray<T>::create(fVec.size(), hands[0]);
 
     cudaDeviceSynchronize();
     PoissonRHS<T> poisson(cb, fVec, hands[2]);
-    EigenDecompSolver3d(yMat, xMat, zMat, maxDimX3Mat, hands).solve(xVec, fVec, hands[0]);
+    EigenDecompSolver3d(yMat, xMat, zMat, maxDimX3Mat, sizeOfB, hands).solve(xVec, fVec, hands[0]);
     cudaDeviceSynchronize();
 }
 
@@ -267,5 +268,5 @@ void solveBiCGSTAB(
     // std::cout << "bVec = \n" << GpuOut<T>(bVec, hand) << std::endl;
     // std::cout << "prealocated = \n" << GpuOut<T>(preAlocatedMat, hand) << std::endl;
 
-    BiCGSTAB<T>::solve(ABanded, bVec, &preAlocatedMat, tolerance, maxIterations);
+    BCGBanded<T>::solve(ABanded, bVec, bVec, &preAlocatedMat, tolerance, maxIterations);
 }

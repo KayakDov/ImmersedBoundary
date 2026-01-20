@@ -69,8 +69,8 @@ void testEigenDecompNoPoisson() {
 
     std::cout << "inds = \n" << GpuOut(A._indices, hand) << std::endl;
 
-    auto b = Vec<T>::create(dim.size());
-    auto x = Vec<T>::create(dim.size());
+    auto b = Vec<T>::create(dim.size(), hand);
+    auto x = Vec<T>::create(dim.size(), hand);
 
     std::vector<T> hostB = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
@@ -80,9 +80,9 @@ void testEigenDecompNoPoisson() {
 
     // BiCGSTAB<T>::solve(A, b);
 
-    auto rowsMat = SquareMat<T>::create(dim.rows);
-    auto colsMat = SquareMat<T>::create(dim.cols);
-    auto layersMat = SquareMat<T>::create(dim.layers);
+    auto rowsMat = SquareMat<T>::create(dim.rows, hand);
+    auto colsMat = SquareMat<T>::create(dim.cols, hand);
+    auto layersMat = SquareMat<T>::create(dim.layers, hand);
     auto valsMat = Mat<T>::create(dim.size(), 3);
 
     cudaDeviceSynchronize();
@@ -113,7 +113,7 @@ void testEigenDecompNoPoisson() {
  * @brief Main entry point to demonstrate the FastDiagonalizationMethod
  *        for a 2x2x2 grid.
  */
-int main() {
+// int main() {
     // std::array<Handle, 3> hand3;
     //
     // constexpr size_t maxDimensions = 5;
@@ -129,11 +129,11 @@ int main() {
     //     std::cout << std::endl;
     // }
 
-    testEigenDecompNoPoisson<double>();
-
-
-
-    return 0;
-}
+//     testEigenDecompNoPoisson<double>();
+//
+//
+//
+//     return 0;
+// }
 
 

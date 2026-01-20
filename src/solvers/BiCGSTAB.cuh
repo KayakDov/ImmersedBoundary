@@ -33,14 +33,15 @@ using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
  */
 template<typename T>
 class BiCGSTAB {
+protected:
+    Handle* hand4;
 private:
     const T tolerance;
-    Handle handle[4]{};
     Event alphaReady, sReady, hReady, omegaReady, rReady, xReady, prodTS;
-    Vec<T> b;
-    Mat<T> paM;
+    const Vec<T> b;
+    Mat<T> bHeightX7;
     Vec<T> r, r_tilde, p, v, s, t, h;
-    Vec<T> paV;
+    Vec<T> a9;
     Singleton<T> rho, alpha, omega, rho_new, beta;
     std::array<Singleton<T>, 4> temp;
 
@@ -85,26 +86,20 @@ private:
  *
  * @brief Initalizes variables r_tilde, r, b, p, and rx.ho
  */
-    void preamable(const BandedMat<T> &A);
-
+    void preamble(Vec<T> &result);
+protected:
+    virtual void mult(Vec<T>& vec, Vec<T>& product, Handle& hand, Singleton<T> multProduct = Singleton<T>::ONE, Singleton<T> premultResult = Singleton<T>::ZERO) const = 0;
 public:
+    virtual ~BiCGSTAB() = default;
+
     /**
      * @brief Constructor for the BiCGSTAB solver.
      */
     explicit BiCGSTAB(
         const Vec<T> &b,
-        Mat<T> *preAllocated = nullptr,
-        const T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
-        const size_t maxIterations = 1500
-    );
-
-    /**
-     * @brief Static method to solve the equation $A\mathbf{x} = \mathbf{b}$.
-     */
-    static void solve(
-        const BandedMat<T> &A,
-        Vec<T> &b,
-        Mat<T> *preAllocated = nullptr,
+        Handle* hand4,
+        Mat<T> *allocatedBHeightX7 = nullptr,
+        Vec<T> *allocated9 = nullptr,
         T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
         size_t maxIterations = 1500
     );
@@ -112,8 +107,37 @@ public:
     /**
      * @brief Solves the linear system $A\mathbf{x} = \mathbf{b}$ using the
      * unpreconditioned BiCGSTAB algorithm.
+     * @param result The result will be placed here.  This may be the same as the b vector if you'd like to overwrite it.
      */
-    void solveUnpreconditionedBiCGSTAB(const BandedMat<T> &A);
+    void solveUnpreconditionedBiCGSTAB(Vec<T>& result);
 };
+
+template<typename T>
+class BCGBanded:  public BiCGSTAB<T>{
+    BandedMat<T> A;
+
+    void mult(Vec<T>& vec, Vec<T>& product, Handle& hand, Singleton<T> multProduct,
+              Singleton<T> premultResult) const override;
+public:
+    BCGBanded(Handle *hand4, BandedMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, const T &tolerance, size_t maxIterations);
+
+
+    /**
+     * @brief Static method to solve the equation $A\mathbf{x} = \mathbf{b}$.
+     */
+    static void solve(
+        Handle* hand4,
+        const BandedMat<T> &A,
+        Vec<T>& result,
+        const Vec<T> &b,
+        Mat<T> *preAllocated = nullptr,
+        Vec<T> *allocated9 = nullptr,
+        T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
+        size_t maxIterations = 1500
+    );
+
+
+};
+
 
 #endif // BICGSTAB_H
