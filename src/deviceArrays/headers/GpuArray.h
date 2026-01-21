@@ -92,9 +92,9 @@ public:
      * @return Column as a Vec<T>.
      * @note Not yet implemented.
      */
-    virtual SimpleArray<T> col(size_t index);
+    virtual SimpleArray<T> col(size_t index, bool initDescr = false);
 
-    virtual SimpleArray<T> col(size_t index) const;
+    virtual SimpleArray<T> col(size_t index, bool initDescr = false) const;
     /**
      * @brief Represents the number of rows in a GpuArray instance.
      *

@@ -50,7 +50,7 @@ protected:
      * @param ld Leading dimension of the matrix.
      * @param _ptr Shared pointer to device memory for the matrix.
      */
-    Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr);
+    Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr, bool initDescr = false);
 
     /**
      * A pointer to the desired element.

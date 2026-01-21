@@ -92,4 +92,5 @@ template class Singleton<float>;
 template class Singleton<double>;
 template class Singleton<unsigned char>;
 template class Singleton<uint32_t>;
+template class Singleton<int64_t>;
 

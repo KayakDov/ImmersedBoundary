@@ -95,7 +95,8 @@ KernelPrep Mat<T>::kernelPrep(bool t) const {
 
 
 template<typename T>
-Mat<T>::Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr): GpuArray<T>(rows, cols, ld, _ptr) {
+Mat<T>::Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr, bool initDescr): GpuArray<T>(rows, cols, ld, _ptr) {
+    if (initDescr) this->initDescr();
 }
 
 template <typename T>
@@ -391,11 +392,7 @@ Mat<T> Mat<T>::create(size_t rows, size_t cols, bool initDescr){
 
     CHECK_CUDA_ERROR(cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols));//Note: there does not seem to be an asynchronos version of this method.
 
-    auto result = Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter));
-
-    if (initDescr) result.initDescr();
-
-    return result;
+    return Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter), initDescr);
 }
 
 template<typename T>
@@ -598,6 +595,7 @@ template class Mat<float>;
 template class Mat<double>;
 template class Mat<size_t>;
 template class Mat<int32_t>;
+template class Mat<int64_t>;
 template class Mat<uint32_t>;
 template class Mat<unsigned char>;
 
@@ -605,6 +603,7 @@ template void Vec<float>::mult(const Mat<float>&, Vec<float>&, Handle*, const Si
 template void Vec<double>::mult(const Mat<double>&, Vec<double>&, Handle*, const Singleton<double>*, const Singleton<double>*, bool) const;
 template void Vec<size_t>::mult(const Mat<size_t>&, Vec<size_t>&, Handle*, const Singleton<size_t>*, const Singleton<size_t>*, bool) const;
 template void Vec<int32_t>::mult(const Mat<int32_t>&, Vec<int32_t>&, Handle*, const Singleton<int32_t>*, const Singleton<int32_t>*, bool) const;
+template void Vec<int64_t>::mult(const Mat<int64_t>&, Vec<int64_t>&, Handle*, const Singleton<int64_t>*, const Singleton<int64_t>*, bool) const;
 template void Vec<unsigned char>::mult(const Mat<unsigned char>&, Vec<unsigned char>&, Handle*, const Singleton<unsigned char>*, const Singleton<unsigned char>*, bool) const;
 template void Vec<uint32_t>::mult(const Mat<uint32_t>&, Vec<uint32_t>&, Handle*, const Singleton<uint32_t>*, const Singleton<uint32_t>*, bool) const;
 
@@ -612,6 +611,7 @@ template Vec<float>::operator Mat<float>();
 template Vec<double>::operator Mat<double>();
 template Vec<size_t>::operator Mat<size_t>();
 template Vec<int32_t>::operator Mat<int32_t>();
+template Vec<int64_t>::operator Mat<int64_t>();
 template Vec<unsigned char>::operator Mat<unsigned char>();
 template Vec<uint32_t>::operator Mat<uint32_t>();
 
@@ -619,5 +619,6 @@ template Vec<float>::operator Mat<float>() const;
 template Vec<double>::operator Mat<double>() const;
 template Vec<size_t>::operator Mat<size_t>() const;
 template Vec<int32_t>::operator Mat<int32_t>() const;
+template Vec<int64_t>::operator Mat<int64_t>() const;
 template Vec<unsigned char>::operator Mat<unsigned char>() const;
 template Vec<uint32_t>::operator Mat<uint32_t>() const;

@@ -31,7 +31,7 @@ protected:
 public:
     using GpuArray<T>::col;
 
-    SimpleArray(size_t size, std::shared_ptr<T> ptr);
+    SimpleArray(size_t size, std::shared_ptr<T> ptr, bool initDescr = false);
 
     static SimpleArray create(size_t size, cudaStream_t stream, bool initDescr = false);
 

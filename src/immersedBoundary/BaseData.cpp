@@ -23,6 +23,8 @@ template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle *hand) :
     pSizeX3(Mat<Real>::create(meta.pSize, 3)),
     fSizeX2(Mat<Real>::create(meta.fSize, 2)),
+    p(pSizeX3.col(0, true)),
+    f(fSizeX2.col(0, true)),
     maxB(SparseCSC<Real, Int>::create(
     meta.nnz, meta.bRows, meta.bCols,
     hand[0])),
@@ -46,6 +48,8 @@ BaseData<Real, Int>::BaseData(
     const Real3d &delta
 ) : pSizeX3(pSizeX3),
     fSizeX2(fSizeX2),
+    f(fSizeX2.col(0, true)),
+    p(pSizeX3.col(0, true)),
     maxB(maxB),
     dim(dim),
     delta(delta) {
@@ -53,12 +57,13 @@ BaseData<Real, Int>::BaseData(
 
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle &hand) :
-    BaseData(SparseCSC<Real, Int>::create(nnzMaxB, fSize, dim.volume(), hand),
-    Mat<Real>::create(fSize, 2),
-    Mat<Real>::create(dim.volume(), 3),
-    dim,
-    delta
-) {
+    BaseData(
+        SparseCSC<Real, Int>::create(nnzMaxB, fSize, dim.volume(), hand),
+        Mat<Real>::create(fSize, 2),
+        Mat<Real>::create(dim.volume(), 3),
+        dim,
+        delta
+    ) {
     this->fSizeX2.col(0).set(f, hand);
     this->pSizeX3.col(0).set(p, hand);
 }
@@ -96,26 +101,6 @@ SimpleArray<Real> BaseData<Real, Int>::allocatedPSize(bool ind) const {
 }
 
 template<typename Real, typename Int>
-const SimpleArray<Real> BaseData<Real, Int>::f() const {
-    return fSizeX2.col(0);
-}
-
-template<typename Real, typename Int>
-const SimpleArray<Real> BaseData<Real, Int>::p() const {
-    return pSizeX3.col(0);
-}
-
-template<typename Real, typename Int>
-size_t BaseData<Real, Int>::fSize() const {
-    return fSizeX2._rows;
-}
-
-template<typename Real, typename Int>
-size_t BaseData<Real, Int>::pSize() const {
-    return pSizeX3._rows;
-}
-
-template<typename Real, typename Int>
 void BaseData<Real, Int>::printDenseB(Handle &hand) const {
     auto denseB = Mat<Real>::create(B->rows, B->cols);
     B->getDense(denseB, hand);
@@ -147,7 +132,7 @@ size_t ImmersedEq<Real, Int>::sparseMultWorkspaceSize(bool max) {
     auto aFSize = baseData.allocatedFSize();
     if (max) {
         return std::min(
-            baseData.maxB.multWorkspaceSize(baseData.p(), aFSize, Singleton<Real>::ONE,
+            baseData.maxB.multWorkspaceSize(baseData.p, aFSize, Singleton<Real>::ONE,
                                             Singleton<Real>::ZERO, false,
                                             hand4[0]),
             baseData.maxB.multWorkspaceSize(aFSize, RHSSpace, Singleton<Real>::ONE, Singleton<Real>::ZERO, true,
@@ -155,7 +140,7 @@ size_t ImmersedEq<Real, Int>::sparseMultWorkspaceSize(bool max) {
         );
     }
     return std::min(
-        baseData.B->multWorkspaceSize(baseData.p(), aFSize, Singleton<Real>::ONE, Singleton<Real>::ZERO, false,
+        baseData.B->multWorkspaceSize(baseData.p, aFSize, Singleton<Real>::ONE, Singleton<Real>::ZERO, false,
                                       hand4[0]),
         baseData.B->multWorkspaceSize(aFSize, RHSSpace, Singleton<Real>::ONE, Singleton<Real>::ZERO, true, hand4[0])
     );
@@ -164,17 +149,16 @@ size_t ImmersedEq<Real, Int>::sparseMultWorkspaceSize(bool max) {
 template<typename Real, typename Int>
 ImmersedEq<Real, Int>::ImmersedEq(const BaseData<Real, Int>& baseData, Handle *hand4, double tolerance, const size_t maxBCGIterations) :
     baseData(baseData),
-    RHSSpace(SimpleArray<Real>::create(baseData.pSize(), hand4[0], true)),//TODO:is the descriptor used for the right hand side?
+    RHSSpace(SimpleArray<Real>::create(baseData.p.size(), hand4[0], true)),//TODO:is the descriptor used for the right hand side?
     sparseMultBuffer(std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(sparseMultWorkspaceSize(true), hand4[0]))),
     hand4(hand4),
-    allocatedRHSHeightX7(Mat<Real>::create(baseData.pSize(), 7)),
+    allocatedRHSHeightX7(Mat<Real>::create(baseData.p.size(), 7)),
     allocated9(Vec<Real>::create(9, hand4[0])),
     tolerance(tolerance),
     maxIterations(maxBCGIterations),
     eds(createEDS(baseData.dim, baseData.allocatedPSize(0), hand4, baseData.delta)) {
 }
 
-//BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real * f, Real *p, Handle &hand);
 template<typename Real, typename Int>
 ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, Handle *hand4, size_t fSize, size_t nnzMaxB, Real *p, Real *f,
                                   const Real3d &delta, double tolerance, size_t maxBCGIterations) :
@@ -207,11 +191,11 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
 
 template<typename Real, typename Int>
 SquareMat<Real> ImmersedEq<Real, Int>::LHSMat(Handle &hand) {
-    auto id = SquareMat<Real>::create(baseData.pSize());
+    auto id = SquareMat<Real>::create(baseData.p.size());
     id.setToIdentity(hand);
 
-    auto result = SquareMat<Real>::create(baseData.pSize());
-    for (size_t i = 0; i < baseData.pSize(); ++i) {
+    auto result = SquareMat<Real>::create(baseData.p.size());
+    for (size_t i = 0; i < baseData.p.size(); ++i) {
         auto col = result.col(i);
         LHSTimes(id.col(i), static_cast<SimpleArray<Real> &>(col), hand, Singleton<Real>::ONE, Singleton<Real>::ZERO);
     }
@@ -222,7 +206,7 @@ template<typename Real, typename Int>
 SimpleArray<Real> &ImmersedEq<Real, Int>::RHS(Handle &hand, bool reset) {
     //TODO This method ovrewrites p and should not.
     if (reset) {
-        auto f = baseData.f();
+        auto f = baseData.f;
         auto pSize = baseData.allocatedPSize(0);
         baseData.B->mult(f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true, *sparseMultBuffer, hand);
         //p <- BT*f+p
@@ -300,17 +284,17 @@ void ImmersedEqSolver<Real, Int>::mult(Vec<Real> &vec, Vec<Real> &product, Handl
 
 
 // If your SparseCSC usually uses uint32_t and uint64_t:
-template class BaseData<float, uint32_t>;
-template class BaseData<double, uint32_t>;
-template class BaseData<float, size_t>;
-template class BaseData<double, size_t>;
+template class BaseData<float, int32_t>;
+template class BaseData<double, int32_t>;
+template class BaseData<float, int64_t>;
+template class BaseData<double, int64_t>;
 
-template class ImmersedEq<float, uint32_t>;
-template class ImmersedEq<double, uint32_t>;
-template class ImmersedEq<float, size_t>;
-template class ImmersedEq<double, size_t>;
+template class ImmersedEq<float, int32_t>;
+template class ImmersedEq<double, int32_t>;
+template class ImmersedEq<float, int64_t>;
+template class ImmersedEq<double, int64_t>;
 
-template class ImmersedEqSolver<float, uint32_t>;
-template class ImmersedEqSolver<double, uint32_t>;
-template class ImmersedEqSolver<float, size_t>;
-template class ImmersedEqSolver<double, size_t>;
+template class ImmersedEqSolver<float, int32_t>;
+template class ImmersedEqSolver<double, int32_t>;
+template class ImmersedEqSolver<float, int64_t>;
+template class ImmersedEqSolver<double, int64_t>;

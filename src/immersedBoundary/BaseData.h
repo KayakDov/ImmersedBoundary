@@ -45,6 +45,8 @@ class BaseData {
 
 public:
     mutable Mat<Real> pSizeX3,  fSizeX2;
+    const SimpleArray<Real> f;
+    const SimpleArray<Real> p;
 
     SparseCSC<Real, Int> maxB; /**< Sparse matrix in CSC format */
     std::shared_ptr<SparseCSC<Real, Int>> B;
@@ -77,12 +79,6 @@ public:
     SimpleArray<Real> allocatedFSize();
 
     SimpleArray<Real> allocatedPSize(bool ind) const;
-
-    const SimpleArray<Real> f() const;
-    const SimpleArray<Real> p() const;
-
-    size_t fSize() const;
-    size_t pSize() const;
 
     void printDenseB(Handle &hand) const;
 };

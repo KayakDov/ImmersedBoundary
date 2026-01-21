@@ -54,7 +54,7 @@ SparseCSC<Real, Int> SparseCSC<Real, Int>::create(size_t rows, SimpleArray<Real>
 
 
 template<typename Real, typename Int>
-int SparseCSC<Real, Int>::nnz() {
+size_t SparseCSC<Real, Int>::nnz() {
     return values.size();
 }
 
@@ -141,10 +141,10 @@ SparseCSC<Real, Int> SparseMatrixBuilder<Real, Int>::get(size_t rows, cudaStream
 }
 
 
-template class SparseCSC<float, uint32_t>;
-template class SparseCSC<double, uint32_t>;
-template class SparseCSC<float, size_t>;
-template class SparseCSC<double, size_t>;
+template class SparseCSC<float, int32_t>;
+template class SparseCSC<double, int32_t>;
+template class SparseCSC<float, int64_t>;
+template class SparseCSC<double, int64_t>;
 
 
 

@@ -29,7 +29,7 @@ public:
     static SparseCSC<Real, Int> create(size_t rows, SimpleArray<Real> values, SimpleArray<Int> rowPointers,
                                 SimpleArray<Int> colOffsets, cudaStream_t stream);
 
-    int nnz();
+    size_t nnz();
 
     /**
      * The numver of elements of size T needed for the workspace for mult;

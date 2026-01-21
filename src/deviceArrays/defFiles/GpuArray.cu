@@ -183,6 +183,7 @@ DeviceData2d<T> GpuArray<T>::toKernel2d() const { return DeviceData2d<T>(this->_
 template class GpuArray<float>;
 template class GpuArray<double>;
 template class GpuArray<int32_t>;
+template class GpuArray<int64_t>;
 template class GpuArray<size_t>;
 template class GpuArray<unsigned char>;
 template class GpuArray<uint32_t>;

@@ -123,5 +123,6 @@ template class Tensor<float>;
 template class Tensor<double>;
 template class Tensor<size_t>;
 template class Tensor<int32_t>;
+template class Tensor<int64_t>;
 template class Tensor<unsigned char>;
 template class Tensor<uint32_t>;

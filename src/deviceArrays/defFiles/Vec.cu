@@ -437,6 +437,7 @@ template class Vec<float>;
 template class Vec<double>;
 template class Vec<size_t>;
 template class Vec<int32_t>;
+template class Vec<int64_t>;
 template class Vec<unsigned char>;
 template class Vec<uint32_t>;
 
@@ -445,9 +446,10 @@ template class Vec<uint32_t>;
 template Vec<float> GpuArray<float>::row(size_t) const;
 template Vec<double> GpuArray<double>::row(size_t) const;
 template Vec<size_t> GpuArray<size_t>::row(size_t) const; // Maps to 'unsigned long' in the error
-template Vec<int> GpuArray<int>::row(size_t) const;
 template Vec<unsigned char> GpuArray<unsigned char>::row(size_t) const;
 template Vec<uint32_t> GpuArray<uint32_t>::row(size_t) const;
+template Vec<int64_t> GpuArray<int64_t>::row(size_t) const;
+template Vec<int32_t> GpuArray<int32_t>::row(size_t) const;
 
 // template Vec<float> Vec<float>::create(size_t, size_t, float const*);
 // template Vec<double> Vec<double>::create(size_t, size_t, double const*);

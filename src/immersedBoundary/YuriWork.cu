@@ -57,15 +57,17 @@ void solveImmersedBody(size_t gridHeight, size_t gridWidth, size_t gridDepth, si
 //     }
 // }
 
+template <typename Real>
 void printL(const GridDim& dim, Handle* hand4, size_t numInds) {
-    auto spaceForA = Mat<double>::create(dim.volume(), numInds);
+    auto spaceForA = Mat<Real>::create(dim.volume(), numInds);
     auto inds = SimpleArray<int32_t>::create(numInds, hand4[0]);
-    auto A = ToeplitzLaplacian<double>(dim).setL(hand4[0], spaceForA, inds, Real3d(1, 1, 1));
-    auto aDense = SquareMat<double>::create(dim.volume());
+    auto A = ToeplitzLaplacian<Real>(dim).setL(hand4[0], spaceForA, inds, Real3d(1, 1, 1));
+    auto aDense = SquareMat<Real>::create(dim.volume());
     A.getDense(aDense, &hand4[0]);
-    std::cout << "L = \n" << GpuOut<double>(aDense, hand4[0]) << std::endl;
+    std::cout << "L = \n" << GpuOut<Real>(aDense, hand4[0]) << std::endl;
 }
 
+template <typename Real, typename Int>
 void smallTestWithoutFiles() {
     Handle hand4[4]{};
     GridDim dim(3, 2, 2);
@@ -75,29 +77,29 @@ void smallTestWithoutFiles() {
 
     size_t numInds = 7, fSize = 2;
 
-    printL(dim, hand4, numInds);
+    printL<Real>(dim, hand4, numInds);
 
-    std::vector<size_t> rowPointers = {0};
-    std::vector<double> values = {1};
-    std::vector<size_t> colOffsets = {0,1,1};
+    std::vector<Int> rowPointers = {0};
+    std::vector<Real> values = {1};
+    std::vector<Int> colOffsets = {0,1,1};
 
-    std::vector<double> f = {1,2};
-    std::vector<double> p = {-2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
+    std::vector<Real> f = {1,2};
+    std::vector<Real> p = {-2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
 
-    double result[size];
+    Real result[size];
 
-    ImmersedEq<double, size_t> imEq(dim, hand4, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
+    ImmersedEq<Real, Int> imEq(dim, hand4, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
 
     imEq.solve(result, 1, rowPointers.data(), colOffsets.data(), values.data());
 
     for(int i = 0; i < size; ++i) std::cout << result[i] << " ";
-
-
-    // std::cout << "LHS of equation is\n" << GpuOut<double>(imEq.LHSMat(hand4[0]), hand4[0]) << std::endl;
-    // std::cout << "RHS of equation is\n" << GpuOut<double>(imEq.RHS, hand4[0]) << std::endl;
-
-    // std::cout << "Result is \n" << GpuOut<double>(result, hand4[0]) << std::endl;
 }
+
+    // std::cout << "LHS of equation is\n" << GpuOut<Real>(imEq.LHSMat(hand4[0]), hand4[0]) << std::endl;
+    // std::cout << "RHS of equation is\n" << GpuOut<Real>(imEq.RHS, hand4[0]) << std::endl;
+
+    // std::cout << "Result is \n" << GpuOut<Real>(result, hand4[0]) << std::endl;
+// }
 
 // void testOnFiles(const GridDim& dim) {
 //     Handle hand2[2]{};
@@ -132,7 +134,7 @@ void smallTestWithoutFiles() {
 
 int main(int argc, char *argv[]) {
     // testOnFiles(GridDim(2000, 2000, 1));
-    smallTestWithoutFiles();
+    smallTestWithoutFiles<double, int32_t>();
     // benchmark(3);
 
 }
