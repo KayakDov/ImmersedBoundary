@@ -44,11 +44,11 @@ template <typename Real, typename Int = uint32_t> //TODO: f and p should never c
 class BaseData {
 
 public:
-    mutable Mat<Real> pSizeX3, fSizeX2;
+    mutable Mat<Real> pSizeX3,  fSizeX2;
 
     SparseCSC<Real, Int> maxB; /**< Sparse matrix in CSC format */
     std::shared_ptr<SparseCSC<Real, Int>> B;
-    const GridDim& dim;
+    const GridDim dim;
     const Real3d delta;
 
 
@@ -74,12 +74,17 @@ public:
      */
     void setB(size_t nnzB, Int * colsB, Int * rowsB, Real * valsB, Handle &hand);
 
-    SimpleArray<Real> fSize();
+    SimpleArray<Real> allocatedFSize();
 
-    SimpleArray<Real> pSize(bool ind);
+    SimpleArray<Real> allocatedPSize(bool ind) const;
 
     const SimpleArray<Real> f() const;
     const SimpleArray<Real> p() const;
+
+    size_t fSize() const;
+    size_t pSize() const;
+
+    void printDenseB(Handle &hand) const;
 };
 
 /**
@@ -89,10 +94,10 @@ public:
 template <typename Real, typename Int = uint32_t>
 class ImmersedEq {
 
-    SimpleArray<Real> RHSSpace;
-    SimpleArray<Real> sizeOfP;
-    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer;
     mutable BaseData<Real, Int> baseData;
+    SimpleArray<Real> RHSSpace;
+    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer;
+
 
     Handle *hand4;
     Mat<Real> allocatedRHSHeightX7;
@@ -101,15 +106,17 @@ class ImmersedEq {
     size_t maxIterations;
 
 public:
-    std::unique_ptr<EigenDecompSolver<Real>> eds;
+    std::shared_ptr<EigenDecompSolver<Real>> eds;
 
 
     size_t sparseMultWorkspaceSize(bool max = false);
 
+
+
     /**
      * @brief Sets up the immersed equation system using the provided base data.
      */
-    ImmersedEq(BaseData<Real, Int> baseData, Handle *hand4, double tolerance, size_t maxBCGIterations);
+    ImmersedEq(const BaseData<Real, Int> &baseData, Handle *hand4, double tolerance, size_t maxBCGIterations);
 
     ImmersedEq(const GridDim &dim, Handle *hand4, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta,
                double tolerance, size_t maxBCGIterations);
@@ -158,7 +165,11 @@ public:
      * @param maxIterations The maximum number of iterations.
      */
     void solve(SimpleArray<Real> result, size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB);
-    };
+
+    void solve(Real *result, size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB);
+
+    SimpleArray<Real> solve(size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB);
+};
 
 /**
  * @class ImmersedEqSolver
@@ -166,7 +177,9 @@ public:
  */
 template <typename Real, typename Int = uint32_t>
 class ImmersedEqSolver:  public BiCGSTAB<Real> {
-    ImmersedEq<Real, Int>& imEq;
+
+    ImmersedEq<Real, Int> imEq;
+
     /**
      * @brief Implementation of the matrix-vector multiplication for the BiCGSTAB loop.
      */
@@ -178,8 +191,7 @@ public:
      * @brief Constructor for the iterative solver.
      * @param p
      */
-    ImmersedEqSolver(Handle* hand4, ImmersedEq<Real, Int> &imEq, Mat<Real>& allocatedRHSHeightX7, Vec<Real>& allocated9, Real tolerance,
-                     size_t maxIterations);
+    ImmersedEqSolver(Handle *hand4, ImmersedEq<Real, Int> imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> &allocated9, Real tolerance, size_t maxIterations);
 };
 
 

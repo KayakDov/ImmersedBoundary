@@ -45,8 +45,6 @@ public:
                              const Singleton<Real> &multProduct, const Singleton<Real> &multThis,
                              bool transposeThis, Handle &h) const;
 
-    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct,
-              const Singleton<Real> &preMultResult, bool transposeThis, SimpleArray<Real> &workSpace, Handle &h) const;
 
     /**
      * This version alocated memory.  If you'd like to prealocate the memory, call a different function.
@@ -55,10 +53,11 @@ public:
      * @param multProduct A scalar that scales the product.
      * @param preMultResult  A scalar that scales whatever is in the result before the product is added to itt
      * @param transposeThis Should this be transposed.
+     * @param workSpace
      * @param h The handle
      */
-    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProdcut, const Singleton<Real> &preMultResult,
-              bool transposeThis, Handle &h) const;
+    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct,
+    const Singleton<Real> &preMultResult, bool transposeThis, SimpleArray<Real> &workSpace, Handle &h) const;
 
     void getDense(Mat<Real> &dest, Handle &h) const;
 };

@@ -10,9 +10,11 @@ SimpleArray<T>::SimpleArray(size_t size, std::shared_ptr<T> ptr): Vec<T>(size, p
 }
 
 template<typename T>
-SimpleArray<T> SimpleArray<T>::create(size_t size, cudaStream_t stream) {
+SimpleArray<T> SimpleArray<T>::create(size_t size, cudaStream_t stream, bool initDescr) {
     auto preSimple = Vec<T>::create(size, stream);
-    return {size, preSimple.ptr()};
+    SimpleArray<T> result(size, preSimple.ptr());
+    if (initDescr) result.initDescr();
+    return result;
 }
 
 template<typename T>
@@ -34,26 +36,28 @@ SimpleArray<T> SimpleArray<T>::subAray(size_t offset, size_t length) {
 }
 
 template<typename T>
-cusparseDnVecDescr_t SimpleArray<T>::getDescr() const {
-    if (!dnVecDescr) {
-        cusparseDnVecDescr_t rawDescr;
+void SimpleArray<T>::initDescr() const{
+    cusparseDnVecDescr_t rawDescr;
 
-        const cudaDataType valueType = cuValueType<T>();
+    const cudaDataType valueType = cuValueType<T>();
 
-        CHECK_SPARSE_ERROR(cusparseCreateDnVec(
-            &rawDescr,
-            this->size(),        // Vector length
-            (void*)this->data(), // Raw device pointer from GpuArray
-            valueType
-        ));
+    CHECK_SPARSE_ERROR(cusparseCreateDnVec(
+        &rawDescr,
+        this->size(),        // Vector length
+        (void*)this->data(), // Raw device pointer from GpuArray
+        valueType
+    ));
 
-        dnVecDescr = DnVecDescrPtr(rawDescr, [](const cusparseDnVecDescr_t p) {
-            if (p) cusparseDestroyDnVec(p);
-        });
-    }
-    return dnVecDescr.get();
+    dnVecDescr = DnVecDescrPtr(rawDescr, [](const cusparseDnVecDescr_t p) {
+        if (p) cusparseDestroyDnVec(p);
+    });
 }
 
+template<typename T>
+cusparseDnVecDescr_t SimpleArray<T>::getDescr() const {
+    if (!dnVecDescr) initDescr();
+    return dnVecDescr.get();
+}
 
 template<typename T>
 SimpleArray<T>::operator cusparseDnVecDescr_t() const {
@@ -62,9 +66,13 @@ SimpleArray<T>::operator cusparseDnVecDescr_t() const {
 
 template <typename T>
 SimpleArray<T> GpuArray<T>::col(const size_t index){
-    if (index >= this->_cols) throw std::out_of_range("Out of range");
+    if (index >= this->_cols) throw std::out_of_range(
+            "GpuArray::col access out of bounds: requested index " + std::to_string(index) +
+            " but the matrix, with " + std::to_string(this->_rows) + " rows has only has " + std::to_string(this->_cols) + " columns."
+        );
     return SimpleArray<T>(this->_rows, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index * this->_ld));
 }
+
 template <typename T>
 SimpleArray<T> GpuArray<T>::col(const size_t index) const {
     return SimpleArray<T>((const_cast<GpuArray<T>*>(this))->col(index));

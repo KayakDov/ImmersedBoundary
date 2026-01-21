@@ -57,57 +57,47 @@ void solveImmersedBody(size_t gridHeight, size_t gridWidth, size_t gridDepth, si
 //     }
 // }
 
-// void smallTestWithoutFiles() {
-//     Handle hand3[3]{};
-//
-//     GridDim dim(3, 2, 2);
-//     size_t numInds = 7, fSize = 2;
-//
-//     auto spaceForA = Mat<double>::create(dim.volume(), numInds);
-//     auto inds = SimpleArray<int32_t>::create(numInds, hand3[0]);
-//     auto A = ToeplitzLaplacian<double>(dim).setL(hand3[0], spaceForA, inds, Real3d(1, 1, 1));
-//     auto aDense = SquareMat<double>::create(dim.volume());
-//     A.getDense(aDense, &hand3[0]);
-//     std::cout << "L = \n" << GpuOut<double>(aDense, hand3[0]) << std::endl;
-//
-//     auto B = SparseCSC<double>::create(1, fSize, dim.volume(), hand3[0]);
-//
-//     std::vector<uint32_t> rowPointersHost = {0};
-//     B.rowPointers.set(rowPointersHost.data(), hand3[0]);
-//
-//     B.columnOffsets.subAray(0, 1).fill(0, hand3[0]);
-//     B.columnOffsets.subAray(1, B.columnOffsets.size() - 1).fill(1, hand3[0]);
-//
-//     B.values.fill(1, hand3[0]);
-//
-//     auto denseB = Mat<double>::create(fSize, dim.volume());
-//     B.getDense(denseB, hand3[0]);
-//     std::cout << "dense B = \n" << GpuOut<double>(denseB, hand3[0]) << std::endl;
-//
-//     auto xf = SimpleArray<double>::create(fSize, hand3[0]);
-//     std::vector<double> fHost = {1, 2};
-//     xf.set(fHost.data(), hand3[0]);
-//
-//     auto xp = SimpleArray<double>::create(dim.volume(), hand3[0]);
-//     std::vector<double> xpHost = {-2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
-//     xp.set(xpHost.data(), hand3[0]);
-//
-//     auto result = SimpleArray<double>::create(dim.volume(), hand3[0]);
-//     BaseData<double> bd(B, xf, xp, dim.volume());
-//
-//     ImmersedEq<double> imEq(bd, dim, hand3);
-//
-//     std::cout << "LHS of equation is\n" << GpuOut<double>(imEq.LHSMat(hand3[0]), hand3[0]) << std::endl;
-//     std::cout << "RHS of equation is\n" << GpuOut<double>(imEq.RHS, hand3[0]) << std::endl;
-//
-//     ImmersedEqSolver<double> solver(imEq);
-//
-//     solver.solveUnpreconditionedBiCGSTAB(result);
-//
-//     std::cout << "Result is \n" << GpuOut<double>(result, hand3[0]) << std::endl;
-//
-//     // std::cout << "Expected: (0.5, 0, 0, -0.5)" << std::endl;
-// }
+void printL(const GridDim& dim, Handle* hand4, size_t numInds) {
+    auto spaceForA = Mat<double>::create(dim.volume(), numInds);
+    auto inds = SimpleArray<int32_t>::create(numInds, hand4[0]);
+    auto A = ToeplitzLaplacian<double>(dim).setL(hand4[0], spaceForA, inds, Real3d(1, 1, 1));
+    auto aDense = SquareMat<double>::create(dim.volume());
+    A.getDense(aDense, &hand4[0]);
+    std::cout << "L = \n" << GpuOut<double>(aDense, hand4[0]) << std::endl;
+}
+
+void smallTestWithoutFiles() {
+    Handle hand4[4]{};
+    GridDim dim(3, 2, 2);
+    Real3d delta(1,1,1);
+
+    constexpr size_t size = 12;
+
+    size_t numInds = 7, fSize = 2;
+
+    printL(dim, hand4, numInds);
+
+    std::vector<size_t> rowPointers = {0};
+    std::vector<double> values = {1};
+    std::vector<size_t> colOffsets = {0,1,1};
+
+    std::vector<double> f = {1,2};
+    std::vector<double> p = {-2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
+
+    double result[size];
+
+    ImmersedEq<double, size_t> imEq(dim, hand4, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
+
+    imEq.solve(result, 1, rowPointers.data(), colOffsets.data(), values.data());
+
+    for(int i = 0; i < size; ++i) std::cout << result[i] << " ";
+
+
+    // std::cout << "LHS of equation is\n" << GpuOut<double>(imEq.LHSMat(hand4[0]), hand4[0]) << std::endl;
+    // std::cout << "RHS of equation is\n" << GpuOut<double>(imEq.RHS, hand4[0]) << std::endl;
+
+    // std::cout << "Result is \n" << GpuOut<double>(result, hand4[0]) << std::endl;
+}
 
 // void testOnFiles(const GridDim& dim) {
 //     Handle hand2[2]{};
@@ -142,7 +132,7 @@ void solveImmersedBody(size_t gridHeight, size_t gridWidth, size_t gridDepth, si
 
 int main(int argc, char *argv[]) {
     // testOnFiles(GridDim(2000, 2000, 1));
-    // smallTestWithoutFiles();
+    smallTestWithoutFiles();
     // benchmark(3);
 
 }

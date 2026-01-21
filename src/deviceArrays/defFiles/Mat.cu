@@ -385,13 +385,17 @@ void Mat<T>::transpose(Handle* handle, Mat<T>* temp) {
 }
 
 template <typename T>
-Mat<T> Mat<T>::create(size_t rows, size_t cols){
+Mat<T> Mat<T>::create(size_t rows, size_t cols, bool initDescr){
     T* rawPtr = nullptr;
     size_t pitch = 0;
 
     CHECK_CUDA_ERROR(cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols));//Note: there does not seem to be an asynchronos version of this method.
 
-    return Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter));
+    auto result = Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter));
+
+    if (initDescr) result.initDescr();
+
+    return result;
 }
 
 template<typename T>
@@ -563,26 +567,30 @@ Vec<T>::operator Mat<T>() const{
 }
 
 template<typename T>
+void Mat<T>::initDescr() const{
+    cusparseDnMatDescr_t rawDescr;
+    const cudaDataType valueType = sizeof(T) == 8 ? CUDA_R_64F : CUDA_R_32F;;
+
+    CHECK_SPARSE_ERROR(cusparseCreateDnMat(
+        &rawDescr,
+        this->_rows,         // Number of rows
+        this->_cols,         // Number of columns
+        this->_ld,           // Leading dimension (can be > rows)
+        const_cast<void*>(static_cast<const void*>(this->data())),
+        valueType,
+        CUSPARSE_ORDER_COL    // Change to CUSPARSE_ORDER_ROW if C-style
+    ));
+
+    // Use the same smart pointer pattern as your SimpleArray
+    dnMatDescr = DnMatDescrPtr(rawDescr, [](const cusparseDnMatDescr_t p) {
+        if (p) cusparseDestroyDnMat(p);
+    });
+}
+
+template<typename T>
 cusparseDnMatDescr_t Mat<T>::getDescr() const {
-    if (!dnMatDescr) {
-        cusparseDnMatDescr_t rawDescr;
-        const cudaDataType valueType = sizeof(T) == 8 ? CUDA_R_64F : CUDA_R_32F;;
+    if (!dnMatDescr) initDescr();
 
-        CHECK_SPARSE_ERROR(cusparseCreateDnMat(
-            &rawDescr,
-            this->_rows,         // Number of rows
-            this->_cols,         // Number of columns
-            this->_ld,           // Leading dimension (can be > rows)
-            const_cast<void*>(static_cast<const void*>(this->data())),
-            valueType,
-            CUSPARSE_ORDER_COL    // Change to CUSPARSE_ORDER_ROW if C-style
-        ));
-
-        // Use the same smart pointer pattern as your SimpleArray
-        dnMatDescr = DnMatDescrPtr(rawDescr, [](const cusparseDnMatDescr_t p) {
-            if (p) cusparseDestroyDnMat(p);
-        });
-    }
     return dnMatDescr.get();
 }
 

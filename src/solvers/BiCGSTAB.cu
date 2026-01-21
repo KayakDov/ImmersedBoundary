@@ -175,13 +175,13 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& result) {
 
         pUpdate(0); // p = p - beta * omega * v
     }
-    cudaDeviceSynchronize();
-    const TimePoint end = std::chrono::steady_clock::now();
-    const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
-
-    std::cout<< "BiCGSTAB #iterations = " << numIterations << std::endl;
     if (numIterations >= maxIterations)
         std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
+    for (size_t i = 0; i < 4; i++) cudaStreamSynchronize(hand4[i]);
+
+    const TimePoint end = std::chrono::steady_clock::now();
+    const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
+    std::cout<< "BiCGSTAB #iterations = " << numIterations << std::endl;
     std::cout << time << ", ";
 }
 

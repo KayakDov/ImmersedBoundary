@@ -90,13 +90,13 @@ void SparseCSC<Real, Int>::mult(const SimpleArray<Real>& vec, SimpleArray<Real>&
         valueType, CUSPARSE_SPMV_ALG_DEFAULT, workSpace.data()));
 }
 
-template<typename Real, typename Int>
-void SparseCSC<Real, Int>::mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeThis, Handle &h) const {
-
-    int wsSize = multWorkspaceSize(vec, result, multProduct, preMultResult, transposeThis,h);
-    auto workSpace = SimpleArray<Real>::create(wsSize, h);
-    mult(vec, result, multProduct, preMultResult, transposeThis, workSpace, h);
-}
+// template<typename Real, typename Int>
+// void SparseCSC<Real, Int>::mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeThis, Handle &h) const {
+//
+//     int wsSize = multWorkspaceSize(vec, result, multProduct, preMultResult, transposeThis,h);
+//     auto workSpace = SimpleArray<Real>::create(wsSize, h);
+//     mult(vec, result, multProduct, preMultResult, transposeThis, workSpace, h);
+// }
 
 template<typename Real, typename Int>
 void SparseCSC<Real, Int>::getDense(Mat<Real>& dest, Handle& h) const {

@@ -33,11 +33,13 @@ public:
 
     SimpleArray(size_t size, std::shared_ptr<T> ptr);
 
-    static SimpleArray create(size_t size, cudaStream_t stream);
+    static SimpleArray create(size_t size, cudaStream_t stream, bool initDescr = false);
 
     SimpleArray(Vec<T> vecWithLD1);
 
     SimpleArray<T> subAray(size_t offset, size_t length);
+
+    void initDescr() const;
 
     /**
      * @brief Gets or creates the cuSPARSE dense vector descriptor.

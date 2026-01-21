@@ -201,7 +201,7 @@ public:
      * @param cols Number of columns.
      * @return New Mat<T> instance with allocated GPU memory.
      */
-    static Mat<T> create(size_t rows, size_t cols);
+    static Mat<T> create(size_t rows, size_t cols, bool initDescr = false);
 
     /**
      * @brief Static factory method to create a new matrix.
@@ -288,6 +288,8 @@ public:
      */
     void factorLU(Handle *hand = nullptr, Vec<int32_t> *rowSwaps = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workSpace =
                           nullptr);
+
+    void initDescr() const;
 
     cusparseDnMatDescr_t getDescr() const;
 
