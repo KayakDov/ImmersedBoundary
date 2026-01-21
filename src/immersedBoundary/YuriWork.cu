@@ -4,6 +4,7 @@
 #include "Streamable.h"
 #include <vector>
 
+#include "BaseDataOut.hpp"
 #include "SparseCSC.cuh"
 #include "BaseData.h"
 #include "ToeplitzLaplacian.cuh"
@@ -58,7 +59,8 @@ void solveImmersedBody(size_t gridHeight, size_t gridWidth, size_t gridDepth, si
 // }
 
 template <typename Real>
-void printL(const GridDim& dim, Handle* hand4, size_t numInds) {
+void printL(const GridDim& dim, Handle* hand4) {
+    size_t numInds = 7;
     auto spaceForA = Mat<Real>::create(dim.volume(), numInds);
     auto inds = SimpleArray<int32_t>::create(numInds, hand4[0]);
     auto A = ToeplitzLaplacian<Real>(dim).setL(hand4[0], spaceForA, inds, Real3d(1, 1, 1));
@@ -75,9 +77,8 @@ void smallTestWithoutFiles() {
 
     constexpr size_t size = 12;
 
-    size_t numInds = 7, fSize = 2;
 
-    printL<Real>(dim, hand4, numInds);
+    printL<Real>(dim, hand4);
 
     std::vector<Int> rowPointers = {0};
     std::vector<Real> values = {1};
@@ -87,8 +88,14 @@ void smallTestWithoutFiles() {
     std::vector<Real> p = {-2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
 
     Real result[size];
+// /(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real * f, Real *p, Handle &hand);
+    BaseData<Real, Int> baseData(dim, f.size(), values.size(), delta, f.data(), p.data(), hand4[0]);
 
-    ImmersedEq<Real, Int> imEq(dim, hand4, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
+    std::cout << BaseDataOut<Real, Int>(baseData, hand4[0]) << std::endl;
+
+    ImmersedEq<Real, Int> imEq(baseData, hand4, 1e-10, 1000);
+
+    // ImmersedEq<Real, Int> imEq(dim, hand4, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
 
     imEq.solve(result, 1, rowPointers.data(), colOffsets.data(), values.data());
 

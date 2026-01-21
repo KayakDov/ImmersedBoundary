@@ -59,6 +59,7 @@ set(FORTRAN_WRAPPER
         src/immersedBoundary/BaseData.cpp
         src/immersedBoundary/BaseData.h
         src/immersedBoundary/IBDataFactory.hpp
+        src/immersedBoundary/BaseDataOut.hpp
 )
 
 add_library(CudaBandedLib STATIC

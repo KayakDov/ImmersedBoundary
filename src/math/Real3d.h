@@ -30,4 +30,16 @@ class Real2d: public Real3d {
 };
 
 
+#include <iostream>
+
+inline std::ostream& operator<<(std::ostream& os, const Real3d& v) {
+    return os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Real2d& v) {
+    return os << "(" << v.x << ", " << v.y << ")";
+}
+
+
 #endif //CUDABANDED_REAL3D_H

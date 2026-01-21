@@ -53,7 +53,6 @@ public:
     const GridDim dim;
     const Real3d delta;
 
-
     /**
      * @brief Initializes GPU memory and loads data from FileMeta.
      */

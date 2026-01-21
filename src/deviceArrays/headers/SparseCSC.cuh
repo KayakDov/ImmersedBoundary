@@ -110,7 +110,41 @@ public:
      */
     SparseCSC<Real, Int> get(size_t rows, cudaStream_t stream) const;
 
-private:
-    Int last_col_added = 0;
 };
+
+    /**
+     * @brief Helper wrapper to print SparseCSC contents using GpuOut.
+     */
+    template <typename Real, typename Int = uint32_t>
+    struct SparseCSCOut {
+        const SparseCSC<Real, Int>& mat;
+        Handle& handle;
+
+        SparseCSCOut(const SparseCSC<Real, Int>& m, Handle& h)
+            : mat(m), handle(h) {}
+    };
+
+    template <typename Real, typename Int>
+    std::ostream& operator<<(std::ostream& os, const SparseCSCOut<Real, Int>& out) {
+        const auto& mat = out.mat;
+        Handle& h = out.handle;
+
+        os << "SparseCSC Debug Output\n";
+        os << "  Dimensions: " << mat.rows << " x " << mat.cols << "\n";
+        os << "  nnz: " << mat.nnz() << "\n";
+
+        os << "Values:\n";
+        os << GpuOut(mat.values, h) << "\n";
+
+        os << "Row Pointers:\n";
+        os << GpuOut(mat.rowPointers, h) << "\n";
+
+        os << "Column Offsets:\n";
+        os << GpuOut(mat.columnOffsets, h) << "\n";
+
+        return os;
+    }
+
+
+
 #endif //CUDABANDED_SPARSE_CUH

@@ -117,6 +117,10 @@ public:
     }
 };
 
+inline std::ostream& operator<<(std::ostream& os, const GridDim& g) {
+    return os << "(rows, cols, layers) = (" << g.rows << ", " << g.cols << ", " << g.layers << ")";
+}
+
 /**
  * Are the indices within (non inclusive) the dimensions.
  * @param ind
