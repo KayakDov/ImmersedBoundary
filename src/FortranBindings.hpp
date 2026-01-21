@@ -256,17 +256,28 @@ void solveBiCGSTAB(
     size_t maxIterations,
     T tolerance
 ) {
-    Mat<T> preAlocatedMat = Mat<T>::create(bSize, 7, prealocatedLd, reinterpret_cast<T *>(prealocatedSizeX7Ptr));
+    Handle hand4[4]{};
+    auto heightX7 = Mat<T>::create(bSize, 7, prealocatedLd, reinterpret_cast<T *>(prealocatedSizeX7Ptr));
+    auto a9 = Vec<T>::create(9, hand4[0]);
     Vec<T> bVec = Vec<T>::create(bSize, bStride, reinterpret_cast<T *>(bPtr));
     const auto ABanded = BandedMat<T>::create(bSize, numInds, aLd, reinterpret_cast<T *>(APtr),
                                               reinterpret_cast<int32_t *>(indsPtrInt32_t),
                                               indsStride); //rows cols pointer VecIndices
-
-    // Handle hand;
+        // Handle hand;
     // std::cout << "ABanded = \n" << GpuOut<T>(ABanded, hand) << std::endl;
     // std::cout << "indices = \n" << GpuOut<int32_t>(ABanded._indices, hand) << std::endl;
     // std::cout << "bVec = \n" << GpuOut<T>(bVec, hand) << std::endl;
     // std::cout << "prealocated = \n" << GpuOut<T>(preAlocatedMat, hand) << std::endl;
 
-    BCGBanded<T>::solve(ABanded, bVec, bVec, &preAlocatedMat, tolerance, maxIterations);
+    BCGBanded<T>::solve(hand4, ABanded, bVec, bVec, &heightX7, &a9, tolerance, maxIterations);
 }
+// (
+//     Handle* hand4,
+//     const BandedMat<T> &A,
+//     Vec<T>& result,
+//     const Vec<T> &b,
+//     Mat<T> *allocatedBHeightX7,
+//     Vec<T>* allocated9,
+//     const T tolerance,
+//     const size_t maxIterations
+// )

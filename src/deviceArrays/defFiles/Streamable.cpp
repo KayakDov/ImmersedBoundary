@@ -1,5 +1,5 @@
 #include "deviceArrays/headers/Streamable.h"
-#include "../headers/Vec.h"
+
 #include "../headers/Tensor.h"
 #include <vector>
 #include <stdexcept>

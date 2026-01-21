@@ -2,7 +2,6 @@
 #include <chrono>
 #include "poisson/CubeBoundary.h"
 #include "solvers/EigenDecompSolver.h"
-#include "poisson/DirectSolver.cuh"
 // #include "FortranBindings.hpp"
 #include "ToeplitzLaplacian.cuh"
 #include "wrapFortranBindings.h"

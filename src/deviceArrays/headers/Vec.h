@@ -10,7 +10,6 @@
 #ifndef BICGSTAB_VEC_H
 #define BICGSTAB_VEC_H
 #include "GpuArray.h"
-#include "SimpleArray.h"
 #include "../defFiles/DeviceData.cu"
 #include  "Tensor.h"
 
@@ -65,6 +64,8 @@ protected:
     Vec(size_t size, std::shared_ptr<T> _ptr, size_t stride);
 
 public:
+
+    using GpuArray<T>::col;
     /**
      * @brief Factory method to create a new vector of given length.
      * 

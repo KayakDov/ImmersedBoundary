@@ -48,7 +48,7 @@ SparseCSC<Real, Int> SparseCSC<Real, Int>::create(size_t rows, SimpleArray<Real>
         "SparseCSC Dimensional Mismatch: rowPointers.size() (" + std::to_string(rowPointers.size()) +
         ") does not match values.size() (" + std::to_string(values.size()) + ")."
     );
-    return {rows, columnOffsets.size() - 1, values, colOffsets, rowPointers};
+    return {rows, colOffsets.size() - 1, values, colOffsets, rowPointers};
 }
 
 

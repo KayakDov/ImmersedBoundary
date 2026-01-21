@@ -2,9 +2,10 @@
 #ifndef CUDABANDED_POISSONLHS_H
 #define CUDABANDED_POISSONLHS_H
 #include <array>
-#include <cuda_runtime.h>
+
 #include "BandedMat.h"
 #include "math/Real3d.h"
+#include "SimpleArray.h"
 
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;

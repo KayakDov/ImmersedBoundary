@@ -13,7 +13,7 @@ using DnVecDescrPtr = std::shared_ptr<std::remove_pointer<cusparseDnVecDescr_t>:
  */
 template <typename T>
 inline cudaDataType cuValueType() {
-    return (sizeof(T) == 8) ? CUDA_R_64F : CUDA_R_32F;;
+    return sizeof(T) == 8 ? CUDA_R_64F : CUDA_R_32F;;
 }
 
 template<typename T>
@@ -26,10 +26,13 @@ template <typename T>
 class SimpleArray: public Vec<T> {
 
 protected:
-    SimpleArray(size_t size, std::shared_ptr<T> ptr);
     mutable DnVecDescrPtr dnVecDescr;
 
 public:
+    using GpuArray<T>::col;
+
+    SimpleArray(size_t size, std::shared_ptr<T> ptr);
+
     static SimpleArray create(size_t size, cudaStream_t stream);
 
     SimpleArray(Vec<T> vecWithLD1);

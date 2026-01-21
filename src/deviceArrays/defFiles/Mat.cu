@@ -566,7 +566,7 @@ template<typename T>
 cusparseDnMatDescr_t Mat<T>::getDescr() const {
     if (!dnMatDescr) {
         cusparseDnMatDescr_t rawDescr;
-        const cudaDataType valueType = cuValueType<T>();
+        const cudaDataType valueType = sizeof(T) == 8 ? CUDA_R_64F : CUDA_R_32F;;
 
         CHECK_SPARSE_ERROR(cusparseCreateDnMat(
             &rawDescr,

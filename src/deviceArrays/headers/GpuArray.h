@@ -10,7 +10,7 @@
 #include <iomanip>
 #include "DeviceMemory.h"
 #include "KernelPrep.cuh"
-#include "SimpleArray.h"
+
 
 
 template <typename T> class Vec;
@@ -19,6 +19,7 @@ template <typename T> class Singleton;
 template <typename T> class Tensor;
 template <typename T> class SquareMat;
 template <typename T> class BandedMat;
+template <typename T> class SimpleArray;
 
 inline void cudaFreeDeleter(void* ptr) {
     if (ptr) cudaFree(ptr);
@@ -83,6 +84,17 @@ private:
     operator DeviceData2d<T>();
     operator DeviceData2d<T>() const;
 public:
+
+
+    /**
+     * @brief Extract a column vector from the matrix.
+     * @param index Column index.
+     * @return Column as a Vec<T>.
+     * @note Not yet implemented.
+     */
+    virtual SimpleArray<T> col(size_t index);
+
+    virtual SimpleArray<T> col(size_t index) const;
     /**
      * @brief Represents the number of rows in a GpuArray instance.
      *
@@ -399,16 +411,6 @@ public:
      * @return
      */
     [[nodiscard]] virtual KernelPrep kernelPrep(bool transpose = false) const;
-
-    /**
-     * @brief Extract a column vector from the matrix.
-     * @param index Column index.
-     * @return Column as a Vec<T>.
-     * @note Not yet implemented.
-     */
-    virtual SimpleArray<T> col(size_t index);
-
-    SimpleArray<T> col(size_t index) const;
 
     /**
      * @brief Extract a row vector from the matrix.

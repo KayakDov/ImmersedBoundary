@@ -47,11 +47,6 @@ Vec<T> Tensor<T>::row(size_t row, size_t layer) {
 }
 
 template<typename T>
-Vec<T> Tensor<T>::col(size_t col, size_t layer) {
-    return layerRowCol(layer).col(col);
-}
-
-template<typename T>
 Singleton<T> Tensor<T>::get(size_t row, size_t col, size_t layer) {
     return Singleton<T>(
         std::shared_ptr<T>(this->_ptr, this->_ptr.get() + layer * this->_ld * this->_cols + col * this->_ld + row)

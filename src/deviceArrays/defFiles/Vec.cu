@@ -407,15 +407,6 @@ Vec<T> GpuArray<T>::vec(size_t offset, size_t ld, size_t size) {
 }
 
 template <typename T>
-SimpleArray<T> GpuArray<T>::col(const size_t index){
-    if (index >= this->_cols) throw std::out_of_range("Out of range");
-    return SimpleArray<T>(this->vec(index * this->_ld, 1, this->_rows));
-}
-template <typename T>
-SimpleArray<T> GpuArray<T>::col(const size_t index) const {
-    return SimpleArray<T>((const_cast<GpuArray<T>*>(this))->col(index));
-}
-template <typename T>
 Vec<T> GpuArray<T>::row(const size_t index){
     if (index > this->_rows) throw std::out_of_range("Out of range");
     return this->vec(index, this->_ld, this->_cols);
@@ -449,12 +440,6 @@ template class Vec<int32_t>;
 template class Vec<unsigned char>;
 template class Vec<uint32_t>;
 
-template Vec<float> GpuArray<float>::col(size_t) const;
-template Vec<double> GpuArray<double>::col(size_t) const;
-template Vec<size_t> GpuArray<size_t>::col(size_t) const; // Maps to 'unsigned long' in the error
-template Vec<int> GpuArray<int>::col(size_t) const;
-template Vec<unsigned char> GpuArray<unsigned char>::col(size_t) const;
-template Vec<uint32_t> GpuArray<uint32_t>::col(size_t) const;
 
 // Instantiate GpuArray::row(size_t) const for all necessary types
 template Vec<float> GpuArray<float>::row(size_t) const;

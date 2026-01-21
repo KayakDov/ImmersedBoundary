@@ -74,12 +74,12 @@ public:
      */
     void setB(size_t nnzB, Int * colsB, Int * rowsB, Real * valsB, Handle &hand);
 
-    SimpleArray<Real> &fSize();
+    SimpleArray<Real> fSize();
 
-    SimpleArray<Real> &pSize(bool ind);
+    SimpleArray<Real> pSize(bool ind);
 
-    const SimpleArray<Real> &f() const;
-    const SimpleArray<Real> &p() const;
+    const SimpleArray<Real> f() const;
+    const SimpleArray<Real> p() const;
 };
 
 /**

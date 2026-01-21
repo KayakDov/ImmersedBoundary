@@ -114,7 +114,7 @@ template<typename T>
 void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& result) {
     cudaDeviceSynchronize();
     TimePoint start = std::chrono::steady_clock::now();
-    preamable(result);
+    preamble(result);
 
     size_t numIterations = 0;
     for (; numIterations < maxIterations; numIterations++) {

@@ -3,8 +3,7 @@
 
 // Assuming this header (or headers included by it) provides the definitions for
 // GpuArray<T>, Vec<T>, Tensor<T>, and cudaStream_t
-#include "deviceArrays/headers/Vec.h"
-#include "deviceArrays/headers/GpuArray.h"
+#include "deviceArrays/headers/SimpleArray.h"
 #include <iostream>
 #include <type_traits> // For std::is_const_v
 
@@ -39,6 +38,7 @@ public:
     GpuArray<T>& src;
 
     GpuIn(GpuArray<T>& dst, const cudaStream_t &stream, bool isText = true, bool columnMjr = false);
+
 
     GpuIn(Tensor<T>& dst, const cudaStream_t &stream, bool isText = true, bool columnMjr = false);
 

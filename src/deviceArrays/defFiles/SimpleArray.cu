@@ -60,6 +60,40 @@ SimpleArray<T>::operator cusparseDnVecDescr_t() const {
     return getDescr();
 }
 
+template <typename T>
+SimpleArray<T> GpuArray<T>::col(const size_t index){
+    if (index >= this->_cols) throw std::out_of_range("Out of range");
+    return SimpleArray<T>(this->_rows, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index * this->_ld));
+}
+template <typename T>
+SimpleArray<T> GpuArray<T>::col(const size_t index) const {
+    return SimpleArray<T>((const_cast<GpuArray<T>*>(this))->col(index));
+}
+
+template<typename T>
+SimpleArray<T> Tensor<T>::col(size_t col, size_t layer) {
+    return layerRowCol(layer).col(col);
+}
+
+template SimpleArray<float>        GpuArray<float>::col(size_t);
+template SimpleArray<double>       GpuArray<double>::col(size_t);
+template SimpleArray<size_t>       GpuArray<size_t>::col(size_t);
+template SimpleArray<int>          GpuArray<int>::col(size_t);
+template SimpleArray<unsigned char>GpuArray<unsigned char>::col(size_t);
+template SimpleArray<uint32_t>     GpuArray<uint32_t>::col(size_t);
+
+template SimpleArray<float> GpuArray<float>::col(size_t) const;
+template SimpleArray<double> GpuArray<double>::col(size_t) const;
+template SimpleArray<size_t> GpuArray<size_t>::col(size_t) const; // Maps to 'unsigned long' in the error
+template SimpleArray<int> GpuArray<int>::col(size_t) const;
+template SimpleArray<unsigned char> GpuArray<unsigned char>::col(size_t) const;
+template SimpleArray<uint32_t> GpuArray<uint32_t>::col(size_t) const;
+
+
+template SimpleArray<double> Tensor<double>::col(size_t col, size_t layer);
+template SimpleArray<float> Tensor<float>::col(size_t col, size_t layer);
+
+
 template class SimpleArray<int>;
 template class SimpleArray<uint32_t>;
 template class SimpleArray<size_t>;

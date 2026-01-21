@@ -30,10 +30,6 @@ using DnMatDescrPtr = std::shared_ptr<std::remove_pointer<cusparseDnMatDescr_t>:
  */
 template <typename T>
 class Mat : public GpuArray<T> {
-    using GpuArray<T>::mult;
-    using GpuArray<T>::col;
-    using GpuArray<T>::row;
-
     friend Tensor<T>;
     friend void eigenDecompSolver<T>(const T* frontBack,  size_t fbLd,
                        const T* leftRight,  size_t lrLd,
@@ -67,7 +63,9 @@ protected:
     std::shared_ptr<T> offset(size_t row, size_t col) const;
 
 public:
-
+    using GpuArray<T>::mult;
+    using GpuArray<T>::row;
+    using GpuArray<T>::col;
 
     /**
      * @brief Retrieves or creates a target matrix with the specified dimensions.

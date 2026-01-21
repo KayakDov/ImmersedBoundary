@@ -130,7 +130,7 @@ public:
      * @param col Column index (0-based).
      * @return Vec<T> representing the depth vector at the specified position.
      */
-    Vec<T> col(size_t col, size_t layer);
+    SimpleArray<T> col(size_t col, size_t layer);
 
     /**
      * @brief Returns a single element of the tensor as a Singleton<T>.

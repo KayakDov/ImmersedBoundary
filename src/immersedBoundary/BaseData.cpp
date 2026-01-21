@@ -21,20 +21,19 @@ FileMeta::FileMeta(std::ifstream &xFile, std::ifstream &bFile) : xFile(xFile), b
 
 template<typename Real, typename Int>
 BaseData<Real,
-    Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle *hand) : p(SimpleArray<Real>::create(
-                                                                                 meta.pSize, hand[0])),
-                                                                             f(SimpleArray<Real>::create(
-                                                                                 meta.fSize, hand[0])),
+    Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle *hand) : pSizeX3(Mat<Real>::create(meta.pSize, 3)),
+                                                                             fSizeX2(Mat<Real>::create(meta.fSize, 2)),
                                                                              maxB(SparseCSC<Real, Int>::create(
                                                                                  meta.nnz, meta.bRows, meta.bCols,
                                                                                  hand[0])),
-                                                                             delta(
-                                                                                 1.0 / dim.cols,
-                                                                                 1.0 / dim.rows,
-                                                                                 1.0 / dim.layers
-                                                                             ),
+                                                                             delta(1.0 / dim.cols, 1.0 / dim.rows,
+                                                                                 1.0 / dim.layers),
                                                                              dim(dim) {
+    auto p = pSizeX3.col(0);
     meta.xFile >> GpuIn<Real>(p, hand[0], false, true);
+    auto f = fSizeX2.col(0);
+    meta.xFile >> GpuIn<Real>(f, hand[0], false, true);
+
     meta.bFile >> GpuIn<Real>(maxB.values, hand[0], false, true);
 }
 
@@ -88,22 +87,22 @@ void BaseData<Real, Int>::setB(size_t nnzB, Int *colsB, Int *rowsB, Real *valsB,
 }
 
 template<typename Real, typename Int>
-SimpleArray<Real> &BaseData<Real, Int>::fSize() {
+SimpleArray<Real> BaseData<Real, Int>::fSize() {
     return fSizeX2.col(1);
 }
 
 template<typename Real, typename Int>
-SimpleArray<Real> &BaseData<Real, Int>::pSize(bool ind) {
+SimpleArray<Real> BaseData<Real, Int>::pSize(bool ind) {
     return pSizeX3.col(ind + 1);
 }
 
 template<typename Real, typename Int>
-const SimpleArray<Real> &BaseData<Real, Int>::f() const {
+const SimpleArray<Real> BaseData<Real, Int>::f() const {
     return fSizeX2.col(0);
 }
 
 template<typename Real, typename Int>
-const SimpleArray<Real> &BaseData<Real, Int>::p() const {
+const SimpleArray<Real> BaseData<Real, Int>::p() const {
     return pSizeX3.col(0);
 }
 
@@ -129,17 +128,20 @@ EigenDecompSolver<Real> *createEDS(
 
 template<typename Real, typename Int>
 size_t ImmersedEq<Real, Int>::sparseMultWorkspaceSize(bool max) {
-    if (max)
+    auto aFSize = baseData.fSize();
+    if (max) {
         return std::min(
-            baseData.maxB->multWorkspaceSize(baseData.p, baseData.f, Singleton<Real>::ONE, Singleton<Real>::ZERO, false,
-                                             hand4[0]),
-            baseData.maxB->multWorkspaceSize(baseData.f, RHSSpace, Singleton<Real>::ONE, Singleton<Real>::ZERO, true,
-                                             hand4[0])
+            baseData.maxB.multWorkspaceSize(baseData.p(), aFSize, Singleton<Real>::ONE,
+                                            Singleton<Real>::ZERO, false,
+                                            hand4[0]),
+            baseData.maxB.multWorkspaceSize(aFSize, RHSSpace, Singleton<Real>::ONE, Singleton<Real>::ZERO, true,
+                                            hand4[0])
         );
+    }
     return std::min(
-        baseData.B->multWorkspaceSize(baseData.p, baseData.f, Singleton<Real>::ONE, Singleton<Real>::ZERO, false,
+        baseData.B->multWorkspaceSize(baseData.p(), aFSize, Singleton<Real>::ONE, Singleton<Real>::ZERO, false,
                                       hand4[0]),
-        baseData.B->multWorkspaceSize(baseData.f, RHSSpace, Singleton<Real>::ONE, Singleton<Real>::ZERO, true, hand4[0])
+        baseData.B->multWorkspaceSize(aFSize, RHSSpace, Singleton<Real>::ONE, Singleton<Real>::ZERO, true, hand4[0])
     );
 }
 
@@ -147,18 +149,20 @@ template<typename Real, typename Int>
 ImmersedEq<Real, Int>::ImmersedEq(BaseData<Real, Int> baseData, Handle *hand4, double tolerance,
                                   size_t maxBCGIterations) : baseData(baseData),
                                                              RHSSpace(SimpleArray<Real>::create(
-                                                                 baseData.p.size(), hand4[0])),
+                                                                 baseData.p().size(), hand4[0])),
                                                              sparseMultBuffer(
-                                                                 std::make_shared<SparseCSC<Real, Int> >(
+                                                                 std::make_shared<SimpleArray<Real> >(
                                                                      SimpleArray<Real>::create(
-                                                                         sparseMultWorkspaceSize(true), hand4[0]))),
+                                                                         sparseMultWorkspaceSize(true), hand4[0])
+                                                                 )
+                                                             ),
                                                              sizeOfP(SimpleArray<Real>::create(
                                                                  baseData.p().size(), hand4[0])),
                                                              eds(createEDS(
                                                                  baseData.dim, sizeOfP, hand4, baseData.delta)),
                                                              hand4(hand4),
                                                              allocatedRHSHeightX7(
-                                                                 Mat<Real>::create(baseData.p.size(), 7)),
+                                                                 Mat<Real>::create(baseData.p().size(), 7)),
                                                              allocated9(Vec<Real>::create(9, hand4[0])),
                                                              tolerance(tolerance),
                                                              maxIterations(maxBCGIterations) {
@@ -180,25 +184,27 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
                                      const Singleton<Real> &multInverseOp, const Singleton<Real> &preMultX) const {
     //TODO:maybe use a 2nd handle for scaling x?
 
-    baseData.B->mult(x, baseData.fSize(), Singleton<Real>::ONE, Singleton<Real>::ZERO, false, sparseMultBuffer, hand);
+    auto fSize = baseData.fSize();
+    auto pSize0 = baseData.pSize(0);
+    auto pSize1 = baseData.pSize(1);
+    baseData.B->mult(x, fSize, Singleton<Real>::ONE, Singleton<Real>::ZERO, false, *sparseMultBuffer, hand);
     // f <- B * x
-    baseData.B->mult(baseData.fSize(), baseData.pSize(0), Singleton<Real>::TWO, Singleton<Real>::ZERO, true,
-                     sparseMultBuffer, hand);
+    baseData.B->mult(fSize, pSize0, Singleton<Real>::TWO, Singleton<Real>::ZERO, true, *sparseMultBuffer, hand);
     // p <- B^T * (B * x)
-    eds->solve(baseData.pSize(0), baseData.pSize(1), hand); // workspace2 <- L^-1 * B^T * (B * x)
+    eds->solve(pSize0, pSize1, hand); // workspace2 <- L^-1 * B^T * (B * x)
 
     result.mult(preMultX, &hand); //x <- x * preMultX
     result.add(x, &multInverseOp, &hand); //result <- result + multInverseOp * x * preMultX
-    result.add(baseData.pSize(1), &multInverseOp, &hand); // result <- result + multInverseOp * (L^-1 * B^T * (B * x))}
+    result.add(pSize1, &multInverseOp, &hand); // result <- result + multInverseOp * (L^-1 * B^T * (B * x))}
 }
 
 template<typename Real, typename Int>
 SquareMat<Real> ImmersedEq<Real, Int>::LHSMat(Handle &hand) {
-    auto id = SquareMat<Real>::create(baseData.p.size());
+    auto id = SquareMat<Real>::create(baseData.p().size());
     id.setToIdentity(hand);
 
-    auto result = SquareMat<Real>::create(baseData.p.size());
-    for (size_t i = 0; i < baseData.p.size(); ++i) {
+    auto result = SquareMat<Real>::create(baseData.p().size());
+    for (size_t i = 0; i < baseData.p().size(); ++i) {
         auto col = result.col(i);
         LHSTimes(id.col(i), static_cast<SimpleArray<Real> &>(col), hand, Singleton<Real>::ONE, Singleton<Real>::ZERO);
     }
@@ -209,9 +215,11 @@ template<typename Real, typename Int>
 SimpleArray<Real> &ImmersedEq<Real, Int>::RHS(Handle &hand, bool reset) {
     //TODO This method ovrewrites p and should not.
     if (reset) {
-        baseData.B->mult(baseData.f, baseData.pSize(), Singleton<Real>::TWO, Singleton<Real>::ONE, true, hand);
+        auto f = baseData.f();
+        auto pSize = baseData.pSize(0);
+        baseData.B->mult(f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true, hand);
         //p <- BT*f+p
-        eds->solve(RHSSpace, baseData.pSize(), hand);
+        eds->solve(RHSSpace, pSize, hand);
     }
     return RHSSpace;
 }
@@ -226,8 +234,12 @@ void ImmersedEq<Real, Int>::solve(
 ) {
     baseData.setB(nnzB, colPointersB, rowPointersB, valuesB, hand4[0]);
 
-    size_t newWorkSize = sparseMultWorkspaceSize();//TODO:this check may be expensive.  Experimentation or more research may show it's not neccessary.
-    if (newWorkSize > sparseMultBuffer->size()) sparseMultBuffer = std::make_shared<SimpleArray<Real>>(newWorkSize, hand4[0]);
+    size_t newWorkSize = sparseMultWorkspaceSize();
+    //TODO:this check may be expensive.  Experimentation or more research may show it's not neccessary.
+    if (!sparseMultBuffer || sparseMultBuffer->size() < newWorkSize) {
+        sparseMultBuffer = std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(newWorkSize, hand4[0]));
+    }
+
 
     ImmersedEqSolver(hand4, *this, allocatedRHSHeightX7, allocated9, tolerance, maxIterations)
             .solveUnpreconditionedBiCGSTAB(result);
