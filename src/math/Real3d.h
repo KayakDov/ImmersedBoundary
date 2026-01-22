@@ -19,12 +19,9 @@ class Real3d {
     Real3d operator-(const Real3d& other) const;
     Real3d operator*(double scalar) const;
     double operator*(const Real3d& other) const;
-
-
 };
 
 class Real2d: public Real3d {
-
     public:
     Real2d(double x, double y);
 };

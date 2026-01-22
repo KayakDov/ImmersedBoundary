@@ -54,14 +54,12 @@ SparseCSC<Real, Int> SparseCSC<Real, Int>::create(size_t rows, SimpleArray<Real>
 
 
 template<typename Real, typename Int>
-size_t SparseCSC<Real, Int>::nnz() {
+size_t SparseCSC<Real, Int>::nnz() const{
     return values.size();
 }
 
 template <typename Real, typename Int>
-size_t SparseCSC<Real, Int>::multWorkspaceSize(const SimpleArray<Real>& vec, SimpleArray<Real>& result,
-                                       const Singleton<Real>& multProduct, const Singleton<Real>& multThis,
-                                       bool transposeThis, Handle& h) const {
+size_t SparseCSC<Real, Int>::multWorkspaceSize(const SimpleArray<Real>& vec, SimpleArray<Real>& result, const Singleton<Real>& multProduct, const Singleton<Real>& preMultResult, const bool transposeThis, Handle& h) const {
     size_t bytesRequired = 0;
     cudaDataType valueType = cuValueType<Real>();
     cusparseOperation_t op = cuTranspose(transposeThis);
@@ -69,7 +67,7 @@ size_t SparseCSC<Real, Int>::multWorkspaceSize(const SimpleArray<Real>& vec, Sim
     CHECK_SPARSE_ERROR(cusparseSpMV_bufferSize(
         h, op,
         multProduct.data(), descriptor.get(), vec.getDescr(),
-        multThis.data(), result.getDescr(),
+        preMultResult.data(), result.getDescr(),
         valueType, CUSPARSE_SPMV_ALG_DEFAULT, &bytesRequired));
 
     return (bytesRequired + sizeof(Real) - 1) / sizeof(Real);

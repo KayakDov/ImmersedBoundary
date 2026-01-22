@@ -92,29 +92,26 @@ BiCGSTAB<T>::BiCGSTAB(
 }
 
 template<typename T>
-void BiCGSTAB<T>::preamble(Vec<T>& result) {
+void BiCGSTAB<T>::preamble(Vec<T>& x) {
 
     set(r, b, 0);
 
-    result.fillRandom(&hand4[0]); // set x randomly      // x.fill(1, handle[0]);
-    record(0, xReady);
-
-    mult(result, r, hand4[0], Singleton<T>::MINUS_ONE, Singleton<T>::ONE); // r = b - A * x
+    mult(x, r, hand4[0], Singleton<T>::MINUS_ONE, Singleton<T>::ONE); // r = b - A * x
 
     set(r_tilde, r, 0); //r_tilde = r
 
     r_tilde.mult(r, rho, hand4); //rho = r_tilde * r
 
     set(p, r, 0);
-
-    wait(1, {xReady});
 }
 
 template<typename T>
-void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& result) {
+void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& initGuess) {
     cudaDeviceSynchronize();
     TimePoint start = std::chrono::steady_clock::now();
-    preamble(result);
+
+    auto& x = initGuess;
+    preamble(x);
 
     size_t numIterations = 0;
     for (; numIterations < maxIterations; numIterations++) {
@@ -128,7 +125,7 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& result) {
         omegaReady.renew();
         wait(1, {alphaReady});
 
-        set(h, result, 1);
+        set(h, x, 1);
         synch(1);
         renew({alphaReady, xReady});
         h.add(p, &alpha, hand4 + 1); // h = x + alpha * p
@@ -138,7 +135,7 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& result) {
 
         wait(2, {sReady, hReady});
         if (isSmall(s, temp[2], 2)) {
-            set(result, h, 2);
+            set(x, h, 2);
             break;
         }
         renew({sReady, hReady});
@@ -154,7 +151,7 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& result) {
         record(0, {omegaReady});
 
         wait(1, {omegaReady});
-        result.setSum(h, s, Singleton<T>::ONE, omega, hand4 + 1); // x = h + omega * s
+        x.setSum(h, s, Singleton<T>::ONE, omega, hand4 + 1); // x = h + omega * s
         record(1, {xReady});
 
         synch(0);

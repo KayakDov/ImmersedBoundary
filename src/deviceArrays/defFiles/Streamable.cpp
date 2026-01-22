@@ -118,6 +118,9 @@ template class GpuOut<size_t>;
 template class GpuIn<int32_t>;
 template class GpuOut<int32_t>;
 
+template class GpuIn<int64_t>;
+template class GpuOut<int64_t>;
+
 // unsigned char
 template class GpuIn<unsigned char>;
 template class GpuOut<unsigned char>;

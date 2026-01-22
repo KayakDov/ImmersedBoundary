@@ -89,7 +89,7 @@ public:
 template <typename Real, typename Int = uint32_t>
 class ImmersedEq {
 
-    mutable BaseData<Real, Int> baseData;
+    BaseData<Real, Int>& baseData;
     SimpleArray<Real> RHSSpace;
     mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer;
 
@@ -100,21 +100,19 @@ class ImmersedEq {
     Real tolerance;
     size_t maxIterations;
 
+    void multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &
+               preMultResult, bool transposeThis, Handle &hand) const;
+
 public:
     std::shared_ptr<EigenDecompSolver<Real>> eds;
 
-
-    size_t sparseMultWorkspaceSize(bool max = false);
-
-
+    ImmersedEq(BaseData<Real, Int> &baseData, Handle *hand4, double tolerance, size_t maxBCGIterations);
 
     /**
      * @brief Sets up the immersed equation system using the provided base data.
      */
-    ImmersedEq(const BaseData<Real, Int> &baseData, Handle *hand4, double tolerance, size_t maxBCGIterations);
-
-    ImmersedEq(const GridDim &dim, Handle *hand4, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta,
-               double tolerance, size_t maxBCGIterations);
+    // ImmersedEq(const GridDim &dim, Handle *hand4, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta,
+    //            double tolerance, size_t maxBCGIterations);
 
     //  size_t fSize, size_t nnzB, const double deltaX, const double deltaY, const double deltaZ,/
 
@@ -124,11 +122,11 @@ public:
      * @param x Input vector.
      * @param result Output product vector.
      * @param hand CUDA Handle for stream management.
-     * @param multInverseOp Scaling for the addition.
-     * @param preMultX Initial scaling factor for x.
+     * @param multLinearOperationOutput Scaling for the addition.
+     * @param preMultResult Initial scaling factor for x.
      */
-    void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, Handle &hand, const Singleton<Real> &multInverseOp,
-             const Singleton<Real> &preMultX) const;
+    void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, Handle &hand, const Singleton<Real> &multLinearOperationOutput,
+             const Singleton<Real> &preMultResult) const;
 
     /**
      * This method creates the LHS matrix.  For large matrices this may be inefficient.
@@ -140,11 +138,10 @@ public:
 
     /**
      * Generates the RHS value from the base data.
-     * @param hand The context.
      * @param reset Check to false if this method was already called with the current base data.
      * @return The right hand side of the equation.
      */
-    SimpleArray<Real>& RHS(Handle &hand, bool reset = true);
+    SimpleArray<Real>& RHS(bool reset = true);
 
     /**
      * Solves the equation.
@@ -159,8 +156,6 @@ public:
      * @param tolerance The tolerance
      * @param maxIterations The maximum number of iterations.
      */
-    void solve(SimpleArray<Real> result, size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB);
-
     void solve(Real *result, size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB);
 
     SimpleArray<Real> solve(size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB);
@@ -186,7 +181,8 @@ public:
      * @brief Constructor for the iterative solver.
      * @param p
      */
-    ImmersedEqSolver(Handle *hand4, ImmersedEq<Real, Int> imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> &allocated9, Real tolerance, size_t maxIterations);
+    ImmersedEqSolver(Handle *hand4, ImmersedEq<Real, Int> &imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> &allocated9,
+                     Real tolerance, size_t maxIterations);
 };
 
 

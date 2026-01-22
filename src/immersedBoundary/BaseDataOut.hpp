@@ -18,24 +18,21 @@ struct BaseDataOut {
 
 template <typename Real, typename Int>
 std::ostream& operator<<(std::ostream& os, const BaseDataOut<Real, Int>& out) {
-    const auto& data = out.data;
+    const auto& basedata = out.data;
 
     os << "BaseData Debug Output\n";
-    os << "GridDim: rows=" << data.dim.rows
-       << ", cols=" << data.dim.cols
-       << ", layers=" << data.dim.layers
-       << ", layerSize=" << data.dim.layerSize << std::endl;
+    os << "GridDim: " << basedata.dim << std::endl;
 
-    os << "Delta: " << data.delta << std::endl;
+    os << "Delta: " << basedata.delta << std::endl;
 
-    os << "f (SimpleArray):\n" << GpuOut<Real>(out.data.f, out.handle) << std::endl;
+    os << "f: " << GpuOut<Real>(basedata.f, out.handle) << std::endl;
 
-    os << "p (SimpleArray):\n" <<  GpuOut<Real>(out.data.p, out.handle) << std::endl;
+    os << "p: " <<  GpuOut<Real>(basedata.p, out.handle) << std::endl;
 
-    os << "maxB (SparseCSC) non-zero entries: " << data.maxB.nnz() << std::endl;
+    os << "maxB: " << SparseCSCOut<Real, Int>(basedata.maxB, out.handle) << std::endl;
 
-    if (data.B)
-        os << "B: \n" << SparseCSCOut<Real, Int>(*out.data.B, out.handle) << std::endl;
+    if (basedata.B) os << "B: " << SparseCSCOut<Real, Int>(*basedata.B, out.handle) << std::endl;
+    else os << "B is not initialized." << std::endl;
 
     return os;
 }

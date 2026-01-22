@@ -179,7 +179,7 @@ public:
      * @brief Adds a scaled vector to this vector.
      * 
      * @param x Vector to add.
-     * @param alpha Scaling factor.
+     * @param alpha Scales x.
      * @param handle Optional GPU handle.
      */
     void add(const Vec<T>& x, const Singleton<T> *alpha, Handle* handle);

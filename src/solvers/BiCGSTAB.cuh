@@ -86,7 +86,7 @@ private:
  *
  * @brief Initalizes variables r_tilde, r, b, p, and rx.ho
  */
-    void preamble(Vec<T> &result);
+    void preamble(Vec<T> &x);
 protected:
     virtual void mult(Vec<T>& vec, Vec<T>& product, Handle& hand, Singleton<T> multProduct = Singleton<T>::ONE, Singleton<T> premultResult = Singleton<T>::ZERO) const = 0;
 public:
@@ -107,9 +107,9 @@ public:
     /**
      * @brief Solves the linear system $A\mathbf{x} = \mathbf{b}$ using the
      * unpreconditioned BiCGSTAB algorithm.
-     * @param result The result will be placed here.  This may be the same as the b vector if you'd like to overwrite it.
+     * @param x The result will be placed here.  This may be the same as the b vector if you'd like to overwrite it.
      */
-    void solveUnpreconditionedBiCGSTAB(Vec<T>& result);
+    void solveUnpreconditionedBiCGSTAB(Vec<T>& x);
 };
 
 template<typename T>
@@ -130,7 +130,7 @@ public:
         const BandedMat<T> &A,
         Vec<T>& result,
         const Vec<T> &b,
-        Mat<T> *preAllocated = nullptr,
+        Mat<T> *allocatedSizeX7 = nullptr,
         Vec<T> *allocated9 = nullptr,
         T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
         size_t maxIterations = 1500

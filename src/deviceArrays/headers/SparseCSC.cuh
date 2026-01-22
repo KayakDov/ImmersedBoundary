@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "SimpleArray.h"
+#include "Streamable.h"
 
 //TODO:Check to see if SELL format would be a better fit.
 
@@ -29,20 +30,20 @@ public:
     static SparseCSC<Real, Int> create(size_t rows, SimpleArray<Real> values, SimpleArray<Int> rowPointers,
                                 SimpleArray<Int> colOffsets, cudaStream_t stream);
 
-    size_t nnz();
+    size_t nnz() const;
 
     /**
      * The numver of elements of size T needed for the workspace for mult;
      * @param vec The dense vector being multiplied by.
      * @param result The product will be placed here.
      * @param multProduct A scalar that scales the product.
-     * @param multThis  A scalar that scales whatever is in the result before the product is added to itt
+     * @param preMultResult  A scalar that scales whatever is in the result before the product is added to itt
      * @param transposeThis Should this be transposed.
      * @param h The handle
      * @return The numver of T type elements in the workspace that mult will need.
      */
     size_t multWorkspaceSize(const SimpleArray<Real> &vec, SimpleArray<Real> &result,
-                             const Singleton<Real> &multProduct, const Singleton<Real> &multThis,
+                             const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult,
                              bool transposeThis, Handle &h) const;
 
 
@@ -56,8 +57,7 @@ public:
      * @param workSpace
      * @param h The handle
      */
-    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct,
-    const Singleton<Real> &preMultResult, bool transposeThis, SimpleArray<Real> &workSpace, Handle &h) const;
+    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeThis, SimpleArray<Real> &workSpace, Handle &h) const;
 
     void getDense(Mat<Real> &dest, Handle &h) const;
 };
@@ -112,38 +112,43 @@ public:
 
 };
 
-    /**
-     * @brief Helper wrapper to print SparseCSC contents using GpuOut.
-     */
-    template <typename Real, typename Int = uint32_t>
-    struct SparseCSCOut {
-        const SparseCSC<Real, Int>& mat;
-        Handle& handle;
+/**
+ * @brief Helper wrapper to print SparseCSC contents using GpuOut.
+ */
+template <typename Real, typename Int = uint32_t>
+struct SparseCSCOut {
+    const SparseCSC<Real, Int>& mat;
+    Handle& handle;
 
-        SparseCSCOut(const SparseCSC<Real, Int>& m, Handle& h)
-            : mat(m), handle(h) {}
-    };
+    SparseCSCOut(const SparseCSC<Real, Int>& m, Handle& h)
+        : mat(m), handle(h) {}
+};
 
-    template <typename Real, typename Int>
-    std::ostream& operator<<(std::ostream& os, const SparseCSCOut<Real, Int>& out) {
-        const auto& mat = out.mat;
-        Handle& h = out.handle;
+template <typename Real, typename Int>
+std::ostream& operator<<(std::ostream& os, const SparseCSCOut<Real, Int>& out) {
+    const auto& mat = out.mat;
+    Handle& h = out.handle;
 
-        os << "SparseCSC Debug Output\n";
-        os << "  Dimensions: " << mat.rows << " x " << mat.cols << "\n";
-        os << "  nnz: " << mat.nnz() << "\n";
+    os << "SparseCSC Debug Output" << std::endl;
+    os << "  Dimensions: " << mat.rows << " x " << mat.cols << std::endl;
+    os << "  nnz: " << mat.nnz() << std::endl;
 
-        os << "Values:\n";
-        os << GpuOut(mat.values, h) << "\n";
+    os << "Values:" << std::endl;
+    os << GpuOut<Real>(mat.values, h) << std::endl;
 
-        os << "Row Pointers:\n";
-        os << GpuOut(mat.rowPointers, h) << "\n";
+    os << "Row Pointers:" << std::endl;
+    os << GpuOut(mat.rowPointers, h) << std::endl;
 
-        os << "Column Offsets:\n";
-        os << GpuOut(mat.columnOffsets, h) << "\n";
+    os << "Column Offsets:" << std::endl;
+    os << GpuOut(mat.columnOffsets, h) << std::endl;
 
-        return os;
-    }
+    os << "dense:" << std::endl;
+    auto dense = Mat<Real>::create(mat.rows, mat.cols);
+    mat.getDense(dense, h);
+    os << GpuOut(dense, h) << std::endl;
+
+    return os;
+}
 
 
 

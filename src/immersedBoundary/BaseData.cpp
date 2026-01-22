@@ -88,6 +88,7 @@ void BaseData<Real, Int>::setB(size_t nnzB, Int *colsB, Int *rowsB, Real *valsB,
     B->columnOffsets.set(colsB, hand);
     B->rowPointers.set(rowsB, hand);
     B->values.set(valsB, hand);
+
 }
 
 template<typename Real, typename Int>
@@ -128,29 +129,21 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(
 }
 
 template<typename Real, typename Int>
-size_t ImmersedEq<Real, Int>::sparseMultWorkspaceSize(bool max) {
-    auto aFSize = baseData.allocatedFSize();
-    if (max) {
-        return std::min(
-            baseData.maxB.multWorkspaceSize(baseData.p, aFSize, Singleton<Real>::ONE,
-                                            Singleton<Real>::ZERO, false,
-                                            hand4[0]),
-            baseData.maxB.multWorkspaceSize(aFSize, RHSSpace, Singleton<Real>::ONE, Singleton<Real>::ZERO, true,
-                                            hand4[0])
-        );
-    }
-    return std::min(
-        baseData.B->multWorkspaceSize(baseData.p, aFSize, Singleton<Real>::ONE, Singleton<Real>::ZERO, false,
-                                      hand4[0]),
-        baseData.B->multWorkspaceSize(aFSize, RHSSpace, Singleton<Real>::ONE, Singleton<Real>::ZERO, true, hand4[0])
-    );
+void ImmersedEq<Real, Int>::multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result,
+    const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeThis,
+    Handle& hand) const {
+
+    size_t multBufferSizeNeeded = baseData.B->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeThis, hand);
+    if (!sparseMultBuffer || multBufferSizeNeeded > sparseMultBuffer->size()) sparseMultBuffer = std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(1.5 * multBufferSizeNeeded, hand));
+
+    baseData.B->mult(vec, result, multProduct, preMultResult, transposeThis, *sparseMultBuffer, hand);
 }
 
 template<typename Real, typename Int>
-ImmersedEq<Real, Int>::ImmersedEq(const BaseData<Real, Int>& baseData, Handle *hand4, double tolerance, const size_t maxBCGIterations) :
+ImmersedEq<Real, Int>::ImmersedEq(BaseData<Real, Int>& baseData, Handle *hand4, double tolerance, const size_t maxBCGIterations) :
     baseData(baseData),
-    RHSSpace(SimpleArray<Real>::create(baseData.p.size(), hand4[0], true)),//TODO:is the descriptor used for the right hand side?
-    sparseMultBuffer(std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(sparseMultWorkspaceSize(true), hand4[0]))),
+    RHSSpace(SimpleArray<Real>::create(baseData.p.size(), hand4[0])),
+    sparseMultBuffer(nullptr),
     hand4(hand4),
     allocatedRHSHeightX7(Mat<Real>::create(baseData.p.size(), 7)),
     allocated9(Vec<Real>::create(9, hand4[0])),
@@ -159,34 +152,67 @@ ImmersedEq<Real, Int>::ImmersedEq(const BaseData<Real, Int>& baseData, Handle *h
     eds(createEDS(baseData.dim, baseData.allocatedPSize(0), hand4, baseData.delta)) {
 }
 
-template<typename Real, typename Int>
-ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, Handle *hand4, size_t fSize, size_t nnzMaxB, Real *p, Real *f,
-                                  const Real3d &delta, double tolerance, size_t maxBCGIterations) :
-    ImmersedEq(
-        BaseData<Real, Int>(dim, fSize, nnzMaxB, delta, f, p, hand4[0]),
-        hand4,
-        tolerance,
-        maxBCGIterations
-    ) {
-}
+// template<typename Real, typename Int>
+// ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, Handle *hand4, size_t fSize, size_t nnzMaxB, Real *p, Real *f,
+//                                   const Real3d &delta, double tolerance, size_t maxBCGIterations) :
+//     ImmersedEq(
+//         BaseData<Real, Int>(dim, fSize, nnzMaxB, delta, f, p, hand4[0]),
+//         hand4,
+//         tolerance,
+//         maxBCGIterations
+//     ) {
+// }
 
 template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
 void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, Handle &hand,
-                                     const Singleton<Real> &multInverseOp, const Singleton<Real> &preMultX) const {
+                                     const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const {
     //TODO:maybe use a 2nd handle for scaling x?
+
+    // std::cout << "Debugging LHS mult" << std::endl;
+    // std::cout << "x = " << GpuOut<Real>(x, hand) << std::endl;
 
     auto fSize = baseData.allocatedFSize();
     auto pSize0 = baseData.allocatedPSize(0);
-    auto pSize1 = baseData.allocatedPSize(1);
-    baseData.B->mult(x, fSize, Singleton<Real>::ONE, Singleton<Real>::ZERO, false, *sparseMultBuffer, hand);
-    // f <- B * x
-    baseData.B->mult(fSize, pSize0, Singleton<Real>::TWO, Singleton<Real>::ZERO, true, *sparseMultBuffer, hand);
-    // p <- B^T * (B * x)
-    eds->solve(pSize0, pSize1, hand); // workspace2 <- L^-1 * B^T * (B * x)
+    auto invLXBTBx = baseData.allocatedPSize(1);
 
-    result.mult(preMultX, &hand); //x <- x * preMultX
-    result.add(x, &multInverseOp, &hand); //result <- result + multInverseOp * x * preMultX
-    result.add(pSize1, &multInverseOp, &hand); // result <- result + multInverseOp * (L^-1 * B^T * (B * x))}
+
+    multB(x, fSize, Singleton<Real>::ONE, Singleton<Real>::ZERO, false, hand);
+    // f <- B * x
+    // std::cout << "f <- B * x = " << GpuOut<Real>(fSize, hand) << std::endl;
+    multB(fSize, pSize0, Singleton<Real>::TWO, Singleton<Real>::ZERO, true, hand);
+    // p <- B^T * (B * x)
+    // std::cout << "p <- B^T * (B * x) = " << GpuOut<Real>(pSize0, hand) << std::endl;
+    eds->solve(invLXBTBx, pSize0, hand); // workspace2 <- L^-1 * B^T * (B * x)
+
+    // std::cout << "L^-1 * B^T * (B * x) = " << GpuOut<Real>(invLXBTBx, hand) << std::endl;
+
+    invLXBTBx.add(x, &Singleton<Real>::ONE, &hand);
+
+    auto& invLxBTBxPlusX = invLXBTBx;
+
+    // std::cout << "invLxBTBxPlusX = " << GpuOut<Real>(invLxBTBxPlusX, hand) << std::endl;
+    //
+    // std::cout << "input result value: " << GpuOut<Real>(result, hand) << std::endl;
+
+    result.mult(preMultResult, &hand); //x <- x * preMultX
+
+    // std::cout <<"premult result: "  << GpuOut<Real>(preMultResult, hand) << std::endl;
+    //
+    // std::cout << "result * preMultResult = " << GpuOut<Real>(result, hand) << std::endl;
+    //
+    // std::cout << "result address = " << result.data() << std::endl;
+    // std::cout << "x address = " << x.data() << std::endl;
+    // std::cout << "invLXBTBx address = " << invLxBTBxPlusX.data() << std::endl;
+
+    result.add(invLxBTBxPlusX, &multLinearOperationOutput, &hand); //result <- result + preMultResult * x * preMultX
+
+    // std::cout << "mult linear operation output by " << GpuOut<Real>(multLinearOperationOutput, hand) << std::endl;
+    //
+    // std::cout << "result <- result * preMultResult  + invLxBTBxPlusX = " << GpuOut<Real>(result, hand) << std::endl;
+    //
+    // cudaDeviceSynchronize();//TODO:delete me
+    // std::cout << "x = " << GpuOut<Real>(x, hand) << std::endl;
+
 }
 
 template<typename Real, typename Int>
@@ -203,38 +229,23 @@ SquareMat<Real> ImmersedEq<Real, Int>::LHSMat(Handle &hand) {
 }
 
 template<typename Real, typename Int>
-SimpleArray<Real> &ImmersedEq<Real, Int>::RHS(Handle &hand, bool reset) {
-    //TODO This method ovrewrites p and should not.
+SimpleArray<Real> &ImmersedEq<Real, Int>::RHS(const bool reset) {
+
     if (reset) {
         auto f = baseData.f;
+
         auto pSize = baseData.allocatedPSize(0);
-        baseData.B->mult(f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true, *sparseMultBuffer, hand);
+
+        pSize.set(baseData.p, hand4[0]);
+
+        multB(f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true, hand4[0]);
         //p <- BT*f+p
-        eds->solve(RHSSpace, pSize, hand);
+
+        eds->solve(RHSSpace, pSize, hand4[0]);
     }
     return RHSSpace;
 }
 
-template<typename Real, typename Int>
-void ImmersedEq<Real, Int>::solve(
-    SimpleArray<Real> result,
-    size_t nnzB,
-    Int *rowPointersB,
-    Int *colPointersB,
-    Real *valuesB
-) {
-    baseData.setB(nnzB, colPointersB, rowPointersB, valuesB, hand4[0]);
-
-    size_t newWorkSize = sparseMultWorkspaceSize();
-    //TODO:this check may be expensive.  Experimentation or more research may show it's not neccessary.
-    if (!sparseMultBuffer || sparseMultBuffer->size() < newWorkSize) {
-        sparseMultBuffer = std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(newWorkSize, hand4[0]));
-    }
-
-
-    ImmersedEqSolver(hand4, *this, allocatedRHSHeightX7, allocated9, tolerance, maxIterations)
-            .solveUnpreconditionedBiCGSTAB(result);
-}
 
 template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::solve(
@@ -244,9 +255,9 @@ void ImmersedEq<Real, Int>::solve(
     Int *colPointersB,
     Real *valuesB
 ) {
-    auto pSize = baseData.allocatedPSize(0);
-    solve(pSize, nnzB, rowPointersB, colPointersB, valuesB);
-    pSize.set(result, hand4[0]);
+
+    solve(nnzB, rowPointersB, colPointersB, valuesB);
+    RHSSpace.set(result, hand4[0]);
 }
 
 template<typename Real, typename Int>
@@ -256,22 +267,29 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     Int *colPointersB,
     Real *valuesB
 ) {
-    auto pSize = baseData.allocatedPSize(0);
-    solve(pSize, nnzB, rowPointersB, colPointersB, valuesB);
-    return pSize;
+    baseData.setB(nnzB, colPointersB, rowPointersB, valuesB, hand4[0]);
+    RHS(true);
+
+
+    ImmersedEqSolver(hand4, *this, allocatedRHSHeightX7, allocated9, tolerance, maxIterations)
+            .solveUnpreconditionedBiCGSTAB(RHSSpace);
+
+
+    return RHSSpace;
 }
 
 
 template<typename Real, typename Int>
 ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
     Handle *hand4,
-    ImmersedEq<Real, Int> imEq,
+    ImmersedEq<Real, Int>& imEq,
+
     Mat<Real> &allocatedRHSHeightX7,
     Vec<Real> &allocated9,
     Real tolerance,
     size_t maxIterations
 )
-    : BiCGSTAB<Real>(imEq.RHS(hand4[0]), hand4, &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
+    : BiCGSTAB<Real>(imEq.RHS(false), hand4, &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
       imEq(imEq) {
 }
 
@@ -279,6 +297,7 @@ template<typename Real, typename Int>
 void ImmersedEqSolver<Real, Int>::mult(Vec<Real> &vec, Vec<Real> &product, Handle &hand, Singleton<Real> multProduct,
                                        Singleton<Real> preMultResult) const {
     SimpleArray<Real> vecSA(vec), productSA(product);
+
     return imEq.LHSTimes(vecSA, productSA, hand, multProduct, preMultResult);
 }
 

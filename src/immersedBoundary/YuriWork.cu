@@ -77,27 +77,25 @@ void smallTestWithoutFiles() {
 
     constexpr size_t size = 12;
 
-
     printL<Real>(dim, hand4);
 
-    std::vector<Int> rowPointers = {0};
-    std::vector<Real> values = {1};
-    std::vector<Int> colOffsets = {0,1,1};
+    std::vector<Int> rowPointers = {};
+    std::vector<Real> values = {};
+    Int colOffsets [size + 1];
+    for (size_t i = 0; i < size + 1; ++i) colOffsets[i] = static_cast<Int>(0);
 
     std::vector<Real> f = {1,2};
     std::vector<Real> p = {-2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
 
     Real result[size];
-// /(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real * f, Real *p, Handle &hand);
+
     BaseData<Real, Int> baseData(dim, f.size(), values.size(), delta, f.data(), p.data(), hand4[0]);
 
-    std::cout << BaseDataOut<Real, Int>(baseData, hand4[0]) << std::endl;
+    ImmersedEq<Real, Int> imEq(baseData, hand4, 1e-6, 3);
 
-    ImmersedEq<Real, Int> imEq(baseData, hand4, 1e-10, 1000);
+    imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data());
 
-    // ImmersedEq<Real, Int> imEq(dim, hand4, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
-
-    imEq.solve(result, 1, rowPointers.data(), colOffsets.data(), values.data());
+    std::cout << "LHS:\n" << GpuOut<Real>(imEq.LHSMat(hand4[0]), hand4[0]) << std::endl;
 
     for(int i = 0; i < size; ++i) std::cout << result[i] << " ";
 }
