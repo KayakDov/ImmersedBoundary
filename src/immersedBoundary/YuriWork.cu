@@ -93,14 +93,12 @@ void smallTestWithoutFiles() {
 
     ImmersedEq<Real, Int> imEq(baseData, hand4, 1e-6, 3);
 
-    imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data());
+    imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
 
     std::cout << "LHS:\n" << GpuOut<Real>(imEq.LHSMat(hand4[0]), hand4[0]) << std::endl;
     std::cout << "RHS:\n" << GpuOut<Real>(imEq.RHSSpace, hand4[0]) << std::endl;
 
-    cudaDeviceSynchronize();
-
-    for(int i = 0; i < size; ++i) std::cout << result[i] << " ";
+    for(auto & i : result) std::cout << i << " ";
 }
 
     // std::cout << "LHS of equation is\n" << GpuOut<Real>(imEq.LHSMat(hand4[0]), hand4[0]) << std::endl;

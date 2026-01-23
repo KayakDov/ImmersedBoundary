@@ -156,9 +156,9 @@ public:
      * @param tolerance The tolerance
      * @param maxIterations The maximum number of iterations.
      */
-    void solve(Real *result, size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB);
+    void solve(Real *result, size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB, bool multiStream = true);
 
-    SimpleArray<Real> solve(size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB);
+    SimpleArray<Real> solve(size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB, bool multithreadBCG = true);
 };
 
 /**

@@ -250,10 +250,11 @@ void ImmersedEq<Real, Int>::solve(
     size_t nnzB,
     Int *rowPointersB,
     Int *colPointersB,
-    Real *valuesB
+    Real *valuesB,
+    const bool multiStream
 ) {
 
-    auto resultDevice = solve(nnzB, rowPointersB, colPointersB, valuesB);
+    auto resultDevice = solve(nnzB, rowPointersB, colPointersB, valuesB, multiStream);
     resultDevice.get(result, hand4[0]);
 }
 
@@ -263,7 +264,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     Int *rowPointersB,
     Int *colPointersB,
     Real *valuesB,
-    bool multithreadBCG
+    const bool multithreadBCG
 ) {
     baseData.setB(nnzB, colPointersB, rowPointersB, valuesB, hand4[0]);
     RHS(true);
@@ -274,7 +275,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     // baseData.result.fillRandom(hand4);
     baseData.result.fill(1, hand4[0]);
 
-    ImmersedEqSolver<Real> solver = ImmersedEqSolver(hand4, *this, allocatedRHSHeightX7, allocated9, tolerance, maxIterations);
+    ImmersedEqSolver<Real, Int> solver(hand4, *this, allocatedRHSHeightX7, allocated9, tolerance, maxIterations);
     if (multithreadBCG) solver.solveUnconditionedMultiStream(baseData.result);
     else solver.solveUnpreconditioned(baseData.result);
 
