@@ -41,6 +41,10 @@ template<typename T>
 void BiCGSTAB<T>::synch(const size_t streamInd) const {
     hand4[streamInd].synch();
 }
+template<typename T>
+void BiCGSTAB<T>::synchAll() const {
+    for (size_t i = 0; i < numStreams; i++) hand4[i].synch();
+}
 
 template<typename T>
 bool BiCGSTAB<T>::isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd) {
@@ -88,7 +92,6 @@ BiCGSTAB<T>::BiCGSTAB(
     maxIterations(maxIterations) {
     static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>,
                   "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
-    cudaDeviceSynchronize();
 }
 
 template<typename T>
@@ -96,7 +99,7 @@ void BiCGSTAB<T>::preamble(Vec<T>& x) {
 
     set(r, b, 0);
 
-    mult(x, r, hand4[0], Singleton<T>::MINUS_ONE, Singleton<T>::ONE); // r = b - A * x
+    mult(x, r, Singleton<T>::MINUS_ONE, Singleton<T>::ONE); // r = b - A * x
 
     set(r_tilde, r, 0); //r_tilde = r
 
@@ -106,8 +109,67 @@ void BiCGSTAB<T>::preamble(Vec<T>& x) {
 }
 
 template<typename T>
-void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& initGuess) {
-    cudaDeviceSynchronize();
+void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
+    synch();
+    TimePoint start = std::chrono::steady_clock::now();
+
+    auto& x = initGuess;
+    preamble(x);
+
+    size_t iteration = 0;
+    for (; iteration < maxIterations; iteration++) {
+        mult(p, v); // v = A * p
+
+        r_tilde.mult(v, alpha, hand4);
+        alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, hand4[0]); //alpha = rho / (r_tilde * v)
+
+        set(h, x);
+        h.add(p, &alpha, hand4); // h = x + alpha * p
+
+        s.setDifference(r, v, Singleton<T>::ONE, alpha, hand4); // s = r - alpha * v
+
+        if (isSmall(s, temp[2])) {
+            set(x, h);
+            break;
+        }
+
+        mult(s, t); // t = A * s
+
+        t.mult(s, temp[3], hand4);
+        t.mult(t, omega, hand4);
+        omega.EBEPow(temp[3], Singleton<T>::MINUS_ONE, hand4[0]); //omega = t * s / t * t;
+
+        x.setSum(h, s, Singleton<T>::ONE, omega, hand4); // x = h + omega * s
+
+        r.setDifference(s, t, Singleton<T>::ONE, omega, hand4); // r = s - omega * t
+
+        if (isSmall(r, temp[2])) {
+            std::cout << "Converged at r" << std::endl;
+            break;
+        }
+
+        r_tilde.mult(r, rho_new, hand4);
+        beta.setProductOfQuotients(rho_new, rho, alpha, omega, hand4[0]); // beta = (rho_new / rho) * (alpha / omega);
+        std::cout << "rho_new: " << GpuOut<T>(rho_new, hand4[0])
+                  << " | beta: " << GpuOut<T>(beta, hand4[0]) << std::endl;
+
+        set(rho, rho_new);
+        pUpdate(); // p = p - beta * omega * v
+    }
+    if (iteration >= maxIterations)
+        std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
+
+    synch();
+
+    const TimePoint end = std::chrono::steady_clock::now();
+    const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
+    std::cout<< "BiCGSTAB #iterations = " << iteration << std::endl;
+    std::cout << time << ", ";
+}
+
+template<typename T>
+void BiCGSTAB<T>::solveUnconditionedMultiStream(Vec<T>& initGuess) {
+    synchAll();
     TimePoint start = std::chrono::steady_clock::now();
 
     auto& x = initGuess;
@@ -115,7 +177,7 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& initGuess) {
 
     size_t numIterations = 0;
     for (; numIterations < maxIterations; numIterations++) {
-        mult(p, v, hand4[0]); // v = A * p
+        mult(p, v); // v = A * p
 
         r_tilde.mult(v, alpha, hand4);
         alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, hand4[0]); //alpha = rho / (r_tilde * v)
@@ -140,7 +202,7 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& initGuess) {
         }
         renew({sReady, hReady});
 
-        mult(s, t, hand4[0]); // t = A * s
+        mult(s, t); // t = A * s
 
         t.mult(s, temp[3], hand4 + 3);
         record(3, {prodTS});
@@ -174,7 +236,7 @@ void BiCGSTAB<T>::solveUnpreconditionedBiCGSTAB(Vec<T>& initGuess) {
     }
     if (numIterations >= maxIterations)
         std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
-    for (size_t i = 0; i < 4; i++) cudaStreamSynchronize(hand4[i]);
+    synchAll();
 
     const TimePoint end = std::chrono::steady_clock::now();
     const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
@@ -188,8 +250,8 @@ size_t maxIterations): BiCGSTAB<T>(b, hand4, allocatedBSizeX7, allocated9, toler
 }
 
 template<typename T>
-void BCGBanded<T>::mult(Vec<T>& vec, Vec<T>& product, Handle& hand, Singleton<T> multProduct, Singleton<T> preMultResult) const {
-    return A.bandedMult(vec, product, &hand, multProduct, preMultResult);
+void BCGBanded<T>::mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct, Singleton<T> preMultResult) const {
+    return A.bandedMult(vec, product, this->hand4, multProduct, preMultResult);
 }
 
 
@@ -205,7 +267,37 @@ void BCGBanded<T>::solve(
     const size_t maxIterations
 ) {
     BCGBanded<T> solver(hand4, A, b, allocatedBHeightX7, allocated9, tolerance, maxIterations);
-    solver.solveUnpreconditionedBiCGSTAB(result);
+    solver.solveUnpreconditioned(result);
+}
+
+template<typename T>
+void BCGBanded<T>::test() {
+    Handle hand4[4]{};
+
+    size_t n = 5;
+    size_t numDiagonals = 2;
+
+    auto indices = SimpleArray<int32_t>::create(numDiagonals, hand4[0]);
+    std::vector<int32_t>  indicesHost = {0, 1};
+    indices.set(indicesHost.data(), hand4[0]);
+
+    auto banded = BandedMat<double>::create(n, indicesHost.size(), indices);
+    banded.col(0).fill(1, hand4[0]);
+    banded.col(1).fill(2, hand4[0]);
+
+    auto rhs = SimpleArray<double>::create(n, hand4[0]);
+    std::vector<double>  rhsHost = {1,2,10,4,5};
+    rhs.set(rhsHost.data(), hand4[0]);
+
+    BCGBanded<double> bcg(hand4, banded, rhs, nullptr, nullptr, 1e-6, 100);
+
+    auto result = SimpleArray<double>::create(n, hand4[0]);
+    result.fillRandom(hand4);
+
+    bcg.solveUnpreconditioned(result);
+
+    std::cout << "result = " << GpuOut<double>(result, hand4[0]) << std::endl;
+    std::cout << "expected: 85  -42, 22, -6, 5 " << std::endl;
 }
 
 template class BiCGSTAB<double>;
@@ -213,3 +305,7 @@ template class BiCGSTAB<float>;
 
 template class BCGBanded<double>;
 template class BCGBanded<float>;
+
+
+
+//multi streamed version.

@@ -44,9 +44,10 @@ template <typename Real, typename Int = uint32_t> //TODO: f and p should never c
 class BaseData {
 
 public:
-    mutable Mat<Real> pSizeX3,  fSizeX2;
+    mutable Mat<Real> pSizeX4,  fSizeX2;
     const SimpleArray<Real> f;
     const SimpleArray<Real> p;
+    mutable SimpleArray<Real> result;
 
     SparseCSC<Real, Int> maxB; /**< Sparse matrix in CSC format */
     std::shared_ptr<SparseCSC<Real, Int>> B;
@@ -62,11 +63,11 @@ public:
      *
      * @param maxB
      * @param fSizeX2
-     * @param pSizeX3
+     * @param pSizeX4
      * @param dim
      * @param delta
      */
-    BaseData(SparseCSC<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX3, const GridDim &dim, const Real3d &delta);
+    BaseData(SparseCSC<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX4, const GridDim &dim, const Real3d &delta);
 
     BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real * f, Real *p, Handle &hand);
 
@@ -90,7 +91,6 @@ template <typename Real, typename Int = uint32_t>
 class ImmersedEq {
 
     BaseData<Real, Int>& baseData;
-    SimpleArray<Real> RHSSpace;
     mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer;
 
 
@@ -104,6 +104,8 @@ class ImmersedEq {
                preMultResult, bool transposeThis, Handle &hand) const;
 
 public:
+    SimpleArray<Real> RHSSpace;
+
     std::shared_ptr<EigenDecompSolver<Real>> eds;
 
     ImmersedEq(BaseData<Real, Int> &baseData, Handle *hand4, double tolerance, size_t maxBCGIterations);
@@ -121,12 +123,10 @@ public:
      * @brief Computes the Left-Hand Side (LHS) operation: $x = A \cdot b$.
      * @param x Input vector.
      * @param result Output product vector.
-     * @param hand CUDA Handle for stream management.
      * @param multLinearOperationOutput Scaling for the addition.
      * @param preMultResult Initial scaling factor for x.
      */
-    void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, Handle &hand, const Singleton<Real> &multLinearOperationOutput,
-             const Singleton<Real> &preMultResult) const;
+    void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const;
 
     /**
      * This method creates the LHS matrix.  For large matrices this may be inefficient.
@@ -173,7 +173,7 @@ class ImmersedEqSolver:  public BiCGSTAB<Real> {
     /**
      * @brief Implementation of the matrix-vector multiplication for the BiCGSTAB loop.
      */
-    void mult(Vec<Real>& vec, Vec<Real>& product,  Handle& hand, Singleton<Real> multProduct,
+    void mult(Vec<Real>& vec, Vec<Real>& product, Singleton<Real> multProduct,
               Singleton<Real> preMultResult) const override;
 
 public:

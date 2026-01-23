@@ -65,22 +65,24 @@ private:
     /**
      * @brief Synchronizes a specific CUDA stream handle.
      */
-    void synch(const size_t streamInd) const;
+    void synch(const size_t streamInd = 0) const;
+
+    void synchAll() const;
 
     /**
      * @brief Checks if the squared $L_2$ norm of a vector is smaller than the tolerance.
      */
-    bool isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd);
+    bool isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd = 0);
 
     /**
      * @brief Sets the content of the destination vector to be equal to the source vector.
      */
-    void set(Vec<T> &dst, const Vec<T> &src, const size_t streamInd);
+    void set(Vec<T> &dst, const Vec<T> &src, const size_t streamInd = 0);
 
     /**
      * @brief Executes the BiCGSTAB P vector update: p = r + beta * (p - omega * v).
      */
-    void pUpdate(const size_t streamInd);
+    void pUpdate(const size_t streamInd = 0);
 
     /**
  *
@@ -88,8 +90,17 @@ private:
  */
     void preamble(Vec<T> &x);
 protected:
-    virtual void mult(Vec<T>& vec, Vec<T>& product, Handle& hand, Singleton<T> multProduct = Singleton<T>::ONE, Singleton<T> premultResult = Singleton<T>::ZERO) const = 0;
+    /**
+     * The linear operation on the LHS.  Note, all such operations must take place on stream[0].
+     * y <- multProduct A vec + premultResult * y
+     * @param vec
+     * @param product
+     * @param multProduct
+     * @param premultResult
+     */
+    virtual void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct = Singleton<T>::ONE, Singleton<T> premultResult = Singleton<T>::ZERO) const = 0;
 public:
+    constexpr static size_t numStreams = 4;
     virtual ~BiCGSTAB() = default;
 
     /**
@@ -109,14 +120,16 @@ public:
      * unpreconditioned BiCGSTAB algorithm.
      * @param x The result will be placed here.  This may be the same as the b vector if you'd like to overwrite it.
      */
-    void solveUnpreconditionedBiCGSTAB(Vec<T>& x);
+    void solveUnpreconditioned(Vec<T>& x);
+
+    void solveUnconditionedMultiStream(Vec<T> &initGuess);
 };
 
 template<typename T>
 class BCGBanded:  public BiCGSTAB<T>{
     BandedMat<T> A;
 
-    void mult(Vec<T>& vec, Vec<T>& product, Handle& hand, Singleton<T> multProduct,
+    void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct,
               Singleton<T> premultResult) const override;
 public:
     BCGBanded(Handle *hand4, BandedMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, const T &tolerance, size_t maxIterations);
@@ -136,6 +149,7 @@ public:
         size_t maxIterations = 1500
     );
 
+    static void test();
 
 };
 

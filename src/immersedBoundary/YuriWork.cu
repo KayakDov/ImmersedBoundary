@@ -77,7 +77,7 @@ void smallTestWithoutFiles() {
 
     constexpr size_t size = 12;
 
-    printL<Real>(dim, hand4);
+    // printL<Real>(dim, hand4);
 
     std::vector<Int> rowPointers = {};
     std::vector<Real> values = {};
@@ -96,6 +96,9 @@ void smallTestWithoutFiles() {
     imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data());
 
     std::cout << "LHS:\n" << GpuOut<Real>(imEq.LHSMat(hand4[0]), hand4[0]) << std::endl;
+    std::cout << "RHS:\n" << GpuOut<Real>(imEq.RHSSpace, hand4[0]) << std::endl;
+
+    cudaDeviceSynchronize();
 
     for(int i = 0; i < size; ++i) std::cout << result[i] << " ";
 }
@@ -141,6 +144,8 @@ int main(int argc, char *argv[]) {
     // testOnFiles(GridDim(2000, 2000, 1));
     smallTestWithoutFiles<double, int32_t>();
     // benchmark(3);
+    // BCGBanded<double>::test();
+
 
 }
 
