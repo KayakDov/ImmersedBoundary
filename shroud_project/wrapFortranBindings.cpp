@@ -12,64 +12,112 @@ extern "C" {
 // splicer begin C_definitions
 // splicer end C_definitions
 
-void FOR_solveDecompFloat(size_t frontBackPtr, const size_t fbLd,
-    size_t leftRightPtr, const size_t lrLd, size_t topBottomPtr,
-    const size_t tbLd, size_t fPtr, const size_t fStride, size_t xPtr,
-    const size_t xStride, const size_t height, const size_t width,
-    const size_t depth, size_t rowsXRowsPtr, const size_t rowsXRowsLd,
-    size_t colsXColsPtr, const size_t colsXColsLd,
-    size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
-    size_t maxDimX3Ptr, const size_t maxDimX3Ld)
+void FOR_initImmersedEq_0(const size_t height, const size_t width,
+    const size_t depth, const size_t fSize, const size_t nnzMaxB,
+    float *p, float *f, const double deltaX, const double deltaY,
+    const double deltaZ, const double tolerance,
+    const size_t maxBCGIterations)
 {
-    // splicer begin function.solveDecompFloat
-    solveDecompFloat(frontBackPtr, fbLd, leftRightPtr, lrLd,
-        topBottomPtr, tbLd, fPtr, fStride, xPtr, xStride, height, width,
-        depth, rowsXRowsPtr, rowsXRowsLd, colsXColsPtr, colsXColsLd,
-        depthsXDepthsPtr, depthsXDepthsLd, maxDimX3Ptr, maxDimX3Ld);
-    // splicer end function.solveDecompFloat
+    // splicer begin function.initImmersedEq_0
+    initImmersedEq<float, int32_t>(height, width, depth, fSize, nnzMaxB,
+        p, f, deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    // splicer end function.initImmersedEq_0
 }
 
-void FOR_solveDecompDouble(size_t frontBackPtr, const size_t fbLd,
-    size_t leftRightPtr, const size_t lrLd, size_t topBottomPtr,
-    const size_t tbLd, size_t fPtr, const size_t fStride, size_t xPtr,
-    const size_t xStride, const size_t height, const size_t width,
-    const size_t depth, size_t rowsXRowsPtr, const size_t rowsXRowsLd,
-    size_t colsXColsPtr, const size_t colsXColsLd,
-    size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
-    size_t maxDimX3Ptr, const size_t maxDimX3Ld)
+void FOR_initImmersedEq_1(const size_t height, const size_t width,
+    const size_t depth, const size_t fSize, const size_t nnzMaxB,
+    float *p, float *f, const double deltaX, const double deltaY,
+    const double deltaZ, const double tolerance,
+    const size_t maxBCGIterations)
 {
-    // splicer begin function.solveDecompDouble
-    solveDecompDouble(frontBackPtr, fbLd, leftRightPtr, lrLd,
-        topBottomPtr, tbLd, fPtr, fStride, xPtr, xStride, height, width,
-        depth, rowsXRowsPtr, rowsXRowsLd, colsXColsPtr, colsXColsLd,
-        depthsXDepthsPtr, depthsXDepthsLd, maxDimX3Ptr, maxDimX3Ld);
-    // splicer end function.solveDecompDouble
+    // splicer begin function.initImmersedEq_1
+    initImmersedEq<float, int64_t>(height, width, depth, fSize, nnzMaxB,
+        p, f, deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    // splicer end function.initImmersedEq_1
 }
 
-void FOR_solveBiCGSTAB_float(size_t APtr, const size_t aLd,
-    size_t indsPtrInt32_t, const size_t indsStride,
-    const size_t numInds, size_t bPtr, const size_t bStride,
-    const size_t bSize, size_t prealocatedSizeX7Ptr,
-    const size_t prealocatedLd, size_t maxIterations, float tolerance)
+void FOR_initImmersedEq_2(const size_t height, const size_t width,
+    const size_t depth, const size_t fSize, const size_t nnzMaxB,
+    double *p, double *f, const double deltaX, const double deltaY,
+    const double deltaZ, const double tolerance,
+    const size_t maxBCGIterations)
 {
-    // splicer begin function.solveBiCGSTAB_float
-    solveBiCGSTAB<float>(APtr, aLd, indsPtrInt32_t, indsStride, numInds,
-        bPtr, bStride, bSize, prealocatedSizeX7Ptr, prealocatedLd,
-        maxIterations, tolerance);
-    // splicer end function.solveBiCGSTAB_float
+    // splicer begin function.initImmersedEq_2
+    initImmersedEq<double, int32_t>(height, width, depth, fSize,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        maxBCGIterations);
+    // splicer end function.initImmersedEq_2
 }
 
-void FOR_solveBiCGSTAB_double(size_t APtr, const size_t aLd,
-    size_t indsPtrInt32_t, const size_t indsStride,
-    const size_t numInds, size_t bPtr, const size_t bStride,
-    const size_t bSize, size_t prealocatedSizeX7Ptr,
-    const size_t prealocatedLd, size_t maxIterations, double tolerance)
+void FOR_initImmersedEq_3(const size_t height, const size_t width,
+    const size_t depth, const size_t fSize, const size_t nnzMaxB,
+    double *p, double *f, const double deltaX, const double deltaY,
+    const double deltaZ, const double tolerance,
+    const size_t maxBCGIterations)
 {
-    // splicer begin function.solveBiCGSTAB_double
-    solveBiCGSTAB<double>(APtr, aLd, indsPtrInt32_t, indsStride,
-        numInds, bPtr, bStride, bSize, prealocatedSizeX7Ptr,
-        prealocatedLd, maxIterations, tolerance);
-    // splicer end function.solveBiCGSTAB_double
+    // splicer begin function.initImmersedEq_3
+    initImmersedEq<double, int64_t>(height, width, depth, fSize,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        maxBCGIterations);
+    // splicer end function.initImmersedEq_3
+}
+
+void FOR_solveImmersedEq(===>result c_prototype<===, size_t nnzB,
+    ===>rowPointersB c_prototype<===, ===>colPointersB c_prototype<===,
+    ===>valuesB c_prototype<===)
+{
+    // splicer begin function.solveImmersedEq
+    solveImmersedEq(nnzB);
+    // splicer end function.solveImmersedEq
+}
+
+void FOR_solveImmersedEq_bufferify(===>result c_prototype<===,
+    size_t nnzB, ===>rowPointersB c_prototype<===,
+    ===>colPointersB c_prototype<===, ===>valuesB c_prototype<===)
+{
+    // splicer begin function.solveImmersedEq_bufferify
+    solveImmersedEq(nnzB);
+    // splicer end function.solveImmersedEq_bufferify
+}
+
+void FOR_solveImmersedEq_0(float *result, size_t nnzB,
+    int32_t *rowPointersB, int32_t *colPointersB, float *valuesB,
+    bool multiStream)
+{
+    // splicer begin function.solveImmersedEq_0
+    solveImmersedEq<float, int32_t>(result, nnzB, rowPointersB,
+        colPointersB, valuesB, multiStream);
+    // splicer end function.solveImmersedEq_0
+}
+
+void FOR_solveImmersedEq_1(float *result, size_t nnzB,
+    int64_t *rowPointersB, int64_t *colPointersB, float *valuesB,
+    bool multiStream)
+{
+    // splicer begin function.solveImmersedEq_1
+    solveImmersedEq<float, int64_t>(result, nnzB, rowPointersB,
+        colPointersB, valuesB, multiStream);
+    // splicer end function.solveImmersedEq_1
+}
+
+void FOR_solveImmersedEq_2(double *result, size_t nnzB,
+    int32_t *rowPointersB, int32_t *colPointersB, double *valuesB,
+    bool multiStream)
+{
+    // splicer begin function.solveImmersedEq_2
+    solveImmersedEq<double, int32_t>(result, nnzB, rowPointersB,
+        colPointersB, valuesB, multiStream);
+    // splicer end function.solveImmersedEq_2
+}
+
+void FOR_solveImmersedEq_3(double *result, size_t nnzB,
+    int64_t *rowPointersB, int64_t *colPointersB, double *valuesB,
+    bool multiStream)
+{
+    // splicer begin function.solveImmersedEq_3
+    solveImmersedEq<double, int64_t>(result, nnzB, rowPointersB,
+        colPointersB, valuesB, multiStream);
+    // splicer end function.solveImmersedEq_3
 }
 
 }  // extern "C"

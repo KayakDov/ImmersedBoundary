@@ -6,7 +6,7 @@
 
 #include "BaseDataOut.hpp"
 #include "SparseCSC.cuh"
-#include "BaseData.h"
+#include "ImerssedEquation.h"
 #include "ToeplitzLaplacian.cuh"
 #include "../solvers/EigenDecompSolver.h"
 
@@ -77,26 +77,22 @@ void smallTestWithoutFiles() {
 
     constexpr size_t size = 12;
 
-    // printL<Real>(dim, hand4);
+    printL<Real>(dim, hand4);
 
-    std::vector<Int> rowPointers = {};
-    std::vector<Real> values = {};
+    std::vector<Int> rowPointers = {0};
+    std::vector<Real> values = {1};
     Int colOffsets [size + 1];
-    for (size_t i = 0; i < size + 1; ++i) colOffsets[i] = static_cast<Int>(0);
+    colOffsets[0] = 0;
+    for (size_t i = 1; i < size + 1; ++i) colOffsets[i] = static_cast<Int>(1);
 
     std::vector<Real> f = {1,2};
     std::vector<Real> p = {-2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
 
     Real result[size];
 
-    BaseData<Real, Int> baseData(dim, f.size(), values.size(), delta, f.data(), p.data(), hand4[0]);
-
-    ImmersedEq<Real, Int> imEq(baseData, hand4, 1e-6, 3);
+    ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 3);
 
     imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
-
-    std::cout << "LHS:\n" << GpuOut<Real>(imEq.LHSMat(hand4[0]), hand4[0]) << std::endl;
-    std::cout << "RHS:\n" << GpuOut<Real>(imEq.RHSSpace, hand4[0]) << std::endl;
 
     for(auto & i : result) std::cout << i << " ";
 }

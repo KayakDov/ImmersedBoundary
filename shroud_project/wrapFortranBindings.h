@@ -11,8 +11,11 @@
 
 #ifdef __cplusplus
 #include <cstddef>
+#include <cstdint>
 #else
 #include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
 #endif
 #include "typesFortranBindings.h"
 
@@ -26,35 +29,53 @@ extern "C" {
 // splicer begin C_declarations
 // splicer end C_declarations
 
-void FOR_solveDecompFloat(size_t frontBackPtr, const size_t fbLd,
-    size_t leftRightPtr, const size_t lrLd, size_t topBottomPtr,
-    const size_t tbLd, size_t fPtr, const size_t fStride, size_t xPtr,
-    const size_t xStride, const size_t height, const size_t width,
-    const size_t depth, size_t rowsXRowsPtr, const size_t rowsXRowsLd,
-    size_t colsXColsPtr, const size_t colsXColsLd,
-    size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
-    size_t maxDimX3Ptr, const size_t maxDimX3Ld);
+void FOR_initImmersedEq_0(const size_t height, const size_t width,
+    const size_t depth, const size_t fSize, const size_t nnzMaxB,
+    float *p, float *f, const double deltaX, const double deltaY,
+    const double deltaZ, const double tolerance,
+    const size_t maxBCGIterations);
 
-void FOR_solveDecompDouble(size_t frontBackPtr, const size_t fbLd,
-    size_t leftRightPtr, const size_t lrLd, size_t topBottomPtr,
-    const size_t tbLd, size_t fPtr, const size_t fStride, size_t xPtr,
-    const size_t xStride, const size_t height, const size_t width,
-    const size_t depth, size_t rowsXRowsPtr, const size_t rowsXRowsLd,
-    size_t colsXColsPtr, const size_t colsXColsLd,
-    size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
-    size_t maxDimX3Ptr, const size_t maxDimX3Ld);
+void FOR_initImmersedEq_1(const size_t height, const size_t width,
+    const size_t depth, const size_t fSize, const size_t nnzMaxB,
+    float *p, float *f, const double deltaX, const double deltaY,
+    const double deltaZ, const double tolerance,
+    const size_t maxBCGIterations);
 
-void FOR_solveBiCGSTAB_float(size_t APtr, const size_t aLd,
-    size_t indsPtrInt32_t, const size_t indsStride,
-    const size_t numInds, size_t bPtr, const size_t bStride,
-    const size_t bSize, size_t prealocatedSizeX7Ptr,
-    const size_t prealocatedLd, size_t maxIterations, float tolerance);
+void FOR_initImmersedEq_2(const size_t height, const size_t width,
+    const size_t depth, const size_t fSize, const size_t nnzMaxB,
+    double *p, double *f, const double deltaX, const double deltaY,
+    const double deltaZ, const double tolerance,
+    const size_t maxBCGIterations);
 
-void FOR_solveBiCGSTAB_double(size_t APtr, const size_t aLd,
-    size_t indsPtrInt32_t, const size_t indsStride,
-    const size_t numInds, size_t bPtr, const size_t bStride,
-    const size_t bSize, size_t prealocatedSizeX7Ptr,
-    const size_t prealocatedLd, size_t maxIterations, double tolerance);
+void FOR_initImmersedEq_3(const size_t height, const size_t width,
+    const size_t depth, const size_t fSize, const size_t nnzMaxB,
+    double *p, double *f, const double deltaX, const double deltaY,
+    const double deltaZ, const double tolerance,
+    const size_t maxBCGIterations);
+
+void FOR_solveImmersedEq(===>result c_prototype<===, size_t nnzB,
+    ===>rowPointersB c_prototype<===, ===>colPointersB c_prototype<===,
+    ===>valuesB c_prototype<===);
+
+void FOR_solveImmersedEq_bufferify(===>result c_prototype<===,
+    size_t nnzB, ===>rowPointersB c_prototype<===,
+    ===>colPointersB c_prototype<===, ===>valuesB c_prototype<===);
+
+void FOR_solveImmersedEq_0(float *result, size_t nnzB,
+    int32_t *rowPointersB, int32_t *colPointersB, float *valuesB,
+    bool multiStream);
+
+void FOR_solveImmersedEq_1(float *result, size_t nnzB,
+    int64_t *rowPointersB, int64_t *colPointersB, float *valuesB,
+    bool multiStream);
+
+void FOR_solveImmersedEq_2(double *result, size_t nnzB,
+    int32_t *rowPointersB, int32_t *colPointersB, double *valuesB,
+    bool multiStream);
+
+void FOR_solveImmersedEq_3(double *result, size_t nnzB,
+    int64_t *rowPointersB, int64_t *colPointersB, double *valuesB,
+    bool multiStream);
 
 #ifdef __cplusplus
 }

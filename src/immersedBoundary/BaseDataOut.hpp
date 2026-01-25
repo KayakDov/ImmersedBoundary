@@ -5,7 +5,7 @@
 #ifndef CUDABANDED_BASEDATAOUT_H
 #define CUDABANDED_BASEDATAOUT_H
 #include "Streamable.h"
-#include "BaseData.h"
+#include "ImerssedEquation.h"
 
 template <typename Real, typename Int = uint32_t>
 struct BaseDataOut {

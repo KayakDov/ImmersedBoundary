@@ -3,47 +3,54 @@ cxx_header: "FortranBindings.hpp"
 
 declarations:
   - decl: |
-      void solveDecompFloat(
-          size_t frontBackPtr, const size_t fbLd,
-          size_t leftRightPtr, const size_t lrLd,
-          size_t topBottomPtr, const size_t tbLd,
-          size_t fPtr, const size_t fStride,
-          size_t xPtr, const size_t xStride,
-          const size_t height, const size_t width, const size_t depth,
-          size_t rowsXRowsPtr, const size_t rowsXRowsLd,
-          size_t colsXColsPtr, const size_t colsXColsLd,
-          size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
-          size_t maxDimX3Ptr, const size_t maxDimX3Ld
-      )
-  - decl: |
-      void solveDecompDouble(
-                size_t frontBackPtr, const size_t fbLd,
-                size_t leftRightPtr, const size_t lrLd,
-                size_t topBottomPtr, const size_t tbLd,
-                size_t fPtr, const size_t fStride,
-                size_t xPtr, const size_t xStride,
-                const size_t height, const size_t width, const size_t depth,
-                size_t rowsXRowsPtr, const size_t rowsXRowsLd,
-                size_t colsXColsPtr, const size_t colsXColsLd,
-                size_t depthsXDepthsPtr, const size_t depthsXDepthsLd,
-                size_t maxDimX3Ptr, const size_t maxDimX3Ld
-            )
-  - decl: |
-      template<typename T>
-      void solveBiCGSTAB(
-          size_t APtr,
-          const size_t aLd,
-          size_t indsPtrInt32_t,
-          const size_t indsStride,
-          const size_t numInds,
-          size_t bPtr,
-          const size_t bStride,
-          const size_t bSize,
-          size_t prealocatedSizeX7Ptr,
-          const size_t prealocatedLd,
-          size_t maxIterations,
-          T tolerance
-      )
+        template<typename Real, typename Int>
+        void initImmersedEq(
+            const size_t height, 
+            const size_t width, 
+            const size_t depth,
+            const size_t fSize +implied(size(f)), 
+            const size_t nnzMaxB,
+            Real* p +intent(in) +rank(1), 
+            Real* f +intent(in) +rank(1),
+            const double deltaX, 
+            const double deltaY, 
+            const double deltaZ,
+            const double tolerance, 
+            const size_t maxBCGIterations
+        )
+    options:
+        fortran_generic: false
+        wrap_main: false
     cxx_template:
-      - instantiation: <float>
-      - instantiation: <double>
+      - instantiation: <float, int32_t>
+        options: { function_suffix: _float_i32 }
+      - instantiation: <float, int64_t>
+        options: { function_suffix: _float_i64 }
+      - instantiation: <double, int32_t>
+        options: { function_suffix: _double_i32 }
+      - instantiation: <double, int64_t>
+        options: { function_suffix: _double_i64 }
+
+
+  - decl: |
+      template<typename Real, typename Int>
+      void solveImmersedEq(
+          Real* result +intent(out) +rank(1),
+          size_t nnzB,
+          Int* rowPointersB +intent(in) +rank(1),
+          Int* colPointersB +intent(in) +rank(1),
+          Real* valuesB +intent(in) +rank(1),
+          bool multiStream = true
+      )
+    options:
+        fortran_generic: false
+        wrap_main: false
+    cxx_template:
+      - instantiation: <float, int32_t>
+        options: { function_suffix: _float_i32 }
+      - instantiation: <float, int64_t>
+        options: { function_suffix: _float_i64 }
+      - instantiation: <double, int32_t>
+        options: { function_suffix: _double_i32 }
+      - instantiation: <double, int64_t>
+        options: { function_suffix: _double_i64 }

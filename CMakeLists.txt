@@ -45,23 +45,6 @@ set(SHROUD_CPPf
         ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/utilFortranBindings.cpp
 )
 
-set(FORTRAN_WRAPPER
-        shroud_project/wrapffortranbindings.f90
-        src/poisson/ToeplitzLaplacian.cu
-        src/poisson/ToeplitzLaplacian.cuh
-        src/math/Real3d.cpp
-        src/math/Real3d.h
-        src/immersedBoundary/YuriWork.cu
-        src/deviceArrays/defFiles/Sparse.cu
-        src/deviceArrays/headers/SparseCSC.cuh
-        src/deviceArrays/defFiles/SimpleArray.cu
-        src/deviceArrays/headers/SimpleArray.h
-        src/immersedBoundary/BaseData.cpp
-        src/immersedBoundary/BaseData.h
-        src/immersedBoundary/IBDataFactory.hpp
-        src/immersedBoundary/BaseDataOut.hpp
-)
-
 add_library(CudaBandedLib STATIC
         ${ALL_SRC}
         ${SHROUD_CPPf}
