@@ -45,10 +45,16 @@ set(SHROUD_CPPf
         ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/utilFortranBindings.cpp
 )
 
+set(FORTRAN_WRAPPER ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/wrapffortranbindings.f90)
+
 add_library(CudaBandedLib STATIC
         ${ALL_SRC}
         ${SHROUD_CPPf}
         ${FORTRAN_WRAPPER}
+)
+
+set_target_properties(CudaBandedLib PROPERTIES
+        Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
 )
 
 add_executable(testMethods

@@ -240,8 +240,8 @@ void BiCGSTAB<T>::solveUnconditionedMultiStream(Vec<T>& initGuess) {
 
     const TimePoint end = std::chrono::steady_clock::now();
     const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
-    std::cout<< "BiCGSTAB #iterations = " << numIterations << std::endl;
-    std::cout << time << ", ";
+    // std::cout<< "BiCGSTAB #iterations = " << numIterations << std::endl;
+    // std::cout << time << ", ";
 }
 
 template<typename T>

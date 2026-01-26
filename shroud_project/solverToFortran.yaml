@@ -2,55 +2,112 @@ library: FortranBindings
 cxx_header: "FortranBindings.hpp"
 
 declarations:
+  # ==========================================
+  # Initialization: initImmersedEq (Generics kept)
+  # ==========================================
   - decl: |
-        template<typename Real, typename Int>
-        void initImmersedEq(
-            const size_t height, 
-            const size_t width, 
-            const size_t depth,
-            const size_t fSize +implied(size(f)), 
-            const size_t nnzMaxB,
-            Real* p +intent(in) +rank(1), 
-            Real* f +intent(in) +rank(1),
-            const double deltaX, 
-            const double deltaY, 
-            const double deltaZ,
-            const double tolerance, 
-            const size_t maxBCGIterations
-        )
-    options:
-        fortran_generic: false
-        wrap_main: false
-    cxx_template:
-      - instantiation: <float, int32_t>
-        options: { function_suffix: _float_i32 }
-      - instantiation: <float, int64_t>
-        options: { function_suffix: _float_i64 }
-      - instantiation: <double, int32_t>
-        options: { function_suffix: _double_i32 }
-      - instantiation: <double, int64_t>
-        options: { function_suffix: _double_i64 }
-
-
-  - decl: |
-      template<typename Real, typename Int>
-      void solveImmersedEq(
-          Real* result +intent(out) +rank(1),
-          size_t nnzB,
-          Int* rowPointersB +intent(in) +rank(1),
-          Int* colPointersB +intent(in) +rank(1),
-          Real* valuesB +intent(in) +rank(1),
-          bool multiStream = true
+      void initImmersedEq_d_i32(          
+          size_t height, 
+          size_t width, 
+          size_t depth,
+          size_t fSize +implied(size(f)), 
+          size_t nnzMaxB,
+          double* p +intent(in) +rank(1),          
+          double* f +intent(in) +rank(1),
+          double deltaX,
+          double deltaY,
+          double deltaZ,
+          double tolerance, 
+          size_t maxBCGIterations
       )
-    options:
-        fortran_generic: false
-        wrap_main: false
-    cxx_template:
-      - instantiation: <float, int32_t>
-        options: { function_suffix: _float_i32 }
-      - instantiation: <float, int64_t>
-        options: { function_suffix: _float_i64 }
-      - instantiation: <double, int32_t>
-        options: { function_suffix: _double_i32 }
-      - instantiation: <double, int64_t>
-        options: { function_suffix: _double_i64 }
+    
+  - decl: |
+      void initImmersedEq_s_i32(
+          size_t height, 
+          size_t width, 
+          size_t depth,
+          size_t fSize +implied(size(f)), 
+          size_t nnzMaxB,          
+          float* p +intent(in) +rank(1),          
+          float* f +intent(in) +rank(1),          
+          double deltaX, 
+          double deltaY, 
+          double deltaZ,          
+          double tolerance, 
+          size_t maxBCGIterations
+      )
+    
+  - decl: |
+      void initImmersedEq_d_i64(          
+          size_t height, 
+          size_t width, 
+          size_t depth,          
+          size_t fSize +implied(size(f)), 
+          size_t nnzMaxB,          
+          double* p +intent(in) +rank(1),          
+          double* f +intent(in) +rank(1),          
+          double deltaX, 
+          double deltaY, 
+          double deltaZ,          
+          double tolerance, 
+          size_t maxBCGIterations
+      )
+    
+  - decl: |
+      void initImmersedEq_s_i64(
+          size_t height, 
+          size_t width, 
+          size_t depth,          
+          size_t fSize +implied(size(f)), 
+          size_t nnzMaxB,          
+          float* p +intent(in) +rank(1),
+          float* f +intent(in) +rank(1),
+          double deltaX, 
+          double deltaY, 
+          double deltaZ,          
+          double tolerance, 
+          size_t maxBCGIterations
+      )
+    
+  # ==========================================
+  # Solver: solveImmersedEq (Specific calls only)
+  # ==========================================
+  - decl: |
+      void solveImmersedEq_d_i32(
+          double* result +intent(out) +rank(1),
+          size_t nnzB,          
+          int32_t* rowPointersB +intent(in) +rank(1),          
+          int32_t* colPointersB +intent(in) +rank(1),          
+          double* valuesB +intent(in) +rank(1),
+          bool multiStream
+      )
+
+  - decl: |
+      void solveImmersedEq_s_i32(
+          float* result +intent(out) +rank(1),
+          size_t nnzB,          
+          int32_t* rowPointersB +intent(in) +rank(1),          
+          int32_t* colPointersB +intent(in) +rank(1),          
+          float* valuesB +intent(in) +rank(1),
+          bool multiStream
+      )
+
+  - decl: |
+      void solveImmersedEq_d_i64(
+          double* result +intent(out) +rank(1),
+          size_t nnzB,          
+          int64_t* rowPointersB +intent(in) +rank(1),          
+          int64_t* colPointersB +intent(in) +rank(1),          
+          double* valuesB +intent(in) +rank(1),
+          bool multiStream
+      )
+
+  - decl: |
+      void solveImmersedEq_s_i64(
+          float* result +intent(out) +rank(1),
+          size_t nnzB,          
+          int64_t* rowPointersB +intent(in) +rank(1),          
+          int64_t* colPointersB +intent(in) +rank(1),          
+          float* valuesB +intent(in) +rank(1),
+          bool multiStream
+      )

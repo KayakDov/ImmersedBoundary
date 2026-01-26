@@ -29,52 +29,40 @@ extern "C" {
 // splicer begin C_declarations
 // splicer end C_declarations
 
-void FOR_initImmersedEq_0(const size_t height, const size_t width,
-    const size_t depth, const size_t fSize, const size_t nnzMaxB,
-    float *p, float *f, const double deltaX, const double deltaY,
-    const double deltaZ, const double tolerance,
-    const size_t maxBCGIterations);
+void FOR_initImmersedEq_d_i32(size_t height, size_t width, size_t depth,
+    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
+    double deltaY, double deltaZ, double tolerance,
+    size_t maxBCGIterations);
 
-void FOR_initImmersedEq_1(const size_t height, const size_t width,
-    const size_t depth, const size_t fSize, const size_t nnzMaxB,
-    float *p, float *f, const double deltaX, const double deltaY,
-    const double deltaZ, const double tolerance,
-    const size_t maxBCGIterations);
+void FOR_initImmersedEq_s_i32(size_t height, size_t width, size_t depth,
+    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
+    double deltaY, double deltaZ, double tolerance,
+    size_t maxBCGIterations);
 
-void FOR_initImmersedEq_2(const size_t height, const size_t width,
-    const size_t depth, const size_t fSize, const size_t nnzMaxB,
-    double *p, double *f, const double deltaX, const double deltaY,
-    const double deltaZ, const double tolerance,
-    const size_t maxBCGIterations);
+void FOR_initImmersedEq_d_i64(size_t height, size_t width, size_t depth,
+    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
+    double deltaY, double deltaZ, double tolerance,
+    size_t maxBCGIterations);
 
-void FOR_initImmersedEq_3(const size_t height, const size_t width,
-    const size_t depth, const size_t fSize, const size_t nnzMaxB,
-    double *p, double *f, const double deltaX, const double deltaY,
-    const double deltaZ, const double tolerance,
-    const size_t maxBCGIterations);
+void FOR_initImmersedEq_s_i64(size_t height, size_t width, size_t depth,
+    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
+    double deltaY, double deltaZ, double tolerance,
+    size_t maxBCGIterations);
 
-void FOR_solveImmersedEq(===>result c_prototype<===, size_t nnzB,
-    ===>rowPointersB c_prototype<===, ===>colPointersB c_prototype<===,
-    ===>valuesB c_prototype<===);
-
-void FOR_solveImmersedEq_bufferify(===>result c_prototype<===,
-    size_t nnzB, ===>rowPointersB c_prototype<===,
-    ===>colPointersB c_prototype<===, ===>valuesB c_prototype<===);
-
-void FOR_solveImmersedEq_0(float *result, size_t nnzB,
-    int32_t *rowPointersB, int32_t *colPointersB, float *valuesB,
-    bool multiStream);
-
-void FOR_solveImmersedEq_1(float *result, size_t nnzB,
-    int64_t *rowPointersB, int64_t *colPointersB, float *valuesB,
-    bool multiStream);
-
-void FOR_solveImmersedEq_2(double *result, size_t nnzB,
+void FOR_solveImmersedEq_d_i32(double *result, size_t nnzB,
     int32_t *rowPointersB, int32_t *colPointersB, double *valuesB,
     bool multiStream);
 
-void FOR_solveImmersedEq_3(double *result, size_t nnzB,
+void FOR_solveImmersedEq_s_i32(float *result, size_t nnzB,
+    int32_t *rowPointersB, int32_t *colPointersB, float *valuesB,
+    bool multiStream);
+
+void FOR_solveImmersedEq_d_i64(double *result, size_t nnzB,
     int64_t *rowPointersB, int64_t *colPointersB, double *valuesB,
+    bool multiStream);
+
+void FOR_solveImmersedEq_s_i64(float *result, size_t nnzB,
+    int64_t *rowPointersB, int64_t *colPointersB, float *valuesB,
     bool multiStream);
 
 #ifdef __cplusplus

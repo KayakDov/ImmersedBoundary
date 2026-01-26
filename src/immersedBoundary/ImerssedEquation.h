@@ -44,12 +44,11 @@ template <typename Real, typename Int = uint32_t> //TODO: f and p should never c
 class BaseData {
 
 public:
-    std::shared_ptr<Handle[]> hand4;//TODO: make things more private.
 
     mutable Mat<Real> pSizeX4,  fSizeX2;
-    const SimpleArray<Real> f;
-    const SimpleArray<Real> p;
-    mutable SimpleArray<Real> result;
+    const SimpleArray<Real> f = fSizeX2.col(0, true);
+    const SimpleArray<Real> p = pSizeX4.col(0, true);
+    mutable SimpleArray<Real> result = pSizeX4.col(3, true);
 
     SparseCSC<Real, Int> maxB; /**< Sparse matrix in CSC format */
     std::shared_ptr<SparseCSC<Real, Int>> B;
@@ -59,8 +58,7 @@ public:
     /**
      * @brief Initializes GPU memory and loads data from FileMeta.
      */
-    BaseData(const FileMeta &meta, const GridDim& dim);
-
+    BaseData(const FileMeta &meta, const GridDim &dim, Handle &hand);
     /**
      *
      * @param maxB
@@ -71,18 +69,18 @@ public:
      */
     BaseData(SparseCSC<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX4, const GridDim &dim, const Real3d &delta);
 
-    BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real * f, Real *p);
+    BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle &hand);
 
     /**
      * @brief Resets all the base values. TODO: ask if modifications to B will be small instead of a total rewrite.
      */
-    void setB(size_t nnzB, Int * colsB, Int * rowsB, Real * valsB);
+    void setB(size_t nnzB, Int *colsB, Int *rowsB, Real *valsB, Handle &hand);
 
     SimpleArray<Real> allocatedFSize() const;
 
     SimpleArray<Real> allocatedPSize(bool ind) const;
 
-    void printDenseB() const;
+    void printDenseB(Handle &hand) const;
 };
 
 
@@ -94,21 +92,26 @@ template <typename Real, typename Int> class ImmersedEqSolver;
 template <typename Real, typename Int = uint32_t>
 class ImmersedEq {
 
+    std::shared_ptr<Handle[]> hand5{new Handle[5]};
+
     friend ImmersedEqSolver<Real, Int>;
+
+public:
     BaseData<Real, Int> baseData;
+private:
 
-    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer;
+    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer{nullptr};
 
-    Mat<Real> allocatedRHSHeightX7;
-    Vec<Real> allocated9;
+    Mat<Real> allocatedRHSHeightX7 = Mat<Real>::create(baseData.p.size(), 7);
+    Vec<Real> allocated9 = Vec<Real>::create(9, hand5[0]);
     Real tolerance;
     size_t maxIterations;
 
     void multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeThis) const;
 
-    SimpleArray<Real> RHSSpace;
+    SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(baseData.p.size(), hand5[0]);
 
-    std::shared_ptr<EigenDecompSolver<Real>> eds;
+    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(baseData.dim, baseData.allocatedPSize(0), &hand5[0], baseData.delta);
 
     ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations);
 

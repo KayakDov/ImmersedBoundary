@@ -12,112 +12,88 @@ extern "C" {
 // splicer begin C_definitions
 // splicer end C_definitions
 
-void FOR_initImmersedEq_0(const size_t height, const size_t width,
-    const size_t depth, const size_t fSize, const size_t nnzMaxB,
-    float *p, float *f, const double deltaX, const double deltaY,
-    const double deltaZ, const double tolerance,
-    const size_t maxBCGIterations)
+void FOR_initImmersedEq_d_i32(size_t height, size_t width, size_t depth,
+    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
+    double deltaY, double deltaZ, double tolerance,
+    size_t maxBCGIterations)
 {
-    // splicer begin function.initImmersedEq_0
-    initImmersedEq<float, int32_t>(height, width, depth, fSize, nnzMaxB,
-        p, f, deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
-    // splicer end function.initImmersedEq_0
+    // splicer begin function.initImmersedEq_d_i32
+    initImmersedEq_d_i32(height, width, depth, fSize, nnzMaxB, p, f,
+        deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    // splicer end function.initImmersedEq_d_i32
 }
 
-void FOR_initImmersedEq_1(const size_t height, const size_t width,
-    const size_t depth, const size_t fSize, const size_t nnzMaxB,
-    float *p, float *f, const double deltaX, const double deltaY,
-    const double deltaZ, const double tolerance,
-    const size_t maxBCGIterations)
+void FOR_initImmersedEq_s_i32(size_t height, size_t width, size_t depth,
+    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
+    double deltaY, double deltaZ, double tolerance,
+    size_t maxBCGIterations)
 {
-    // splicer begin function.initImmersedEq_1
-    initImmersedEq<float, int64_t>(height, width, depth, fSize, nnzMaxB,
-        p, f, deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
-    // splicer end function.initImmersedEq_1
+    // splicer begin function.initImmersedEq_s_i32
+    initImmersedEq_s_i32(height, width, depth, fSize, nnzMaxB, p, f,
+        deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    // splicer end function.initImmersedEq_s_i32
 }
 
-void FOR_initImmersedEq_2(const size_t height, const size_t width,
-    const size_t depth, const size_t fSize, const size_t nnzMaxB,
-    double *p, double *f, const double deltaX, const double deltaY,
-    const double deltaZ, const double tolerance,
-    const size_t maxBCGIterations)
+void FOR_initImmersedEq_d_i64(size_t height, size_t width, size_t depth,
+    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
+    double deltaY, double deltaZ, double tolerance,
+    size_t maxBCGIterations)
 {
-    // splicer begin function.initImmersedEq_2
-    initImmersedEq<double, int32_t>(height, width, depth, fSize,
-        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
-        maxBCGIterations);
-    // splicer end function.initImmersedEq_2
+    // splicer begin function.initImmersedEq_d_i64
+    initImmersedEq_d_i64(height, width, depth, fSize, nnzMaxB, p, f,
+        deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    // splicer end function.initImmersedEq_d_i64
 }
 
-void FOR_initImmersedEq_3(const size_t height, const size_t width,
-    const size_t depth, const size_t fSize, const size_t nnzMaxB,
-    double *p, double *f, const double deltaX, const double deltaY,
-    const double deltaZ, const double tolerance,
-    const size_t maxBCGIterations)
+void FOR_initImmersedEq_s_i64(size_t height, size_t width, size_t depth,
+    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
+    double deltaY, double deltaZ, double tolerance,
+    size_t maxBCGIterations)
 {
-    // splicer begin function.initImmersedEq_3
-    initImmersedEq<double, int64_t>(height, width, depth, fSize,
-        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
-        maxBCGIterations);
-    // splicer end function.initImmersedEq_3
+    // splicer begin function.initImmersedEq_s_i64
+    initImmersedEq_s_i64(height, width, depth, fSize, nnzMaxB, p, f,
+        deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    // splicer end function.initImmersedEq_s_i64
 }
 
-void FOR_solveImmersedEq(===>result c_prototype<===, size_t nnzB,
-    ===>rowPointersB c_prototype<===, ===>colPointersB c_prototype<===,
-    ===>valuesB c_prototype<===)
-{
-    // splicer begin function.solveImmersedEq
-    solveImmersedEq(nnzB);
-    // splicer end function.solveImmersedEq
-}
-
-void FOR_solveImmersedEq_bufferify(===>result c_prototype<===,
-    size_t nnzB, ===>rowPointersB c_prototype<===,
-    ===>colPointersB c_prototype<===, ===>valuesB c_prototype<===)
-{
-    // splicer begin function.solveImmersedEq_bufferify
-    solveImmersedEq(nnzB);
-    // splicer end function.solveImmersedEq_bufferify
-}
-
-void FOR_solveImmersedEq_0(float *result, size_t nnzB,
-    int32_t *rowPointersB, int32_t *colPointersB, float *valuesB,
-    bool multiStream)
-{
-    // splicer begin function.solveImmersedEq_0
-    solveImmersedEq<float, int32_t>(result, nnzB, rowPointersB,
-        colPointersB, valuesB, multiStream);
-    // splicer end function.solveImmersedEq_0
-}
-
-void FOR_solveImmersedEq_1(float *result, size_t nnzB,
-    int64_t *rowPointersB, int64_t *colPointersB, float *valuesB,
-    bool multiStream)
-{
-    // splicer begin function.solveImmersedEq_1
-    solveImmersedEq<float, int64_t>(result, nnzB, rowPointersB,
-        colPointersB, valuesB, multiStream);
-    // splicer end function.solveImmersedEq_1
-}
-
-void FOR_solveImmersedEq_2(double *result, size_t nnzB,
+void FOR_solveImmersedEq_d_i32(double *result, size_t nnzB,
     int32_t *rowPointersB, int32_t *colPointersB, double *valuesB,
     bool multiStream)
 {
-    // splicer begin function.solveImmersedEq_2
-    solveImmersedEq<double, int32_t>(result, nnzB, rowPointersB,
-        colPointersB, valuesB, multiStream);
-    // splicer end function.solveImmersedEq_2
+    // splicer begin function.solveImmersedEq_d_i32
+    solveImmersedEq_d_i32(result, nnzB, rowPointersB, colPointersB,
+        valuesB, multiStream);
+    // splicer end function.solveImmersedEq_d_i32
 }
 
-void FOR_solveImmersedEq_3(double *result, size_t nnzB,
+void FOR_solveImmersedEq_s_i32(float *result, size_t nnzB,
+    int32_t *rowPointersB, int32_t *colPointersB, float *valuesB,
+    bool multiStream)
+{
+    // splicer begin function.solveImmersedEq_s_i32
+    solveImmersedEq_s_i32(result, nnzB, rowPointersB, colPointersB,
+        valuesB, multiStream);
+    // splicer end function.solveImmersedEq_s_i32
+}
+
+void FOR_solveImmersedEq_d_i64(double *result, size_t nnzB,
     int64_t *rowPointersB, int64_t *colPointersB, double *valuesB,
     bool multiStream)
 {
-    // splicer begin function.solveImmersedEq_3
-    solveImmersedEq<double, int64_t>(result, nnzB, rowPointersB,
-        colPointersB, valuesB, multiStream);
-    // splicer end function.solveImmersedEq_3
+    // splicer begin function.solveImmersedEq_d_i64
+    solveImmersedEq_d_i64(result, nnzB, rowPointersB, colPointersB,
+        valuesB, multiStream);
+    // splicer end function.solveImmersedEq_d_i64
+}
+
+void FOR_solveImmersedEq_s_i64(float *result, size_t nnzB,
+    int64_t *rowPointersB, int64_t *colPointersB, float *valuesB,
+    bool multiStream)
+{
+    // splicer begin function.solveImmersedEq_s_i64
+    solveImmersedEq_s_i64(result, nnzB, rowPointersB, colPointersB,
+        valuesB, multiStream);
+    // splicer end function.solveImmersedEq_s_i64
 }
 
 }  // extern "C"

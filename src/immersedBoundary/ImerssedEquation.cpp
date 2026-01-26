@@ -20,25 +20,20 @@ FileMeta::FileMeta(std::ifstream &xFile, std::ifstream &bFile) : xFile(xFile), b
 }
 
 template<typename Real, typename Int>
-BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim) :
-    hand4(new Handle[4]),
+BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle& hand) :
+
     pSizeX4(Mat<Real>::create(meta.pSize, 4)),
     fSizeX2(Mat<Real>::create(meta.fSize, 2)),
-    p(pSizeX4.col(0, true)),
-    f(fSizeX2.col(0, true)),
-    result(pSizeX4.col(3, true)),
-    maxB(SparseCSC<Real, Int>::create(
-    meta.nnz, meta.bRows, meta.bCols,
-    hand4[0])),
+    maxB(SparseCSC<Real, Int>::create(meta.nnz, meta.bRows, meta.bCols, hand)),
     delta(1.0 / dim.cols, 1.0 / dim.rows, 1.0 / dim.layers),
     dim(dim)
 {
     auto p = pSizeX4.col(0);
-    meta.xFile >> GpuIn<Real>(p, hand4[0], false, true);
+    meta.xFile >> GpuIn<Real>(p, hand, false, true);
     auto f = fSizeX2.col(0);
-    meta.xFile >> GpuIn<Real>(f, hand4[0], false, true);
+    meta.xFile >> GpuIn<Real>(f, hand, false, true);
 
-    meta.bFile >> GpuIn<Real>(maxB.values, hand4[0], false, true);
+    meta.bFile >> GpuIn<Real>(maxB.values, hand, false, true);
 }
 
 template<typename Real, typename Int>
@@ -48,32 +43,28 @@ BaseData<Real, Int>::BaseData(
     Mat<Real> pSizeX4,
     const GridDim &dim,
     const Real3d &delta
-) : hand4(new Handle[4]),
-    pSizeX4(pSizeX4),
+) : pSizeX4(pSizeX4),
     fSizeX2(fSizeX2),
-    f(fSizeX2.col(0, true)),
-    p(pSizeX4.col(0, true)),
-    result(pSizeX4.col(3, true)),
     maxB(maxB),
     dim(dim),
     delta(delta) {
 }
 
 template<typename Real, typename Int>
-BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p) :
+BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle& hand) :
     BaseData(
-        SparseCSC<Real, Int>::create(nnzMaxB, fSize, dim.volume(), hand4[0]),
+        SparseCSC<Real, Int>::create(nnzMaxB, fSize, dim.volume(), hand),
         Mat<Real>::create(fSize, 2),
         Mat<Real>::create(dim.volume(), 4),
         dim,
         delta
     ) {
-    this->fSizeX2.col(0).set(f, hand4[0]);
-    this->pSizeX4.col(0).set(p, hand4[0]);
+    this->fSizeX2.col(0).set(f, hand);
+    this->pSizeX4.col(0).set(p, hand);
 }
 
 template<typename Real, typename Int>
-void BaseData<Real, Int>::setB(size_t nnzB, Int *colsB, Int *rowsB, Real *valsB) {
+void BaseData<Real, Int>::setB(size_t nnzB, Int *colsB, Int *rowsB, Real *valsB, Handle& hand) {
     if (nnzB > maxB.nnz()) {
         throw std::invalid_argument(
             "BaseData::setB - NNZ Overflow: Requested nnzB (" + std::to_string(nnzB) +
@@ -86,12 +77,12 @@ void BaseData<Real, Int>::setB(size_t nnzB, Int *colsB, Int *rowsB, Real *valsB)
             maxB.values.subAray(0, nnzB),
             maxB.rowPointers.subAray(0, nnzB),
             maxB.columnOffsets,
-            hand4[0]
+            hand
         )
     );
-    B->columnOffsets.set(colsB, hand4[0]);
-    B->rowPointers.set(rowsB, hand4[0]);
-    B->values.set(valsB, hand4[0]);
+    B->columnOffsets.set(colsB, hand);
+    B->rowPointers.set(rowsB, hand);
+    B->values.set(valsB, hand);
 }
 
 template<typename Real, typename Int>
@@ -105,10 +96,10 @@ SimpleArray<Real> BaseData<Real, Int>::allocatedPSize(bool ind) const {
 }
 
 template<typename Real, typename Int>
-void BaseData<Real, Int>::printDenseB() const {
+void BaseData<Real, Int>::printDenseB(Handle& hand) const {
     auto denseB = Mat<Real>::create(B->rows, B->cols);
-    B->getDense(denseB, hand4[0]);
-    std::cout << GpuOut<Real>(denseB, hand4[0]) << std::endl;
+    B->getDense(denseB, hand);
+    std::cout << GpuOut<Real>(denseB, hand) << std::endl;
 }
 
 template<typename Real>
@@ -134,64 +125,61 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(
 template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeThis) const {
 
-    size_t multBufferSizeNeeded = baseData.B->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeThis, baseData.hand4[0]);
-    if (!sparseMultBuffer || multBufferSizeNeeded > sparseMultBuffer->size()) sparseMultBuffer = std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(1.5 * multBufferSizeNeeded, baseData.hand4[0]));
+    size_t multBufferSizeNeeded = baseData.B->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeThis, hand5[0]);
+    if (!sparseMultBuffer || multBufferSizeNeeded > sparseMultBuffer->size()) sparseMultBuffer = std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(1.5 * multBufferSizeNeeded, hand5[0]));
 
-    baseData.B->mult(vec, result, multProduct, preMultResult, transposeThis, *sparseMultBuffer, baseData.hand4[0]);
+    baseData.B->mult(vec, result, multProduct, preMultResult, transposeThis, *sparseMultBuffer, hand5[0]);
 }
 
 template<typename Real, typename Int>
 ImmersedEq<Real, Int>::ImmersedEq(BaseData<Real, Int> baseData, double tolerance, const size_t maxBCGIterations) :
     baseData(baseData),
-    RHSSpace(SimpleArray<Real>::create(baseData.p.size(), baseData.hand4[0])),
-    sparseMultBuffer(nullptr),
-    allocatedRHSHeightX7(Mat<Real>::create(baseData.p.size(), 7)),
-    allocated9(Vec<Real>::create(9, baseData.hand4[0])),
     tolerance(tolerance),
-    maxIterations(maxBCGIterations),
-    eds(createEDS(baseData.dim, baseData.allocatedPSize(0), &baseData.hand4[0], baseData.delta)) {
+    maxIterations(maxBCGIterations){
 }
 
 template<typename Real, typename Int>
 ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta, double tolerance, size_t maxBCGIterations) :
-    ImmersedEq(
-        BaseData<Real, Int>(dim, fSize, nnzMaxB, delta, f, p),
-        tolerance,
-        maxBCGIterations
-    ) {
+    baseData(dim, fSize, nnzMaxB, delta, f, p, hand5[0]),
+    tolerance(tolerance),
+    maxIterations(maxBCGIterations)
+    {
 }
 
 template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
 void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result,
                                      const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const {
-    //TODO:maybe use a 2nd handle for scaling x?
+
     // std::cout << "x1 = " << GpuOut<Real>(x, hand) << std::endl;
     // std::cout << "Debugging LHS mult" << std::endl;
 
     auto fSize = baseData.allocatedFSize();
     auto pSize0 = baseData.allocatedPSize(0);
-    auto invLXBTBx = baseData.allocatedPSize(1);
+    auto invLBTBx = baseData.allocatedPSize(1);
 
 
     multB(x, fSize, Singleton<Real>::ONE, Singleton<Real>::ZERO, false);// f <- B * x
 
     multB(fSize, pSize0, Singleton<Real>::TWO, Singleton<Real>::ZERO, true);// p <- B^T * (B * x)
 
-    eds->solve(invLXBTBx, pSize0, baseData.hand4[0]); // workspace2 <- L^-1 * B^T * (B * x)
+    eds->solve(invLBTBx, pSize0, hand5[0]); // workspace2 <- L^-1 * B^T * (B * x)
 
-    invLXBTBx.add(x, &Singleton<Real>::ONE, &baseData.hand4[0]);
+    invLBTBx.add(x, &Singleton<Real>::ONE, &hand5[0]);
 
-    auto& invLxBTBxPlusX = invLXBTBx;
+    auto& invLxBTBxPlusX = invLBTBx;
 
-    result.mult(preMultResult, &baseData.hand4[0]); //x <- x * preMultX
+    result.mult(preMultResult, &hand5[4]); //x <- x * preMultX
+    Event preMult;
+    preMult.record(hand5[4]);
+    preMult.wait(hand5[0]);
 
-    result.add(invLxBTBxPlusX, &multLinearOperationOutput, &baseData.hand4[0]); //result <- result + preMultResult * x * preMultX
+    result.add(invLxBTBxPlusX, &multLinearOperationOutput, &hand5[0]); //result <- result + preMultResult * x * preMultX
 }
 
 template<typename Real, typename Int>
 SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
     auto id = SquareMat<Real>::create(baseData.p.size());
-    id.setToIdentity(baseData.hand4[0]);
+    id.setToIdentity(hand5[0]);
 
     auto result = SquareMat<Real>::create(baseData.p.size());
     for (size_t i = 0; i < baseData.p.size(); ++i) {
@@ -209,12 +197,12 @@ SimpleArray<Real> &ImmersedEq<Real, Int>::RHS(const bool reset) {
 
         auto pSize = baseData.allocatedPSize(0);
 
-        pSize.set(baseData.p, baseData.hand4[0]);
+        pSize.set(baseData.p, hand5[0]);
 
         multB(f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
         //p <- BT*f+p
 
-        eds->solve(RHSSpace, pSize, baseData.hand4[0]);
+        eds->solve(RHSSpace, pSize, hand5[0]);
     }
     return RHSSpace;
 }
@@ -223,7 +211,7 @@ SimpleArray<Real> &ImmersedEq<Real, Int>::RHS(const bool reset) {
 template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::solve(
     Real *result,
-    size_t nnzB,
+    const size_t nnzB,
     Int *rowPointersB,
     Int *colPointersB,
     Real *valuesB,
@@ -231,7 +219,7 @@ void ImmersedEq<Real, Int>::solve(
 ) {
 
     auto resultDevice = solve(nnzB, rowPointersB, colPointersB, valuesB, multiStream);
-    resultDevice.get(result, baseData.hand4[0]);
+    resultDevice.get(result, hand5[0]);
 }
 
 template<typename Real, typename Int>
@@ -242,12 +230,12 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     Real *valuesB,
     const bool multithreadBCG
 ) {
-    baseData.setB(nnzB, colPointersB, rowPointersB, valuesB);
+    baseData.setB(nnzB, colPointersB, rowPointersB, valuesB, hand5[0]);
     RHS(true);
 
     //TODO: should the initial guess be random, or the RHS of the equation?
 
-    baseData.result.set(RHSSpace, baseData.hand4[0]);
+    baseData.result.set(RHSSpace, hand5[0]);
     // baseData.result.fillRandom(hand4);
 
     ImmersedEqSolver<Real, Int> solver(*this, allocatedRHSHeightX7, allocated9, tolerance, maxIterations);
@@ -267,7 +255,7 @@ ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
     Real tolerance,
     size_t maxIterations
 )
-    : BiCGSTAB<Real>(imEq.RHS(false), imEq.baseData.hand4.get(), &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
+    : BiCGSTAB<Real>(imEq.RHS(false), imEq.hand5.get(), &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
       imEq(imEq) {
 }
 

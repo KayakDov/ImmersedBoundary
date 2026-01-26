@@ -1,77 +1,80 @@
-program test_bicgstab_device
+program test_immersed_eq
     use iso_c_binding
-    use cudafor                         ! PGI/NVHPC CUDA Fortran module
-    use fortranbindings_mod             ! <--- ADDED: Use the Shroud module
+    use fortranbindings_mod
     implicit none
 
-    integer(C_SIZE_T), parameter :: n = 3
-    integer(C_SIZE_T), parameter :: numDiags = 3
 
-    real(c_double), device, allocatable, target :: A_d(:,:)
-    integer(c_int32_t), device, allocatable, target :: inds_d(:)
-    real(c_double), device, allocatable, target :: b_d(:)
-    real(c_double), device, allocatable, target :: workspace_d(:,:)
+    ! Parameters matching your C++ test
+    integer(C_SIZE_T), parameter :: height = 3
+    integer(C_SIZE_T), parameter :: width  = 2
+    integer(C_SIZE_T), parameter :: depth  = 2
+    integer(C_SIZE_T), parameter :: total_size = height * width * depth ! 12
 
-    integer :: istat
+    ! Data arrays
+    real(C_DOUBLE) :: p(total_size)
+    real(C_DOUBLE) :: f(2)
+    real(C_DOUBLE) :: result(total_size)
 
-    integer(c_size_t) :: A_addr, inds_addr, b_addr, work_addr
+    ! Sparse Matrix data (CSR format)
+    integer(C_SIZE_T), parameter :: nnz = 1
+    integer(C_INT32_T) :: rowPointers(nnz)
+    integer(C_INT32_T) :: colOffsets(total_size + 1)
+    real(C_DOUBLE)     :: values(nnz)
 
-    ! Leading dimensions
-    integer(c_size_t), parameter :: aLd = n
-    integer(c_size_t), parameter :: bStride = 1
-    integer(c_size_t), parameter :: indsStride = 1
-    integer(c_size_t), parameter :: workLd = n
+    integer(C_SIZE_T) :: i
 
-    integer(c_size_t), parameter :: maxIter = 1000
-    real(c_double),   parameter :: tol = 1d-8
+    integer :: ierr
+    ! ...
+    print *, "Activating GPU..."
+    ierr = cudaFree(0) ! Standard trick to initialize CUDA context
 
-    real(c_double) :: b_h(n)
-    ! -------------------------------
-    ! Allocate device memory
-    ! -------------------------------
-    allocate(A_d(n, numDiags))
-    allocate(inds_d(numDiags))
-    allocate(b_d(n))
-    allocate(workspace_d(n, 7))
+    ! 1. Initialize data matching your C++ vectors
+    f = [1.0_C_DOUBLE, 2.0_C_DOUBLE]
 
-    ! -------------------------------
-    ! Initialize test values on host
-    ! -------------------------------
-    A_d = reshape([1d0, 3d0, 5d0,   &
-                   2d0, 5d0, 6d0,   &
-                   1d0, 2d0, 3d0],  &
-            shape(A_d))
+    ! p = {-2, 0, ..., 0, 2}
+    p = 0.0_C_DOUBLE
+    p(1) = -2.0_C_DOUBLE
+    p(total_size) = 2.0_C_DOUBLE
 
-    inds_d = [1_c_int, -1_c_int, 0_c_int]
+    ! 2. Initialize Sparse Matrix (matching C++ logic)
+    ! Note: We use 0 and 1 explicitly because the C++ solver expects 0-based indices
+    values(1) = 1.0_C_DOUBLE
+    rowPointers(1) = 0
 
-    b_d = [4d0, 12d0, 9d0]
+    colOffsets(1) = 0
+    do i = 2, total_size + 1
+        colOffsets(i) = 1
+    end do
 
-    ! -------------------------------
-    ! Get device pointer addresses
-    ! -------------------------------
+    ! 3. Call the Generated Wrapper
+    ! Using the generic name for init
+    print *, "Initializing Immersed Equation..."
+    call init_immersed_eq_d_i32( &
+            height, width, depth, &
+            nnz, &
+            p, f, &
+            1.0_C_DOUBLE, 1.0_C_DOUBLE, 1.0_C_DOUBLE, &
+            1e-6_C_DOUBLE, &
+            3_C_SIZE_T &
+            )
 
-    A_addr    = transfer(c_loc(A_d), A_addr)
-    inds_addr = transfer(c_loc(inds_d), inds_addr)
-    b_addr    = transfer(c_loc(b_d), b_addr)
-    work_addr = transfer(c_loc(workspace_d), work_addr)
+    ! 4. Solve
+    ! Using the specific name as we removed generic for solve
+    print *, "Solving..."
+    call solve_immersed_eq_d_i32( &
+            result, &
+            nnz, &
+            rowPointers, &
+            colOffsets, &
+            values, &
+            .true. &               ! multiStream
+            )
 
-    ! -------------------------------
-    ! Call the C++ BiCGSTAB solver
-    ! -------------------------------
-    call solve_bi_cgstab( &
-            A_addr, aLd, &
-            inds_addr, indsStride, numDiags, &
-            b_addr, bStride, n, &
-            work_addr, workLd, &
-            maxIter, tol )
+    ! 5. Print Results
+    print *, "Result:"
+    do i = 1, total_size
+        write(*, '(F6.2, " ")', advance='no') result(i)
+    end do
+    print *
 
-    ! -------------------------------
-    ! Retrieve solution
-    ! -------------------------------
-
-    b_h = b_d   ! copy from device to host
-    print *, "Solution x (from device):"
-    print *, b_h
-
-
-end program test_bicgstab_device
+end program test_immersed_eq

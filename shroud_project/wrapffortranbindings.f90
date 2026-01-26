@@ -16,50 +16,10 @@ module fortranbindings_mod
 
     interface
 
-        subroutine c_init_immersed_eq_0(height, width, depth, fSize, &
+        subroutine c_init_immersed_eq_d_i32(height, width, depth, fSize, &
                 nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
                 maxBCGIterations) &
-                bind(C, name="FOR_initImmersedEq_0")
-            use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
-            implicit none
-            integer(C_SIZE_T), value, intent(IN) :: height
-            integer(C_SIZE_T), value, intent(IN) :: width
-            integer(C_SIZE_T), value, intent(IN) :: depth
-            integer(C_SIZE_T), value, intent(IN) :: fSize
-            integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
-            real(C_FLOAT), intent(IN) :: p(*)
-            real(C_FLOAT), intent(IN) :: f(*)
-            real(C_DOUBLE), value, intent(IN) :: deltaX
-            real(C_DOUBLE), value, intent(IN) :: deltaY
-            real(C_DOUBLE), value, intent(IN) :: deltaZ
-            real(C_DOUBLE), value, intent(IN) :: tolerance
-            integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
-        end subroutine c_init_immersed_eq_0
-
-        subroutine c_init_immersed_eq_1(height, width, depth, fSize, &
-                nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
-                maxBCGIterations) &
-                bind(C, name="FOR_initImmersedEq_1")
-            use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
-            implicit none
-            integer(C_SIZE_T), value, intent(IN) :: height
-            integer(C_SIZE_T), value, intent(IN) :: width
-            integer(C_SIZE_T), value, intent(IN) :: depth
-            integer(C_SIZE_T), value, intent(IN) :: fSize
-            integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
-            real(C_FLOAT), intent(IN) :: p(*)
-            real(C_FLOAT), intent(IN) :: f(*)
-            real(C_DOUBLE), value, intent(IN) :: deltaX
-            real(C_DOUBLE), value, intent(IN) :: deltaY
-            real(C_DOUBLE), value, intent(IN) :: deltaZ
-            real(C_DOUBLE), value, intent(IN) :: tolerance
-            integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
-        end subroutine c_init_immersed_eq_1
-
-        subroutine c_init_immersed_eq_2(height, width, depth, fSize, &
-                nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
-                maxBCGIterations) &
-                bind(C, name="FOR_initImmersedEq_2")
+                bind(C, name="FOR_initImmersedEq_d_i32")
             use iso_c_binding, only : C_DOUBLE, C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: height
@@ -74,12 +34,32 @@ module fortranbindings_mod
             real(C_DOUBLE), value, intent(IN) :: deltaZ
             real(C_DOUBLE), value, intent(IN) :: tolerance
             integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
-        end subroutine c_init_immersed_eq_2
+        end subroutine c_init_immersed_eq_d_i32
 
-        subroutine c_init_immersed_eq_3(height, width, depth, fSize, &
+        subroutine c_init_immersed_eq_s_i32(height, width, depth, fSize, &
                 nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
                 maxBCGIterations) &
-                bind(C, name="FOR_initImmersedEq_3")
+                bind(C, name="FOR_initImmersedEq_s_i32")
+            use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
+            implicit none
+            integer(C_SIZE_T), value, intent(IN) :: height
+            integer(C_SIZE_T), value, intent(IN) :: width
+            integer(C_SIZE_T), value, intent(IN) :: depth
+            integer(C_SIZE_T), value, intent(IN) :: fSize
+            integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
+            real(C_FLOAT), intent(IN) :: p(*)
+            real(C_FLOAT), intent(IN) :: f(*)
+            real(C_DOUBLE), value, intent(IN) :: deltaX
+            real(C_DOUBLE), value, intent(IN) :: deltaY
+            real(C_DOUBLE), value, intent(IN) :: deltaZ
+            real(C_DOUBLE), value, intent(IN) :: tolerance
+            integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
+        end subroutine c_init_immersed_eq_s_i32
+
+        subroutine c_init_immersed_eq_d_i64(height, width, depth, fSize, &
+                nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
+                maxBCGIterations) &
+                bind(C, name="FOR_initImmersedEq_d_i64")
             use iso_c_binding, only : C_DOUBLE, C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: height
@@ -94,65 +74,31 @@ module fortranbindings_mod
             real(C_DOUBLE), value, intent(IN) :: deltaZ
             real(C_DOUBLE), value, intent(IN) :: tolerance
             integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
-        end subroutine c_init_immersed_eq_3
+        end subroutine c_init_immersed_eq_d_i64
 
-        subroutine c_solve_immersed_eq(===>result i_dummy_arg<===, nnzB, &
-                ===>rowPointersB i_dummy_arg<===, &
-                ===>colPointersB i_dummy_arg<===, &
-                ===>valuesB i_dummy_arg<===) &
-                bind(C, name="FOR_solveImmersedEq")
-            use iso_c_binding, only : C_SIZE_T
+        subroutine c_init_immersed_eq_s_i64(height, width, depth, fSize, &
+                nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
+                maxBCGIterations) &
+                bind(C, name="FOR_initImmersedEq_s_i64")
+            use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
             implicit none
-            ===>result i_dummy_decl<===
-            integer(C_SIZE_T), value, intent(IN) :: nnzB
-            ===>rowPointersB i_dummy_decl<===
-            ===>colPointersB i_dummy_decl<===
-            ===>valuesB i_dummy_decl<===
-        end subroutine c_solve_immersed_eq
+            integer(C_SIZE_T), value, intent(IN) :: height
+            integer(C_SIZE_T), value, intent(IN) :: width
+            integer(C_SIZE_T), value, intent(IN) :: depth
+            integer(C_SIZE_T), value, intent(IN) :: fSize
+            integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
+            real(C_FLOAT), intent(IN) :: p(*)
+            real(C_FLOAT), intent(IN) :: f(*)
+            real(C_DOUBLE), value, intent(IN) :: deltaX
+            real(C_DOUBLE), value, intent(IN) :: deltaY
+            real(C_DOUBLE), value, intent(IN) :: deltaZ
+            real(C_DOUBLE), value, intent(IN) :: tolerance
+            integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
+        end subroutine c_init_immersed_eq_s_i64
 
-        subroutine solve_immersed_eq(===>result i_dummy_arg<===, nnzB, &
-                ===>rowPointersB i_dummy_arg<===, &
-                ===>colPointersB i_dummy_arg<===, &
-                ===>valuesB i_dummy_arg<===) &
-                bind(C, name="FOR_solveImmersedEq_bufferify")
-            use iso_c_binding, only : C_SIZE_T
-            implicit none
-            ===>result i_dummy_decl<===
-            integer(C_SIZE_T), value, intent(IN) :: nnzB
-            ===>rowPointersB i_dummy_decl<===
-            ===>colPointersB i_dummy_decl<===
-            ===>valuesB i_dummy_decl<===
-        end subroutine solve_immersed_eq
-
-        subroutine c_solve_immersed_eq_0(result, nnzB, rowPointersB, &
+        subroutine c_solve_immersed_eq_d_i32(result, nnzB, rowPointersB, &
                 colPointersB, valuesB, multiStream) &
-                bind(C, name="FOR_solveImmersedEq_0")
-            use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT32_T, C_SIZE_T
-            implicit none
-            real(C_FLOAT), intent(OUT) :: result(*)
-            integer(C_SIZE_T), value, intent(IN) :: nnzB
-            integer(C_INT32_T), intent(IN) :: rowPointersB(*)
-            integer(C_INT32_T), intent(IN) :: colPointersB(*)
-            real(C_FLOAT), intent(IN) :: valuesB(*)
-            logical(C_BOOL), value, intent(IN) :: multiStream
-        end subroutine c_solve_immersed_eq_0
-
-        subroutine c_solve_immersed_eq_1(result, nnzB, rowPointersB, &
-                colPointersB, valuesB, multiStream) &
-                bind(C, name="FOR_solveImmersedEq_1")
-            use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT64_T, C_SIZE_T
-            implicit none
-            real(C_FLOAT), intent(OUT) :: result(*)
-            integer(C_SIZE_T), value, intent(IN) :: nnzB
-            integer(C_INT64_T), intent(IN) :: rowPointersB(*)
-            integer(C_INT64_T), intent(IN) :: colPointersB(*)
-            real(C_FLOAT), intent(IN) :: valuesB(*)
-            logical(C_BOOL), value, intent(IN) :: multiStream
-        end subroutine c_solve_immersed_eq_1
-
-        subroutine c_solve_immersed_eq_2(result, nnzB, rowPointersB, &
-                colPointersB, valuesB, multiStream) &
-                bind(C, name="FOR_solveImmersedEq_2")
+                bind(C, name="FOR_solveImmersedEq_d_i32")
             use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT32_T, C_SIZE_T
             implicit none
             real(C_DOUBLE), intent(OUT) :: result(*)
@@ -161,11 +107,24 @@ module fortranbindings_mod
             integer(C_INT32_T), intent(IN) :: colPointersB(*)
             real(C_DOUBLE), intent(IN) :: valuesB(*)
             logical(C_BOOL), value, intent(IN) :: multiStream
-        end subroutine c_solve_immersed_eq_2
+        end subroutine c_solve_immersed_eq_d_i32
 
-        subroutine c_solve_immersed_eq_3(result, nnzB, rowPointersB, &
+        subroutine c_solve_immersed_eq_s_i32(result, nnzB, rowPointersB, &
                 colPointersB, valuesB, multiStream) &
-                bind(C, name="FOR_solveImmersedEq_3")
+                bind(C, name="FOR_solveImmersedEq_s_i32")
+            use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT32_T, C_SIZE_T
+            implicit none
+            real(C_FLOAT), intent(OUT) :: result(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzB
+            integer(C_INT32_T), intent(IN) :: rowPointersB(*)
+            integer(C_INT32_T), intent(IN) :: colPointersB(*)
+            real(C_FLOAT), intent(IN) :: valuesB(*)
+            logical(C_BOOL), value, intent(IN) :: multiStream
+        end subroutine c_solve_immersed_eq_s_i32
+
+        subroutine c_solve_immersed_eq_d_i64(result, nnzB, rowPointersB, &
+                colPointersB, valuesB, multiStream) &
+                bind(C, name="FOR_solveImmersedEq_d_i64")
             use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT64_T, C_SIZE_T
             implicit none
             real(C_DOUBLE), intent(OUT) :: result(*)
@@ -174,77 +133,29 @@ module fortranbindings_mod
             integer(C_INT64_T), intent(IN) :: colPointersB(*)
             real(C_DOUBLE), intent(IN) :: valuesB(*)
             logical(C_BOOL), value, intent(IN) :: multiStream
-        end subroutine c_solve_immersed_eq_3
+        end subroutine c_solve_immersed_eq_d_i64
+
+        subroutine c_solve_immersed_eq_s_i64(result, nnzB, rowPointersB, &
+                colPointersB, valuesB, multiStream) &
+                bind(C, name="FOR_solveImmersedEq_s_i64")
+            use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT64_T, C_SIZE_T
+            implicit none
+            real(C_FLOAT), intent(OUT) :: result(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzB
+            integer(C_INT64_T), intent(IN) :: rowPointersB(*)
+            integer(C_INT64_T), intent(IN) :: colPointersB(*)
+            real(C_FLOAT), intent(IN) :: valuesB(*)
+            logical(C_BOOL), value, intent(IN) :: multiStream
+        end subroutine c_solve_immersed_eq_s_i64
     end interface
-
-    interface init_immersed_eq
-        module procedure init_immersed_eq_0
-        module procedure init_immersed_eq_1
-        module procedure init_immersed_eq_2
-        module procedure init_immersed_eq_3
-    end interface init_immersed_eq
-
-    interface solve_immersed_eq
-        module procedure solve_immersed_eq
-        module procedure solve_immersed_eq_0
-        module procedure solve_immersed_eq_1
-        module procedure solve_immersed_eq_2
-        module procedure solve_immersed_eq_3
-    end interface solve_immersed_eq
 
     ! splicer begin additional_declarations
     ! splicer end additional_declarations
 
 contains
 
-    subroutine init_immersed_eq_0(height, width, depth, nnzMaxB, p, f, &
-            deltaX, deltaY, deltaZ, tolerance, maxBCGIterations)
-        use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
-        integer(C_SIZE_T), value, intent(IN) :: height
-        integer(C_SIZE_T), value, intent(IN) :: width
-        integer(C_SIZE_T), value, intent(IN) :: depth
-        integer(C_SIZE_T) :: SH_fSize
-        integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
-        real(C_FLOAT), intent(IN) :: p(:)
-        real(C_FLOAT), intent(IN) :: f(:)
-        real(C_DOUBLE), value, intent(IN) :: deltaX
-        real(C_DOUBLE), value, intent(IN) :: deltaY
-        real(C_DOUBLE), value, intent(IN) :: deltaZ
-        real(C_DOUBLE), value, intent(IN) :: tolerance
-        integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
-        ! splicer begin function.init_immersed_eq_0
-        SH_fSize = size(f,kind=C_SIZE_T)
-        call c_init_immersed_eq_0(height, width, depth, SH_fSize, &
-            nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
-            maxBCGIterations)
-        ! splicer end function.init_immersed_eq_0
-    end subroutine init_immersed_eq_0
-
-    subroutine init_immersed_eq_1(height, width, depth, nnzMaxB, p, f, &
-            deltaX, deltaY, deltaZ, tolerance, maxBCGIterations)
-        use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
-        integer(C_SIZE_T), value, intent(IN) :: height
-        integer(C_SIZE_T), value, intent(IN) :: width
-        integer(C_SIZE_T), value, intent(IN) :: depth
-        integer(C_SIZE_T) :: SH_fSize
-        integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
-        real(C_FLOAT), intent(IN) :: p(:)
-        real(C_FLOAT), intent(IN) :: f(:)
-        real(C_DOUBLE), value, intent(IN) :: deltaX
-        real(C_DOUBLE), value, intent(IN) :: deltaY
-        real(C_DOUBLE), value, intent(IN) :: deltaZ
-        real(C_DOUBLE), value, intent(IN) :: tolerance
-        integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
-        ! splicer begin function.init_immersed_eq_1
-        SH_fSize = size(f,kind=C_SIZE_T)
-        call c_init_immersed_eq_1(height, width, depth, SH_fSize, &
-            nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
-            maxBCGIterations)
-        ! splicer end function.init_immersed_eq_1
-    end subroutine init_immersed_eq_1
-
-    subroutine init_immersed_eq_2(height, width, depth, nnzMaxB, p, f, &
-            deltaX, deltaY, deltaZ, tolerance, maxBCGIterations)
+    subroutine init_immersed_eq_d_i32(height, width, depth, nnzMaxB, p, &
+            f, deltaX, deltaY, deltaZ, tolerance, maxBCGIterations)
         use iso_c_binding, only : C_DOUBLE, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: height
         integer(C_SIZE_T), value, intent(IN) :: width
@@ -258,16 +169,39 @@ contains
         real(C_DOUBLE), value, intent(IN) :: deltaZ
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
-        ! splicer begin function.init_immersed_eq_2
+        ! splicer begin function.init_immersed_eq_d_i32
         SH_fSize = size(f,kind=C_SIZE_T)
-        call c_init_immersed_eq_2(height, width, depth, SH_fSize, &
+        call c_init_immersed_eq_d_i32(height, width, depth, SH_fSize, &
             nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
             maxBCGIterations)
-        ! splicer end function.init_immersed_eq_2
-    end subroutine init_immersed_eq_2
+        ! splicer end function.init_immersed_eq_d_i32
+    end subroutine init_immersed_eq_d_i32
 
-    subroutine init_immersed_eq_3(height, width, depth, nnzMaxB, p, f, &
-            deltaX, deltaY, deltaZ, tolerance, maxBCGIterations)
+    subroutine init_immersed_eq_s_i32(height, width, depth, nnzMaxB, p, &
+            f, deltaX, deltaY, deltaZ, tolerance, maxBCGIterations)
+        use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
+        integer(C_SIZE_T), value, intent(IN) :: height
+        integer(C_SIZE_T), value, intent(IN) :: width
+        integer(C_SIZE_T), value, intent(IN) :: depth
+        integer(C_SIZE_T) :: SH_fSize
+        integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
+        real(C_FLOAT), intent(IN) :: p(:)
+        real(C_FLOAT), intent(IN) :: f(:)
+        real(C_DOUBLE), value, intent(IN) :: deltaX
+        real(C_DOUBLE), value, intent(IN) :: deltaY
+        real(C_DOUBLE), value, intent(IN) :: deltaZ
+        real(C_DOUBLE), value, intent(IN) :: tolerance
+        integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
+        ! splicer begin function.init_immersed_eq_s_i32
+        SH_fSize = size(f,kind=C_SIZE_T)
+        call c_init_immersed_eq_s_i32(height, width, depth, SH_fSize, &
+            nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
+            maxBCGIterations)
+        ! splicer end function.init_immersed_eq_s_i32
+    end subroutine init_immersed_eq_s_i32
+
+    subroutine init_immersed_eq_d_i64(height, width, depth, nnzMaxB, p, &
+            f, deltaX, deltaY, deltaZ, tolerance, maxBCGIterations)
         use iso_c_binding, only : C_DOUBLE, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: height
         integer(C_SIZE_T), value, intent(IN) :: width
@@ -281,49 +215,38 @@ contains
         real(C_DOUBLE), value, intent(IN) :: deltaZ
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
-        ! splicer begin function.init_immersed_eq_3
+        ! splicer begin function.init_immersed_eq_d_i64
         SH_fSize = size(f,kind=C_SIZE_T)
-        call c_init_immersed_eq_3(height, width, depth, SH_fSize, &
+        call c_init_immersed_eq_d_i64(height, width, depth, SH_fSize, &
             nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
             maxBCGIterations)
-        ! splicer end function.init_immersed_eq_3
-    end subroutine init_immersed_eq_3
+        ! splicer end function.init_immersed_eq_d_i64
+    end subroutine init_immersed_eq_d_i64
 
-    subroutine solve_immersed_eq_0(result, nnzB, rowPointersB, &
-            colPointersB, valuesB, multiStream)
-        use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT32_T, C_SIZE_T
-        real(C_FLOAT), intent(OUT) :: result(:)
-        integer(C_SIZE_T), value, intent(IN) :: nnzB
-        integer(C_INT32_T), intent(IN) :: rowPointersB(:)
-        integer(C_INT32_T), intent(IN) :: colPointersB(:)
-        real(C_FLOAT), intent(IN) :: valuesB(:)
-        logical, value, intent(IN) :: multiStream
-        ! splicer begin function.solve_immersed_eq_0
-        logical(C_BOOL) :: SHT_multiStream_cxx
-        SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
-        call c_solve_immersed_eq_0(result, nnzB, rowPointersB, &
-            colPointersB, valuesB, SHT_multiStream_cxx)
-        ! splicer end function.solve_immersed_eq_0
-    end subroutine solve_immersed_eq_0
+    subroutine init_immersed_eq_s_i64(height, width, depth, nnzMaxB, p, &
+            f, deltaX, deltaY, deltaZ, tolerance, maxBCGIterations)
+        use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
+        integer(C_SIZE_T), value, intent(IN) :: height
+        integer(C_SIZE_T), value, intent(IN) :: width
+        integer(C_SIZE_T), value, intent(IN) :: depth
+        integer(C_SIZE_T) :: SH_fSize
+        integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
+        real(C_FLOAT), intent(IN) :: p(:)
+        real(C_FLOAT), intent(IN) :: f(:)
+        real(C_DOUBLE), value, intent(IN) :: deltaX
+        real(C_DOUBLE), value, intent(IN) :: deltaY
+        real(C_DOUBLE), value, intent(IN) :: deltaZ
+        real(C_DOUBLE), value, intent(IN) :: tolerance
+        integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
+        ! splicer begin function.init_immersed_eq_s_i64
+        SH_fSize = size(f,kind=C_SIZE_T)
+        call c_init_immersed_eq_s_i64(height, width, depth, SH_fSize, &
+            nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
+            maxBCGIterations)
+        ! splicer end function.init_immersed_eq_s_i64
+    end subroutine init_immersed_eq_s_i64
 
-    subroutine solve_immersed_eq_1(result, nnzB, rowPointersB, &
-            colPointersB, valuesB, multiStream)
-        use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT64_T, C_SIZE_T
-        real(C_FLOAT), intent(OUT) :: result(:)
-        integer(C_SIZE_T), value, intent(IN) :: nnzB
-        integer(C_INT64_T), intent(IN) :: rowPointersB(:)
-        integer(C_INT64_T), intent(IN) :: colPointersB(:)
-        real(C_FLOAT), intent(IN) :: valuesB(:)
-        logical, value, intent(IN) :: multiStream
-        ! splicer begin function.solve_immersed_eq_1
-        logical(C_BOOL) :: SHT_multiStream_cxx
-        SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
-        call c_solve_immersed_eq_1(result, nnzB, rowPointersB, &
-            colPointersB, valuesB, SHT_multiStream_cxx)
-        ! splicer end function.solve_immersed_eq_1
-    end subroutine solve_immersed_eq_1
-
-    subroutine solve_immersed_eq_2(result, nnzB, rowPointersB, &
+    subroutine solve_immersed_eq_d_i32(result, nnzB, rowPointersB, &
             colPointersB, valuesB, multiStream)
         use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT32_T, C_SIZE_T
         real(C_DOUBLE), intent(OUT) :: result(:)
@@ -332,15 +255,32 @@ contains
         integer(C_INT32_T), intent(IN) :: colPointersB(:)
         real(C_DOUBLE), intent(IN) :: valuesB(:)
         logical, value, intent(IN) :: multiStream
-        ! splicer begin function.solve_immersed_eq_2
+        ! splicer begin function.solve_immersed_eq_d_i32
         logical(C_BOOL) :: SHT_multiStream_cxx
         SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
-        call c_solve_immersed_eq_2(result, nnzB, rowPointersB, &
+        call c_solve_immersed_eq_d_i32(result, nnzB, rowPointersB, &
             colPointersB, valuesB, SHT_multiStream_cxx)
-        ! splicer end function.solve_immersed_eq_2
-    end subroutine solve_immersed_eq_2
+        ! splicer end function.solve_immersed_eq_d_i32
+    end subroutine solve_immersed_eq_d_i32
 
-    subroutine solve_immersed_eq_3(result, nnzB, rowPointersB, &
+    subroutine solve_immersed_eq_s_i32(result, nnzB, rowPointersB, &
+            colPointersB, valuesB, multiStream)
+        use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT32_T, C_SIZE_T
+        real(C_FLOAT), intent(OUT) :: result(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzB
+        integer(C_INT32_T), intent(IN) :: rowPointersB(:)
+        integer(C_INT32_T), intent(IN) :: colPointersB(:)
+        real(C_FLOAT), intent(IN) :: valuesB(:)
+        logical, value, intent(IN) :: multiStream
+        ! splicer begin function.solve_immersed_eq_s_i32
+        logical(C_BOOL) :: SHT_multiStream_cxx
+        SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
+        call c_solve_immersed_eq_s_i32(result, nnzB, rowPointersB, &
+            colPointersB, valuesB, SHT_multiStream_cxx)
+        ! splicer end function.solve_immersed_eq_s_i32
+    end subroutine solve_immersed_eq_s_i32
+
+    subroutine solve_immersed_eq_d_i64(result, nnzB, rowPointersB, &
             colPointersB, valuesB, multiStream)
         use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT64_T, C_SIZE_T
         real(C_DOUBLE), intent(OUT) :: result(:)
@@ -349,13 +289,30 @@ contains
         integer(C_INT64_T), intent(IN) :: colPointersB(:)
         real(C_DOUBLE), intent(IN) :: valuesB(:)
         logical, value, intent(IN) :: multiStream
-        ! splicer begin function.solve_immersed_eq_3
+        ! splicer begin function.solve_immersed_eq_d_i64
         logical(C_BOOL) :: SHT_multiStream_cxx
         SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
-        call c_solve_immersed_eq_3(result, nnzB, rowPointersB, &
+        call c_solve_immersed_eq_d_i64(result, nnzB, rowPointersB, &
             colPointersB, valuesB, SHT_multiStream_cxx)
-        ! splicer end function.solve_immersed_eq_3
-    end subroutine solve_immersed_eq_3
+        ! splicer end function.solve_immersed_eq_d_i64
+    end subroutine solve_immersed_eq_d_i64
+
+    subroutine solve_immersed_eq_s_i64(result, nnzB, rowPointersB, &
+            colPointersB, valuesB, multiStream)
+        use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT64_T, C_SIZE_T
+        real(C_FLOAT), intent(OUT) :: result(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzB
+        integer(C_INT64_T), intent(IN) :: rowPointersB(:)
+        integer(C_INT64_T), intent(IN) :: colPointersB(:)
+        real(C_FLOAT), intent(IN) :: valuesB(:)
+        logical, value, intent(IN) :: multiStream
+        ! splicer begin function.solve_immersed_eq_s_i64
+        logical(C_BOOL) :: SHT_multiStream_cxx
+        SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
+        call c_solve_immersed_eq_s_i64(result, nnzB, rowPointersB, &
+            colPointersB, valuesB, SHT_multiStream_cxx)
+        ! splicer end function.solve_immersed_eq_s_i64
+    end subroutine solve_immersed_eq_s_i64
 
     ! splicer begin additional_functions
     ! splicer end additional_functions

@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-# --- Force NVHPC Fortran compiler early ---
-set(CMAKE_Fortran_COMPILER "/opt/nvidia/hpc_sdk/Linux_x86_64/25.11/compilers/bin/nvfortran" CACHE FILEPATH "Fortran compiler" FORCE)
-
+# 1. Let CMake find gfortran/g++ automatically
 project(FortranCudaProject LANGUAGES Fortran CXX)
 
 # Where Fortran modules go
@@ -12,13 +10,8 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 set(SHROUD_WRAPF "${CMAKE_SOURCE_DIR}/../shroud_project/wrapffortranbindings.f90")
 set(CUDA_LIB "${CMAKE_SOURCE_DIR}/../cmake-build-debug/libCudaBandedLib.a")
 
-if(NOT EXISTS "${SHROUD_WRAPF}")
-    message(FATAL_ERROR "Cannot find Shroud wrapper: ${SHROUD_WRAPF}")
-endif()
-
-if(NOT EXISTS "${CUDA_LIB}")
-    message(FATAL_ERROR "Cannot find CUDA static library: ${CUDA_LIB}")
-endif()
+# Find the standard CUDA Toolkit (nvcc)
+find_package(CUDAToolkit REQUIRED)
 
 # Build the Fortran executable
 add_executable(fortran_app
@@ -26,35 +19,21 @@ add_executable(fortran_app
         ${SHROUD_WRAPF}
 )
 
-# --- NVHPC Fortran + CUDA compile options ---
-# This enables device code compilation
-target_compile_options(fortran_app PRIVATE -cuda -Minfo)
-
-# Include NVHPC + CUDA directories
+# Standard Include directories
 target_include_directories(fortran_app PRIVATE
-        /opt/nvidia/hpc_sdk/Linux_x86_64/25.11/compilers/include
-        /opt/nvidia/hpc_sdk/Linux_x86_64/25.11/compilers/include/cuda
-        /usr/local/cuda/targets/x86_64-linux/include
+        ${CMAKE_Fortran_MODULE_DIRECTORY}
+        ${CUDAToolkit_INCLUDE_DIRS}
 )
 
-# Link libraries
-find_package(CUDAToolkit REQUIRED)
-
-# Use nvfortran as linker so device runtime symbols are resolved
+# Use gfortran as linker
 set_target_properties(fortran_app PROPERTIES LINKER_LANGUAGE Fortran)
 
-# Link C++ static library and CUDA runtimes after Fortran objects
+# Link C++ library and CUDA runtimes
 target_link_libraries(fortran_app PRIVATE
-        ${CUDA_LIB}          # your C++ static library
+        ${CUDA_LIB}
         CUDA::cudart
         CUDA::cublas
         CUDA::cusolver
-        stdc++
-        # REMOVE THE MISSING LIBRARY LINE HERE
+        CUDA::cusparse
+        stdc++               # CRITICAL: Links the C++ standard library
 )
-
-# Use LINK_OPTIONS to implicitly include the Fortran CUDA runtime (equivalent to -lcudafor)
-target_link_options(fortran_app PRIVATE -cudalib)
-
-# Disable PIE to avoid relocation errors
-set_target_properties(fortran_app PROPERTIES POSITION_INDEPENDENT_CODE OFF)
