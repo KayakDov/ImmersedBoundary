@@ -23,11 +23,6 @@ program test_immersed_eq
 
     integer(C_SIZE_T) :: i
 
-    integer :: ierr
-    ! ...
-    print *, "Activating GPU..."
-    ierr = cudaFree(0) ! Standard trick to initialize CUDA context
-
     ! 1. Initialize data matching your C++ vectors
     f = [1.0_C_DOUBLE, 2.0_C_DOUBLE]
 

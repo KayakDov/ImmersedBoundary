@@ -111,6 +111,13 @@ public:
      * @param hand
      */
     virtual void solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const = 0;
+
+
+    /**
+     * This method computes the inverse of L.  It should only be used for debugging.  It is not efficient.
+     * @param hand
+     */
+    virtual SquareMat<T> inverseL(Handle &hand) const;
 };
 
 template<typename T>
@@ -183,8 +190,7 @@ class EigenDecompSolver3d: public EigenDecompSolver<T> {
 
 public:
 
-    EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3,
-        SimpleArray<T>& sizeOfB, Handle* hand3, Real3d delta = Real3d(1, 1, 1));
+    EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3, SimpleArray<T>& sizeOfB, Handle* hand3, Real3d delta = Real3d(1, 1, 1));
 
     void solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const;
 

@@ -10,24 +10,6 @@
 #include "../solvers/EigenDecompSolver.h"
 
 
-
-template <typename Real, typename Ind>
-void solveImmersedBody(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize, size_t nnzB, Ind* colsB, Ind* rowsB, Real* valsB, Real* f, Real* p, double deltaX, double deltaY, double deltaZ, Real* result) {
-    Handle hand3[3]{};
-
-    const GridDim dim(gridHeight, gridWidth, gridDepth);
-
-    auto resultDevice = SimpleArray<Real>::create(dim.volume(), hand3[0]);
-
-    BaseData<Real, Ind> baseData(dim, fSize, nnzB, colsB,rowsB, valsB, f, p, deltaX, deltaY, deltaZ, hand3[0]);
-
-    ImmersedEq<Real, Ind> imEq(baseData, dim, hand3);
-
-    ImmersedEqSolver<Real, Ind>::solve(imEq, resultDevice);
-
-    resultDevice.get(result, hand3[0]);
-}
-
 // void benchmark(size_t maxSize) {
 //     for (size_t dim = 2; dim < maxSize; dim++) {
 //         size_t dim3 = dim * dim * dim;
@@ -58,25 +40,27 @@ void solveImmersedBody(size_t gridHeight, size_t gridWidth, size_t gridDepth, si
 //     }
 // }
 
-template <typename Real>
-void printL(const GridDim& dim, Handle& hand) {
+template<typename Real>
+void printL(const GridDim &dim, Handle &hand) {
     size_t numInds = 7;
-    auto spaceForA = Mat<Real>::create(dim.volume(), numInds);
+    auto spaceForA = Mat<Real>::create(dim.size(), numInds);
     auto inds = SimpleArray<int32_t>::create(numInds, hand);
     auto A = ToeplitzLaplacian<Real>(dim).setL(hand, spaceForA, inds, Real3d(1, 1, 1));
-    auto aDense = SquareMat<Real>::create(dim.volume());
+    auto aDense = SquareMat<Real>::create(dim.size());
     A.getDense(aDense, &hand);
     std::cout << "L = \n" << GpuOut<Real>(aDense, hand) << std::endl;
 }
 
-template <typename Real, typename Int>
+template<typename Real, typename Int>
 void smallTestWithoutFiles() {
-    GridDim dim(3, 2, 2);
-    Real3d delta(1,1,1);
-
-    constexpr size_t size = 12;
+    GridDim dim(3, 2, 1);
+    Real3d delta(1, 1, 1);
 
     Handle hand;
+
+    constexpr size_t size = 6;
+
+
     printL<Real>(dim, hand);
 
     std::vector<Int> rowPointers = {0, 1};
@@ -87,28 +71,31 @@ void smallTestWithoutFiles() {
     for (size_t i = 2; i < size + 1; ++i) colOffsets[i] = static_cast<Int>(2);
 
     std::vector<Real> f = {1,2};
-    std::vector<Real> p = {-2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
+    std::vector<Real> p(size, 0);
+    p[0] = 2;
+    p[size - 1] = -2;
 
     Real result[size];
 
     ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 3);
-    // initImmersedEq<Real, Int>(3, 2, 2, 2, f.size(), p.data(), f.data(), 1, 1, 1, 1e-6, 3);
+    initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3);
 
     imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
-    // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
+    solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
 
     std::cout << "result = ";
     for(auto & i : result) std::cout << i << " ";
-// }
 
     cudaDeviceSynchronize();
     auto denseB = Mat<Real>::create(f.size(), p.size());
     imEq.baseData.B->getDense(denseB, hand);
+
     std::cout << "\nB = \n" << GpuOut<Real>(denseB, hand) << std::endl;
+    auto inverseL = imEq.eds->inverseL(hand);
+    std::cout << "L^-1 = \n" << GpuOut<Real>(inverseL, hand) << std::endl;
     std::cout << "LHS of equation is\n" << GpuOut<Real>(imEq.LHSMat(), hand) << std::endl;
     std::cout << "RHS of equation is\n" << GpuOut<Real>(imEq.RHS(false), hand) << std::endl;
 
-    // std::cout << "Result is \n" << GpuOut<Real>(result, hand) << std::endl;
 }
 
 // void testOnFiles(const GridDim& dim) {
@@ -141,13 +128,9 @@ void smallTestWithoutFiles() {
 // }
 
 
-
 int main(int argc, char *argv[]) {
     // testOnFiles(GridDim(2000, 2000, 1));
     smallTestWithoutFiles<double, int32_t>();
     // benchmark(3);
     // BCGBanded<double>::test();
-
-
 }
-

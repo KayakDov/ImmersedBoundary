@@ -2,7 +2,7 @@
 #include "deviceArrays/headers/SquareMat.h"
 #include "deviceArrays/headers/BandedMat.h"
 #include "testMethods.cu"
-#include "BiCGSTAB/BiCGSTAB.cu"
+#include "solvers/BiCGSTAB.cuh"
 #include <fstream>
 #include <stdexcept>
 #include <iostream>
@@ -121,8 +121,8 @@ void solveSystem(int argc, char const* argv[], bool isText, size_t maxIter, doub
 
     Handle hand;
 
-    Vec<T> b = Vec<T>::create(width, hand.stream);
-    Vec<int> diags = Vec<int>::create(numDiags, hand.stream);
+    Vec<T> b = Vec<T>::create(width, hand);
+    Vec<int> diags = Vec<int>::create(numDiags, hand);
     BandedMat<T> A = BandedMat<T>::create(width, numDiags, diags);
 
     readAndPrint(diags, diags_file, isText, hand);

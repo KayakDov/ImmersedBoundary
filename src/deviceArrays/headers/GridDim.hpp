@@ -67,9 +67,6 @@ public:
     [[nodiscard]] size_t numDims() const {
         return 2 + (layers > 1);
     }
-    [[nodiscard]] size_t volume() const {
-        return rows * cols * layers;
-    }
 
     /**
      *

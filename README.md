@@ -1,161 +1,117 @@
-# **Fortran Interface: Guide to the Poisson Eigen Decomposition Solver**
+# User Guide: Immersed Boundary Method (IBM) CUDA Solver
 
-This file contains instructions for Fortran programmers on how to build the necessary C++/CUDA library call the Fortran bindings.
+This library provides a high-performance solver for the following system:
 
-## **Building the C++/CUDA Solver Library (CMake)**
+(I + 2L^-1 B^T B)x = L^-1(B^T f + p)
 
-The Fortran bindings require that the core C++/CUDA solver library is built first using CMake.
+It uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion (L^-1) and BiCGSTAB to solve the coupled system.
 
-From your project root directory, follow these steps:
+---
 
-1. **Build the EigenDecomp Target**  The Fortran bindings rely on the `CudaBandedLib` library, which contains the core C++/CUDA solver logic as well as the Fortran wrapper.
+## 1. Building the Library
+First, compile the C++.
 
-   **Navigate to the Build Directory**  From the project root directory:
+### Prerequisites
+* CMake (version 3.18+)
+* CUDA Toolkit (nvcc)
+* gfortran (or another compatible Fortran compiler)
 
-   ```bash
-   mkdir build
-   cd build
-   cmake ..
-   cmake --build . -j$(nproc)
-   ```
+### Build Steps
+From the project root directory:
+1. mkdir build && cd build
+2. cmake ..
+3. make -j$(nproc)
 
-2. **Locate Assets:** This process creates the necessary C++ static library and the Fortran module file.  You'll also need to link :
+> Output: Look for "libCudaBandedLib.a" in the build folder. This is the static library you will link against.
 
-   - **Library Path:** `TelAvivU/cmake-build-debug/libCudaBandedLib.a`
-   - **Module Path:** `TelAvivU/cmake-build-debug/fortranbindings_mod.mod`
-   - **The Wrapper:**  `TelAvivU/shroud_project/wrapffortranbindings.f90`
+---
 
-## **Using the Fortran Module**
+## 2. Fortran Implementation
 
-The interface is contained in the `fortranbindings_mod` module (from `wrapffortranbindings.f90`).
+### The "Persistent" Workflow
+Unlike a standard function call, this solver maintains a "state" on the GPU to save time.
+1. Initialize Once: The GPU allocates memory and pre-calculates eigenvalues.
+2. Solve Many Times: Call the solve routine inside your loops. You can update the boundary matrix (B) every time you call it without re-initializing.
 
-To use the solver in your Fortran program:
+### Code Snippet
+program test_solver
+use iso_c_binding
+use fortranbindings_mod
+implicit none
 
-```
-program my_fortran_app
-    use fortranbindings_mod
-    implicit none
+    ! 1. Setup dimensions (e.g., 3x2x2 grid = 12 nodes)
+    integer(C_SIZE_T) :: h=3, w=2, d=2
+    real(C_DOUBLE)    :: p(12), f(2), result(12)
+    
+    ! 2. Initialize the GPU environment
+    call init_immersed_eq_d_i32(h, w, d, 2_C_SIZE_T, p, f, & 1.0_d0, 1.0_d0, 1.0_d0, 1e-6_d0, 100_C_SIZE_T)
 
-    ! Declare and initialize your arrays
-    ! Call the solver subroutines
-end program my_fortran_app
-```
+    ! 3. Execute Solver
+    call solve_immersed_eq_d_i32(result, nnzB, rowPtrs, colOffsets, values, .true.)
 
-See   `TelAvivU/FortranTest/*`for an example of a CMakeLists.txt and main.f90 the use the library.
+    end program test_solver
 
-### Available Subroutines
+---
 
-- The module exposes **four main subroutines**, two for BiCGSTAB solving and two for decomposition:
+## 3. Critical Rules for Fortran Programmers
 
-  | Subroutine               | Precision                 | Description                                                  |
-  | ------------------------ | ------------------------- | ------------------------------------------------------------ |
-  | `solve_bi_cgstab_float`  | single (`real(C_FLOAT)`)  | Calls the BiCGSTAB solver with single-precision arrays.      |
-  | `solve_bi_cgstab_double` | double (`real(C_DOUBLE)`) | Calls the BiCGSTAB solver with double-precision arrays.      |
-  | `solve_decomp_float`     | single (`real(C_FLOAT)`)  | Calls the 3D Poisson eigen decomposition solver with single-precision arrays. |
-  | `solve_decomp_double`    | double (`real(C_DOUBLE)`) | Calls the 3D Poisson eigen decomposition solver with double-precision arrays. |
+### Indexing: The Zero-Base Trap
+Fortran is 1-based, but CUDA is 0-based.
+* The Rule: When filling rowPtrs and colOffsets for the sparse matrix B, you must subtract 1 from your indices.
+* Example: To point to the very first node in the grid, your Fortran code must store the value 0.
 
-# **3D Poisson Solver: Eigen Decomposition Summary**
+### Data Types
+You must use "iso_c_binding" types to ensure Fortran memory matches the GPU:
+* real(C_DOUBLE) -> Double precision
+* real(C_FLOAT)  -> Single precision
+* integer(C_INT32_T) -> 4-byte integer
 
-This solver uses an eigen decomposition approach to quickly solve the discrete 3D Poisson equation: L u \= f.
+---
 
-## **Steps**
+## 4. Argument Reference
 
-1. **Initialization and Input**
-   * **Inputs:** Boundary coefficients (frontBack, leftRight, topBottom) defining the discretized Laplacian matrix (L), and the Right-Hand Side vector (f).
-2. **Spectral Decomposition**
-   * The solver implicitly uses the pre-computed eigenvalues (lambda) and eigenmatrices (Phi) corresponding to the 1D discrete Laplacian for each grid dimension.
-3. **Forward Transformation (3D FFT-like)**
-   * The Right-Hand Side vector (f) is transformed into the eigen-space (frequency domain) by successive application of the transposed eigenmatrices across each dimension (Depth, Width, and Height).
-   * **Operation:** The transformed vector (f\_tilde) is calculated as:  
-     f\_tilde \= Phi\_Depth \* Phi\_Width \* Phi\_Height \* f
+### Initialization Routine (`init_immersed_eq_*`)
+This routine allocates GPU memory and pre-computes the Eigen Decomposition.
 
-4. **Decoupled Solution**
-   * The system is solved algebraically in the eigen-space where the matrix is diagonal, yielding the transformed solution (u\_tilde).
-   * **Operation:** The calculation is an element-wise division:  
-     u\_tilde\[i,j,k\] \= f\_tilde\[i,j,k\] / lambda\[i,j,k\]
+| Argument | Type | Description                                |
+| :--- | :--- |:-------------------------------------------|
+| height | integer(C_SIZE_T) | Grid height (Y-dimension).                 |
+| width | integer(C_SIZE_T) | Grid width (X-dimension).                  |
+| depth | integer(C_SIZE_T) | Grid depth (Z-dimension).                  |
+| nnz | integer(C_SIZE_T) | Max non-zeros allowed in matrix B.         |
+| p | real array | Pressure vector (Size: H*W*D).             |
+| f | real array | Force vector. (Size heightB)               |
+| dx, dy, dz | real(C_DOUBLE) | Physical grid spacing.                     |
+| tolerance | real(C_DOUBLE) | Solver convergence threshold (e.g., 1e-6). |
+| maxIter | integer(C_SIZE_T) | Max iterations for the BiCGSTAB solver.    |
 
-5. **Inverse Transformation**
-   * The final solution u is recovered by applying the inverse transformation to the decoupled solution (u\_tilde).
-   * **Operation:** This is the reverse application of the eigenmatrices:  
-     u \= Inverse(Phi\_Depth \* Phi\_Width \* Phi\_Height) \* u\_tilde
+---
 
-6. **Output**
-   * The final solution vector x (which is u), mapped to the H x W x D grid.
+### Solve Routine (`solve_immersed_eq_*`)
+This routine executes the iterative solver for a specific state of matrix B.
 
-### **Solver Subroutines and Data Types**
+| Argument | Type | Description                                    |
+| :--- | :--- |:-----------------------------------------------|
+| result | real array | Output: Array to overwritten by the value of x. |
+| nnzB | integer(C_SIZE_T) | Current non-zero count in matrix B.            |
+| rowPtrs | integer array | Sparse row indices (MUST BE 0-BASED).          |
+| colOffsets | integer array | Sparse column offsets (MUST BE 0-BASED).       |
+| values | real array | Non-zero values for matrix B for this step.    |
+| multiStream | logical | .true. to run solver in parallel CUDA streams. |
+---
 
-Two subroutines are available, one for single precision and one for double precision:
+## 5. Compiling & Linking
 
-* **Single Precision:** eigenDecompSolver\_float (uses real(c\_float))
-* **Double Precision:** eigenDecompSolver\_double (uses real(c\_double))
+To create your executable, you must link the C++ library and the CUDA runtimes:
 
-### **Argument Details**
+1. Compile your Fortran source:
+   gfortran -c main.f90
 
-The subroutines accept ten arguments. Note that all dimension and stride arguments are passed **by value** (value) using the C size type (integer(c\_size\_t)).
+2. Link everything:
+   gfortran main.o -L./build -lCudaBandedLib -lstdc++ -lcudart -o ibm_solver
 
-Note, all data is column major. Two-dimensional matrices have a distance of ld between the first elements of each column, with ld - height padding at the end of each column.  Three-dimensional data (row, column, depth) is stored stored with row changing fastest, then depth, then column.  So when flattened, the first height elements are the first column in the first layer, the next height elements are the first column in the second layer, and after all the first columns in all the layers we have the second columns in each layer in turn, and so on.
-The boundary matrices frontBack, leftRight, and topBottom are stored as three-dimensional matrices, each with two layers.  The first layer is the front/left/top and the second layer back/right/bottom.
-The first row of the front and back boundary matrices is up against the top.  The first column of the front and back matrices is up against the left boundary.
-The first row of the left and right matrices is up against the top.  The first column of the left and right matrices is up against the back.
-The first row the top and bottom matrices is up against the back boundary.  The first column up against the left boundary.
+* -lCudaBandedLib: Your newly built library.
+* -lstdc++: Required for C++ compatibility.
+* -lcudart: The CUDA Runtime library.
 
-All pointers are passed by their physical addresses, in C_SIZE_T data types.  In Fortran, extract from a device array, x, its address, x_addr, as follows: x_addr    = transfer(c_loc(x), x_addr).
-
-## 3. Data Layout and Argument Conventions
-
-### BiCGSTAB Solver (`solve_bi_cgstab_*`)
-
-Arguments:
-
-| Argument Name     | Type              | Description                               |
-| ----------------- | ----------------- | ----------------------------------------- |
-| A                 | real array        | Matrix for the linear system (in/out).    |
-| aLd               | integer(C_SIZE_T) | Leading dimension of `A`.                 |
-| inds              | integer array     | Index array (in/out).                     |
-| indsStride        | integer(C_SIZE_T) | Stride for `inds`.                        |
-| numInds           | integer(C_SIZE_T) | Number of indices.                        |
-| b                 | real array        | Right-hand side vector (in/out).          |
-| bStride           | integer(C_SIZE_T) | Stride of `b`.                            |
-| bSize             | integer(C_SIZE_T) | Size of `b`.                              |
-| prealocatedSizeX7 | real array        | Scratch space of size N×7 (in/out).       |
-| prealocatedLd     | integer(C_SIZE_T) | Leading dimension of `prealocatedSizeX7`. |
-| maxIterations     | integer(C_SIZE_T) | Maximum number of BiCGSTAB iterations.    |
-| tolerance         | real              | Convergence tolerance.                    |
-
-### Decomposition Solver (`solve_decomp_*`)
-
-Arguments:
-
-| Argument Name                                         | Type              | Description                                                  |
-| ----------------------------------------------------- | ----------------- | ------------------------------------------------------------ |
-| frontBack, leftRight, topBottom                       | real array        | Boundary matrices of the 3D grid. Each has **two layers**: front/back, left/right, top/bottom. |
-| fbLd, lrLd, tbLd                                      | integer(C_SIZE_T) | Leading dimensions for the corresponding boundary arrays.    |
-| f                                                     | real array        | Right-hand side vector (in/out).                             |
-| fStride                                               | integer(C_SIZE_T) | Stride of `f`.                                               |
-| x                                                     | real array        | Output solution vector.                                      |
-| xStride                                               | integer(C_SIZE_T) | Stride of `x`.                                               |
-| height, width, depth                                  | integer(C_SIZE_T) | Dimensions of the 3D grid.                                   |
-| rowsXRows, colsXCols, depthsXDepths, maxDimX3         | real arrays       | Precomputed eigenmatrices for the 3D decomposition.          |
-| rowsXRowsLd, colsXColsLd, depthsXDepthsLd, maxDimX3Ld | integer(C_SIZE_T) | Leading dimensions of the corresponding eigenmatrices.       |
-
-## **Linking Your Fortran Program**
-
-The final step is linking your compiled Fortran code against the C++/CUDA library.
-
-1. **Compile Fortran:**  
-   gfortran \-c src/eigendecomp\_interface.f90  
-   gfortran \-c your\_main\_program.f90
-
-2. Link Everything Together:  
-   You must link the Fortran objects with the C++ library output and required runtimes (stdc++ and cudart).  
-   gfortran your\_main\_program.o eigendecomp\_interface.o \\  
-   \-L\~/Documents/TelAvivU/cmake-build-debug \-lBiCGSTAB\_LIB \\  
-   \-o final\_solver\_app \\  
-   \-Wl,-rpath,\~/Documents/TelAvivU/cmake-build-debug \\  
-   \-lstdc++ \-lcudart
-
-    * **\-L**: Path to the required library.
-    * **\-lBiCGSTAB\_LIB**: Links the dependency library (e.g., libBiCGSTAB\_LIB.a).
-    * **\-lstdc++ \-lcudart**: Links C++ and CUDA runtime libraries.
-
-This should result in a runnable executable.
+See /FortranTest for a tested example Fortran project.

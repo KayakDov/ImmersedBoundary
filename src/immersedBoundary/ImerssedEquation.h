@@ -96,7 +96,7 @@ class ImmersedEq {
 
     friend ImmersedEqSolver<Real, Int>;
 
-public:
+public: //TODO: this is public for debugging purposes only.
     BaseData<Real, Int> baseData;
 private:
 
@@ -111,7 +111,9 @@ private:
 
     SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(baseData.p.size(), hand5[0]);
 
+public://TODO: this is public for debugging purposes only.
     std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(baseData.dim, baseData.allocatedPSize(0), &hand5[0], baseData.delta);
+private:
 
     ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations);
 

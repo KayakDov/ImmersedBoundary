@@ -53,9 +53,9 @@ BaseData<Real, Int>::BaseData(
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle& hand) :
     BaseData(
-        SparseCSC<Real, Int>::create(nnzMaxB, fSize, dim.volume(), hand),
+        SparseCSC<Real, Int>::create(nnzMaxB, fSize, dim.size(), hand),
         Mat<Real>::create(fSize, 2),
-        Mat<Real>::create(dim.volume(), 4),
+        Mat<Real>::create(dim.size(), 4),
         dim,
         delta
     ) {
@@ -107,7 +107,8 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(
     const GridDim &dim,
     SimpleArray<Real> sizeOfP,
     Handle *hand,
-    Real3d delta = Real3d(1, 1, 1)) {
+    Real3d delta = Real3d(1, 1, 1))
+{
     auto maxDimX2Or3 = Mat<Real>::create(dim.maxDim(), dim.numDims());
     auto rowsXrows = SquareMat<Real>::create(dim.rows);
     auto colsXcols = dim.cols != dim.rows ? SquareMat<Real>::create(dim.cols) : rowsXrows;

@@ -1,55 +1,55 @@
 cmake_minimum_required(VERSION 3.18)
 
-# Force CMake to use the correct CUDA compiler
-set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
-# Force host compiler
-set(CMAKE_CUDA_HOST_COMPILER /usr/bin/gcc)
-set(CMAKE_CUDA_ARCHITECTURES 86)
-
+# 1. ARCHITECTURE: Set this BEFORE project() to ensure it applies to all tests
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES all-major) # Better than 'all' for faster compile times
+endif()
+# Project
 project(CudaBanded LANGUAGES CXX CUDA Fortran)
 
+# =========================
 # Standards
+# =========================
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+
 set(CMAKE_Fortran_STANDARD 2008)
 set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 
+# =========================
+# CUDA configuration
+# =========================
 
-# Include directories
-include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/deviceArrays/headers
-        src/solvers/BiCGSTAB
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/poisson
-        ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project
-        /usr/local/cuda/include
-)
 
-# Collect all source files
+# Find CUDA toolkit (portable)
+find_package(CUDAToolkit REQUIRED)
+
+# =========================
+# Source collection
+# =========================
 file(GLOB_RECURSE ALL_SRC
+        CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cu"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
-# Remove all possible main files except testMethods.cu
 list(FILTER ALL_SRC EXCLUDE REGEX ".*/main\\.cu$")
 
-# Explicitly add the main file
-set(MAIN_FILE "src/immersedBoundary/YuriWork.cu")
-
-# Collect Shroud wrapper C++ files
-set(SHROUD_CPPf
-        ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/wrapFortranBindings.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/utilFortranBindings.cpp
+set(SHROUD_CPP
+        shroud_project/wrapFortranBindings.cpp
+        shroud_project/utilFortranBindings.cpp
+        shroud_project/wrapffortranbindings.f90
 )
 
-set(FORTRAN_WRAPPER ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/wrapffortranbindings.f90)
-
+# =========================
+# Library
+# =========================
 add_library(CudaBandedLib STATIC
         ${ALL_SRC}
-        ${SHROUD_CPPf}
+        ${SHROUD_CPP}
         ${FORTRAN_WRAPPER}
 )
 
@@ -57,26 +57,36 @@ set_target_properties(CudaBandedLib PROPERTIES
         Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
 )
 
+target_include_directories(CudaBandedLib
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/deviceArrays/headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/solvers/BiCGSTAB
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/poisson
+        ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project
+)
+
+target_link_libraries(CudaBandedLib
+        PUBLIC
+        CUDA::cublas
+        CUDA::cusolver
+        CUDA::cusparse
+        CUDA::cuda_driver
+)
+
+# =========================
+# Executable
+# =========================
 add_executable(testMethods
         ${ALL_SRC}
         shroud_project/wrapFortranBindings.cpp
 )
 
-
-
-# Enable separable compilation
 set_target_properties(testMethods PROPERTIES
         CUDA_SEPARABLE_COMPILATION ON
 )
 
-# Link CUDA libraries
-target_link_libraries(testMethods PRIVATE
-        cublas
-        cusolver
-        cuda
-        cusparse
-)
-
-target_link_libraries(testMethods PRIVATE
+target_link_libraries(testMethods
+        PRIVATE
         CudaBandedLib
 )

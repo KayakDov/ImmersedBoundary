@@ -140,7 +140,7 @@ template<typename T>
 EigenDecompSolver<T>::EigenDecompSolver(std::vector<SquareMat<T> > eMats,
                                         Mat<T> &maxDimX2Or3,
                                         SimpleArray<T> &sizeOfB) : dim(eMats[1]._rows, eMats[0]._cols,
-                                                                       maxDimX2Or3._cols == 3 ? eMats[2]._rows : 0),
+                                                                       maxDimX2Or3._cols == 3 ? eMats[2]._rows : 1),
                                                                    eVecs(eMats),
                                                                    eVals(maxDimX2Or3),
                                                                    sizeOfB(sizeOfB) {
@@ -175,7 +175,7 @@ EigenDecompSolver3d<T>::EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T
     doneEigen[1].wait(hand3[0]);
 }
 
-
+//TODO: make sure this class is efficiently reuing memory if rowsXrows = colsXcols or the like.
 template<typename T>
 void EigenDecompSolver3d<T>::solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const {
     const auto bT = b.tensor(this->dim.rows, this->dim.layers);
@@ -203,6 +203,19 @@ void EigenDecompSolver2d<T>::solve(Vec<T> &x, const Vec<T> &b, Handle &hand) con
 
     this->eVecs[1].mult(xM, &soBM, &hand, false, false);
     soBM.mult(this->eVecs[0], &xM, &hand, false, true);
+}
+
+template<typename T>
+SquareMat<T> EigenDecompSolver<T>::inverseL(Handle &hand) const {
+    auto id = SquareMat<T>::create(this->dim.size());
+    id.setToIdentity(hand);
+    auto result = SquareMat<T>::create(id._rows);
+    for (size_t i = 0; i < result._rows; ++i) {
+        auto src = id.col(i);
+        auto dst = result.col(i);
+        solve(dst, src, hand);
+    }
+    return result;
 }
 
 template class EigenDecompSolver<double>;
