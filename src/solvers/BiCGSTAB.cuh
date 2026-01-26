@@ -2,6 +2,7 @@
 #define BICGSTAB_H
 
 #include "deviceArrays/headers/BandedMat.h"
+#include "deviceArrays/headers/SquareMat.h"
 
 #include "solvers/Event.h"
 #include <iostream>
@@ -132,7 +133,7 @@ class BCGBanded:  public BiCGSTAB<T>{
     void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct,
               Singleton<T> premultResult) const override;
 public:
-    BCGBanded(Handle *hand4, BandedMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, const T &tolerance, size_t maxIterations);
+    BCGBanded(Handle *hand4, BandedMat<T> A, const Vec<T> &b, Mat<T> *bHeightX7, Vec<T> *allocated9, const T &tolerance, size_t maxIterations);
 
 
     /**
@@ -144,6 +145,34 @@ public:
         Vec<T>& result,
         const Vec<T> &b,
         Mat<T> *allocatedSizeX7 = nullptr,
+        Vec<T> *allocated9 = nullptr,
+        T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
+        size_t maxIterations = 1500
+    );
+
+    static void test();
+
+};
+
+template<typename T>
+class BCGDense:  public BiCGSTAB<T>{
+    SquareMat<T> A;
+
+    void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct,
+              Singleton<T> premultResult) const override;
+public:
+    BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, T tolerance, size_t maxIterations);
+
+
+    /**
+     * @brief Static method to solve the equation $A\mathbf{x} = \mathbf{b}$.
+     */
+    static void solve(
+        Handle *hand4,
+        const SquareMat<T> &A,
+        Vec<T> &result,
+        const Vec<T> &b,
+        Mat<T> *bHeightX7 = nullptr,
         Vec<T> *allocated9 = nullptr,
         T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
         size_t maxIterations = 1500

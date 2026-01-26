@@ -240,8 +240,8 @@ void BiCGSTAB<T>::solveUnconditionedMultiStream(Vec<T>& initGuess) {
 }
 
 template<typename T>
-BCGBanded<T>::BCGBanded(Handle* hand4, BandedMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T>* allocated9, const T &tolerance,
-size_t maxIterations): BiCGSTAB<T>(b, hand4, allocatedBSizeX7, allocated9, tolerance, maxIterations), A(A){
+BCGBanded<T>::BCGBanded(Handle* hand4, BandedMat<T> A, const Vec<T> &b, Mat<T> *bHeightX7, Vec<T>* allocated9, const T &tolerance,
+size_t maxIterations): BiCGSTAB<T>(b, hand4, bHeightX7, allocated9, tolerance, maxIterations), A(A){
 }
 
 template<typename T>
@@ -295,11 +295,60 @@ void BCGBanded<T>::test() {
     std::cout << "expected: 85  -42, 22, -6, 5 " << std::endl;
 }
 
+// const Vec<T> &other,
+//     Vec<T> &result,
+//     Handle *handle,
+//     const Singleton<T> *alpha,
+//     const Singleton<T> *beta,
+//     bool transpose
+
+template<typename T>
+void BCGDense<T>::mult(Vec<T> &vec, Vec<T> &product, Singleton<T> multProduct, Singleton<T> premultResult) const {
+    A.mult(vec, product, this->hand4, &multProduct, &premultResult, false);
+}
+
+template<typename T>
+BCGDense<T>::BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, T tolerance, size_t maxIterations): BiCGSTAB<T>(b, hand4, allocatedBSizeX7, allocated9, tolerance, maxIterations), A(A) {
+
+}
+//(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, const T &tolerance, size_t maxIterations);
+template<typename T>
+void BCGDense<T>::solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Mat<T> *bHeightX7, Vec<T> *allocated9, T tolerance, size_t maxIterations) {
+    BCGDense<T> solver(hand4, A, b, bHeightX7, allocated9, tolerance, maxIterations);
+    solver.solveUnconditionedMultiStream(result);
+}
+
+template<typename T>
+void BCGDense<T>::test() {
+    Handle hand4[4]{};
+    size_t n = 6;
+    auto A = SquareMat<T>::create(n);
+    std::vector<T>  hostA = {0.410352, -0.186335, -0.0563147, -0.172257, -0.0993789, -0.0389234, -0.186335, 0.354037, -0.186335, -0.0993789, -0.21118, -0.0993789, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1};
+    A.set(hostA.data(), hand4[0]);
+    auto b = SimpleArray<T>::create(n, hand4[0]);
+    std::vector<T>  hostB = {-1.51304, -1.56522, -0.313043, -0.486957, -0.434783, 0.313043};
+    b.set(hostB.data(), hand4[0]);
+    auto result = SimpleArray<T>::create(n, hand4[0]);
+    auto bHeightX7 = Mat<T>::create(n, 7);
+    auto aX9 = SimpleArray<T>::create(9, hand4[0]);
+    T tolerance = 1.0e-6;
+    size_t maxIterations = 100;
+    solve(hand4, A, result, b, &bHeightX7, &aX9, tolerance, maxIterations);
+    std::cout << "result = " << GpuOut<T>(result, hand4[0]) << std::endl;
+
+    std:: cout << "expected: -8.40001, -0.00001, 0.15999, 0.96000, 0.39999, 0.63999" << std::endl;
+
+}
+
+
 template class BiCGSTAB<double>;
 template class BiCGSTAB<float>;
 
 template class BCGBanded<double>;
 template class BCGBanded<float>;
+
+template class BCGDense<double>;
+template class BCGDense<float>;
 
 
 

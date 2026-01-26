@@ -146,8 +146,7 @@ public:
      * @param transpose Whether to transpose this vector.
      * @return Vec<T> result of the multiplication.
      */
-    void mult(const Mat<T> &other, Vec &result, Handle *handle = nullptr, const Singleton<T> *alpha = nullptr, const
-              Singleton<T> *beta = nullptr, bool transpose = false) const;
+    void mult(const Mat<T> &other, Vec &result, Handle *handle = nullptr, const Singleton<T> *alpha = nullptr, const Singleton<T> *beta = nullptr, bool transpose = false) const;
 
     /**
      * @brief Dot product with another vector.

@@ -169,10 +169,10 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
 
     auto& invLxBTBxPlusX = invLBTBx;
 
-    result.mult(preMultResult, &hand5[4]); //x <- x * preMultX
-    Event preMult;
-    preMult.record(hand5[4]);
-    preMult.wait(hand5[0]);
+    result.mult(preMultResult, &hand5[0/*4*/]); //x <- x * preMultX//TODO: restore multtithreading
+    // Event preMult;
+    // preMult.record(hand5[4]);
+    // preMult.wait(hand5[0]);
 
     result.add(invLxBTBxPlusX, &multLinearOperationOutput, &hand5[0]); //result <- result + preMultResult * x * preMultX
 }
@@ -240,6 +240,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     // baseData.result.fillRandom(&hand5[0]);
 
     ImmersedEqSolver<Real, Int> solver(*this, allocatedRHSHeightX7, allocated9, tolerance, maxIterations);
+
     if (multithreadBCG) solver.solveUnconditionedMultiStream(baseData.result);
     else solver.solveUnpreconditioned(baseData.result);
 

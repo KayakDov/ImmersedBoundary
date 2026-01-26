@@ -8,6 +8,7 @@
 #include "FortranBindings.hpp"
 #include "ToeplitzLaplacian.cuh"
 #include "../solvers/EigenDecompSolver.h"
+#include "solvers/BiCGSTAB.cuh"
 
 
 // void benchmark(size_t maxSize) {
@@ -130,7 +131,9 @@ void smallTestWithoutFiles() {
 
 int main(int argc, char *argv[]) {
     // testOnFiles(GridDim(2000, 2000, 1));
-    smallTestWithoutFiles<double, int32_t>();
+    // smallTestWithoutFiles<double, int32_t>();
     // benchmark(3);
     // BCGBanded<double>::test();
+
+    BCGDense<double>::test();
 }
