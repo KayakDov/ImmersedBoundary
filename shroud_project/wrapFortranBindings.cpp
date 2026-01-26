@@ -12,86 +12,90 @@ extern "C" {
 // splicer begin C_definitions
 // splicer end C_definitions
 
-void FOR_initImmersedEq_d_i32(size_t height, size_t width, size_t depth,
-    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
-    double deltaY, double deltaZ, double tolerance,
-    size_t maxBCGIterations)
+void FOR_initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth,
+    size_t gridDepth, size_t fSize, size_t nnzMaxB, double *p,
+    double *f, double deltaX, double deltaY, double deltaZ,
+    double tolerance, size_t maxBCGIterations)
 {
     // splicer begin function.initImmersedEq_d_i32
-    initImmersedEq_d_i32(height, width, depth, fSize, nnzMaxB, p, f,
-        deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    initImmersedEq_d_i32(gridHeight, gridWidth, gridDepth, fSize,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        maxBCGIterations);
     // splicer end function.initImmersedEq_d_i32
 }
 
-void FOR_initImmersedEq_s_i32(size_t height, size_t width, size_t depth,
-    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
-    double deltaY, double deltaZ, double tolerance,
+void FOR_initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth,
+    size_t gridDepth, size_t fSize, size_t nnzMaxB, float *p, float *f,
+    double deltaX, double deltaY, double deltaZ, double tolerance,
     size_t maxBCGIterations)
 {
     // splicer begin function.initImmersedEq_s_i32
-    initImmersedEq_s_i32(height, width, depth, fSize, nnzMaxB, p, f,
-        deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    initImmersedEq_s_i32(gridHeight, gridWidth, gridDepth, fSize,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        maxBCGIterations);
     // splicer end function.initImmersedEq_s_i32
 }
 
-void FOR_initImmersedEq_d_i64(size_t height, size_t width, size_t depth,
-    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
-    double deltaY, double deltaZ, double tolerance,
-    size_t maxBCGIterations)
+void FOR_initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth,
+    size_t gridDepth, size_t fSize, size_t nnzMaxB, double *p,
+    double *f, double deltaX, double deltaY, double deltaZ,
+    double tolerance, size_t maxBCGIterations)
 {
     // splicer begin function.initImmersedEq_d_i64
-    initImmersedEq_d_i64(height, width, depth, fSize, nnzMaxB, p, f,
-        deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    initImmersedEq_d_i64(gridHeight, gridWidth, gridDepth, fSize,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        maxBCGIterations);
     // splicer end function.initImmersedEq_d_i64
 }
 
-void FOR_initImmersedEq_s_i64(size_t height, size_t width, size_t depth,
-    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
-    double deltaY, double deltaZ, double tolerance,
+void FOR_initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth,
+    size_t gridDepth, size_t fSize, size_t nnzMaxB, float *p, float *f,
+    double deltaX, double deltaY, double deltaZ, double tolerance,
     size_t maxBCGIterations)
 {
     // splicer begin function.initImmersedEq_s_i64
-    initImmersedEq_s_i64(height, width, depth, fSize, nnzMaxB, p, f,
-        deltaX, deltaY, deltaZ, tolerance, maxBCGIterations);
+    initImmersedEq_s_i64(gridHeight, gridWidth, gridDepth, fSize,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        maxBCGIterations);
     // splicer end function.initImmersedEq_s_i64
 }
 
 void FOR_solveImmersedEq_d_i32(double *result, size_t nnzB,
-    int32_t *rowPointersB, int32_t *colPointersB, double *valuesB,
+    int32_t *rowPointersB, int32_t *colOffsetsB, double *valuesB,
     bool multiStream)
 {
     // splicer begin function.solveImmersedEq_d_i32
-    solveImmersedEq_d_i32(result, nnzB, rowPointersB, colPointersB,
+    solveImmersedEq_d_i32(result, nnzB, rowPointersB, colOffsetsB,
         valuesB, multiStream);
     // splicer end function.solveImmersedEq_d_i32
 }
 
 void FOR_solveImmersedEq_s_i32(float *result, size_t nnzB,
-    int32_t *rowPointersB, int32_t *colPointersB, float *valuesB,
+    int32_t *rowPointersB, int32_t *colOffsetsB, float *valuesB,
     bool multiStream)
 {
     // splicer begin function.solveImmersedEq_s_i32
-    solveImmersedEq_s_i32(result, nnzB, rowPointersB, colPointersB,
+    solveImmersedEq_s_i32(result, nnzB, rowPointersB, colOffsetsB,
         valuesB, multiStream);
     // splicer end function.solveImmersedEq_s_i32
 }
 
 void FOR_solveImmersedEq_d_i64(double *result, size_t nnzB,
-    int64_t *rowPointersB, int64_t *colPointersB, double *valuesB,
+    int64_t *rowPointersB, int64_t *colOffsetsB, double *valuesB,
     bool multiStream)
 {
     // splicer begin function.solveImmersedEq_d_i64
-    solveImmersedEq_d_i64(result, nnzB, rowPointersB, colPointersB,
+    solveImmersedEq_d_i64(result, nnzB, rowPointersB, colOffsetsB,
         valuesB, multiStream);
     // splicer end function.solveImmersedEq_d_i64
 }
 
 void FOR_solveImmersedEq_s_i64(float *result, size_t nnzB,
-    int64_t *rowPointersB, int64_t *colPointersB, float *valuesB,
+    int64_t *rowPointersB, int64_t *colOffsetsB, float *valuesB,
     bool multiStream)
 {
     // splicer begin function.solveImmersedEq_s_i64
-    solveImmersedEq_s_i64(result, nnzB, rowPointersB, colPointersB,
+    solveImmersedEq_s_i64(result, nnzB, rowPointersB, colOffsetsB,
         valuesB, multiStream);
     // splicer end function.solveImmersedEq_s_i64
 }

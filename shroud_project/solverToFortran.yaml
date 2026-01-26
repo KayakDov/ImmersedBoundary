@@ -7,9 +7,9 @@ declarations:
   # ==========================================
   - decl: |
       void initImmersedEq_d_i32(          
-          size_t height, 
-          size_t width, 
-          size_t depth,
+          size_t gridHeight, 
+          size_t gridWidth, 
+          size_t gridDepth,
           size_t fSize +implied(size(f)), 
           size_t nnzMaxB,
           double* p +intent(in) +rank(1),          
@@ -23,9 +23,9 @@ declarations:
     
   - decl: |
       void initImmersedEq_s_i32(
-          size_t height, 
-          size_t width, 
-          size_t depth,
+          size_t gridHeight, 
+          size_t gridWidth, 
+          size_t gridDepth,
           size_t fSize +implied(size(f)), 
           size_t nnzMaxB,          
           float* p +intent(in) +rank(1),          
@@ -39,9 +39,9 @@ declarations:
     
   - decl: |
       void initImmersedEq_d_i64(          
-          size_t height, 
-          size_t width, 
-          size_t depth,          
+          size_t gridHeight, 
+          size_t gridWidth, 
+          size_t gridDepth,          
           size_t fSize +implied(size(f)), 
           size_t nnzMaxB,          
           double* p +intent(in) +rank(1),          
@@ -55,9 +55,9 @@ declarations:
     
   - decl: |
       void initImmersedEq_s_i64(
-          size_t height, 
-          size_t width, 
-          size_t depth,          
+          size_t gridHeight, 
+          size_t gridWidth, 
+          size_t gridDepth,          
           size_t fSize +implied(size(f)), 
           size_t nnzMaxB,          
           float* p +intent(in) +rank(1),
@@ -77,7 +77,7 @@ declarations:
           double* result +intent(out) +rank(1),
           size_t nnzB,          
           int32_t* rowPointersB +intent(in) +rank(1),          
-          int32_t* colPointersB +intent(in) +rank(1),          
+          int32_t* colOffsetsB +intent(in) +rank(1),          
           double* valuesB +intent(in) +rank(1),
           bool multiStream
       )
@@ -87,7 +87,7 @@ declarations:
           float* result +intent(out) +rank(1),
           size_t nnzB,          
           int32_t* rowPointersB +intent(in) +rank(1),          
-          int32_t* colPointersB +intent(in) +rank(1),          
+          int32_t* colOffsetsB +intent(in) +rank(1),          
           float* valuesB +intent(in) +rank(1),
           bool multiStream
       )
@@ -97,7 +97,7 @@ declarations:
           double* result +intent(out) +rank(1),
           size_t nnzB,          
           int64_t* rowPointersB +intent(in) +rank(1),          
-          int64_t* colPointersB +intent(in) +rank(1),          
+          int64_t* colOffsetsB +intent(in) +rank(1),          
           double* valuesB +intent(in) +rank(1),
           bool multiStream
       )
@@ -107,7 +107,7 @@ declarations:
           float* result +intent(out) +rank(1),
           size_t nnzB,          
           int64_t* rowPointersB +intent(in) +rank(1),          
-          int64_t* colPointersB +intent(in) +rank(1),          
+          int64_t* colOffsetsB +intent(in) +rank(1),          
           float* valuesB +intent(in) +rank(1),
           bool multiStream
       )

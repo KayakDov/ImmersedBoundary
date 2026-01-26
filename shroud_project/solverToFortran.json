@@ -13,7 +13,7 @@
                         "params": [
                             {
                                 "declarator": {
-                                    "name": "height",
+                                    "name": "gridHeight",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -23,7 +23,7 @@
                             },
                             {
                                 "declarator": {
-                                    "name": "width",
+                                    "name": "gridWidth",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -33,7 +33,7 @@
                             },
                             {
                                 "declarator": {
-                                    "name": "depth",
+                                    "name": "gridDepth",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -160,8 +160,8 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void initImmersedEq_d_i32(          \n    size_t height, \n    size_t width, \n    size_t depth,\n    size_t fSize +implied(size(f)), \n    size_t nnzMaxB,\n    double* p +intent(in) +rank(1),          \n    double* f +intent(in) +rank(1),\n    double deltaX,\n    double deltaY,\n    double deltaZ,\n    double tolerance, \n    size_t maxBCGIterations\n)\n",
-                "declgen": "void initImmersedEq_d_i32(size_t height, size_t width, size_t depth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double tolerance, size_t maxBCGIterations)",
+                "decl": "void initImmersedEq_d_i32(          \n    size_t gridHeight, \n    size_t gridWidth, \n    size_t gridDepth,\n    size_t fSize +implied(size(f)), \n    size_t nnzMaxB,\n    double* p +intent(in) +rank(1),          \n    double* f +intent(in) +rank(1),\n    double deltaX,\n    double deltaY,\n    double deltaZ,\n    double tolerance, \n    size_t maxBCGIterations\n)\n",
+                "declgen": "void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double tolerance, size_t maxBCGIterations)",
                 "linenumber": 8,
                 "name": "initImmersedEq_d_i32",
                 "options": {},
@@ -173,10 +173,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "initImmersedEq_d_i32(\theight,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
-                                "C_call_list": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "C_call_function": "initImmersedEq_d_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
+                                "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "C_name": "FOR_initImmersedEq_d_i32",
-                                "C_prototype": "size_t height,\t size_t width,\t size_t depth,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                 "C_return_type": "void",
                                 "i_name_function": "c_init_immersed_eq_d_i32",
                                 "stmt_name": "c_subroutine",
@@ -281,37 +281,6 @@
                             },
                             "stmt": "c_in_native"
                         },
-                        "depth": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "depth",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&depth",
-                                "cxx_type": "size_t",
-                                "cxx_var": "depth",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_native"
-                        },
                         "f": {
                             "fmtdict": {
                                 "c_abstract_decl": "double *",
@@ -373,7 +342,7 @@
                             },
                             "stmt": "c_in_native"
                         },
-                        "height": {
+                        "gridDepth": {
                             "fmtdict": {
                                 "c_abstract_decl": "size_t",
                                 "c_addr": "&",
@@ -381,13 +350,75 @@
                                 "c_deref": "",
                                 "c_member": ".",
                                 "c_type": "size_t",
-                                "c_var": "height",
+                                "c_var": "gridDepth",
                                 "cxx_abstract_decl": "size_t",
                                 "cxx_addr": "&",
                                 "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&height",
+                                "cxx_nonconst_ptr": "&gridDepth",
                                 "cxx_type": "size_t",
-                                "cxx_var": "height",
+                                "cxx_var": "gridDepth",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_value_attr": ", value",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "idtor": "0",
+                                "stmt_name": "c_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "c_in_native"
+                        },
+                        "gridHeight": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridHeight",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridHeight",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridHeight",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_value_attr": ", value",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "idtor": "0",
+                                "stmt_name": "c_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "c_in_native"
+                        },
+                        "gridWidth": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridWidth",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridWidth",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridWidth",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_value_attr": ", value",
@@ -526,52 +557,21 @@
                                 "value": true
                             },
                             "stmt": "c_in_native"
-                        },
-                        "width": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "width",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&width",
-                                "cxx_type": "size_t",
-                                "cxx_var": "width",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_native"
                         }
                     },
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "initImmersedEq_d_i32(\theight,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
-                                "C_call_list": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "C_call_function": "initImmersedEq_d_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
+                                "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "C_name": "FOR_initImmersedEq_d_i32",
-                                "C_prototype": "size_t height,\t size_t width,\t size_t depth,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "height,\t width,\t depth,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
-                                "F_arguments": "height,\t width,\t depth,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_init_immersed_eq_d_i32",
-                                "i_arguments": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "i_name_function": "c_init_immersed_eq_d_i32",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
@@ -703,46 +703,6 @@
                             },
                             "stmt": "f_in_native"
                         },
-                        "depth": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "depth",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&depth",
-                                "cxx_type": "size_t",
-                                "cxx_var": "depth",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_kind": "C_SIZE_T",
-                                "f_module_name": "iso_c_binding",
-                                "f_type": "integer(C_SIZE_T)",
-                                "f_value_attr": ", value",
-                                "f_var": "depth",
-                                "fc_var": "depth",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_SIZE_T",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "integer(C_SIZE_T)",
-                                "i_var": "depth",
-                                "idtor": "0",
-                                "stmt_name": "f_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_native"
-                        },
                         "f": {
                             "fmtdict": {
                                 "c_abstract_decl": "double *",
@@ -828,7 +788,7 @@
                             },
                             "stmt": "f_in_native"
                         },
-                        "height": {
+                        "gridDepth": {
                             "fmtdict": {
                                 "c_abstract_decl": "size_t",
                                 "c_addr": "&",
@@ -836,27 +796,107 @@
                                 "c_deref": "",
                                 "c_member": ".",
                                 "c_type": "size_t",
-                                "c_var": "height",
+                                "c_var": "gridDepth",
                                 "cxx_abstract_decl": "size_t",
                                 "cxx_addr": "&",
                                 "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&height",
+                                "cxx_nonconst_ptr": "&gridDepth",
                                 "cxx_type": "size_t",
-                                "cxx_var": "height",
+                                "cxx_var": "gridDepth",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_kind": "C_SIZE_T",
                                 "f_module_name": "iso_c_binding",
                                 "f_type": "integer(C_SIZE_T)",
                                 "f_value_attr": ", value",
-                                "f_var": "height",
-                                "fc_var": "height",
+                                "f_var": "gridDepth",
+                                "fc_var": "gridDepth",
                                 "i_intent": "IN",
                                 "i_intent_attr": ", intent(IN)",
                                 "i_kind": "C_SIZE_T",
                                 "i_module_name": "iso_c_binding",
                                 "i_type": "integer(C_SIZE_T)",
-                                "i_var": "height",
+                                "i_var": "gridDepth",
+                                "idtor": "0",
+                                "stmt_name": "f_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "f_in_native"
+                        },
+                        "gridHeight": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridHeight",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridHeight",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridHeight",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_kind": "C_SIZE_T",
+                                "f_module_name": "iso_c_binding",
+                                "f_type": "integer(C_SIZE_T)",
+                                "f_value_attr": ", value",
+                                "f_var": "gridHeight",
+                                "fc_var": "gridHeight",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "i_kind": "C_SIZE_T",
+                                "i_module_name": "iso_c_binding",
+                                "i_type": "integer(C_SIZE_T)",
+                                "i_var": "gridHeight",
+                                "idtor": "0",
+                                "stmt_name": "f_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "f_in_native"
+                        },
+                        "gridWidth": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridWidth",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridWidth",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridWidth",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_kind": "C_SIZE_T",
+                                "f_module_name": "iso_c_binding",
+                                "f_type": "integer(C_SIZE_T)",
+                                "f_value_attr": ", value",
+                                "f_var": "gridWidth",
+                                "fc_var": "gridWidth",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "i_kind": "C_SIZE_T",
+                                "i_module_name": "iso_c_binding",
+                                "i_type": "integer(C_SIZE_T)",
+                                "i_var": "gridWidth",
                                 "idtor": "0",
                                 "stmt_name": "f_in_native",
                                 "typemap_name": "size_t"
@@ -1031,46 +1071,6 @@
                                 "value": true
                             },
                             "stmt": "f_in_native"
-                        },
-                        "width": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "width",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&width",
-                                "cxx_type": "size_t",
-                                "cxx_var": "width",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_kind": "C_SIZE_T",
-                                "f_module_name": "iso_c_binding",
-                                "f_type": "integer(C_SIZE_T)",
-                                "f_value_attr": ", value",
-                                "f_var": "width",
-                                "fc_var": "width",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_SIZE_T",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "integer(C_SIZE_T)",
-                                "i_var": "width",
-                                "idtor": "0",
-                                "stmt_name": "f_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_native"
                         }
                     },
                     "share": {
@@ -1101,13 +1101,6 @@
                                 "value": true
                             }
                         },
-                        "depth": {
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "f": {
                             "meta": {
                                 "abstract": "native*",
@@ -1122,7 +1115,21 @@
                                 "value": true
                             }
                         },
-                        "height": {
+                        "gridDepth": {
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            }
+                        },
+                        "gridHeight": {
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            }
+                        },
+                        "gridWidth": {
                             "meta": {
                                 "abstract": "native",
                                 "intent": "in",
@@ -1156,13 +1163,6 @@
                                 "intent": "in",
                                 "value": true
                             }
-                        },
-                        "width": {
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            }
                         }
                     }
                 },
@@ -1174,9 +1174,9 @@
                     "F_name_impl": "init_immersed_eq_d_i32",
                     "c_arglist": [
                         "c_var",
-                        "height",
-                        "width",
-                        "depth",
+                        "gridHeight",
+                        "gridWidth",
+                        "gridDepth",
                         "fSize",
                         "nnzMaxB",
                         "p",
@@ -1189,9 +1189,9 @@
                     ],
                     "f_arglist": [
                         "f_var",
-                        "height",
-                        "width",
-                        "depth",
+                        "gridHeight",
+                        "gridWidth",
+                        "gridDepth",
                         "fSize",
                         "nnzMaxB",
                         "p",
@@ -1213,7 +1213,7 @@
                         "params": [
                             {
                                 "declarator": {
-                                    "name": "height",
+                                    "name": "gridHeight",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -1223,7 +1223,7 @@
                             },
                             {
                                 "declarator": {
-                                    "name": "width",
+                                    "name": "gridWidth",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -1233,7 +1233,7 @@
                             },
                             {
                                 "declarator": {
-                                    "name": "depth",
+                                    "name": "gridDepth",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -1360,8 +1360,8 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void initImmersedEq_s_i32(\n    size_t height, \n    size_t width, \n    size_t depth,\n    size_t fSize +implied(size(f)), \n    size_t nnzMaxB,          \n    float* p +intent(in) +rank(1),          \n    float* f +intent(in) +rank(1),          \n    double deltaX, \n    double deltaY, \n    double deltaZ,          \n    double tolerance, \n    size_t maxBCGIterations\n)\n",
-                "declgen": "void initImmersedEq_s_i32(size_t height, size_t width, size_t depth, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double tolerance, size_t maxBCGIterations)",
+                "decl": "void initImmersedEq_s_i32(\n    size_t gridHeight, \n    size_t gridWidth, \n    size_t gridDepth,\n    size_t fSize +implied(size(f)), \n    size_t nnzMaxB,          \n    float* p +intent(in) +rank(1),          \n    float* f +intent(in) +rank(1),          \n    double deltaX, \n    double deltaY, \n    double deltaZ,          \n    double tolerance, \n    size_t maxBCGIterations\n)\n",
+                "declgen": "void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double tolerance, size_t maxBCGIterations)",
                 "linenumber": 24,
                 "name": "initImmersedEq_s_i32",
                 "options": {},
@@ -1373,10 +1373,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "initImmersedEq_s_i32(\theight,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
-                                "C_call_list": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "C_call_function": "initImmersedEq_s_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
+                                "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "C_name": "FOR_initImmersedEq_s_i32",
-                                "C_prototype": "size_t height,\t size_t width,\t size_t depth,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                 "C_return_type": "void",
                                 "i_name_function": "c_init_immersed_eq_s_i32",
                                 "stmt_name": "c_subroutine",
@@ -1481,37 +1481,6 @@
                             },
                             "stmt": "c_in_native"
                         },
-                        "depth": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "depth",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&depth",
-                                "cxx_type": "size_t",
-                                "cxx_var": "depth",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_native"
-                        },
                         "f": {
                             "fmtdict": {
                                 "c_abstract_decl": "float *",
@@ -1573,7 +1542,7 @@
                             },
                             "stmt": "c_in_native"
                         },
-                        "height": {
+                        "gridDepth": {
                             "fmtdict": {
                                 "c_abstract_decl": "size_t",
                                 "c_addr": "&",
@@ -1581,13 +1550,75 @@
                                 "c_deref": "",
                                 "c_member": ".",
                                 "c_type": "size_t",
-                                "c_var": "height",
+                                "c_var": "gridDepth",
                                 "cxx_abstract_decl": "size_t",
                                 "cxx_addr": "&",
                                 "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&height",
+                                "cxx_nonconst_ptr": "&gridDepth",
                                 "cxx_type": "size_t",
-                                "cxx_var": "height",
+                                "cxx_var": "gridDepth",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_value_attr": ", value",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "idtor": "0",
+                                "stmt_name": "c_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "c_in_native"
+                        },
+                        "gridHeight": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridHeight",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridHeight",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridHeight",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_value_attr": ", value",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "idtor": "0",
+                                "stmt_name": "c_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "c_in_native"
+                        },
+                        "gridWidth": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridWidth",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridWidth",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridWidth",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_value_attr": ", value",
@@ -1726,52 +1757,21 @@
                                 "value": true
                             },
                             "stmt": "c_in_native"
-                        },
-                        "width": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "width",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&width",
-                                "cxx_type": "size_t",
-                                "cxx_var": "width",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_native"
                         }
                     },
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "initImmersedEq_s_i32(\theight,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
-                                "C_call_list": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "C_call_function": "initImmersedEq_s_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
+                                "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "C_name": "FOR_initImmersedEq_s_i32",
-                                "C_prototype": "size_t height,\t size_t width,\t size_t depth,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "height,\t width,\t depth,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
-                                "F_arguments": "height,\t width,\t depth,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_init_immersed_eq_s_i32",
-                                "i_arguments": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "i_name_function": "c_init_immersed_eq_s_i32",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
@@ -1903,46 +1903,6 @@
                             },
                             "stmt": "f_in_native"
                         },
-                        "depth": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "depth",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&depth",
-                                "cxx_type": "size_t",
-                                "cxx_var": "depth",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_kind": "C_SIZE_T",
-                                "f_module_name": "iso_c_binding",
-                                "f_type": "integer(C_SIZE_T)",
-                                "f_value_attr": ", value",
-                                "f_var": "depth",
-                                "fc_var": "depth",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_SIZE_T",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "integer(C_SIZE_T)",
-                                "i_var": "depth",
-                                "idtor": "0",
-                                "stmt_name": "f_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_native"
-                        },
                         "f": {
                             "fmtdict": {
                                 "c_abstract_decl": "float *",
@@ -2028,7 +1988,7 @@
                             },
                             "stmt": "f_in_native"
                         },
-                        "height": {
+                        "gridDepth": {
                             "fmtdict": {
                                 "c_abstract_decl": "size_t",
                                 "c_addr": "&",
@@ -2036,27 +1996,107 @@
                                 "c_deref": "",
                                 "c_member": ".",
                                 "c_type": "size_t",
-                                "c_var": "height",
+                                "c_var": "gridDepth",
                                 "cxx_abstract_decl": "size_t",
                                 "cxx_addr": "&",
                                 "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&height",
+                                "cxx_nonconst_ptr": "&gridDepth",
                                 "cxx_type": "size_t",
-                                "cxx_var": "height",
+                                "cxx_var": "gridDepth",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_kind": "C_SIZE_T",
                                 "f_module_name": "iso_c_binding",
                                 "f_type": "integer(C_SIZE_T)",
                                 "f_value_attr": ", value",
-                                "f_var": "height",
-                                "fc_var": "height",
+                                "f_var": "gridDepth",
+                                "fc_var": "gridDepth",
                                 "i_intent": "IN",
                                 "i_intent_attr": ", intent(IN)",
                                 "i_kind": "C_SIZE_T",
                                 "i_module_name": "iso_c_binding",
                                 "i_type": "integer(C_SIZE_T)",
-                                "i_var": "height",
+                                "i_var": "gridDepth",
+                                "idtor": "0",
+                                "stmt_name": "f_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "f_in_native"
+                        },
+                        "gridHeight": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridHeight",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridHeight",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridHeight",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_kind": "C_SIZE_T",
+                                "f_module_name": "iso_c_binding",
+                                "f_type": "integer(C_SIZE_T)",
+                                "f_value_attr": ", value",
+                                "f_var": "gridHeight",
+                                "fc_var": "gridHeight",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "i_kind": "C_SIZE_T",
+                                "i_module_name": "iso_c_binding",
+                                "i_type": "integer(C_SIZE_T)",
+                                "i_var": "gridHeight",
+                                "idtor": "0",
+                                "stmt_name": "f_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "f_in_native"
+                        },
+                        "gridWidth": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridWidth",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridWidth",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridWidth",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_kind": "C_SIZE_T",
+                                "f_module_name": "iso_c_binding",
+                                "f_type": "integer(C_SIZE_T)",
+                                "f_value_attr": ", value",
+                                "f_var": "gridWidth",
+                                "fc_var": "gridWidth",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "i_kind": "C_SIZE_T",
+                                "i_module_name": "iso_c_binding",
+                                "i_type": "integer(C_SIZE_T)",
+                                "i_var": "gridWidth",
                                 "idtor": "0",
                                 "stmt_name": "f_in_native",
                                 "typemap_name": "size_t"
@@ -2231,46 +2271,6 @@
                                 "value": true
                             },
                             "stmt": "f_in_native"
-                        },
-                        "width": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "width",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&width",
-                                "cxx_type": "size_t",
-                                "cxx_var": "width",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_kind": "C_SIZE_T",
-                                "f_module_name": "iso_c_binding",
-                                "f_type": "integer(C_SIZE_T)",
-                                "f_value_attr": ", value",
-                                "f_var": "width",
-                                "fc_var": "width",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_SIZE_T",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "integer(C_SIZE_T)",
-                                "i_var": "width",
-                                "idtor": "0",
-                                "stmt_name": "f_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_native"
                         }
                     },
                     "share": {
@@ -2301,13 +2301,6 @@
                                 "value": true
                             }
                         },
-                        "depth": {
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "f": {
                             "meta": {
                                 "abstract": "native*",
@@ -2322,7 +2315,21 @@
                                 "value": true
                             }
                         },
-                        "height": {
+                        "gridDepth": {
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            }
+                        },
+                        "gridHeight": {
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            }
+                        },
+                        "gridWidth": {
                             "meta": {
                                 "abstract": "native",
                                 "intent": "in",
@@ -2356,13 +2363,6 @@
                                 "intent": "in",
                                 "value": true
                             }
-                        },
-                        "width": {
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            }
                         }
                     }
                 },
@@ -2374,9 +2374,9 @@
                     "F_name_impl": "init_immersed_eq_s_i32",
                     "c_arglist": [
                         "c_var",
-                        "height",
-                        "width",
-                        "depth",
+                        "gridHeight",
+                        "gridWidth",
+                        "gridDepth",
                         "fSize",
                         "nnzMaxB",
                         "p",
@@ -2389,9 +2389,9 @@
                     ],
                     "f_arglist": [
                         "f_var",
-                        "height",
-                        "width",
-                        "depth",
+                        "gridHeight",
+                        "gridWidth",
+                        "gridDepth",
                         "fSize",
                         "nnzMaxB",
                         "p",
@@ -2413,7 +2413,7 @@
                         "params": [
                             {
                                 "declarator": {
-                                    "name": "height",
+                                    "name": "gridHeight",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -2423,7 +2423,7 @@
                             },
                             {
                                 "declarator": {
-                                    "name": "width",
+                                    "name": "gridWidth",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -2433,7 +2433,7 @@
                             },
                             {
                                 "declarator": {
-                                    "name": "depth",
+                                    "name": "gridDepth",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -2560,8 +2560,8 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void initImmersedEq_d_i64(          \n    size_t height, \n    size_t width, \n    size_t depth,          \n    size_t fSize +implied(size(f)), \n    size_t nnzMaxB,          \n    double* p +intent(in) +rank(1),          \n    double* f +intent(in) +rank(1),          \n    double deltaX, \n    double deltaY, \n    double deltaZ,          \n    double tolerance, \n    size_t maxBCGIterations\n)\n",
-                "declgen": "void initImmersedEq_d_i64(size_t height, size_t width, size_t depth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double tolerance, size_t maxBCGIterations)",
+                "decl": "void initImmersedEq_d_i64(          \n    size_t gridHeight, \n    size_t gridWidth, \n    size_t gridDepth,          \n    size_t fSize +implied(size(f)), \n    size_t nnzMaxB,          \n    double* p +intent(in) +rank(1),          \n    double* f +intent(in) +rank(1),          \n    double deltaX, \n    double deltaY, \n    double deltaZ,          \n    double tolerance, \n    size_t maxBCGIterations\n)\n",
+                "declgen": "void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double tolerance, size_t maxBCGIterations)",
                 "linenumber": 40,
                 "name": "initImmersedEq_d_i64",
                 "options": {},
@@ -2573,10 +2573,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "initImmersedEq_d_i64(\theight,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
-                                "C_call_list": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "C_call_function": "initImmersedEq_d_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
+                                "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "C_name": "FOR_initImmersedEq_d_i64",
-                                "C_prototype": "size_t height,\t size_t width,\t size_t depth,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                 "C_return_type": "void",
                                 "i_name_function": "c_init_immersed_eq_d_i64",
                                 "stmt_name": "c_subroutine",
@@ -2681,37 +2681,6 @@
                             },
                             "stmt": "c_in_native"
                         },
-                        "depth": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "depth",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&depth",
-                                "cxx_type": "size_t",
-                                "cxx_var": "depth",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_native"
-                        },
                         "f": {
                             "fmtdict": {
                                 "c_abstract_decl": "double *",
@@ -2773,7 +2742,7 @@
                             },
                             "stmt": "c_in_native"
                         },
-                        "height": {
+                        "gridDepth": {
                             "fmtdict": {
                                 "c_abstract_decl": "size_t",
                                 "c_addr": "&",
@@ -2781,13 +2750,75 @@
                                 "c_deref": "",
                                 "c_member": ".",
                                 "c_type": "size_t",
-                                "c_var": "height",
+                                "c_var": "gridDepth",
                                 "cxx_abstract_decl": "size_t",
                                 "cxx_addr": "&",
                                 "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&height",
+                                "cxx_nonconst_ptr": "&gridDepth",
                                 "cxx_type": "size_t",
-                                "cxx_var": "height",
+                                "cxx_var": "gridDepth",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_value_attr": ", value",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "idtor": "0",
+                                "stmt_name": "c_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "c_in_native"
+                        },
+                        "gridHeight": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridHeight",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridHeight",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridHeight",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_value_attr": ", value",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "idtor": "0",
+                                "stmt_name": "c_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "c_in_native"
+                        },
+                        "gridWidth": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridWidth",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridWidth",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridWidth",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_value_attr": ", value",
@@ -2926,52 +2957,21 @@
                                 "value": true
                             },
                             "stmt": "c_in_native"
-                        },
-                        "width": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "width",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&width",
-                                "cxx_type": "size_t",
-                                "cxx_var": "width",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_native"
                         }
                     },
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "initImmersedEq_d_i64(\theight,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
-                                "C_call_list": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "C_call_function": "initImmersedEq_d_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
+                                "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "C_name": "FOR_initImmersedEq_d_i64",
-                                "C_prototype": "size_t height,\t size_t width,\t size_t depth,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "height,\t width,\t depth,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
-                                "F_arguments": "height,\t width,\t depth,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_init_immersed_eq_d_i64",
-                                "i_arguments": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "i_name_function": "c_init_immersed_eq_d_i64",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
@@ -3103,46 +3103,6 @@
                             },
                             "stmt": "f_in_native"
                         },
-                        "depth": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "depth",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&depth",
-                                "cxx_type": "size_t",
-                                "cxx_var": "depth",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_kind": "C_SIZE_T",
-                                "f_module_name": "iso_c_binding",
-                                "f_type": "integer(C_SIZE_T)",
-                                "f_value_attr": ", value",
-                                "f_var": "depth",
-                                "fc_var": "depth",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_SIZE_T",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "integer(C_SIZE_T)",
-                                "i_var": "depth",
-                                "idtor": "0",
-                                "stmt_name": "f_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_native"
-                        },
                         "f": {
                             "fmtdict": {
                                 "c_abstract_decl": "double *",
@@ -3228,7 +3188,7 @@
                             },
                             "stmt": "f_in_native"
                         },
-                        "height": {
+                        "gridDepth": {
                             "fmtdict": {
                                 "c_abstract_decl": "size_t",
                                 "c_addr": "&",
@@ -3236,27 +3196,107 @@
                                 "c_deref": "",
                                 "c_member": ".",
                                 "c_type": "size_t",
-                                "c_var": "height",
+                                "c_var": "gridDepth",
                                 "cxx_abstract_decl": "size_t",
                                 "cxx_addr": "&",
                                 "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&height",
+                                "cxx_nonconst_ptr": "&gridDepth",
                                 "cxx_type": "size_t",
-                                "cxx_var": "height",
+                                "cxx_var": "gridDepth",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_kind": "C_SIZE_T",
                                 "f_module_name": "iso_c_binding",
                                 "f_type": "integer(C_SIZE_T)",
                                 "f_value_attr": ", value",
-                                "f_var": "height",
-                                "fc_var": "height",
+                                "f_var": "gridDepth",
+                                "fc_var": "gridDepth",
                                 "i_intent": "IN",
                                 "i_intent_attr": ", intent(IN)",
                                 "i_kind": "C_SIZE_T",
                                 "i_module_name": "iso_c_binding",
                                 "i_type": "integer(C_SIZE_T)",
-                                "i_var": "height",
+                                "i_var": "gridDepth",
+                                "idtor": "0",
+                                "stmt_name": "f_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "f_in_native"
+                        },
+                        "gridHeight": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridHeight",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridHeight",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridHeight",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_kind": "C_SIZE_T",
+                                "f_module_name": "iso_c_binding",
+                                "f_type": "integer(C_SIZE_T)",
+                                "f_value_attr": ", value",
+                                "f_var": "gridHeight",
+                                "fc_var": "gridHeight",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "i_kind": "C_SIZE_T",
+                                "i_module_name": "iso_c_binding",
+                                "i_type": "integer(C_SIZE_T)",
+                                "i_var": "gridHeight",
+                                "idtor": "0",
+                                "stmt_name": "f_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "f_in_native"
+                        },
+                        "gridWidth": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridWidth",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridWidth",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridWidth",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_kind": "C_SIZE_T",
+                                "f_module_name": "iso_c_binding",
+                                "f_type": "integer(C_SIZE_T)",
+                                "f_value_attr": ", value",
+                                "f_var": "gridWidth",
+                                "fc_var": "gridWidth",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "i_kind": "C_SIZE_T",
+                                "i_module_name": "iso_c_binding",
+                                "i_type": "integer(C_SIZE_T)",
+                                "i_var": "gridWidth",
                                 "idtor": "0",
                                 "stmt_name": "f_in_native",
                                 "typemap_name": "size_t"
@@ -3431,46 +3471,6 @@
                                 "value": true
                             },
                             "stmt": "f_in_native"
-                        },
-                        "width": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "width",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&width",
-                                "cxx_type": "size_t",
-                                "cxx_var": "width",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_kind": "C_SIZE_T",
-                                "f_module_name": "iso_c_binding",
-                                "f_type": "integer(C_SIZE_T)",
-                                "f_value_attr": ", value",
-                                "f_var": "width",
-                                "fc_var": "width",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_SIZE_T",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "integer(C_SIZE_T)",
-                                "i_var": "width",
-                                "idtor": "0",
-                                "stmt_name": "f_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_native"
                         }
                     },
                     "share": {
@@ -3501,13 +3501,6 @@
                                 "value": true
                             }
                         },
-                        "depth": {
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "f": {
                             "meta": {
                                 "abstract": "native*",
@@ -3522,7 +3515,21 @@
                                 "value": true
                             }
                         },
-                        "height": {
+                        "gridDepth": {
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            }
+                        },
+                        "gridHeight": {
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            }
+                        },
+                        "gridWidth": {
                             "meta": {
                                 "abstract": "native",
                                 "intent": "in",
@@ -3556,13 +3563,6 @@
                                 "intent": "in",
                                 "value": true
                             }
-                        },
-                        "width": {
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            }
                         }
                     }
                 },
@@ -3574,9 +3574,9 @@
                     "F_name_impl": "init_immersed_eq_d_i64",
                     "c_arglist": [
                         "c_var",
-                        "height",
-                        "width",
-                        "depth",
+                        "gridHeight",
+                        "gridWidth",
+                        "gridDepth",
                         "fSize",
                         "nnzMaxB",
                         "p",
@@ -3589,9 +3589,9 @@
                     ],
                     "f_arglist": [
                         "f_var",
-                        "height",
-                        "width",
-                        "depth",
+                        "gridHeight",
+                        "gridWidth",
+                        "gridDepth",
                         "fSize",
                         "nnzMaxB",
                         "p",
@@ -3613,7 +3613,7 @@
                         "params": [
                             {
                                 "declarator": {
-                                    "name": "height",
+                                    "name": "gridHeight",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -3623,7 +3623,7 @@
                             },
                             {
                                 "declarator": {
-                                    "name": "width",
+                                    "name": "gridWidth",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -3633,7 +3633,7 @@
                             },
                             {
                                 "declarator": {
-                                    "name": "depth",
+                                    "name": "gridDepth",
                                     "typemap_name": "size_t"
                                 },
                                 "specifier": [
@@ -3760,8 +3760,8 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void initImmersedEq_s_i64(\n    size_t height, \n    size_t width, \n    size_t depth,          \n    size_t fSize +implied(size(f)), \n    size_t nnzMaxB,          \n    float* p +intent(in) +rank(1),\n    float* f +intent(in) +rank(1),\n    double deltaX, \n    double deltaY, \n    double deltaZ,          \n    double tolerance, \n    size_t maxBCGIterations\n)\n",
-                "declgen": "void initImmersedEq_s_i64(size_t height, size_t width, size_t depth, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double tolerance, size_t maxBCGIterations)",
+                "decl": "void initImmersedEq_s_i64(\n    size_t gridHeight, \n    size_t gridWidth, \n    size_t gridDepth,          \n    size_t fSize +implied(size(f)), \n    size_t nnzMaxB,          \n    float* p +intent(in) +rank(1),\n    float* f +intent(in) +rank(1),\n    double deltaX, \n    double deltaY, \n    double deltaZ,          \n    double tolerance, \n    size_t maxBCGIterations\n)\n",
+                "declgen": "void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double tolerance, size_t maxBCGIterations)",
                 "linenumber": 56,
                 "name": "initImmersedEq_s_i64",
                 "options": {},
@@ -3773,10 +3773,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "initImmersedEq_s_i64(\theight,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
-                                "C_call_list": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "C_call_function": "initImmersedEq_s_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
+                                "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "C_name": "FOR_initImmersedEq_s_i64",
-                                "C_prototype": "size_t height,\t size_t width,\t size_t depth,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                 "C_return_type": "void",
                                 "i_name_function": "c_init_immersed_eq_s_i64",
                                 "stmt_name": "c_subroutine",
@@ -3881,37 +3881,6 @@
                             },
                             "stmt": "c_in_native"
                         },
-                        "depth": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "depth",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&depth",
-                                "cxx_type": "size_t",
-                                "cxx_var": "depth",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_native"
-                        },
                         "f": {
                             "fmtdict": {
                                 "c_abstract_decl": "float *",
@@ -3973,7 +3942,7 @@
                             },
                             "stmt": "c_in_native"
                         },
-                        "height": {
+                        "gridDepth": {
                             "fmtdict": {
                                 "c_abstract_decl": "size_t",
                                 "c_addr": "&",
@@ -3981,13 +3950,75 @@
                                 "c_deref": "",
                                 "c_member": ".",
                                 "c_type": "size_t",
-                                "c_var": "height",
+                                "c_var": "gridDepth",
                                 "cxx_abstract_decl": "size_t",
                                 "cxx_addr": "&",
                                 "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&height",
+                                "cxx_nonconst_ptr": "&gridDepth",
                                 "cxx_type": "size_t",
-                                "cxx_var": "height",
+                                "cxx_var": "gridDepth",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_value_attr": ", value",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "idtor": "0",
+                                "stmt_name": "c_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "c_in_native"
+                        },
+                        "gridHeight": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridHeight",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridHeight",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridHeight",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_value_attr": ", value",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "idtor": "0",
+                                "stmt_name": "c_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "c_in_native"
+                        },
+                        "gridWidth": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridWidth",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridWidth",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridWidth",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_value_attr": ", value",
@@ -4126,52 +4157,21 @@
                                 "value": true
                             },
                             "stmt": "c_in_native"
-                        },
-                        "width": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "width",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&width",
-                                "cxx_type": "size_t",
-                                "cxx_var": "width",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_native"
                         }
                     },
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "initImmersedEq_s_i64(\theight,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
-                                "C_call_list": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "C_call_function": "initImmersedEq_s_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations)",
+                                "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "C_name": "FOR_initImmersedEq_s_i64",
-                                "C_prototype": "size_t height,\t size_t width,\t size_t depth,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t double deltaX,\t double deltaY,\t double deltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "height,\t width,\t depth,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
-                                "F_arguments": "height,\t width,\t depth,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_init_immersed_eq_s_i64",
-                                "i_arguments": "height,\t width,\t depth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
+                                "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t fSize,\t nnzMaxB,\t p,\t f,\t deltaX,\t deltaY,\t deltaZ,\t tolerance,\t maxBCGIterations",
                                 "i_name_function": "c_init_immersed_eq_s_i64",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
@@ -4303,46 +4303,6 @@
                             },
                             "stmt": "f_in_native"
                         },
-                        "depth": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "depth",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&depth",
-                                "cxx_type": "size_t",
-                                "cxx_var": "depth",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_kind": "C_SIZE_T",
-                                "f_module_name": "iso_c_binding",
-                                "f_type": "integer(C_SIZE_T)",
-                                "f_value_attr": ", value",
-                                "f_var": "depth",
-                                "fc_var": "depth",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_SIZE_T",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "integer(C_SIZE_T)",
-                                "i_var": "depth",
-                                "idtor": "0",
-                                "stmt_name": "f_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_native"
-                        },
                         "f": {
                             "fmtdict": {
                                 "c_abstract_decl": "float *",
@@ -4428,7 +4388,7 @@
                             },
                             "stmt": "f_in_native"
                         },
-                        "height": {
+                        "gridDepth": {
                             "fmtdict": {
                                 "c_abstract_decl": "size_t",
                                 "c_addr": "&",
@@ -4436,27 +4396,107 @@
                                 "c_deref": "",
                                 "c_member": ".",
                                 "c_type": "size_t",
-                                "c_var": "height",
+                                "c_var": "gridDepth",
                                 "cxx_abstract_decl": "size_t",
                                 "cxx_addr": "&",
                                 "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&height",
+                                "cxx_nonconst_ptr": "&gridDepth",
                                 "cxx_type": "size_t",
-                                "cxx_var": "height",
+                                "cxx_var": "gridDepth",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_kind": "C_SIZE_T",
                                 "f_module_name": "iso_c_binding",
                                 "f_type": "integer(C_SIZE_T)",
                                 "f_value_attr": ", value",
-                                "f_var": "height",
-                                "fc_var": "height",
+                                "f_var": "gridDepth",
+                                "fc_var": "gridDepth",
                                 "i_intent": "IN",
                                 "i_intent_attr": ", intent(IN)",
                                 "i_kind": "C_SIZE_T",
                                 "i_module_name": "iso_c_binding",
                                 "i_type": "integer(C_SIZE_T)",
-                                "i_var": "height",
+                                "i_var": "gridDepth",
+                                "idtor": "0",
+                                "stmt_name": "f_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "f_in_native"
+                        },
+                        "gridHeight": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridHeight",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridHeight",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridHeight",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_kind": "C_SIZE_T",
+                                "f_module_name": "iso_c_binding",
+                                "f_type": "integer(C_SIZE_T)",
+                                "f_value_attr": ", value",
+                                "f_var": "gridHeight",
+                                "fc_var": "gridHeight",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "i_kind": "C_SIZE_T",
+                                "i_module_name": "iso_c_binding",
+                                "i_type": "integer(C_SIZE_T)",
+                                "i_var": "gridHeight",
+                                "idtor": "0",
+                                "stmt_name": "f_in_native",
+                                "typemap_name": "size_t"
+                            },
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            },
+                            "stmt": "f_in_native"
+                        },
+                        "gridWidth": {
+                            "fmtdict": {
+                                "c_abstract_decl": "size_t",
+                                "c_addr": "&",
+                                "c_const": "",
+                                "c_deref": "",
+                                "c_member": ".",
+                                "c_type": "size_t",
+                                "c_var": "gridWidth",
+                                "cxx_abstract_decl": "size_t",
+                                "cxx_addr": "&",
+                                "cxx_member": ".",
+                                "cxx_nonconst_ptr": "&gridWidth",
+                                "cxx_type": "size_t",
+                                "cxx_var": "gridWidth",
+                                "f_intent": "IN",
+                                "f_intent_attr": ", intent(IN)",
+                                "f_kind": "C_SIZE_T",
+                                "f_module_name": "iso_c_binding",
+                                "f_type": "integer(C_SIZE_T)",
+                                "f_value_attr": ", value",
+                                "f_var": "gridWidth",
+                                "fc_var": "gridWidth",
+                                "i_intent": "IN",
+                                "i_intent_attr": ", intent(IN)",
+                                "i_kind": "C_SIZE_T",
+                                "i_module_name": "iso_c_binding",
+                                "i_type": "integer(C_SIZE_T)",
+                                "i_var": "gridWidth",
                                 "idtor": "0",
                                 "stmt_name": "f_in_native",
                                 "typemap_name": "size_t"
@@ -4631,46 +4671,6 @@
                                 "value": true
                             },
                             "stmt": "f_in_native"
-                        },
-                        "width": {
-                            "fmtdict": {
-                                "c_abstract_decl": "size_t",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "size_t",
-                                "c_var": "width",
-                                "cxx_abstract_decl": "size_t",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&width",
-                                "cxx_type": "size_t",
-                                "cxx_var": "width",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_kind": "C_SIZE_T",
-                                "f_module_name": "iso_c_binding",
-                                "f_type": "integer(C_SIZE_T)",
-                                "f_value_attr": ", value",
-                                "f_var": "width",
-                                "fc_var": "width",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_SIZE_T",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "integer(C_SIZE_T)",
-                                "i_var": "width",
-                                "idtor": "0",
-                                "stmt_name": "f_in_native",
-                                "typemap_name": "size_t"
-                            },
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_native"
                         }
                     },
                     "share": {
@@ -4701,13 +4701,6 @@
                                 "value": true
                             }
                         },
-                        "depth": {
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "f": {
                             "meta": {
                                 "abstract": "native*",
@@ -4722,7 +4715,21 @@
                                 "value": true
                             }
                         },
-                        "height": {
+                        "gridDepth": {
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            }
+                        },
+                        "gridHeight": {
+                            "meta": {
+                                "abstract": "native",
+                                "intent": "in",
+                                "value": true
+                            }
+                        },
+                        "gridWidth": {
                             "meta": {
                                 "abstract": "native",
                                 "intent": "in",
@@ -4756,13 +4763,6 @@
                                 "intent": "in",
                                 "value": true
                             }
-                        },
-                        "width": {
-                            "meta": {
-                                "abstract": "native",
-                                "intent": "in",
-                                "value": true
-                            }
                         }
                     }
                 },
@@ -4774,9 +4774,9 @@
                     "F_name_impl": "init_immersed_eq_s_i64",
                     "c_arglist": [
                         "c_var",
-                        "height",
-                        "width",
-                        "depth",
+                        "gridHeight",
+                        "gridWidth",
+                        "gridDepth",
                         "fSize",
                         "nnzMaxB",
                         "p",
@@ -4789,9 +4789,9 @@
                     ],
                     "f_arglist": [
                         "f_var",
-                        "height",
-                        "width",
-                        "depth",
+                        "gridHeight",
+                        "gridWidth",
+                        "gridDepth",
                         "fSize",
                         "nnzMaxB",
                         "p",
@@ -4865,7 +4865,7 @@
                                         "intent": "in",
                                         "rank": "1"
                                     },
-                                    "name": "colPointersB",
+                                    "name": "colOffsetsB",
                                     "pointer": [
                                         {
                                             "ptr": "*"
@@ -4915,8 +4915,8 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEq_d_i32(\n    double* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int32_t* rowPointersB +intent(in) +rank(1),          \n    int32_t* colPointersB +intent(in) +rank(1),          \n    double* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n",
-                "declgen": "void solveImmersedEq_d_i32(double *result +intent(out)+rank(1), size_t nnzB, int32_t *rowPointersB +intent(in)+rank(1), int32_t *colPointersB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), bool multiStream)",
+                "decl": "void solveImmersedEq_d_i32(\n    double* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int32_t* rowPointersB +intent(in) +rank(1),          \n    int32_t* colOffsetsB +intent(in) +rank(1),          \n    double* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n",
+                "declgen": "void solveImmersedEq_d_i32(double *result +intent(out)+rank(1), size_t nnzB, int32_t *rowPointersB +intent(in)+rank(1), int32_t *colOffsetsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), bool multiStream)",
                 "linenumber": 75,
                 "name": "solveImmersedEq_d_i32",
                 "options": {},
@@ -4928,10 +4928,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_d_i32(\tresult,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_d_i32(\tresult,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream)",
+                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "C_name": "FOR_solveImmersedEq_d_i32",
-                                "C_prototype": "double *result,\t size_t nnzB,\t int32_t *rowPointersB,\t int32_t *colPointersB,\t double *valuesB,\t bool multiStream",
+                                "C_prototype": "double *result,\t size_t nnzB,\t int32_t *rowPointersB,\t int32_t *colOffsetsB,\t double *valuesB,\t bool multiStream",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_d_i32",
                                 "stmt_name": "c_subroutine",
@@ -4943,7 +4943,7 @@
                             },
                             "stmt": "c_subroutine"
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "fmtdict": {
                                 "c_abstract_decl": "int32_t *",
                                 "c_addr": "",
@@ -4951,13 +4951,13 @@
                                 "c_deref": "*",
                                 "c_member": "->",
                                 "c_type": "int32_t",
-                                "c_var": "colPointersB",
+                                "c_var": "colOffsetsB",
                                 "cxx_abstract_decl": "int32_t *",
                                 "cxx_addr": "",
                                 "cxx_member": "->",
-                                "cxx_nonconst_ptr": "colPointersB",
+                                "cxx_nonconst_ptr": "colOffsetsB",
                                 "cxx_type": "int32_t",
-                                "cxx_var": "colPointersB",
+                                "cxx_var": "colOffsetsB",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "i_intent": "IN",
@@ -5129,16 +5129,16 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_d_i32(\tresult,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_d_i32(\tresult,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream)",
+                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "C_name": "FOR_solveImmersedEq_d_i32",
-                                "C_prototype": "double *result,\t size_t nnzB,\t int32_t *rowPointersB,\t int32_t *colPointersB,\t double *valuesB,\t bool multiStream",
+                                "C_prototype": "double *result,\t size_t nnzB,\t int32_t *rowPointersB,\t int32_t *colOffsetsB,\t double *valuesB,\t bool multiStream",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t SHT_multiStream_cxx",
-                                "F_arguments": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "F_arg_c_call": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t SHT_multiStream_cxx",
+                                "F_arguments": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_d_i32",
-                                "i_arguments": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "i_arguments": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "i_name_function": "c_solve_immersed_eq_d_i32",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
@@ -5150,7 +5150,7 @@
                             },
                             "stmt": "f_subroutine"
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "fmtdict": {
                                 "c_abstract_decl": "int32_t *",
                                 "c_addr": "",
@@ -5158,30 +5158,30 @@
                                 "c_deref": "*",
                                 "c_member": "->",
                                 "c_type": "int32_t",
-                                "c_var": "colPointersB",
+                                "c_var": "colOffsetsB",
                                 "cxx_abstract_decl": "int32_t *",
                                 "cxx_addr": "",
                                 "cxx_member": "->",
-                                "cxx_nonconst_ptr": "colPointersB",
+                                "cxx_nonconst_ptr": "colOffsetsB",
                                 "cxx_type": "int32_t",
-                                "cxx_var": "colPointersB",
+                                "cxx_var": "colOffsetsB",
                                 "f_assumed_shape": "(:)",
                                 "f_dimension": "(:)",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_kind": "C_INT32_T",
                                 "f_module_name": "iso_c_binding",
-                                "f_size": "size(colPointersB)",
+                                "f_size": "size(colOffsetsB)",
                                 "f_type": "integer(C_INT32_T)",
-                                "f_var": "colPointersB",
-                                "fc_var": "colPointersB",
+                                "f_var": "colOffsetsB",
+                                "fc_var": "colOffsetsB",
                                 "i_dimension": "(*)",
                                 "i_intent": "IN",
                                 "i_intent_attr": ", intent(IN)",
                                 "i_kind": "C_INT32_T",
                                 "i_module_name": "iso_c_binding",
                                 "i_type": "integer(C_INT32_T)",
-                                "i_var": "colPointersB",
+                                "i_var": "colOffsetsB",
                                 "idtor": "0",
                                 "rank": "1",
                                 "stmt_name": "f_in_native*",
@@ -5413,7 +5413,7 @@
                                 "intent": "subroutine"
                             }
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "meta": {
                                 "abstract": "native*",
                                 "intent": "in",
@@ -5468,7 +5468,7 @@
                         "result",
                         "nnzB",
                         "rowPointersB",
-                        "colPointersB",
+                        "colOffsetsB",
                         "valuesB",
                         "multiStream"
                     ],
@@ -5477,7 +5477,7 @@
                         "result",
                         "nnzB",
                         "rowPointersB",
-                        "colPointersB",
+                        "colOffsetsB",
                         "valuesB",
                         "multiStream"
                     ],
@@ -5544,7 +5544,7 @@
                                         "intent": "in",
                                         "rank": "1"
                                     },
-                                    "name": "colPointersB",
+                                    "name": "colOffsetsB",
                                     "pointer": [
                                         {
                                             "ptr": "*"
@@ -5594,8 +5594,8 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEq_s_i32(\n    float* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int32_t* rowPointersB +intent(in) +rank(1),          \n    int32_t* colPointersB +intent(in) +rank(1),          \n    float* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n",
-                "declgen": "void solveImmersedEq_s_i32(float *result +intent(out)+rank(1), size_t nnzB, int32_t *rowPointersB +intent(in)+rank(1), int32_t *colPointersB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), bool multiStream)",
+                "decl": "void solveImmersedEq_s_i32(\n    float* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int32_t* rowPointersB +intent(in) +rank(1),          \n    int32_t* colOffsetsB +intent(in) +rank(1),          \n    float* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n",
+                "declgen": "void solveImmersedEq_s_i32(float *result +intent(out)+rank(1), size_t nnzB, int32_t *rowPointersB +intent(in)+rank(1), int32_t *colOffsetsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), bool multiStream)",
                 "linenumber": 85,
                 "name": "solveImmersedEq_s_i32",
                 "options": {},
@@ -5607,10 +5607,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_s_i32(\tresult,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_s_i32(\tresult,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream)",
+                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "C_name": "FOR_solveImmersedEq_s_i32",
-                                "C_prototype": "float *result,\t size_t nnzB,\t int32_t *rowPointersB,\t int32_t *colPointersB,\t float *valuesB,\t bool multiStream",
+                                "C_prototype": "float *result,\t size_t nnzB,\t int32_t *rowPointersB,\t int32_t *colOffsetsB,\t float *valuesB,\t bool multiStream",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_s_i32",
                                 "stmt_name": "c_subroutine",
@@ -5622,7 +5622,7 @@
                             },
                             "stmt": "c_subroutine"
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "fmtdict": {
                                 "c_abstract_decl": "int32_t *",
                                 "c_addr": "",
@@ -5630,13 +5630,13 @@
                                 "c_deref": "*",
                                 "c_member": "->",
                                 "c_type": "int32_t",
-                                "c_var": "colPointersB",
+                                "c_var": "colOffsetsB",
                                 "cxx_abstract_decl": "int32_t *",
                                 "cxx_addr": "",
                                 "cxx_member": "->",
-                                "cxx_nonconst_ptr": "colPointersB",
+                                "cxx_nonconst_ptr": "colOffsetsB",
                                 "cxx_type": "int32_t",
-                                "cxx_var": "colPointersB",
+                                "cxx_var": "colOffsetsB",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "i_intent": "IN",
@@ -5808,16 +5808,16 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_s_i32(\tresult,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_s_i32(\tresult,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream)",
+                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "C_name": "FOR_solveImmersedEq_s_i32",
-                                "C_prototype": "float *result,\t size_t nnzB,\t int32_t *rowPointersB,\t int32_t *colPointersB,\t float *valuesB,\t bool multiStream",
+                                "C_prototype": "float *result,\t size_t nnzB,\t int32_t *rowPointersB,\t int32_t *colOffsetsB,\t float *valuesB,\t bool multiStream",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t SHT_multiStream_cxx",
-                                "F_arguments": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "F_arg_c_call": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t SHT_multiStream_cxx",
+                                "F_arguments": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_s_i32",
-                                "i_arguments": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "i_arguments": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "i_name_function": "c_solve_immersed_eq_s_i32",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
@@ -5829,7 +5829,7 @@
                             },
                             "stmt": "f_subroutine"
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "fmtdict": {
                                 "c_abstract_decl": "int32_t *",
                                 "c_addr": "",
@@ -5837,30 +5837,30 @@
                                 "c_deref": "*",
                                 "c_member": "->",
                                 "c_type": "int32_t",
-                                "c_var": "colPointersB",
+                                "c_var": "colOffsetsB",
                                 "cxx_abstract_decl": "int32_t *",
                                 "cxx_addr": "",
                                 "cxx_member": "->",
-                                "cxx_nonconst_ptr": "colPointersB",
+                                "cxx_nonconst_ptr": "colOffsetsB",
                                 "cxx_type": "int32_t",
-                                "cxx_var": "colPointersB",
+                                "cxx_var": "colOffsetsB",
                                 "f_assumed_shape": "(:)",
                                 "f_dimension": "(:)",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_kind": "C_INT32_T",
                                 "f_module_name": "iso_c_binding",
-                                "f_size": "size(colPointersB)",
+                                "f_size": "size(colOffsetsB)",
                                 "f_type": "integer(C_INT32_T)",
-                                "f_var": "colPointersB",
-                                "fc_var": "colPointersB",
+                                "f_var": "colOffsetsB",
+                                "fc_var": "colOffsetsB",
                                 "i_dimension": "(*)",
                                 "i_intent": "IN",
                                 "i_intent_attr": ", intent(IN)",
                                 "i_kind": "C_INT32_T",
                                 "i_module_name": "iso_c_binding",
                                 "i_type": "integer(C_INT32_T)",
-                                "i_var": "colPointersB",
+                                "i_var": "colOffsetsB",
                                 "idtor": "0",
                                 "rank": "1",
                                 "stmt_name": "f_in_native*",
@@ -6092,7 +6092,7 @@
                                 "intent": "subroutine"
                             }
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "meta": {
                                 "abstract": "native*",
                                 "intent": "in",
@@ -6147,7 +6147,7 @@
                         "result",
                         "nnzB",
                         "rowPointersB",
-                        "colPointersB",
+                        "colOffsetsB",
                         "valuesB",
                         "multiStream"
                     ],
@@ -6156,7 +6156,7 @@
                         "result",
                         "nnzB",
                         "rowPointersB",
-                        "colPointersB",
+                        "colOffsetsB",
                         "valuesB",
                         "multiStream"
                     ],
@@ -6223,7 +6223,7 @@
                                         "intent": "in",
                                         "rank": "1"
                                     },
-                                    "name": "colPointersB",
+                                    "name": "colOffsetsB",
                                     "pointer": [
                                         {
                                             "ptr": "*"
@@ -6273,8 +6273,8 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEq_d_i64(\n    double* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int64_t* rowPointersB +intent(in) +rank(1),          \n    int64_t* colPointersB +intent(in) +rank(1),          \n    double* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n",
-                "declgen": "void solveImmersedEq_d_i64(double *result +intent(out)+rank(1), size_t nnzB, int64_t *rowPointersB +intent(in)+rank(1), int64_t *colPointersB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), bool multiStream)",
+                "decl": "void solveImmersedEq_d_i64(\n    double* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int64_t* rowPointersB +intent(in) +rank(1),          \n    int64_t* colOffsetsB +intent(in) +rank(1),          \n    double* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n",
+                "declgen": "void solveImmersedEq_d_i64(double *result +intent(out)+rank(1), size_t nnzB, int64_t *rowPointersB +intent(in)+rank(1), int64_t *colOffsetsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), bool multiStream)",
                 "linenumber": 95,
                 "name": "solveImmersedEq_d_i64",
                 "options": {},
@@ -6286,10 +6286,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_d_i64(\tresult,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_d_i64(\tresult,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream)",
+                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "C_name": "FOR_solveImmersedEq_d_i64",
-                                "C_prototype": "double *result,\t size_t nnzB,\t int64_t *rowPointersB,\t int64_t *colPointersB,\t double *valuesB,\t bool multiStream",
+                                "C_prototype": "double *result,\t size_t nnzB,\t int64_t *rowPointersB,\t int64_t *colOffsetsB,\t double *valuesB,\t bool multiStream",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_d_i64",
                                 "stmt_name": "c_subroutine",
@@ -6301,7 +6301,7 @@
                             },
                             "stmt": "c_subroutine"
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "fmtdict": {
                                 "c_abstract_decl": "int64_t *",
                                 "c_addr": "",
@@ -6309,13 +6309,13 @@
                                 "c_deref": "*",
                                 "c_member": "->",
                                 "c_type": "int64_t",
-                                "c_var": "colPointersB",
+                                "c_var": "colOffsetsB",
                                 "cxx_abstract_decl": "int64_t *",
                                 "cxx_addr": "",
                                 "cxx_member": "->",
-                                "cxx_nonconst_ptr": "colPointersB",
+                                "cxx_nonconst_ptr": "colOffsetsB",
                                 "cxx_type": "int64_t",
-                                "cxx_var": "colPointersB",
+                                "cxx_var": "colOffsetsB",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "i_intent": "IN",
@@ -6487,16 +6487,16 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_d_i64(\tresult,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_d_i64(\tresult,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream)",
+                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "C_name": "FOR_solveImmersedEq_d_i64",
-                                "C_prototype": "double *result,\t size_t nnzB,\t int64_t *rowPointersB,\t int64_t *colPointersB,\t double *valuesB,\t bool multiStream",
+                                "C_prototype": "double *result,\t size_t nnzB,\t int64_t *rowPointersB,\t int64_t *colOffsetsB,\t double *valuesB,\t bool multiStream",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t SHT_multiStream_cxx",
-                                "F_arguments": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "F_arg_c_call": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t SHT_multiStream_cxx",
+                                "F_arguments": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_d_i64",
-                                "i_arguments": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "i_arguments": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "i_name_function": "c_solve_immersed_eq_d_i64",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
@@ -6508,7 +6508,7 @@
                             },
                             "stmt": "f_subroutine"
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "fmtdict": {
                                 "c_abstract_decl": "int64_t *",
                                 "c_addr": "",
@@ -6516,30 +6516,30 @@
                                 "c_deref": "*",
                                 "c_member": "->",
                                 "c_type": "int64_t",
-                                "c_var": "colPointersB",
+                                "c_var": "colOffsetsB",
                                 "cxx_abstract_decl": "int64_t *",
                                 "cxx_addr": "",
                                 "cxx_member": "->",
-                                "cxx_nonconst_ptr": "colPointersB",
+                                "cxx_nonconst_ptr": "colOffsetsB",
                                 "cxx_type": "int64_t",
-                                "cxx_var": "colPointersB",
+                                "cxx_var": "colOffsetsB",
                                 "f_assumed_shape": "(:)",
                                 "f_dimension": "(:)",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_kind": "C_INT64_T",
                                 "f_module_name": "iso_c_binding",
-                                "f_size": "size(colPointersB)",
+                                "f_size": "size(colOffsetsB)",
                                 "f_type": "integer(C_INT64_T)",
-                                "f_var": "colPointersB",
-                                "fc_var": "colPointersB",
+                                "f_var": "colOffsetsB",
+                                "fc_var": "colOffsetsB",
                                 "i_dimension": "(*)",
                                 "i_intent": "IN",
                                 "i_intent_attr": ", intent(IN)",
                                 "i_kind": "C_INT64_T",
                                 "i_module_name": "iso_c_binding",
                                 "i_type": "integer(C_INT64_T)",
-                                "i_var": "colPointersB",
+                                "i_var": "colOffsetsB",
                                 "idtor": "0",
                                 "rank": "1",
                                 "stmt_name": "f_in_native*",
@@ -6771,7 +6771,7 @@
                                 "intent": "subroutine"
                             }
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "meta": {
                                 "abstract": "native*",
                                 "intent": "in",
@@ -6826,7 +6826,7 @@
                         "result",
                         "nnzB",
                         "rowPointersB",
-                        "colPointersB",
+                        "colOffsetsB",
                         "valuesB",
                         "multiStream"
                     ],
@@ -6835,7 +6835,7 @@
                         "result",
                         "nnzB",
                         "rowPointersB",
-                        "colPointersB",
+                        "colOffsetsB",
                         "valuesB",
                         "multiStream"
                     ],
@@ -6902,7 +6902,7 @@
                                         "intent": "in",
                                         "rank": "1"
                                     },
-                                    "name": "colPointersB",
+                                    "name": "colOffsetsB",
                                     "pointer": [
                                         {
                                             "ptr": "*"
@@ -6952,8 +6952,8 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEq_s_i64(\n    float* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int64_t* rowPointersB +intent(in) +rank(1),          \n    int64_t* colPointersB +intent(in) +rank(1),          \n    float* valuesB +intent(in) +rank(1),\n    bool multiStream\n)",
-                "declgen": "void solveImmersedEq_s_i64(float *result +intent(out)+rank(1), size_t nnzB, int64_t *rowPointersB +intent(in)+rank(1), int64_t *colPointersB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), bool multiStream)",
+                "decl": "void solveImmersedEq_s_i64(\n    float* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int64_t* rowPointersB +intent(in) +rank(1),          \n    int64_t* colOffsetsB +intent(in) +rank(1),          \n    float* valuesB +intent(in) +rank(1),\n    bool multiStream\n)",
+                "declgen": "void solveImmersedEq_s_i64(float *result +intent(out)+rank(1), size_t nnzB, int64_t *rowPointersB +intent(in)+rank(1), int64_t *colOffsetsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), bool multiStream)",
                 "linenumber": 105,
                 "name": "solveImmersedEq_s_i64",
                 "options": {},
@@ -6965,10 +6965,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_s_i64(\tresult,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_s_i64(\tresult,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream)",
+                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "C_name": "FOR_solveImmersedEq_s_i64",
-                                "C_prototype": "float *result,\t size_t nnzB,\t int64_t *rowPointersB,\t int64_t *colPointersB,\t float *valuesB,\t bool multiStream",
+                                "C_prototype": "float *result,\t size_t nnzB,\t int64_t *rowPointersB,\t int64_t *colOffsetsB,\t float *valuesB,\t bool multiStream",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_s_i64",
                                 "stmt_name": "c_subroutine",
@@ -6980,7 +6980,7 @@
                             },
                             "stmt": "c_subroutine"
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "fmtdict": {
                                 "c_abstract_decl": "int64_t *",
                                 "c_addr": "",
@@ -6988,13 +6988,13 @@
                                 "c_deref": "*",
                                 "c_member": "->",
                                 "c_type": "int64_t",
-                                "c_var": "colPointersB",
+                                "c_var": "colOffsetsB",
                                 "cxx_abstract_decl": "int64_t *",
                                 "cxx_addr": "",
                                 "cxx_member": "->",
-                                "cxx_nonconst_ptr": "colPointersB",
+                                "cxx_nonconst_ptr": "colOffsetsB",
                                 "cxx_type": "int64_t",
-                                "cxx_var": "colPointersB",
+                                "cxx_var": "colOffsetsB",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "i_intent": "IN",
@@ -7166,16 +7166,16 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_s_i64(\tresult,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_s_i64(\tresult,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream)",
+                                "C_call_list": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "C_name": "FOR_solveImmersedEq_s_i64",
-                                "C_prototype": "float *result,\t size_t nnzB,\t int64_t *rowPointersB,\t int64_t *colPointersB,\t float *valuesB,\t bool multiStream",
+                                "C_prototype": "float *result,\t size_t nnzB,\t int64_t *rowPointersB,\t int64_t *colOffsetsB,\t float *valuesB,\t bool multiStream",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t SHT_multiStream_cxx",
-                                "F_arguments": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "F_arg_c_call": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t SHT_multiStream_cxx",
+                                "F_arguments": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_s_i64",
-                                "i_arguments": "result,\t nnzB,\t rowPointersB,\t colPointersB,\t valuesB,\t multiStream",
+                                "i_arguments": "result,\t nnzB,\t rowPointersB,\t colOffsetsB,\t valuesB,\t multiStream",
                                 "i_name_function": "c_solve_immersed_eq_s_i64",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
@@ -7187,7 +7187,7 @@
                             },
                             "stmt": "f_subroutine"
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "fmtdict": {
                                 "c_abstract_decl": "int64_t *",
                                 "c_addr": "",
@@ -7195,30 +7195,30 @@
                                 "c_deref": "*",
                                 "c_member": "->",
                                 "c_type": "int64_t",
-                                "c_var": "colPointersB",
+                                "c_var": "colOffsetsB",
                                 "cxx_abstract_decl": "int64_t *",
                                 "cxx_addr": "",
                                 "cxx_member": "->",
-                                "cxx_nonconst_ptr": "colPointersB",
+                                "cxx_nonconst_ptr": "colOffsetsB",
                                 "cxx_type": "int64_t",
-                                "cxx_var": "colPointersB",
+                                "cxx_var": "colOffsetsB",
                                 "f_assumed_shape": "(:)",
                                 "f_dimension": "(:)",
                                 "f_intent": "IN",
                                 "f_intent_attr": ", intent(IN)",
                                 "f_kind": "C_INT64_T",
                                 "f_module_name": "iso_c_binding",
-                                "f_size": "size(colPointersB)",
+                                "f_size": "size(colOffsetsB)",
                                 "f_type": "integer(C_INT64_T)",
-                                "f_var": "colPointersB",
-                                "fc_var": "colPointersB",
+                                "f_var": "colOffsetsB",
+                                "fc_var": "colOffsetsB",
                                 "i_dimension": "(*)",
                                 "i_intent": "IN",
                                 "i_intent_attr": ", intent(IN)",
                                 "i_kind": "C_INT64_T",
                                 "i_module_name": "iso_c_binding",
                                 "i_type": "integer(C_INT64_T)",
-                                "i_var": "colPointersB",
+                                "i_var": "colOffsetsB",
                                 "idtor": "0",
                                 "rank": "1",
                                 "stmt_name": "f_in_native*",
@@ -7450,7 +7450,7 @@
                                 "intent": "subroutine"
                             }
                         },
-                        "colPointersB": {
+                        "colOffsetsB": {
                             "meta": {
                                 "abstract": "native*",
                                 "intent": "in",
@@ -7505,7 +7505,7 @@
                         "result",
                         "nnzB",
                         "rowPointersB",
-                        "colPointersB",
+                        "colOffsetsB",
                         "valuesB",
                         "multiStream"
                     ],
@@ -7514,7 +7514,7 @@
                         "result",
                         "nnzB",
                         "rowPointersB",
-                        "colPointersB",
+                        "colOffsetsB",
                         "valuesB",
                         "multiStream"
                     ],
