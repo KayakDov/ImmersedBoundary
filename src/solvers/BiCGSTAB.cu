@@ -143,15 +143,10 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
 
         r.setDifference(s, t, Singleton<T>::ONE, omega, hand4); // r = s - omega * t
 
-        if (isSmall(r, temp[2])) {
-            std::cout << "Converged at r" << std::endl;
-            break;
-        }
+        if (isSmall(r, temp[2])) break;
 
         r_tilde.mult(r, rho_new, hand4);
         beta.setProductOfQuotients(rho_new, rho, alpha, omega, hand4[0]); // beta = (rho_new / rho) * (alpha / omega);
-        std::cout << "rho_new: " << GpuOut<T>(rho_new, hand4[0])
-                  << " | beta: " << GpuOut<T>(beta, hand4[0]) << std::endl;
 
         set(rho, rho_new);
         pUpdate(); // p = p - beta * omega * v
@@ -163,8 +158,8 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
 
     const TimePoint end = std::chrono::steady_clock::now();
     const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
-    std::cout<< "BiCGSTAB #iterations = " << iteration << std::endl;
-    std::cout << time << ", ";
+    // std::cout<< "BiCGSTAB #iterations = " << iteration << std::endl;
+    // std::cout << time << ", ";
 }
 
 template<typename T>
@@ -232,10 +227,10 @@ void BiCGSTAB<T>::solveUnconditionedMultiStream(Vec<T>& initGuess) {
 
         set(rho, rho_new, 0);
 
-        pUpdate(0); // p = p - beta * omega * v
+        pUpdate(0); // p = r + beta(p - omega * v)
     }
-    if (numIterations >= maxIterations)
-        std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
+
+    if (numIterations >= maxIterations) std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
     synchAll();
 
     const TimePoint end = std::chrono::steady_clock::now();

@@ -237,7 +237,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     //TODO: should the initial guess be random, or the RHS of the equation?
 
     baseData.result.set(RHSSpace, hand5[0]);
-    // baseData.result.fillRandom(hand4);
+    // baseData.result.fillRandom(&hand5[0]);
 
     ImmersedEqSolver<Real, Int> solver(*this, allocatedRHSHeightX7, allocated9, tolerance, maxIterations);
     if (multithreadBCG) solver.solveUnconditionedMultiStream(baseData.result);

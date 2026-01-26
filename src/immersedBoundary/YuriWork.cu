@@ -77,11 +77,11 @@ void smallTestWithoutFiles() {
 
     Real result[size];
 
-    ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 3);
-    initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3);
+    ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
+    // initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
 
-    imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
-    solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
+    imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data(), false);
+    // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
 
     std::cout << "result = ";
     for(auto & i : result) std::cout << i << " ";
