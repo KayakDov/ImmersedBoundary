@@ -76,10 +76,10 @@ size_t SparseCSC<Real, Int>::multWorkspaceSize(const SimpleArray<Real>& vec, Sim
 template <typename Real, typename Int>
 void SparseCSC<Real, Int>::mult(const SimpleArray<Real>& vec, SimpleArray<Real>& result,
                         const Singleton<Real>& multProduct, const Singleton<Real>& preMultResult,
-                        bool transposeThis, SimpleArray<Real>& workSpace, Handle& h) const{
+                        bool transposeMat, SimpleArray<Real>& workSpace, Handle& h) const{
 
     cudaDataType valueType = cuValueType<Real>();
-    cusparseOperation_t op = cuTranspose(transposeThis);
+    cusparseOperation_t op = cuTranspose(transposeMat);
 
     CHECK_SPARSE_ERROR(cusparseSpMV(
         h, op,

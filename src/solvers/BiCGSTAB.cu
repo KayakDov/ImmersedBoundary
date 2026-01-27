@@ -315,7 +315,7 @@ BCGDense<T>::BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Mat<T> *al
 template<typename T>
 void BCGDense<T>::solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Mat<T> *bHeightX7, Vec<T> *allocated9, T tolerance, size_t maxIterations) {
     BCGDense<T> solver(hand4, A, b, bHeightX7, allocated9, tolerance, maxIterations);
-    solver.solveUnconditionedMultiStream(result);
+    solver.solveUnpreconditioned(result);
 }
 
 template<typename T>
@@ -323,7 +323,12 @@ void BCGDense<T>::test() {
     Handle hand4[4]{};
     size_t n = 6;
     auto A = SquareMat<T>::create(n);
-    std::vector<T>  hostA = {0.410352, -0.186335, -0.0563147, -0.172257, -0.0993789, -0.0389234, -0.186335, 0.354037, -0.186335, -0.0993789, -0.21118, -0.0993789, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1};
+    std::vector<T>  hostA = {0.410352, -0.186335, -0.0563147, -0.172257, -0.0993789, -0.0389234,
+                            -0.186335, 0.354037, -0.186335, -0.0993789, -0.21118, -0.0993789,
+                            0, 0, 1, 0, 0, 0,
+                            0, 0, 0, 1, 0, 0,
+                            0, 0, 0, 0, 1, 0,
+                            0, 0, 0, 0, 0, 1};
     A.set(hostA.data(), hand4[0]);
     auto b = SimpleArray<T>::create(n, hand4[0]);
     std::vector<T>  hostB = {-1.51304, -1.56522, -0.313043, -0.486957, -0.434783, 0.313043};
@@ -336,7 +341,7 @@ void BCGDense<T>::test() {
     solve(hand4, A, result, b, &bHeightX7, &aX9, tolerance, maxIterations);
     std::cout << "result = " << GpuOut<T>(result, hand4[0]) << std::endl;
 
-    std:: cout << "expected: -8.40001, -0.00001, 0.15999, 0.96000, 0.39999, 0.63999" << std::endl;
+    std:: cout << "expected: -7.48312639568, -8.35954534961, -2.29212890075, -2.60674032488, -2.94381665669, -0.80898814329" << std::endl;
 
 }
 

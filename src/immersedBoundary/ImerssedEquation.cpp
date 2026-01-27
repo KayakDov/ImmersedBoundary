@@ -22,13 +22,13 @@ FileMeta::FileMeta(std::ifstream &xFile, std::ifstream &bFile) : xFile(xFile), b
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle& hand) :
 
-    pSizeX4(Mat<Real>::create(meta.pSize, 4)),
+    pSizeX5(Mat<Real>::create(meta.pSize, numPSizeVecs)),
     fSizeX2(Mat<Real>::create(meta.fSize, 2)),
     maxB(SparseCSC<Real, Int>::create(meta.nnz, meta.bRows, meta.bCols, hand)),
     delta(1.0 / dim.cols, 1.0 / dim.rows, 1.0 / dim.layers),
     dim(dim)
 {
-    auto p = pSizeX4.col(0);
+    auto p = pSizeX5.col(0);
     meta.xFile >> GpuIn<Real>(p, hand, false, true);
     auto f = fSizeX2.col(0);
     meta.xFile >> GpuIn<Real>(f, hand, false, true);
@@ -40,10 +40,10 @@ template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(
     SparseCSC<Real, Int> maxB,
     Mat<Real> fSizeX2,
-    Mat<Real> pSizeX4,
+    Mat<Real> pSizeX5,
     const GridDim &dim,
     const Real3d &delta
-) : pSizeX4(pSizeX4),
+) : pSizeX5(pSizeX5),
     fSizeX2(fSizeX2),
     maxB(maxB),
     dim(dim),
@@ -55,12 +55,12 @@ BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, 
     BaseData(
         SparseCSC<Real, Int>::create(nnzMaxB, fSize, dim.size(), hand),
         Mat<Real>::create(fSize, 2),
-        Mat<Real>::create(dim.size(), 4),
+        Mat<Real>::create(dim.size(), numPSizeVecs),
         dim,
         delta
     ) {
     this->fSizeX2.col(0).set(f, hand);
-    this->pSizeX4.col(0).set(p, hand);
+    this->pSizeX5.col(0).set(p, hand);
 }
 
 template<typename Real, typename Int>
@@ -91,8 +91,8 @@ SimpleArray<Real> BaseData<Real, Int>::allocatedFSize() const {
 }
 
 template<typename Real, typename Int>
-SimpleArray<Real> BaseData<Real, Int>::allocatedPSize(bool ind) const {
-    return pSizeX4.col(ind + 1);
+SimpleArray<Real> BaseData<Real, Int>::allocatedPSize(uint8_t ind) const {
+    return pSizeX5.col(ind + 1);
 }
 
 template<typename Real, typename Int>
@@ -124,12 +124,12 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(
 }
 
 template<typename Real, typename Int>
-void ImmersedEq<Real, Int>::multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeThis) const {
+void ImmersedEq<Real, Int>::multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const {
 
-    size_t multBufferSizeNeeded = baseData.B->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeThis, hand5[0]);
+    size_t multBufferSizeNeeded = baseData.B->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeB, hand5[0]);
     if (!sparseMultBuffer || multBufferSizeNeeded > sparseMultBuffer->size()) sparseMultBuffer = std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(1.5 * multBufferSizeNeeded, hand5[0]));
 
-    baseData.B->mult(vec, result, multProduct, preMultResult, transposeThis, *sparseMultBuffer, hand5[0]);
+    baseData.B->mult(vec, result, multProduct, preMultResult, transposeB, *sparseMultBuffer, hand5[0]);
 }
 
 template<typename Real, typename Int>
@@ -154,22 +154,23 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
     // std::cout << "x1 = " << GpuOut<Real>(x, hand) << std::endl;
     // std::cout << "Debugging LHS mult" << std::endl;
 
-    auto fSize = baseData.allocatedFSize();
-    auto pSize0 = baseData.allocatedPSize(0);
-    auto invLBTBx = baseData.allocatedPSize(1);
+    auto Bx = baseData.allocatedFSize();
+    auto BTBx = baseData.allocatedPSize(1);
+    auto invLBTBx = baseData.allocatedPSize(2);
 
 
-    multB(x, fSize, Singleton<Real>::ONE, Singleton<Real>::ZERO, false);// f <- B * x
+    multB(x, Bx, Singleton<Real>::ONE, Singleton<Real>::ZERO, false);// f <- B * x
 
-    multB(fSize, pSize0, Singleton<Real>::TWO, Singleton<Real>::ZERO, true);// p <- B^T * (B * x)
+    multB(Bx, BTBx, Singleton<Real>::TWO, Singleton<Real>::ZERO, true);// p <- B^T * (B * x)
 
-    eds->solve(invLBTBx, pSize0, hand5[0]); // workspace2 <- L^-1 * B^T * (B * x)
+    eds->solve(invLBTBx, BTBx, hand5[0]); // workspace2 <- L^-1 * B^T * (B * x)
 
     invLBTBx.add(x, &Singleton<Real>::ONE, &hand5[0]);
 
     auto& invLxBTBxPlusX = invLBTBx;
 
-    result.mult(preMultResult, &hand5[0/*4*/]); //x <- x * preMultX//TODO: restore multtithreading
+    if (preMultResult.data() == Singleton<Real>::ZERO.data()) result.fill(0, hand5[0/*4*/]);
+    else result.mult(preMultResult, &hand5[0/*4*/]); //x <- x * preMultX//TODO: restore multtithreading
     // Event preMult;
     // preMult.record(hand5[4]);
     // preMult.wait(hand5[0]);

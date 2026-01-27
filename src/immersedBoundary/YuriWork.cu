@@ -78,24 +78,27 @@ void smallTestWithoutFiles() {
 
     Real result[size];
 
-    ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
-    // initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
+    // ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
+    initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
 
-    imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data(), false);
-    // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
+    // imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data(), false);
+    solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
 
     std::cout << "result = ";
     for(auto & i : result) std::cout << i << " ";
 
-    cudaDeviceSynchronize();
-    auto denseB = Mat<Real>::create(f.size(), p.size());
-    imEq.baseData.B->getDense(denseB, hand);
+    std:: cout << "\nexpected: -7.483126, -8.359545, -2.292128, -2.606740, -2.943816, -0.808988" << std::endl;
 
-    std::cout << "\nB = \n" << GpuOut<Real>(denseB, hand) << std::endl;
-    auto inverseL = imEq.eds->inverseL(hand);
-    std::cout << "L^-1 = \n" << GpuOut<Real>(inverseL, hand) << std::endl;
-    std::cout << "LHS of equation is\n" << GpuOut<Real>(imEq.LHSMat(), hand) << std::endl;
-    std::cout << "RHS of equation is\n" << GpuOut<Real>(imEq.RHS(false), hand) << std::endl;
+
+    cudaDeviceSynchronize();
+    // auto denseB = Mat<Real>::create(f.size(), p.size());
+    // imEq.baseData.B->getDense(denseB, hand);
+    //
+    // std::cout << "\nB = \n" << GpuOut<Real>(denseB, hand) << std::endl;
+    // auto inverseL = imEq.eds->inverseL(hand);
+    // std::cout << "L^-1 = \n" << GpuOut<Real>(inverseL, hand) << std::endl;
+    // std::cout << "LHS of equation is\n" << GpuOut<Real>(imEq.LHSMat(), hand) << std::endl;
+    // std::cout << "RHS of equation is\n" << GpuOut<Real>(imEq.RHS(false), hand) << std::endl;
 
 }
 
@@ -135,5 +138,5 @@ int main(int argc, char *argv[]) {
     // benchmark(3);
     // BCGBanded<double>::test();
 
-    BCGDense<double>::test();
+    // BCGDense<double>::test();
 }

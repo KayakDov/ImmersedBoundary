@@ -42,13 +42,13 @@ class FileMeta {
  */
 template <typename Real, typename Int = uint32_t> //TODO: f and p should never change.  B should be able to change everything.
 class BaseData {
-
+    constexpr static size_t numPSizeVecs = 6;//TODO: see if this works at 5
 public:
 
-    mutable Mat<Real> pSizeX4,  fSizeX2;
+    mutable Mat<Real> pSizeX5,  fSizeX2;
     const SimpleArray<Real> f = fSizeX2.col(0, true);
-    const SimpleArray<Real> p = pSizeX4.col(0, true);
-    mutable SimpleArray<Real> result = pSizeX4.col(3, true);
+    const SimpleArray<Real> p = pSizeX5.col(0, true);
+    mutable SimpleArray<Real> result = pSizeX5.col(numPSizeVecs - 1, true);
 
     SparseCSC<Real, Int> maxB; /**< Sparse matrix in CSC format */
     std::shared_ptr<SparseCSC<Real, Int>> B;
@@ -63,11 +63,11 @@ public:
      *
      * @param maxB
      * @param fSizeX2
-     * @param pSizeX4
+     * @param pSizeX5
      * @param dim
      * @param delta
      */
-    BaseData(SparseCSC<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX4, const GridDim &dim, const Real3d &delta);
+    BaseData(SparseCSC<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX5, const GridDim &dim, const Real3d &delta);
 
     BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle &hand);
 
@@ -78,7 +78,7 @@ public:
 
     SimpleArray<Real> allocatedFSize() const;
 
-    SimpleArray<Real> allocatedPSize(bool ind) const;
+    SimpleArray<Real> allocatedPSize(uint8_t ind) const;
 
     void printDenseB(Handle &hand) const;
 };
@@ -107,7 +107,7 @@ private:
     Real tolerance;
     size_t maxIterations;
 
-    void multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeThis) const;
+    void multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
 
     SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(baseData.p.size(), hand5[0]);
 
@@ -123,11 +123,11 @@ private:
      * @param x Input vector.
      * @param result Output product vector.
      * @param multLinearOperationOutput Scaling for the addition.
-     * @param preMultResult Initial scaling factor for x.
+     * @param preMultResult Initial scaling factor for x.  Use Singleton<T>::ZERO to turn NaNs into 0's.  Use another 0 value to preserve NaNs.
      */
     void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const;
 
-    SimpleArray<Real> solve(size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB, bool multithreadBCG = true);
+    SimpleArray<Real> solve(size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB, bool multithreadBCG = false);
 
 public:
 
