@@ -106,6 +106,8 @@ private:
     Vec<Real> allocated9 = Vec<Real>::create(9, hand5[0]);
     Real tolerance;
     size_t maxIterations;
+    Event events11[11]{};
+    Event lhsTimes;
 
     void multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
 
@@ -175,7 +177,7 @@ public:
 template <typename Real, typename Int = uint32_t>
 class ImmersedEqSolver:  public BiCGSTAB<Real> {
 
-    ImmersedEq<Real, Int> imEq;
+    ImmersedEq<Real, Int>& imEq;
 
     /**
      * @brief Implementation of the matrix-vector multiplication for the BiCGSTAB loop.
@@ -187,7 +189,7 @@ public:
      * @brief Constructor for the iterative solver.
      * @param p
      */
-    ImmersedEqSolver(ImmersedEq<Real, Int> &imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> &allocated9, Real tolerance, size_t maxIterations);
+    ImmersedEqSolver(ImmersedEq<Real, Int> &imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> &allocated9, Event* events11, Real tolerance, size_t maxIterations);
 };
 
 

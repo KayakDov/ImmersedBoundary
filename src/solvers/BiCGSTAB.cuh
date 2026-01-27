@@ -38,10 +38,10 @@ protected:
     Handle* hand4;
 private:
     const T tolerance;
-    Event alphaRAW, sRAW, hRAW, omegaRAW, rRAW, xRAW, prodTSRAW, rWAR, tRAW, tsRAW, betaRAW, rhoRAW;//TODO: pass these from one call of BiCGSTAB to the next.  Make them better at recycaling.
+    Event &alphaRAW, &sRAW, &hRAW, &omegaRAW, &rRAW, &xRAW, &rWAR, &tRAW, &tsRAW, &betaRAW, &rhoRAW;
     const Vec<T> b;
     Mat<T> bHeightX7;
-    Vec<T> r, r_tilde, p, v, s, t, h;
+    SimpleArray<T> r, r_tilde, p, v, s, t, h;
     Vec<T> a9;
     Singleton<T> rho, alpha, omega, rho_new, beta;
     std::array<Singleton<T>, 4> temp;
@@ -112,6 +112,7 @@ public:
     explicit BiCGSTAB(
         const Vec<T> &b,
         Handle* hand4,
+        Event* events11 = nullptr,
         Mat<T> *allocatedBHeightX7 = nullptr,
         Vec<T> *allocated9 = nullptr,
         T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
@@ -132,10 +133,12 @@ template<typename T>
 class BCGBanded:  public BiCGSTAB<T>{
     BandedMat<T> A;
 
+
+
     void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct,
               Singleton<T> premultResult) const override;
 public:
-    BCGBanded(Handle *hand4, BandedMat<T> A, const Vec<T> &b, Mat<T> *bHeightX7, Vec<T> *allocated9, const T &tolerance, size_t maxIterations);
+    BCGBanded(Handle *hand4, BandedMat<T> A, const Vec<T> &b, Event *events11, Mat<T> *bHeightX7, Vec<T> *allocated9, const T &tolerance, size_t maxIterations);
 
 
     /**
@@ -146,6 +149,7 @@ public:
         const BandedMat<T> &A,
         Vec<T>& result,
         const Vec<T> &b,
+        Event* events11,
         Mat<T> *allocatedSizeX7 = nullptr,
         Vec<T> *allocated9 = nullptr,
         T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
@@ -163,22 +167,13 @@ class BCGDense:  public BiCGSTAB<T>{
     void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct,
               Singleton<T> premultResult) const override;
 public:
-    BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, T tolerance, size_t maxIterations);
-
+    BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Event* events11, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, T tolerance, size_t maxIterations);
 
     /**
      * @brief Static method to solve the equation $A\mathbf{x} = \mathbf{b}$.
      */
-    static void solve(
-        Handle *hand4,
-        const SquareMat<T> &A,
-        Vec<T> &result,
-        const Vec<T> &b,
-        Mat<T> *bHeightX7 = nullptr,
-        Vec<T> *allocated9 = nullptr,
-        T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
-        size_t maxIterations = 1500
-    );
+    static void solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Event *events11, Mat<T> *bHeightX7,
+               Vec<T> *allocated9, T tolerance, size_t maxIterations);
 
     static void test();
 

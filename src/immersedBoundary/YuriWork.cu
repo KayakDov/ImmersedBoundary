@@ -77,20 +77,26 @@ void smallTestWithoutFiles() {
     p[size - 1] = -2;
 
     Real result[size];
-
+    auto start = std::chrono::high_resolution_clock::now();
     ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
     // initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
 
     imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
     // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
 
+    cudaDeviceSynchronize();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
+    std::cout << "Total Solver Time: " << duration.count() << " ms" << std::endl;
+
+//25.9347
     std::cout << "result = ";
     for(auto & i : result) std::cout << i << " ";
 
     std:: cout << "\nexpected: -7.483126, -8.359545, -2.292128, -2.606740, -2.943816, -0.808988" << std::endl;
 
 
-    cudaDeviceSynchronize();
+
     auto denseB = Mat<Real>::create(f.size(), p.size());
     imEq.baseData.B->getDense(denseB, hand);
 
@@ -113,7 +119,7 @@ void smallTestWithoutFiles() {
 //     BaseData<double> bd(fm, hand2);
 //
 //     cudaDeviceSynchronize();
-//     auto start = std::chrono::high_resolution_clock::now();
+     // auto start = std::chrono::high_resolution_clock::now();
 //
 //     ImmersedEq<double> imEq(bd, dim, hand2);
 //
@@ -134,8 +140,8 @@ void smallTestWithoutFiles() {
 
 int main(int argc, char *argv[]) {
     // testOnFiles(GridDim(2000, 2000, 1));
-    // smallTestWithoutFiles<double, int32_t>();
-    // benchmark(3);
+    smallTestWithoutFiles<double, int32_t>();
+
     // BCGBanded<double>::test();
 
     // BCGDense<double>::test();

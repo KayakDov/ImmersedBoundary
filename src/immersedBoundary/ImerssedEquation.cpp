@@ -150,6 +150,10 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMa
 template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
 void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const {
 
+    if (preMultResult.data() == Singleton<Real>::ZERO.data()) result.fill(0, hand5[4]);
+    else result.mult(preMultResult, &hand5[4]);
+    lhsTimes.record(hand5[4]);
+
     auto Bx = baseData.allocatedFSize();
     auto BTBx = baseData.allocatedPSize(1);
     auto invLBTBx = baseData.allocatedPSize(2);
@@ -175,11 +179,8 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
 
     // std::cout << "input result: \n" << GpuOut<Real>(result, hand5[0]) << std::endl;
 
-    if (preMultResult.data() == Singleton<Real>::ZERO.data()) result.fill(0, hand5[4]);
-    else result.mult(preMultResult, &hand5[4]);
-    Event preMult;//TODO: recycle this instead of declaring it here.
-    preMult.record(hand5[4]);
-    preMult.hold(hand5[0]);
+
+    lhsTimes.hold(hand5[0]);
 
     result.add(invLxBTBxPlusX, &multLinearOperationOutput, &hand5[0]); //result <- result + preMultResult * x * preMultX
     // std::cout << "Final Result of LHSTimes: \n" << GpuOut<Real>(result, hand5[0]) << std::endl;
@@ -250,7 +251,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     baseData.result.set(RHSSpace, hand5[0]);
     // baseData.result.fillRandom(&hand5[0]);
 
-    ImmersedEqSolver<Real, Int> solver(*this, allocatedRHSHeightX7, allocated9, tolerance, maxIterations);
+    ImmersedEqSolver<Real, Int> solver(*this, allocatedRHSHeightX7, allocated9, events11, tolerance, maxIterations);
 
     if (multithreadBCG) solver.solveUnconditionedMultiStream(baseData.result);
     else solver.solveUnpreconditioned(baseData.result);
@@ -262,13 +263,13 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
 template<typename Real, typename Int>
 ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
     ImmersedEq<Real, Int>& imEq,
-
     Mat<Real> &allocatedRHSHeightX7,
     Vec<Real> &allocated9,
+    Event* events11,
     Real tolerance,
     size_t maxIterations
 )
-    : BiCGSTAB<Real>(imEq.RHS(false), imEq.hand5.get(), &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
+    : BiCGSTAB<Real>(imEq.RHS(false), imEq.hand5.get(), events11, &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
       imEq(imEq) {
 }
 
