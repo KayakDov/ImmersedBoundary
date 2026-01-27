@@ -148,35 +148,45 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMa
 }
 
 template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
-void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result,
-                                     const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const {
-
-    // std::cout << "x1 = " << GpuOut<Real>(x, hand) << std::endl;
-    // std::cout << "Debugging LHS mult" << std::endl;
+void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const {
 
     auto Bx = baseData.allocatedFSize();
     auto BTBx = baseData.allocatedPSize(1);
     auto invLBTBx = baseData.allocatedPSize(2);
 
+    // std::cout << "\n--- LHSTimes Start ---" << std::endl;
+    // std::cout << "Input x (Grid Space): \n" << GpuOut<Real>(x, hand5[0]) << std::endl;
+    // std::cout << "alpha =  \n" << GpuOut<Real>(multLinearOperationOutput, hand5[0]) << std::endl;
+    // std::cout << "beta =  \n" << GpuOut<Real>(preMultResult, hand5[0]) << std::endl;
 
     multB(x, Bx, Singleton<Real>::ONE, Singleton<Real>::ZERO, false);// f <- B * x
+    // std::cout << "After multB (Lagrangian Space f = B*x): \n" << GpuOut<Real>(Bx, hand5[0]) << std::endl;
 
     multB(Bx, BTBx, Singleton<Real>::TWO, Singleton<Real>::ZERO, true);// p <- B^T * (B * x)
+    // std::cout << "After multB Transpose (Eulerian Space p = 2*B^T*B*x): \n" << GpuOut<Real>(BTBx, hand5[0]) << std::endl;
 
     eds->solve(invLBTBx, BTBx, hand5[0]); // workspace2 <- L^-1 * B^T * (B * x)
+    // std::cout << "After L^-1 Solve (invLBTBx = L^-1 * 2 * B^T * B * x): \n" << GpuOut<Real>(invLBTBx, hand5[0]) << std::endl;
 
     invLBTBx.add(x, &Singleton<Real>::ONE, &hand5[0]);
+    // std::cout << "After Adding Identity (invLBTBx + x): \n" << GpuOut<Real>(invLBTBx, hand5[0]) << std::endl;
 
     auto& invLxBTBxPlusX = invLBTBx;
 
-    if (preMultResult.data() == Singleton<Real>::ZERO.data()) result.fill(0, hand5[0/*4*/]);
-    else result.mult(preMultResult, &hand5[0/*4*/]); //x <- x * preMultX//TODO: restore multtithreading
-    // Event preMult;
-    // preMult.record(hand5[4]);
-    // preMult.wait(hand5[0]);
+    // std::cout << "input result: \n" << GpuOut<Real>(result, hand5[0]) << std::endl;
+
+    if (preMultResult.data() == Singleton<Real>::ZERO.data()) result.fill(0, hand5[4]);
+    else result.mult(preMultResult, &hand5[4]);
+    Event preMult;//TODO: recycle this instead of declaring it here.
+    preMult.record(hand5[4]);
+    preMult.hold(hand5[0]);
 
     result.add(invLxBTBxPlusX, &multLinearOperationOutput, &hand5[0]); //result <- result + preMultResult * x * preMultX
+    // std::cout << "Final Result of LHSTimes: \n" << GpuOut<Real>(result, hand5[0]) << std::endl;
+    // std::cout << "--- LHSTimes End ---\n" << std::endl;
 }
+
+
 
 template<typename Real, typename Int>
 SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {

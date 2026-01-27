@@ -19,22 +19,15 @@ __global__ void updatePKernel(
 
 
 template<typename T>
-void BiCGSTAB<T>::wait(const size_t streamIndex,
-                       const std::initializer_list<std::reference_wrapper<Event> > evs) const {
+void BiCGSTAB<T>::hold(const size_t streamIndex, const std::initializer_list<std::reference_wrapper<Event> > evs) const {
     for (auto &ref_e: evs)
-        ref_e.get().wait(hand4[streamIndex]);
+        ref_e.get().hold(hand4[streamIndex]);
 }
 
 template<typename T>
-void BiCGSTAB<T>::renew(const std::initializer_list<std::reference_wrapper<Event> > evs) {
+void BiCGSTAB<T>::record(size_t streamIndex, const std::initializer_list<std::reference_wrapper<Event> > evs) const {
     for (auto &ref_e: evs)
-        ref_e.get().renew();
-}
-
-
-template<typename T>
-void BiCGSTAB<T>::record(size_t streamIndex, Event &e) const {
-    e.record(hand4[streamIndex]);
+        ref_e.get().record(hand4[streamIndex]);
 }
 
 template<typename T>
@@ -50,7 +43,6 @@ template<typename T>
 bool BiCGSTAB<T>::isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd) {
     v.mult(v, preAlocated, hand4 + streamInd);
     T vSq = preAlocated.get(hand4[streamInd]);
-    synch(streamInd);
     return vSq < tolerance;
 }
 
@@ -87,8 +79,7 @@ BiCGSTAB<T>::BiCGSTAB(
     bHeightX7(allocatedBHeightX7 ? *allocatedBHeightX7 : Mat<T>::create(b.size(), 7)),
     r(bHeightX7.col(0)), r_tilde(bHeightX7.col(1)), p(bHeightX7.col(2)), v(bHeightX7.col(3)), s(bHeightX7.col(4)), t(bHeightX7.col(5)), h(bHeightX7.col(6)),
     a9(allocated9 ? *allocated9 : Vec<T>::create(9, hand4[0])),
-    rho(a9.get(0)), alpha(a9.get(1)), omega(a9.get(2)), rho_new(a9.get(3)), beta(a9.get(4)),
-    temp{{a9.get(5), a9.get(6), a9.get(7), a9.get(8)}},
+    rho(a9.get(0)), alpha(a9.get(1)), omega(a9.get(2)), rho_new(a9.get(3)), beta(a9.get(4)), temp{{a9.get(5), a9.get(6), a9.get(7), a9.get(8)}},
     maxIterations(maxIterations) {
     static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>,
                   "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
@@ -96,6 +87,7 @@ BiCGSTAB<T>::BiCGSTAB(
 
 template<typename T>
 void BiCGSTAB<T>::preamble(Vec<T>& x) {
+    record(0, {rWAR, xRAW, rhoRAW});//TODO: multithread the preamble.
 
     set(r, b, 0);
 
@@ -164,78 +156,78 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
 
 template<typename T>
 void BiCGSTAB<T>::solveUnconditionedMultiStream(Vec<T>& initGuess) {
-    synchAll();
+    synch();
     TimePoint start = std::chrono::steady_clock::now();
 
     auto& x = initGuess;
     preamble(x);
 
-    size_t numIterations = 0;
-    for (; numIterations < maxIterations; numIterations++) {
+    size_t i = 0;
+    for (; i < maxIterations; i++) {
         mult(p, v); // v = A * p
 
         r_tilde.mult(v, alpha, hand4);
+        hold(0, {rhoRAW});
         alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, hand4[0]); //alpha = rho / (r_tilde * v)
-        record(0, {alphaReady});
 
-        synch(1);
-        omegaReady.renew();
-        wait(1, {alphaReady});
+        record(0, {alphaRAW});
+        hold(1, {alphaRAW});
 
         set(h, x, 1);
-        synch(1);
-        renew({alphaReady, xReady});
         h.add(p, &alpha, hand4 + 1); // h = x + alpha * p
+        record(1, {hRAW});
+
 
         s.setDifference(r, v, Singleton<T>::ONE, alpha, hand4); // s = r - alpha * v
-        record(0, {sReady});
+        record(0, {sRAW});
 
-        wait(2, {sReady, hReady});
+        hold(2, {sRAW});
         if (isSmall(s, temp[2], 2)) {
-            set(x, h, 2);
+            set(x, h, 1);
             break;
         }
-        renew({sReady, hReady});
 
         mult(s, t); // t = A * s
+        record(0, {tRAW});
 
-        t.mult(s, temp[3], hand4 + 3);
-        record(3, {prodTS});
-        t.mult(t, omega, hand4);
-        wait(0, {prodTS});
+        hold(3, {tRAW});
+        t.mult(s, temp[3], hand4+3); //temp 3 = ts
+        record(3, {tsRAW});
+        t.mult(t, omega, hand4); //omega = t*t
+        hold(0, {tsRAW});
         omega.EBEPow(temp[3], Singleton<T>::MINUS_ONE, hand4[0]); //omega = t * s / t * t;
+        record(0, {omegaRAW});
 
-        record(0, {omegaReady});
-
-        wait(1, {omegaReady});
+        hold(1, {omegaRAW});
         x.setSum(h, s, Singleton<T>::ONE, omega, hand4 + 1); // x = h + omega * s
-        record(1, {xReady});
 
-        synch(0);
-        prodTS.renew();
+        hold(0, {rWAR});
         r.setDifference(s, t, Singleton<T>::ONE, omega, hand4); // r = s - omega * t
-        record(0, {rReady});
+        record(0, {rRAW});
 
-        wait(2, {xReady, rReady});
-
-        if (isSmall(r, temp[2], 2)) break;
-        rReady.renew();
+        hold(2, {rRAW});
+        if (isSmall(r, temp[2])) break;
+        record(2, {rWAR});
 
         r_tilde.mult(r, rho_new, hand4);
-
         beta.setProductOfQuotients(rho_new, rho, alpha, omega, hand4[0]); // beta = (rho_new / rho) * (alpha / omega);
+        record(0, {betaRAW});
 
-        set(rho, rho_new, 0);
+        hold(3, {betaRAW});
+        set(rho, rho_new, 3);
+        record(3, {rhoRAW});
 
-        pUpdate(0); // p = r + beta(p - omega * v)
+        hold(0, {hRAW});
+        pUpdate(); // p = p - beta * omega * v
     }
+    if (i >= maxIterations)
+        std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
 
-    if (numIterations >= maxIterations) std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
-    synchAll();
+    synch();
 
     const TimePoint end = std::chrono::steady_clock::now();
     const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
-    // std::cout<< "BiCGSTAB #iterations = " << numIterations << std::endl;
+    // std::cout<< "BiCGSTAB #iterations = " << iteration << std::endl;
     // std::cout << time << ", ";
 }
 
@@ -358,3 +350,81 @@ template class BCGDense<float>;
 
 
 //multi streamed version.
+
+
+//
+//
+// synchAll();
+//     record(0, {xRAW});
+//     TimePoint start = std::chrono::steady_clock::now();
+//
+//     auto& x = initGuess;
+//     preamble(x);
+//
+//     size_t numIterations = 0;
+//     for (; numIterations < maxIterations; numIterations++) {
+//         mult(p, v); // v = A * p
+//
+//         r_tilde.mult(v, alpha, hand4);
+//         alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, hand4[0]); //alpha = rho / (r_tilde * v)
+//         record(0, {alphaRAW});
+//
+//
+//         wait(1, {alphaRAW});
+//
+//         set(h, x, 1);
+//
+//         h.add(p, &alpha, hand4 + 1); // h = x + alpha * p
+//         record(1, {hRAW});
+//
+//         wait(0, {xRAW});
+//         s.setDifference(r, v, Singleton<T>::ONE, alpha, hand4); // s = r - alpha * v
+//         record(0, {sRAW});
+//
+//         wait(2, {sRAW});
+//         if (isSmall(s, temp[2], 2)) {
+//             wait(2, {hRAW});
+//             set(x, h, 2);
+//             break;
+//         }
+//
+//         mult(s, t); // t = A * s
+//
+//         t.mult(s, temp[3], hand4 + 3);
+//         record(3, {prodTSRAW});
+//
+//         t.mult(t, omega, hand4);
+//         wait(0, {prodTSRAW});
+//         omega.EBEPow(temp[3], Singleton<T>::MINUS_ONE, hand4[0]); //omega = t * s / t * t;
+//
+//         record(0, {omegaRAW});
+//
+//         wait(1, {omegaRAW});
+//         x.setSum(h, s, Singleton<T>::ONE, omega, hand4 + 1); // x = h + omega * s
+//         record(1, {xRAW});
+//
+//
+//         r.setDifference(s, t, Singleton<T>::ONE, omega, hand4); // r = s - omega * t
+//         record(0, {rRAW});
+//
+//         wait(2, {xRAW, rRAW});
+//
+//         if (isSmall(r, temp[2], 2)) break;
+//
+//         r_tilde.mult(r, rho_new, hand4);
+//
+//         beta.setProductOfQuotients(rho_new, rho, alpha, omega, hand4[0]); // beta = (rho_new / rho) * (alpha / omega);
+//
+//         set(rho, rho_new, 0);
+//
+//         wait(0, {hRAW});
+//         pUpdate(0); // p = r + beta(p - omega * v)
+//     }
+//
+//     if (numIterations >= maxIterations) std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
+//     synchAll();
+//
+//     const TimePoint end = std::chrono::steady_clock::now();
+//     const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
+//     // std::cout<< "BiCGSTAB #iterations = " << numIterations << std::endl;
+//     // std::cout << time << ", ";

@@ -38,7 +38,7 @@ protected:
     Handle* hand4;
 private:
     const T tolerance;
-    Event alphaReady, sReady, hReady, omegaReady, rReady, xReady, prodTS;
+    Event alphaRAW, sRAW, hRAW, omegaRAW, rRAW, xRAW, prodTSRAW, rWAR, tRAW, tsRAW, betaRAW, rhoRAW;//TODO: pass these from one call of BiCGSTAB to the next.  Make them better at recycaling.
     const Vec<T> b;
     Mat<T> bHeightX7;
     Vec<T> r, r_tilde, p, v, s, t, h;
@@ -51,7 +51,9 @@ private:
     /**
      * @brief Waits for a list of events to complete on a specified CUDA stream.
      */
-    void wait(const size_t streamIndex, const std::initializer_list<std::reference_wrapper<Event> > evs) const;
+    void hold(const size_t streamIndex, const std::initializer_list<std::reference_wrapper<Event> > evs) const;
+
+
 
     /**
     * @brief Renews (resets) a list of events, preparing them for the next iteration.
@@ -61,7 +63,7 @@ private:
     /**
     * @brief Records an event on a specified CUDA stream.
     */
-    void record(size_t streamIndex, Event &e) const;
+    void record(size_t streamIndex, std::initializer_list<std::reference_wrapper<Event>> evs) const;
 
     /**
      * @brief Synchronizes a specific CUDA stream handle.

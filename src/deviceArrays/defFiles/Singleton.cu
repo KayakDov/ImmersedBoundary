@@ -21,6 +21,7 @@ template <typename T>
 T Singleton<T>::get(cudaStream_t stream) const{
     T cpuPointer[1];
     this->Vec<T>::get(cpuPointer, stream);
+    cudaStreamSynchronize(stream);
     return cpuPointer[0];
 }
 template <typename T>

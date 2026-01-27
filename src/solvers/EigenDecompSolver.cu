@@ -154,7 +154,7 @@ EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T
     this->eigenL(1, delta.y, hand2[1]);
     doneEigen.record(hand2[1]);
     this->eigenL(0, delta.x, hand2[0]);
-    doneEigen.wait(hand2[0]);
+    doneEigen.hold(hand2[0]);
 }
 
 template<typename T>
@@ -171,8 +171,8 @@ EigenDecompSolver3d<T>::EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T
     doneEigen[1].record(hand3[2]);
 
     this->eigenL(2, delta.z, hand3[0]);
-    doneEigen[0].wait(hand3[0]);
-    doneEigen[1].wait(hand3[0]);
+    doneEigen[0].hold(hand3[0]);
+    doneEigen[1].hold(hand3[0]);
 }
 
 //TODO: make sure this class is efficiently reuing memory if rowsXrows = colsXcols or the like.

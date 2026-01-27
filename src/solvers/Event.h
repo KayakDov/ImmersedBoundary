@@ -42,15 +42,6 @@ public:
     Event();
 
     /**
-     * @brief Recreates the CUDA event.
-     *
-     * The previous event is destroyed automatically via the custom deleter.
-     *
-     * @throws std::runtime_error if CUDA fails to recreate the event.
-     */
-    void renew();
-
-    /**
      * @brief Records the event on the CUDA stream associated with the given Handle.
      *
      * @param h A Handle object containing a CUDA stream.
@@ -64,28 +55,7 @@ public:
      * @param h A Handle object containing a CUDA stream.
      * @throws std::runtime_error if the event is null or if `cudaStreamWaitEvent` fails.
      */
-    void wait(const Handle& h) const;
-
-    /**
-     * @brief Renew the CUDA event and immediately record it on the given stream.
-     *
-     * Useful for checkpointing or marking phase boundaries in asynchronous pipelines.
-     *
-     * @param h The Handle whose CUDA stream is used.
-     */
-    void renewAndRecord(const Handle& h);
-
-    /// @name Deleted copy operations
-    /// @{
-    Event(const Event&) = delete;
-    Event& operator=(const Event&) = delete;
-    /// @}
-
-    /// @name Move semantics
-    /// @{
-    Event(Event&&) noexcept = default;
-    Event& operator=(Event&&) noexcept = default;
-    /// @}
+    void hold(const Handle& h) const;
 
 private:
 
