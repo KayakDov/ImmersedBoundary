@@ -19,8 +19,7 @@ std::unique_ptr<ImmersedEq<Real, Int> > eq = nullptr;
 template<typename Real, typename Int>
 void initImmersedEq(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, Real *p, Real *f, double dx, double dy,
                     double dz, double tol, size_t iter) {
-    eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(GridDim(gridHeight, gridWidth, gridDepth), forceSize, nnzMaxB, p, f, Real3d(dx, dy, dz),
-                                                             tol, iter);
+    eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(GridDim(gridHeight, gridWidth, gridDepth), forceSize, nnzMaxB, p, f, Real3d(dx, dy, dz), tol, iter);
 }
 
 template<typename Real, typename Int>
