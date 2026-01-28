@@ -8,7 +8,7 @@
 #define CUDABANDED_YURIFILEREADER_H
 #include <fstream>
 
-#include "SparseCSC.cuh"
+#include "SparseCSR.h"
 #include "Streamable.h"
 #include "solvers/BiCGSTAB.cuh"
 #include "solvers/EigenDecompSolver.h"
@@ -50,8 +50,8 @@ public:
     const SimpleArray<Real> p = pSizeX5.col(0, true);
     mutable SimpleArray<Real> result = pSizeX5.col(numPSizeVecs - 1, true);
 
-    SparseCSC<Real, Int> maxB; /**< Sparse matrix in CSC format */
-    std::shared_ptr<SparseCSC<Real, Int>> B;
+    SparseCSR<Real, Int> maxB;
+    std::shared_ptr<SparseMat<Real, Int>> B;
     const GridDim dim;
     const Real3d delta;
 
@@ -67,14 +67,14 @@ public:
      * @param dim
      * @param delta
      */
-    BaseData(SparseCSC<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX5, const GridDim &dim, const Real3d &delta);
+    BaseData(SparseCSR<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX5, const GridDim &dim, const Real3d &delta);
 
     BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle &hand);
 
     /**
      * @brief Resets all the base values. TODO: ask if modifications to B will be small instead of a total rewrite.
      */
-    void setB(size_t nnzB, Int *colsB, Int *rowsB, Real *valsB, Handle &hand);
+    void setB(size_t nnzB, Int *offsetsB, Int *indsB, Real *valsB, Handle &hand);
 
     SimpleArray<Real> allocatedFSize() const;
 
@@ -129,7 +129,7 @@ private:
      */
     void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const;
 
-    SimpleArray<Real> solve(size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB, bool multithreadBCG);
+    SimpleArray<Real> solve(size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, bool multithreadBCG);
 
 public:
 

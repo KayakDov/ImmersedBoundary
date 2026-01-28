@@ -64,12 +64,9 @@ void smallTestWithoutFiles() {
 
     // printL<Real>(dim, hand);
 
-    std::vector<Int> rowPointers = {0, 1};
+    std::vector<Int> rowOffsets = {0, 1, 2};
     std::vector<Real> values = {1, 1};
-    Int colOffsets [size + 1];
-    colOffsets[0] = 0;
-    colOffsets[1] = 1;
-    for (size_t i = 2; i < size + 1; ++i) colOffsets[i] = static_cast<Int>(2);
+    std::vector<Int> colInds = {0, 1};
 
     std::vector<Real> f = {1,2};
     std::vector<Real> p(size, 0);
@@ -81,7 +78,7 @@ void smallTestWithoutFiles() {
     ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
     // initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
 
-    imEq.solve(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
+    imEq.solve(result, values.size(), rowOffsets.data(), colInds.data(), values.data(), true);
     // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
 
     cudaDeviceSynchronize();
@@ -140,7 +137,7 @@ void smallTestWithoutFiles() {
 
 int main(int argc, char *argv[]) {
     // testOnFiles(GridDim(2000, 2000, 1));
-    smallTestWithoutFiles<double, int32_t>();
+    smallTestWithoutFiles<double, int64_t>();
 
     // BCGBanded<double>::test();
 

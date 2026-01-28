@@ -23,10 +23,10 @@ void initImmersedEq(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_
 }
 
 template<typename Real, typename Int>
-void solveImmersedEq(Real *res, size_t nnzB, Int *rowPointersB, Int *colOffsetsB, Real *val, bool multi = true) {
+void solveImmersedEq(Real *res, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valB, bool multi = true) {
     if (!eq<Real, Int>) throw std::runtime_error(
         "The solver is not initialized.  Be sure you're using consistent types.");
-    eq<Real, Int>->solve(res, nnzB, rowPointersB, colOffsetsB, val, multi);
+    eq<Real, Int>->solve(res, nnzB, rowOffsetsB, colIndsB, valB, multi);
 }
 
 // --- Initialization Functions ---
@@ -49,19 +49,19 @@ inline void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gri
 
     // --- Solve Functions ---
 
-inline void solveImmersedEq_d_i32(double *res, size_t nnzB, int32_t *rowPointersB, int32_t *colOffsetsB, double *val, bool multi = true) {
-        solveImmersedEq<double, int32_t>(res, nnzB, rowPointersB, colOffsetsB, val, multi);
+inline void solveImmersedEq_d_i32(double *res, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, double *val, bool multi = true) {
+        solveImmersedEq<double, int32_t>(res, nnzB, rowOffsetsB, colIndsB, val, multi);
     }
 
-inline void solveImmersedEq_s_i32(float *res, size_t nnzB, int32_t *rowPointersB, int32_t *colOffsetsB, float *val, bool multi = true) {
-        solveImmersedEq<float, int32_t>(res, nnzB, rowPointersB, colOffsetsB, val, multi);
+inline void solveImmersedEq_s_i32(float *res, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, float *val, bool multi = true) {
+        solveImmersedEq<float, int32_t>(res, nnzB, rowOffsetsB, colIndsB, val, multi);
     }
 
-inline void solveImmersedEq_d_i64(double *res, size_t nnzB, int64_t *rowPointers, int64_t *colOffsets, double *val, bool multi = true) {
-        solveImmersedEq<double, int64_t>(res, nnzB, rowPointers, colOffsets, val, multi);
+inline void solveImmersedEq_d_i64(double *res, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, double *val, bool multi = true) {
+        solveImmersedEq<double, int64_t>(res, nnzB, rowOffsetsB, colIndsB, val, multi);
     }
 
-inline void solveImmersedEq_s_i64(float *res, size_t nnzB, int64_t *rowPointers, int64_t *colOffsets, float *val, bool multi = true) {
-        solveImmersedEq<float, int64_t>(res, nnzB, rowPointers, colOffsets, val, multi);
+inline void solveImmersedEq_s_i64(float *res, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, float *val, bool multi = true) {
+        solveImmersedEq<float, int64_t>(res, nnzB, rowOffsetsB, colIndsB, val, multi);
     }
 }

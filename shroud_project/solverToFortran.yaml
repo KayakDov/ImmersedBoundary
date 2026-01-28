@@ -76,8 +76,8 @@ declarations:
       void solveImmersedEq_d_i32(
           double* result +intent(out) +rank(1),
           size_t nnzB,          
-          int32_t* rowPointersB +intent(in) +rank(1),          
-          int32_t* colOffsetsB +intent(in) +rank(1),          
+          int32_t* rowOffsetsB +intent(in) +rank(1),          
+          int32_t* colIndsB +intent(in) +rank(1),          
           double* valuesB +intent(in) +rank(1),
           bool multiStream
       )
@@ -86,8 +86,8 @@ declarations:
       void solveImmersedEq_s_i32(
           float* result +intent(out) +rank(1),
           size_t nnzB,          
-          int32_t* rowPointersB +intent(in) +rank(1),          
-          int32_t* colOffsetsB +intent(in) +rank(1),          
+          int32_t* rowOffsetsB +intent(in) +rank(1),          
+          int32_t* colIndsB +intent(in) +rank(1),          
           float* valuesB +intent(in) +rank(1),
           bool multiStream
       )
@@ -96,8 +96,8 @@ declarations:
       void solveImmersedEq_d_i64(
           double* result +intent(out) +rank(1),
           size_t nnzB,          
-          int64_t* rowPointersB +intent(in) +rank(1),          
-          int64_t* colOffsetsB +intent(in) +rank(1),          
+          int64_t* rowOffsetsB +intent(in) +rank(1),          
+          int64_t* colIndsB +intent(in) +rank(1),          
           double* valuesB +intent(in) +rank(1),
           bool multiStream
       )
@@ -106,8 +106,8 @@ declarations:
       void solveImmersedEq_s_i64(
           float* result +intent(out) +rank(1),
           size_t nnzB,          
-          int64_t* rowPointersB +intent(in) +rank(1),          
-          int64_t* colOffsetsB +intent(in) +rank(1),          
+          int64_t* rowOffsetsB +intent(in) +rank(1),          
+          int64_t* colIndsB +intent(in) +rank(1),          
           float* valuesB +intent(in) +rank(1),
           bool multiStream
       )

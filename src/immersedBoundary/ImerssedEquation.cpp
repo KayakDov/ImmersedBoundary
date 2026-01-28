@@ -24,7 +24,7 @@ BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle& 
 
     pSizeX5(Mat<Real>::create(meta.pSize, numPSizeVecs)),
     fSizeX2(Mat<Real>::create(meta.fSize, 2)),
-    maxB(SparseCSC<Real, Int>::create(meta.nnz, meta.bRows, meta.bCols, hand)),
+    maxB(SparseCSR<Real, Int>::create(meta.nnz, meta.bRows, meta.bCols, hand)),
     delta(1.0 / dim.cols, 1.0 / dim.rows, 1.0 / dim.layers),
     dim(dim)
 {
@@ -38,7 +38,7 @@ BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle& 
 
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(
-    SparseCSC<Real, Int> maxB,
+    SparseCSR<Real, Int> maxB,
     Mat<Real> fSizeX2,
     Mat<Real> pSizeX5,
     const GridDim &dim,
@@ -53,7 +53,7 @@ BaseData<Real, Int>::BaseData(
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle& hand) :
     BaseData(
-        SparseCSC<Real, Int>::create(nnzMaxB, fSize, dim.size(), hand),
+        SparseCSR<Real, Int>::create(nnzMaxB, fSize, dim.size(), hand),
         Mat<Real>::create(fSize, 2),
         Mat<Real>::create(dim.size(), numPSizeVecs),
         dim,
@@ -64,24 +64,24 @@ BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, 
 }
 
 template<typename Real, typename Int>
-void BaseData<Real, Int>::setB(size_t nnzB, Int *colsB, Int *rowsB, Real *valsB, Handle& hand) {
+void BaseData<Real, Int>::setB(size_t nnzB, Int *offsetsB, Int *indsB, Real *valsB, Handle& hand) {
     if (nnzB > maxB.nnz()) {
         throw std::invalid_argument(
             "BaseData::setB - NNZ Overflow: Requested nnzB (" + std::to_string(nnzB) +
             ") exceeds maxB capacity (" + std::to_string(maxB.nnz()) + ")."
         );
     }
-    B = std::make_shared<SparseCSC<Real, Int> >(
-        SparseCSC<Real, Int>::create(
-            maxB.rows,
+    B = std::make_shared<SparseCSR<Real, Int> >(
+        SparseCSR<Real, Int>::create(//TODO:change matrix type
+            maxB.cols,
             maxB.values.subAray(0, nnzB),
-            maxB.rowPointers.subAray(0, nnzB),
-            maxB.columnOffsets,
-            hand
+            maxB.offsets,
+            maxB.inds.subAray(0, nnzB)
+
         )
     );
-    B->columnOffsets.set(colsB, hand);
-    B->rowPointers.set(rowsB, hand);
+    B->offsets.set(offsetsB, hand);
+    B->inds.set(indsB, hand);
     B->values.set(valsB, hand);
 }
 
@@ -238,12 +238,12 @@ void ImmersedEq<Real, Int>::solve(
 template<typename Real, typename Int>
 SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     size_t nnzB,
-    Int *rowPointersB,
-    Int *colPointersB,
+    Int *rowOffsetsB,
+    Int *colIndsB,
     Real *valuesB,
     const bool multithreadBCG
 ) {
-    baseData.setB(nnzB, colPointersB, rowPointersB, valuesB, hand5[0]);
+    baseData.setB(nnzB, rowOffsetsB, colIndsB, valuesB, hand5[0]);
     RHS(true);
 
     //TODO: should the initial guess be random, or the RHS of the equation?

@@ -290,7 +290,7 @@ __global__ void EBEPowKernel(DeviceData1d<T> data, const T *t, const T *n) {
 }
 
 template<typename T>
-__global__ void invert(DeviceData1d<T> data, const T *t) {
+__global__ void EBEInvertKernel(DeviceData1d<T> data, const T *t) {
     if (size_t idx = blockIdx.x * blockDim.x + threadIdx.x; idx < data.cols)
         data[idx] = (*t) / data[idx];
 }
@@ -302,7 +302,7 @@ void Vec<T>::EBEPow(const Singleton<T> &t, const Singleton<T> &n, cudaStream_t s
     KernelPrep kp = this->kernelPrep();
 
     if (n.data() == Singleton<T>::MINUS_ONE.data())
-        invert<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel1d(), t.data());
+        EBEInvertKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel1d(), t.data());
     else EBEPowKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
             this->toKernel1d(),
             t.data(), n.data()

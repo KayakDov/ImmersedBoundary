@@ -50,19 +50,19 @@ void FOR_initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth,
     size_t maxBCGIterations);
 
 void FOR_solveImmersedEq_d_i32(double *result, size_t nnzB,
-    int32_t *rowPointersB, int32_t *colOffsetsB, double *valuesB,
+    int32_t *rowOffsetsB, int32_t *colIndsB, double *valuesB,
     bool multiStream);
 
 void FOR_solveImmersedEq_s_i32(float *result, size_t nnzB,
-    int32_t *rowPointersB, int32_t *colOffsetsB, float *valuesB,
+    int32_t *rowOffsetsB, int32_t *colIndsB, float *valuesB,
     bool multiStream);
 
 void FOR_solveImmersedEq_d_i64(double *result, size_t nnzB,
-    int64_t *rowPointersB, int64_t *colOffsetsB, double *valuesB,
+    int64_t *rowOffsetsB, int64_t *colIndsB, double *valuesB,
     bool multiStream);
 
 void FOR_solveImmersedEq_s_i64(float *result, size_t nnzB,
-    int64_t *rowPointersB, int64_t *colOffsetsB, float *valuesB,
+    int64_t *rowOffsetsB, int64_t *colIndsB, float *valuesB,
     bool multiStream);
 
 #ifdef __cplusplus
