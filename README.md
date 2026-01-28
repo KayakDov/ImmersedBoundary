@@ -88,16 +88,16 @@ This routine allocates GPU memory and pre-computes the Eigen Decomposition.
 ---
 
 ### Solve Routine (`solve_immersed_eq_*`)
-This routine executes the iterative solver for a specific state of matrix B.
+This routine executes the iterative solver for a specific state of CSR matrix B.
 
-| Argument | Type | Description                                    |
-| :--- | :--- |:-----------------------------------------------|
-| result | real array | Output: Array to overwritten by the value of x. |
-| nnzB | integer(C_SIZE_T) | Current non-zero count in matrix B.            |
-| rowPtrs | integer array | Sparse row indices (MUST BE 0-BASED).          |
-| colOffsets | integer array | Sparse column offsets (MUST BE 0-BASED).       |
-| values | real array | Non-zero values for matrix B for this step.    |
-| multiStream | logical | .true. to run solver in parallel CUDA streams. |
+| Argument    | Type | Description                                     |
+|:------------| :--- |:------------------------------------------------|
+| result      | real array | Output: Array to overwritten by the value of x. |
+| nnzB        | integer(C_SIZE_T) | Current non-zero count in matrix B.             |
+| rowOffsets  | integer array | Sparse row offsets (MUST BE 0-BASED).           |
+| colInds     | integer array | Sparse column indices (MUST BE 0-BASED).        |
+| values      | real array | Non-zero values for matrix B for this step.     |
+| multiStream | logical | .true. to run solver in parallel CUDA streams.  |
 ---
 
 ## 5. Compiling & Linking
