@@ -94,8 +94,8 @@ void smallTestWithoutFiles() {
 
 
 
-    auto denseB = Mat<Real>::create(f.size(), p.size());
-    imEq.baseData.B->getDense(denseB, hand);
+    // auto denseB = Mat<Real>::create(f.size(), p.size());
+    // imEq.baseData.B->getDense(denseB, hand);
 
     // std::cout << "\nB = \n" << GpuOut<Real>(denseB, hand) << std::endl;
     // auto inverseL = imEq.eds->inverseL(hand);
@@ -142,4 +142,6 @@ int main(int argc, char *argv[]) {
     // BCGBanded<double>::test();
 
     // BCGDense<double>::test();
+
+
 }

@@ -53,6 +53,14 @@ void SparseMat<Real, Int>::getDense(Mat<Real>& dest, Handle& h) const {
 }
 
 template<typename Real, typename Int>
+void SparseMat<Real, Int>::set(Int *offsets, Int *inds, Real *vals, Handle &hand) {
+    this->offsets.set(offsets, hand);
+    this->inds.set(inds, hand);
+    this->values.set(vals, hand);
+
+}
+
+template<typename Real, typename Int>
 SparseMat<Real, Int>::SparseMat(size_t rows, size_t cols, SimpleArray<Real>& values, SimpleArray<Int> &offsets, SimpleArray<Int> &inds):
     rows(rows), cols(cols), values(values), offsets(offsets), inds(inds) {
 }

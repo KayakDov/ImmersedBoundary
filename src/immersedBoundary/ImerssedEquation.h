@@ -9,7 +9,7 @@
 #include <fstream>
 
 #include "SparseCSR.h"
-#include "Streamable.h"
+#include "SparseCSC.cuh"
 #include "solvers/BiCGSTAB.cuh"
 #include "solvers/EigenDecompSolver.h"
 
@@ -40,15 +40,17 @@ class FileMeta {
  * @tparam Int Integer type for row indices (default uint32_t).
  * @tparam IntCols Integer type for column offsets (default uint32_t).
  */
-template <typename Real, typename Int = uint32_t> //TODO: f and p should never change.  B should be able to change everything.
+template <typename Real, typename Int = uint32_t>
 class BaseData {
-    constexpr static size_t numPSizeVecs = 6;//TODO: see if this works at 5
+    constexpr static size_t numPSizeVecs = 5;
+    void checkNNZB(size_t nnzB) const;
+
 public:
 
-    mutable Mat<Real> pSizeX5,  fSizeX2;
+    mutable Mat<Real> pSizeX4,  fSizeX2;
     const SimpleArray<Real> f = fSizeX2.col(0, true);
-    const SimpleArray<Real> p = pSizeX5.col(0, true);
-    mutable SimpleArray<Real> result = pSizeX5.col(numPSizeVecs - 1, true);
+    const SimpleArray<Real> p = pSizeX4.col(0, true);
+    mutable SimpleArray<Real> result = pSizeX4.col(numPSizeVecs - 1, true);
 
     SparseCSR<Real, Int> maxB;
     std::shared_ptr<SparseMat<Real, Int>> B;
@@ -63,18 +65,18 @@ public:
      *
      * @param maxB
      * @param fSizeX2
-     * @param pSizeX5
+     * @param pSizeX4
      * @param dim
      * @param delta
      */
-    BaseData(SparseCSR<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX5, const GridDim &dim, const Real3d &delta);
+    BaseData(SparseCSR<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX4, const GridDim &dim, const Real3d &delta);
 
     BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle &hand);
 
     /**
      * @brief Resets all the base values. TODO: ask if modifications to B will be small instead of a total rewrite.
      */
-    void setB(size_t nnzB, Int *offsetsB, Int *indsB, Real *valsB, Handle &hand);
+    void setB(size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valsB, Handle &hand);
 
     SimpleArray<Real> allocatedFSize() const;
 
@@ -96,11 +98,9 @@ class ImmersedEq {
 
     friend ImmersedEqSolver<Real, Int>;
 
-public: //TODO: this is public for debugging purposes only.
     BaseData<Real, Int> baseData;
-private:
 
-    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer{nullptr};
+    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer;
 
     Mat<Real> allocatedRHSHeightX7 = Mat<Real>::create(baseData.p.size(), 7);
     Vec<Real> allocated9 = Vec<Real>::create(9, hand5[0]);
@@ -113,11 +113,7 @@ private:
 
     SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(baseData.p.size(), hand5[0]);
 
-public://TODO: this is public for debugging purposes only.
     std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(baseData.dim, baseData.allocatedPSize(0), &hand5[0], baseData.delta);
-private:
-
-    ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations);
 
 
     /**
@@ -129,14 +125,25 @@ private:
      */
     void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const;
 
-    SimpleArray<Real> solve(size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, bool multithreadBCG);
+    /**
+     *
+     * @param nnzB  The number of non zero elements in B.
+     * @param offsetsB if csc == true, then this is the column offsets, otherwise the row offsets.
+     * @param indsB  if csc == true then this should be row indices, otherwise the column indices.
+     * @param valuesB The non zero values in B.
+     * @param multithreadBCG true to multistream BiCGSTAB, false to run in a single stream.
+     * @return The solution, best to write this data to somewhere else as it will be overwritten when the method runs again.
+     */
+    SimpleArray<Real> solve(size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool multithreadBCG);
 
 public:
+
+    ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr);
 
     /**
      * @brief Sets up the immersed equation system using the provided base data.
      */
-    ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta, double tolerance, size_t maxBCGIterations);
+    ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta, double tolerance, size_t maxBCGIterations, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr);
 
     /**
      * This method creates the LHS matrix.  For large matrices this may be inefficient.
@@ -153,21 +160,19 @@ public:
      */
     SimpleArray<Real>& RHS(bool reset = true);
 
+    void solve(bool multiStream);
 
     /**
-     * Solves the equation.
-     * @param result The solution will be placed here.
-     * @param nnzB
-     * @param rowPointersB
-     * @param colPointersB
-     * @param valuesB
-     * @param hand4 A pointer to four handles.
-     * @param allocatedRHSHeightX7 preallocated memory
-     * @param allocated9 preallocated memory
-     * @param tolerance The tolerance
-     * @param maxIterations The maximum number of iterations.
+     *
+     * @param result The result will be written here.
+     * @param nnzB  The number of nonzero elements in B.
+     * @param offsetsB if csc == true, then this is the column offsets, otherwise the row offsets.
+     * @param indsB  if csc == true then this should be row indices, otherwise the column indices.
+     * @param valuesB The non zero values in B.
+     * @param multiStream true to multistream BiCGSTAB, false to run in a single stream.
+     * @return
      */
-    void solve(Real *result, size_t nnzB, Int *rowPointersB, Int *colPointersB, Real *valuesB, bool multiStream = true);
+    void solve(Real *result, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool multiStream);
 };
 
 /**

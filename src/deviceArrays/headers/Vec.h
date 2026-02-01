@@ -10,7 +10,7 @@
 #ifndef BICGSTAB_VEC_H
 #define BICGSTAB_VEC_H
 #include "GpuArray.h"
-#include "../defFiles/DeviceData.cu"
+#include "../defFiles/DeviceData.cuh"
 #include  "Tensor.h"
 
 
@@ -188,9 +188,11 @@ public:
      * 
      * @param x Vector to subtract.
      * @param alpha Scaling factor.
+     * @param buffer
      * @param handle Optional GPU handle.
+     * @param optionalBuffer
      */
-    void sub(const Vec<T>& x, const Singleton<T>* alpha, Handle* handle);
+    void subtract(const Vec &x, const Singleton<T> *alpha, Singleton<T> buffer, Handle *handle);
 
     /**
      * @brief Multiply this vector by a scalar.
@@ -247,27 +249,6 @@ public:
     void setSum(const Vec<T> &a, const Vec<T> &b, const Singleton<T> &alpha, const Singleton<T> &beta, Handle *handle);
     void setDifference(const Vec<T>& a, const Vec<T>& b, const Singleton<T>& alpha, const Singleton<T>& beta, Handle* handle);
 
-
-    /**
-     * Creates a tensor that is a window into this data.
-     * Be sure that size is divisible by height * layers.
-     *
-     * This method may create a window to chnage a const object, so be sure to set recipiant of this to const. TODO: set this to pass a type of const pointer, but be prepared for a const cascade.
-     *
-     * @param layers The number of layers in the tensor.
-     * @param height The length of each column.
-     * @return a tensor that is a window into this data.
-     */
-    [[nodiscard]] Tensor<T> tensor(size_t height, size_t layers) const;
-
-
-
-    /**
-     * The data in this vector reorganized as a matrix.
-     * @param height The height of the matrix created. This should be a divisor of size.
-     * @return A matrix containing the data in this vector.
-     */
-    [[nodiscard]] Mat<T> matrix(size_t height) const;//TODO: make this pass a conts pointer, be prepared for const cascade.
 
     [[nodiscard]] DeviceData1d<T> toKernel1d();
 

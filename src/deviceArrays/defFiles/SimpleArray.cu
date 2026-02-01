@@ -28,7 +28,7 @@ SimpleArray<T>::SimpleArray(Vec<T> vecWithLD1)
 }
 
 template<typename T>
-SimpleArray<T> SimpleArray<T>::subAray(size_t offset, size_t length) {
+const SimpleArray<T> SimpleArray<T>::subArray(size_t offset, size_t length) const {
     auto subArray = Vec<T>::subVec(offset, length, 1);
     return {length, subArray.ptr()};
 }
@@ -79,6 +79,18 @@ SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr) const {
 template<typename T>
 SimpleArray<T> Tensor<T>::col(size_t col, size_t layer) {
     return layerRowCol(layer).col(col);
+}
+
+template<typename T>
+Tensor<T> SimpleArray<T>::tensor(size_t height, size_t layers) const{
+    const size_t ld = height * layers;
+    const size_t rows = this->size()/ld;
+    return Tensor<T>(height, rows, layers, ld, this->_ptr);
+}
+
+template<typename T>
+Mat<T> SimpleArray<T>::matrix(size_t height) const{
+    return Mat<T>(height, this->size()/height, height, this->_ptr);
 }
 
 template SimpleArray<float>        GpuArray<float>::col(size_t, bool);

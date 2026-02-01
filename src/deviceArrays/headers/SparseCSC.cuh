@@ -19,8 +19,6 @@ class SparseCSC : public SparseMat<Real, Int> {
 protected:
     virtual void setDescriptor() override;
 
-
-
 public:
 
     SparseCSC(size_t rows, size_t cols, SimpleArray<Real> &values, SimpleArray<Int> &colOffsets, SimpleArray<Int> &rowInds);
@@ -29,7 +27,7 @@ public:
 
     static SparseCSC create(size_t rows, SimpleArray<Real> values, SimpleArray<Int> colOffsets, SimpleArray<Int> rowInds);
 
-void setCSR(SparseCSR<Real, Int> &dest, Handle &h, SimpleArray<Real> *buffer) const;
+void setCSR(SparseCSR<Real, Int> &dest, Handle &hand, std::shared_ptr<SimpleArray<Real>> &buffer) const;
 };
 /**
  * @brief A high-performance utility for assembling sparse matrices in Compressed Sparse Column (CSC) format.

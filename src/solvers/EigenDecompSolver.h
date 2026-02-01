@@ -110,7 +110,7 @@ public:
      * @param b Right-hand-side vector (will be overwritten).
      * @param hand
      */
-    virtual void solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const = 0;
+    virtual void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const = 0;
 
 
     /**
@@ -133,7 +133,7 @@ private:
     void setUTilde(const Mat<T> &f, Mat<T> &u, Handle &hand) const;
 public:
     EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2, SimpleArray<T>& sizeOfB, Handle* hand2, Real2d delta = Real2d(1, 1));
-    void solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const;
+    void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
 };
 
 template<typename T>
@@ -192,7 +192,7 @@ public:
 
     EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3, SimpleArray<T>& sizeOfB, Handle* hand3, Real3d delta = Real3d(1, 1, 1));
 
-    void solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const;
+    void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
 
 };
 

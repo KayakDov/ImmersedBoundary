@@ -43,14 +43,6 @@ class Mat : public GpuArray<T> {
 
     mutable DnMatDescrPtr dnMatDescr;
 protected:
-    /**
-     * @brief Protected constructor. Use static create() method or derived classes.
-     * @param rows Number of rows in the matrix.
-     * @param cols Number of columns in the matrix.
-     * @param ld Leading dimension of the matrix.
-     * @param _ptr Shared pointer to device memory for the matrix.
-     */
-    Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr, bool initDescr = false);
 
     /**
      * A pointer to the desired element.
@@ -66,6 +58,15 @@ public:
     using GpuArray<T>::mult;
     using GpuArray<T>::row;
     using GpuArray<T>::col;
+
+    /**
+     * @brief Protected constructor. Use static create() method or derived classes.
+     * @param rows Number of rows in the matrix.
+     * @param cols Number of columns in the matrix.
+     * @param ld Leading dimension of the matrix.
+     * @param _ptr Shared pointer to device memory for the matrix.
+     */
+    Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr, bool initDescr = false);
 
     /**
      * @brief Retrieves or creates a target matrix with the specified dimensions.

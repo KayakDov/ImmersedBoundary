@@ -4,7 +4,7 @@
 #ifndef GPUARRAY_H
 #define GPUARRAY_H
 
-#include "../defFiles/DeviceData.cu"
+#include "../defFiles/DeviceData.cuh"
 #include <memory> // For std::shared_ptr
 #include "handle.h"
 #include <iomanip>

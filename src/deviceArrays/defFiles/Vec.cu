@@ -215,12 +215,13 @@ void Vec<T>::add(const Vec<T> &x, const Singleton<T> *alpha, Handle *handle) {
 }
 
 template<typename T>
-void Vec<T>::sub(const Vec<T> &x, const Singleton<T> *alpha, Handle *handle) {
+void Vec<T>::subtract(const Vec<T> &x, const Singleton<T> *alpha, Singleton<T> buffer, Handle *handle) {
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-    Singleton<T> a = Singleton<T>::create(*h);
-    a.set(-alpha->get(), *h);
-    this->add(x, &a, h);
+
+    buffer.set(Singleton<T>::MINUS_ONE, *h);
+    buffer.mult(*alpha, h);
+    this->add(x, &buffer, h);
 }
 
 template<typename T>
@@ -360,17 +361,7 @@ void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> 
 }
 
 
-template<typename T>
-Tensor<T> Vec<T>::tensor(size_t height, size_t layers) const{
-    const size_t ld = height * layers;
-    const size_t rows = size()/ld;
-    return Tensor<T>(height, rows, layers, ld, this->_ptr);
-}
 
-template<typename T>
-Mat<T> Vec<T>::matrix(size_t height) const{
-    return Mat<T>(height, size()/height, height, this->_ptr);
-}
 
 template<typename T>
 DeviceData1d<T> Vec<T>::toKernel1d() {

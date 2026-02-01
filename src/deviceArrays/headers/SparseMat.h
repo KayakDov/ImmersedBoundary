@@ -8,7 +8,7 @@
 
 using SpMatDescrPtr = std::shared_ptr<std::remove_pointer<cusparseSpMatDescr_t>::type>;
 
-template <typename Real = double, typename Int = uint32_t>
+template <typename Real, typename Int>
 class SparseMat {
 
 
@@ -28,6 +28,8 @@ public:
     SparseMat(size_t rows, size_t cols, SimpleArray<Real> &values, SimpleArray<Int> &offsets, SimpleArray<Int> &inds);
 
     [[nodiscard]] size_t nnz() const;
+
+    void changeStorageType(SparseMat<Real, Int> &dest, Handle &hand, std::shared_ptr<SimpleArray<Real>> &buffer) const;
 
     /**
      * The numver of elements of size T needed for the workspace for mult;
@@ -56,6 +58,13 @@ public:
      */
     void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeMat, SimpleArray<Real> &workSpace, Handle &h) const;
 
+    /**
+     * Creates a dense version of this matrix.
+     * @param dest Where the dense matrix will be put.
+     * @param h the handle.
+     */
     void getDense(Mat<Real> &dest, Handle &h) const;
+
+    void set(Int* offsets, Int* inds, Real* vals, Handle& hand);
 };
 #endif //CUDABANDED_SPARSEMAT_H

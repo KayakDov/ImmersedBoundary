@@ -14,6 +14,7 @@ template <typename T> class Vec;
 template <typename T> class GpuArray;
 template <typename T> class Tensor;
 template <typename T> class Mat;
+template <typename T> class DeviceData3d;
 
 template<typename T>
 class DeviceData1d {
@@ -29,6 +30,12 @@ public:
      * device memory (e.g., from cudaMalloc).
      */
     T* __restrict__ data;
+
+    /**
+     * A tool for creating vectors from within larger matrices.
+     *
+     */
+    __device__ DeviceData1d(size_t size, DeviceData3d<T> &src, GridInd3d &ind0, size_t dRow, size_t dCol, size_t dLayer);
 
     /**
      * @brief Provides 1D array access to the data using the logical flat index.
@@ -168,6 +175,9 @@ public:
     __device__ const T& operator()(size_t row, size_t col) const{
         return const_cast<DeviceData2d<T>*>(this)->operator()(row, col);
     }
+    __device__ T& operator()(const GridInd2d& ind0, const size_t dRow, const size_t dCol) {
+        return this->operator()(ind0.row + dRow, ind0.col + dCol);
+    }
 
 };
 
@@ -178,6 +188,9 @@ private:
     __device__ __host__ DeviceData3d(size_t rows, size_t cols, size_t layers, size_t ld, T *data): DeviceData2d<T>(rows, cols, ld, data), layers(layers) {
     }
 public:
+    using DeviceData2d<T>::operator();
+    using DeviceData2d<T>::flat;
+
     const size_t layers;
 
     /**
@@ -186,7 +199,7 @@ public:
      * @return
      */
     __device__ T& operator[](const GridInd3d& ind){
-        return this->operator()(ind.layer * this -> rows +  ind.row, ind.col);
+        return this->operator()(ind.row, ind.col, ind.layer);
     }
 
 
@@ -194,9 +207,27 @@ public:
         return const_cast<DeviceData3d<T>*>(this)->operator[](ind);
     }
 
+    __device__ T& operator()(const size_t row, const size_t col, const size_t layer) {
+        return this->operator()(layer * this -> rows +  row, col);
+    }
 
+    __device__ T& operator()(const GridInd3d& ind0, const size_t dRow, const size_t dCol, const size_t dLayer) {
+        return this->operator()(ind0.row + dRow, ind0.col + dCol, ind0.layer + dLayer);
+    }
+
+    __device__ size_t flat(size_t row, size_t col, size_t layer) {
+        return this->flat(layer * this->rows + row, col);
+    }
+    __device__ size_t flat(const GridInd3d& ind) {
+        return this->flat(ind.row, ind.col, ind.layer);
+    }
 };
 
+
+template<typename T>
+DeviceData1d<T>::DeviceData1d(size_t size, DeviceData3d<T> &src, GridInd3d &ind0, size_t dRow, size_t dCol, size_t dLayer):
+    DeviceData1d<T>(size, src.flat(dRow, dCol, dLayer), src.data + src.flat(ind0)){
+}
 
 /**
  * Are the indices outside the dimensions (inclusive).

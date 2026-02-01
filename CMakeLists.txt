@@ -46,6 +46,8 @@ set(SHROUD_CPP
         src/deviceArrays/defFiles/SparseMat.cu
         src/deviceArrays/defFiles/SparseCSR.cpp
         src/deviceArrays/headers/SparseCSR.h
+        src/immersedBoundary/PPrimeFPrime.cu
+        src/immersedBoundary/PPrimeFPrime.cuh
 )
 
 # =========================

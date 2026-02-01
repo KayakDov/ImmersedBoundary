@@ -47,42 +47,6 @@ SparseCSC<Real, Int> SparseCSC<Real, Int>::create(size_t rows, SimpleArray<Real>
     return {rows, colOffsets.size() - 1, values, colOffsets, rowInds};
 }
 
-template<typename Real, typename Int>
-void SparseCSC<Real, Int>::setCSR(SparseCSR<Real, Int>& dest, Handle& h, SimpleArray<Real>* buffer) const {
-    size_t requiredBytes = 0;
-
-    static_assert(std::is_same_v<Int, int32_t>, "cusparseCsr2cscEx2 requires Int=int32_t");
-
-    if (buffer) CHECK_SPARSE_ERROR(cusparseCsr2cscEx2_bufferSize(
-        h,
-        this->rows, this->cols, this->nnz(),
-        this->values.data(), this->offsets.data(), this->inds.data(), // CSC as input
-        dest.values.data(), dest.offsets.data(), dest.inds.data(),    // CSR as output
-        cuValueType<Real>(),
-        CUSPARSE_ACTION_NUMERIC,
-        CUSPARSE_INDEX_BASE_ZERO,
-        CUSPARSE_CSR2CSC_ALG1,
-        &requiredBytes
-    ));
-
-    SimpleArray<Real> bArray = (!buffer || buffer->size() * sizeof(Real) < requiredBytes)
-        ? SimpleArray<Real>::create((requiredBytes + sizeof(Real) - 1) / sizeof(Real), h)
-        : *buffer;
-
-
-    CHECK_SPARSE_ERROR(cusparseCsr2cscEx2(
-        h,
-        this->rows, this->cols, this->nnz(),
-        this->values.data(), this->offsets.data(), this->inds.data(),
-        dest.values.data(), dest.offsets.data(), dest.inds.data(),
-        cuValueType<Real>(),
-        CUSPARSE_ACTION_NUMERIC,
-        CUSPARSE_INDEX_BASE_ZERO,
-        CUSPARSE_CSR2CSC_ALG1,
-        bArray.data()
-    ));
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename Real, typename Int>
 CSCBuilder<Real, Int>::CSCBuilder(size_t cols): cols(cols) {
@@ -111,6 +75,9 @@ SparseCSC<Real, Int> CSCBuilder<Real, Int>::get(size_t rows, cudaStream_t stream
 
 template class SparseCSC<float, int32_t>;
 template class SparseCSC<double, int32_t>;
+template class SparseCSC<float, int64_t>;
+template class SparseCSC<double, int64_t>;
+
 
 
 

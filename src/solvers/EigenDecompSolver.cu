@@ -177,7 +177,7 @@ EigenDecompSolver3d<T>::EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T
 
 //TODO: make sure this class is efficiently reuing memory if rowsXrows = colsXcols or the like.
 template<typename T>
-void EigenDecompSolver3d<T>::solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const {
+void EigenDecompSolver3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
     const auto bT = b.tensor(this->dim.rows, this->dim.layers);
     auto bWorkSpaceT = this->sizeOfB.tensor(this->dim.rows, this->dim.layers);
     auto xT = x.tensor(this->dim.rows, this->dim.layers);
@@ -190,7 +190,7 @@ void EigenDecompSolver3d<T>::solve(Vec<T> &x, const Vec<T> &b, Handle &hand) con
 }
 
 template<typename T>
-void EigenDecompSolver2d<T>::solve(Vec<T> &x, const Vec<T> &b, Handle &hand) const {
+void EigenDecompSolver2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
     const auto bM = b.matrix(this->dim.rows);
     auto soBM = this->sizeOfB.matrix(this->dim.rows);

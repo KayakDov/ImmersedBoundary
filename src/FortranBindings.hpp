@@ -29,6 +29,7 @@ void solveImmersedEq(Real *res, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Re
     eq<Real, Int>->solve(res, nnzB, rowOffsetsB, colIndsB, valB, multi);
 }
 
+
 // --- Initialization Functions ---
 extern "C" {
 inline void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double tol, size_t iter) {
