@@ -33,6 +33,28 @@ class FileMeta {
     FileMeta(std::ifstream& xFile, std::ifstream& bFile);
 };
 
+
+enum class GridInd : size_t {//eularian
+    p         = 0,
+    RHSPPrime = 1,
+    Result    = 2,
+    pPrime    = 2,
+    EDS       = 3,
+    LHS2      = 4,
+    RHS       = 4,
+    LHS1       = 5,
+    Count     = 6
+};
+
+// Grouping F-size vector indices
+enum class LagrangeInd : size_t {
+    f         = 0,
+    RHSFPrime = 1,
+    fPrime    = 1,
+    LHS       = 2,
+    Count     = 3
+};
+
 /**
  * @class BaseData
  * @brief Container for the sparse matrix B and associated physical vectors on the GPU.
@@ -42,15 +64,14 @@ class FileMeta {
  */
 template <typename Real, typename Int = uint32_t>
 class BaseData {
-    constexpr static size_t numPSizeVecs = 5;
     void checkNNZB(size_t nnzB) const;
 
 public:
 
-    mutable Mat<Real> pSizeX4,  fSizeX2;
-    const SimpleArray<Real> f = fSizeX2.col(0, true);
-    const SimpleArray<Real> p = pSizeX4.col(0, true);
-    mutable SimpleArray<Real> result = pSizeX4.col(numPSizeVecs - 1, true);
+    mutable Mat<Real> gridVecs,  lagrangeVecs;
+    std::shared_ptr<SimpleArray<Real>> f = std::make_shared<SimpleArray<Real>>(lagrangeVecs.col(static_cast<size_t>(LagrangeInd::f)));
+    std::shared_ptr<SimpleArray<Real>> p = std::make_shared<SimpleArray<Real>>(gridVecs.col(static_cast<size_t>(GridInd::p)));
+    mutable SimpleArray<Real> result = gridVecs.col(static_cast<size_t>(GridInd::Result));
 
     SparseCSR<Real, Int> maxB;
     std::shared_ptr<SparseMat<Real, Int>> B;
@@ -64,12 +85,12 @@ public:
     /**
      *
      * @param maxB
-     * @param fSizeX2
-     * @param pSizeX4
+     * @param fSizeX3
+     * @param pSizeX5
      * @param dim
      * @param delta
      */
-    BaseData(SparseCSR<Real, Int> maxB, Mat<Real> fSizeX2, Mat<Real> pSizeX4, const GridDim &dim, const Real3d &delta);
+    BaseData(SparseCSR<Real, Int> maxB, Mat<Real> fSizeX3, Mat<Real> pSizeX5, const GridDim &dim, const Real3d &delta);
 
     BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle &hand);
 
@@ -78,11 +99,10 @@ public:
      */
     void setB(size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valsB, Handle &hand);
 
-    SimpleArray<Real> allocatedFSize() const;
-
-    SimpleArray<Real> allocatedPSize(uint8_t ind) const;
-
     void printDenseB(Handle &hand) const;
+
+    SimpleArray<Real> lagrangeVec(LagrangeInd ind) const;
+    SimpleArray<Real> gridVec(GridInd ind)const ;
 };
 
 
@@ -91,7 +111,7 @@ template <typename Real, typename Int> class ImmersedEqSolver;
  * @class ImmersedEq
  * @brief Represents the Immersed Boundary linear system operators.
  */
-template <typename Real, typename Int = uint32_t>
+template <typename Real, typename Int>
 class ImmersedEq {
 
 public:
@@ -102,15 +122,15 @@ public:
 private:
 
     friend ImmersedEqSolver<Real, Int>;
-    Mat<Real> allocatedRHSHeightX7 = Mat<Real>::create(baseData.p.size(), 7);
+    Mat<Real> allocatedRHSHeightX7 = Mat<Real>::create(baseData.p->size(), 7);
     Vec<Real> allocated9 = Vec<Real>::create(9, hand5[0]);
     Real tolerance;
     size_t maxIterations;
     Event lhsTimes;
 
-    SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(baseData.p.size(), hand5[0]);
+    SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(baseData.p->size(), hand5[0]);
 
-    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(baseData.dim, baseData.allocatedPSize(0), &hand5[0], baseData.delta);
+    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(baseData.dim, baseData.gridVec(GridInd::EDS), &hand5[0], baseData.delta);
 
 
     /**
@@ -177,7 +197,7 @@ public:
  * @class ImmersedEqSolver
  * @brief BiCGSTAB implementation specifically tailored for ImmersedEq systems.
  */
-template <typename Real, typename Int = uint32_t>
+template <typename Real, typename Int>
 class ImmersedEqSolver:  public BiCGSTAB<Real> {
 
     ImmersedEq<Real, Int>& imEq;

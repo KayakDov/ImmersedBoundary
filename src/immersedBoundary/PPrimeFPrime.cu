@@ -95,8 +95,8 @@ PPrimeFprime<Real, Int>::PPrimeFprime(
     dT(Singleton<Real>::create(3/(2 * deltaT), imEq.hand5[0])){
 
     auto& hand = imEq.hand5[0];
-    auto& RHSPPrime = imEq.baseData.p;
-    auto& RHSFPrime = imEq.baseData.f;
+    auto& RHSPPrime = *imEq.baseData.p;
+    auto& RHSFPrime = *imEq.baseData.f;
 
     setRHSPPrime(RHSPPrime, hand);
     setRHSFPrime(RHSFPrime, imEq.sparseMultBuffer, hand);
@@ -106,7 +106,7 @@ PPrimeFprime<Real, Int>::PPrimeFprime(
     imEq.events11[1].hold(imEq.hand5[1]);
     pPrimeDevice.get(pPrimeHost, imEq.hand5[1]);
 
-    auto fPrimeDevice = imEq.baseData.allocatedFSize();
+    auto fPrimeDevice = imEq.baseData.lagrangeVec(LagrangeInd::fPrime);
     //(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
     imEq.multB(pPrimeDevice, fPrimeDevice, Singleton<Real>::TWO, Singleton<Real>::ZERO, false);
     fPrimeDevice.subtract(RHSFPrime, &Singleton<Real>::TWO, imEq.sparseMultBuffer->get(0), &hand);

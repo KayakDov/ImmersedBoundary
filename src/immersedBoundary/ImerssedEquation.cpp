@@ -32,15 +32,15 @@ void BaseData<Real, Int>::checkNNZB(size_t nnzB) const {
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle& hand) :
 
-    pSizeX4(Mat<Real>::create(meta.pSize, numPSizeVecs)),
-    fSizeX2(Mat<Real>::create(meta.fSize, 2)),
+    gridVecs(Mat<Real>::create(meta.pSize, static_cast<size_t>(GridInd::Count))),
+    lagrangeVecs(Mat<Real>::create(meta.fSize, 2)),
     maxB(SparseCSR<Real, Int>::create(meta.nnz, meta.bRows, meta.bCols, hand)),
     delta(1.0 / dim.cols, 1.0 / dim.rows, 1.0 / dim.layers),
     dim(dim)
 {
-    auto p = pSizeX4.col(0);
+    auto p = gridVecs.col(0);
     meta.xFile >> GpuIn<Real>(p, hand, false, true);
-    auto f = fSizeX2.col(0);
+    auto f = lagrangeVecs.col(0);
     meta.xFile >> GpuIn<Real>(f, hand, false, true);
 
     meta.bFile >> GpuIn<Real>(maxB.values, hand, false, true);
@@ -49,12 +49,12 @@ BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle& 
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(
     SparseCSR<Real, Int> maxB,
-    Mat<Real> fSizeX2,
-    Mat<Real> pSizeX4,
+    Mat<Real> fSizeX3,
+    Mat<Real> pSizeX5,
     const GridDim &dim,
     const Real3d &delta
-) : pSizeX4(pSizeX4),
-    fSizeX2(fSizeX2),
+) : gridVecs(pSizeX5),
+    lagrangeVecs(fSizeX3),
     maxB(maxB),
     dim(dim),
     delta(delta) {
@@ -64,13 +64,13 @@ template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle& hand) :
     BaseData(
         SparseCSR<Real, Int>::create(nnzMaxB, fSize, dim.size(), hand),
-        Mat<Real>::create(fSize, 2),
-        Mat<Real>::create(dim.size(), numPSizeVecs),
+        Mat<Real>::create(fSize, static_cast<size_t>(LagrangeInd::Count)),
+        Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count)),
         dim,
         delta
     ) {
-    this->fSizeX2.col(0).set(f, hand);
-    this->pSizeX4.col(0).set(p, hand);
+    this->lagrangeVec(LagrangeInd::f).set(f, hand);
+    this->gridVec(GridInd::p).set(p, hand);
 }
 
 
@@ -91,21 +91,23 @@ void BaseData<Real, Int>::setB(size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Rea
 }
 
 template<typename Real, typename Int>
-SimpleArray<Real> BaseData<Real, Int>::allocatedFSize() const {
-    return fSizeX2.col(1);
-}
-
-template<typename Real, typename Int>
-SimpleArray<Real> BaseData<Real, Int>::allocatedPSize(uint8_t ind) const {
-    return pSizeX4.col(ind + 1);
-}
-
-template<typename Real, typename Int>
 void BaseData<Real, Int>::printDenseB(Handle& hand) const {
     auto denseB = Mat<Real>::create(B->rows, B->cols);
     B->getDense(denseB, hand);
     std::cout << GpuOut<Real>(denseB, hand) << std::endl;
 }
+
+template<typename Real, typename Int>
+SimpleArray<Real> BaseData<Real, Int>::lagrangeVec(LagrangeInd ind) const{
+    return lagrangeVecs.col(static_cast<size_t>(ind));
+}
+
+template<typename Real, typename Int>
+SimpleArray<Real> BaseData<Real, Int>::gridVec(GridInd ind) const{
+    return gridVecs.col(static_cast<size_t>(ind));
+}
+
+
 
 template<typename Real>
 std::shared_ptr<EigenDecompSolver<Real>> createEDS(
@@ -131,7 +133,7 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(
 template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const {
 
-    size_t multBufferSizeNeeded = baseData.B->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeB, hand5[0]);
+    const size_t multBufferSizeNeeded = baseData.B->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeB, hand5[0]);
     if (!sparseMultBuffer || multBufferSizeNeeded > sparseMultBuffer->size()) sparseMultBuffer = std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(1.5 * multBufferSizeNeeded, hand5[0]));
 
     baseData.B->mult(vec, result, multProduct, preMultResult, transposeB, *sparseMultBuffer, hand5[0]);
@@ -140,9 +142,9 @@ void ImmersedEq<Real, Int>::multB(const SimpleArray<Real> &vec, SimpleArray<Real
 template<typename Real, typename Int>
 ImmersedEq<Real, Int>::ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer):
     baseData(baseData),
+    sparseMultBuffer(sparseMultBuffer),
     tolerance(tolerance),
-    maxIterations(maxBCGIterations),
-    sparseMultBuffer(sparseMultBuffer){
+    maxIterations(maxBCGIterations){
 }
 
 template<typename Real, typename Int>
@@ -161,9 +163,9 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
     else result.mult(preMultResult, &hand5[4]);
     lhsTimes.record(hand5[4]);
 
-    auto Bx = baseData.allocatedFSize();
-    auto BTBx = baseData.allocatedPSize(1);
-    auto invLBTBx = baseData.allocatedPSize(2);
+    auto Bx = baseData.lagrangeVec(LagrangeInd::LHS);
+    auto BTBx = baseData.gridVec(GridInd::LHS1);
+    auto invLBTBx = baseData.gridVec(GridInd::LHS2);
 
     multB(x, Bx, Singleton<Real>::ONE, Singleton<Real>::ZERO, false);// f <- B * x
     multB(Bx, BTBx, Singleton<Real>::TWO, Singleton<Real>::ZERO, true);// p <- B^T * (B * x)
@@ -180,11 +182,11 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
 
 template<typename Real, typename Int>
 SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
-    auto id = SquareMat<Real>::create(baseData.p.size());
+    auto id = SquareMat<Real>::create(baseData.p->size());
     id.setToIdentity(hand5[0]);
 
-    auto result = SquareMat<Real>::create(baseData.p.size());
-    for (size_t i = 0; i < baseData.p.size(); ++i) {
+    auto result = SquareMat<Real>::create(baseData.p->size());
+    for (size_t i = 0; i < baseData.p->size(); ++i) {
         auto col = result.col(i);
         LHSTimes(id.col(i), static_cast<SimpleArray<Real> &>(col), Singleton<Real>::ONE, Singleton<Real>::ZERO);
     }
@@ -197,11 +199,11 @@ SimpleArray<Real> &ImmersedEq<Real, Int>::RHS(const bool reset) {
     if (reset) {
         auto f = baseData.f;
 
-        auto pSize = baseData.allocatedPSize(0);
+        auto pSize = baseData.gridVec(GridInd::RHS);
 
-        pSize.set(baseData.p, hand5[0]);
+        pSize.set(*baseData.p, hand5[0]);
 
-        multB(f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
+        multB(*f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
         //p <- BT*f+p
 
         eds->solve(RHSSpace, pSize, hand5[0]);
