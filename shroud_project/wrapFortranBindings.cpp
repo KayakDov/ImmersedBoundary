@@ -14,48 +14,48 @@ extern "C" {
 
 void FOR_initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth,
     size_t gridDepth, size_t fSize, size_t nnzMaxB, double *p,
-    double *f, double deltaX, double deltaY, double deltaZ,
+    double *f, double deltaX, double deltaY, double deltaZ, double dt,
     double tolerance, size_t maxBCGIterations)
 {
     // splicer begin function.initImmersedEq_d_i32
     initImmersedEq_d_i32(gridHeight, gridWidth, gridDepth, fSize,
-        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance,
         maxBCGIterations);
     // splicer end function.initImmersedEq_d_i32
 }
 
 void FOR_initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth,
     size_t gridDepth, size_t fSize, size_t nnzMaxB, float *p, float *f,
-    double deltaX, double deltaY, double deltaZ, double tolerance,
-    size_t maxBCGIterations)
+    double deltaX, double deltaY, double deltaZ, double dt,
+    double tolerance, size_t maxBCGIterations)
 {
     // splicer begin function.initImmersedEq_s_i32
     initImmersedEq_s_i32(gridHeight, gridWidth, gridDepth, fSize,
-        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance,
         maxBCGIterations);
     // splicer end function.initImmersedEq_s_i32
 }
 
 void FOR_initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth,
     size_t gridDepth, size_t fSize, size_t nnzMaxB, double *p,
-    double *f, double deltaX, double deltaY, double deltaZ,
+    double *f, double deltaX, double deltaY, double deltaZ, double dt,
     double tolerance, size_t maxBCGIterations)
 {
     // splicer begin function.initImmersedEq_d_i64
     initImmersedEq_d_i64(gridHeight, gridWidth, gridDepth, fSize,
-        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance,
         maxBCGIterations);
     // splicer end function.initImmersedEq_d_i64
 }
 
 void FOR_initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth,
     size_t gridDepth, size_t fSize, size_t nnzMaxB, float *p, float *f,
-    double deltaX, double deltaY, double deltaZ, double tolerance,
-    size_t maxBCGIterations)
+    double deltaX, double deltaY, double deltaZ, double dt,
+    double tolerance, size_t maxBCGIterations)
 {
     // splicer begin function.initImmersedEq_s_i64
     initImmersedEq_s_i64(gridHeight, gridWidth, gridDepth, fSize,
-        nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance,
+        nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance,
         maxBCGIterations);
     // splicer end function.initImmersedEq_s_i64
 }

@@ -49,6 +49,11 @@ SparseCSR<Real, Int> SparseCSR<Real, Int>::create(size_t cols, SimpleArray<Real>
     return {rowOffsets.size() - 1, cols, values, rowOffsets, colInds};
 }
 
+template<typename Real, typename Int>
+std::shared_ptr<SparseMat<Real, Int>> SparseCSR<Real, Int>::createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> offsets, SimpleArray<Int> inds) const {
+    return std::make_shared<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(this->cols, vals, offsets, inds));
+}
+
 template class SparseCSR<float, int32_t>;
 template class SparseCSR<double, int32_t>;
 template class SparseCSR<float, int64_t>;

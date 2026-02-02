@@ -66,5 +66,11 @@ public:
     void getDense(Mat<Real> &dest, Handle &h) const;
 
     void set(Int* offsets, Int* inds, Real* vals, Handle& hand);
+
+    virtual std::shared_ptr<SparseMat<Real, Int>> createWithPointer(
+        SimpleArray<Real> vals,
+        SimpleArray<Int> offsets,
+        SimpleArray<Int> inds
+    ) const = 0;
 };
 #endif //CUDABANDED_SPARSEMAT_H

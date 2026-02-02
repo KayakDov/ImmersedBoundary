@@ -30,13 +30,11 @@ void BaseData<Real, Int>::checkNNZB(size_t nnzB) const {
 }
 
 template<typename Real, typename Int>
-BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle& hand) :
-
-    gridVecs(Mat<Real>::create(meta.pSize, static_cast<size_t>(GridInd::Count))),
-    lagrangeVecs(Mat<Real>::create(meta.fSize, 2)),
+BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, double dT, Handle& hand) :
     maxB(SparseCSR<Real, Int>::create(meta.nnz, meta.bRows, meta.bCols, hand)),
     delta(1.0 / dim.cols, 1.0 / dim.rows, 1.0 / dim.layers),
-    dim(dim)
+    dim(dim),
+    dT(Singleton<Real>::create(3/(2 * dT), hand))
 {
     auto p = gridVecs.col(0);
     meta.xFile >> GpuIn<Real>(p, hand, false, true);
@@ -48,46 +46,46 @@ BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, Handle& 
 
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(
-    SparseCSR<Real, Int> maxB,
-    Mat<Real> fSizeX3,
-    Mat<Real> pSizeX5,
+    SparseCSR<Real, Int> maxSparse,
     const GridDim &dim,
-    const Real3d &delta
-) : gridVecs(pSizeX5),
-    lagrangeVecs(fSizeX3),
-    maxB(maxB),
+    const Real3d &delta,
+    Singleton<Real> dT
+) :
+    maxB(maxSparse),
     dim(dim),
-    delta(delta) {
+    delta(delta),
+    dT(dT)
+{
 }
 
 template<typename Real, typename Int>
-BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle& hand) :
+BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMax, const Real3d &delta, Real *f, Real *p, double dT, Handle& hand) :
     BaseData(
-        SparseCSR<Real, Int>::create(nnzMaxB, fSize, dim.size(), hand),
-        Mat<Real>::create(fSize, static_cast<size_t>(LagrangeInd::Count)),
-        Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count)),
+        SparseCSR<Real, Int>::create(nnzMax, fSize, dim.size(), hand),
         dim,
-        delta
+        delta,
+        Singleton<Real>::create(3/(2 * dT), hand)
     ) {
     this->lagrangeVec(LagrangeInd::f).set(f, hand);
     this->gridVec(GridInd::p).set(p, hand);
 }
 
-
-
 template<typename Real, typename Int>
-void BaseData<Real, Int>::setB(size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valsB, Handle& hand) {
-    checkNNZB(nnzB);
-    B = std::make_shared<SparseCSR<Real, Int> >(
-        SparseCSR<Real, Int>::create(
-            maxB.cols,
-            maxB.values.subArray(0, nnzB),
+void BaseData<Real, Int>::setSparse(
+    std::shared_ptr<SparseMat<Real, Int>>& sparse,
+    size_t nnz,
+    Int *offsets,
+    Int *inds,
+    Real *vals,
+    Handle& hand
+) {//TODO: deal with B = null case.
+    checkNNZB(nnz);
+    sparse = sparse->createWithPointer(
+            maxB.values.subArray(0, nnz),
             maxB.offsets,
-            maxB.inds.subArray(0, nnzB)
-
-        )
-    );
-    B->set(rowOffsetsB, colIndsB, valsB, hand);
+            maxB.inds.subArray(0, nnz)
+        );
+    sparse->set(offsets, inds, vals, hand);
 }
 
 template<typename Real, typename Int>
@@ -134,25 +132,24 @@ template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const {
 
     const size_t multBufferSizeNeeded = baseData.B->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeB, hand5[0]);
-    if (!sparseMultBuffer || multBufferSizeNeeded > sparseMultBuffer->size()) sparseMultBuffer = std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(1.5 * multBufferSizeNeeded, hand5[0]));
+    if (!sparseMultBuffer.get() || multBufferSizeNeeded > sparseMultBuffer->size())
+        sparseMultBuffer = std::make_shared<SimpleArray<Real> >(SimpleArray<Real>::create(1.5 * multBufferSizeNeeded, hand5[0]));
 
     baseData.B->mult(vec, result, multProduct, preMultResult, transposeB, *sparseMultBuffer, hand5[0]);
 }
 
 template<typename Real, typename Int>
-ImmersedEq<Real, Int>::ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer):
+ImmersedEq<Real, Int>::ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations):
     baseData(baseData),
-    sparseMultBuffer(sparseMultBuffer),
     tolerance(tolerance),
     maxIterations(maxBCGIterations){
 }
 
 template<typename Real, typename Int>
-ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta, double tolerance, size_t maxBCGIterations, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer) :
-    baseData(dim, fSize, nnzMaxB, delta, f, p, hand5[0]),
+ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta, double dT, double tolerance, size_t maxBCGIterations) :
+    baseData(dim, fSize, nnzMaxB, delta, f, p, dT, hand5[0]),
     tolerance(tolerance),
-    maxIterations(maxBCGIterations),
-    sparseMultBuffer(sparseMultBuffer)
+    maxIterations(maxBCGIterations)
     {
 }
 
@@ -242,6 +239,11 @@ void ImmersedEq<Real, Int>::solve(
 }
 
 template<typename Real, typename Int>
+void ImmersedEq<Real, Int>::solve(Real *result, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, size_t nnzR, Int *offsetsR, Int *indsR, Int *valuesR, Real *UGamma, bool multiStream) {
+    
+}
+
+template<typename Real, typename Int>
 SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     size_t nnzB,
     Int *offsetsB, //
@@ -250,7 +252,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     const bool multithreadBCG
 ) {
 
-    baseData.setB(nnzB, offsetsB, indsB, valuesB, hand5[0]);
+    baseData.setSparse(baseData.B, nnzB, offsetsB, indsB, valuesB, hand5[0]);
 
     RHS(true);
 

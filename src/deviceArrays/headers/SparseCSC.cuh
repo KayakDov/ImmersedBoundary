@@ -15,7 +15,7 @@ using SpMatDescrPtr = std::shared_ptr<std::remove_pointer<cusparseSpMatDescr_t>:
 template <typename Real, typename Int>
 class SparseCSC : public SparseMat<Real, Int> {
 
-//Reminder, in CSC offsets are for columns and inds are for rows.
+    //Reminder, in CSC offsets are for columns and inds are for rows.
 protected:
     virtual void setDescriptor() override;
 
@@ -27,7 +27,8 @@ public:
 
     static SparseCSC create(size_t rows, SimpleArray<Real> values, SimpleArray<Int> colOffsets, SimpleArray<Int> rowInds);
 
-void setCSR(SparseCSR<Real, Int> &dest, Handle &hand, std::shared_ptr<SimpleArray<Real>> &buffer) const;
+    std::shared_ptr<SparseMat<Real, Int>> createWithPointer(SimpleArray<Real> vals,
+        SimpleArray<Int> offsets, SimpleArray<Int> inds) const override;
 };
 /**
  * @brief A high-performance utility for assembling sparse matrices in Compressed Sparse Column (CSC) format.

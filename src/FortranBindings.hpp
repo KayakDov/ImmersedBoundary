@@ -17,9 +17,18 @@ template<typename Real, typename Int>
 std::unique_ptr<ImmersedEq<Real, Int> > eq = nullptr;
 
 template<typename Real, typename Int>
-void initImmersedEq(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, Real *p, Real *f, double dx, double dy,
-                    double dz, double tol, size_t iter) {
-    eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(GridDim(gridHeight, gridWidth, gridDepth), forceSize, nnzMaxB, p, f, Real3d(dx, dy, dz), tol, iter);
+void initImmersedEq(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, Real *p, Real *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+    eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(
+        GridDim(gridHeight, gridWidth, gridDepth),
+        forceSize,
+        nnzMaxB,
+        p,
+        f,
+        Real3d(dx, dy, dz),
+        dt,
+        tol,
+        iter
+    );
 }
 
 template<typename Real, typename Int>
@@ -32,20 +41,20 @@ void solveImmersedEq(Real *result, size_t nnzB, Int *rowOffsetsB, Int *colIndsB,
 
 // --- Initialization Functions ---
 extern "C" {
-inline void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double tol, size_t iter) {
-        initImmersedEq<double, int32_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, tol, iter);
+inline void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+        initImmersedEq<double, int32_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
     }
 
-inline void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double tol, size_t iter) {
-        initImmersedEq<float, int32_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, tol, iter);
+inline void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+        initImmersedEq<float, int32_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
     }
 
-inline void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double tol, size_t iter) {
-        initImmersedEq<double, int64_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, tol, iter);
+inline void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+        initImmersedEq<double, int64_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
     }
 
-inline void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double tol, size_t iter) {
-        initImmersedEq<float, int64_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, tol, iter);
+inline void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+        initImmersedEq<float, int64_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
     }
 
     // --- Solve Functions ---

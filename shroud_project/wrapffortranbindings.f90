@@ -18,7 +18,7 @@ module fortranbindings_mod
 
         subroutine c_init_immersed_eq_d_i32(gridHeight, gridWidth, &
                 gridDepth, fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, &
-                tolerance, maxBCGIterations) &
+                dt, tolerance, maxBCGIterations) &
                 bind(C, name="FOR_initImmersedEq_d_i32")
             use iso_c_binding, only : C_DOUBLE, C_SIZE_T
             implicit none
@@ -32,13 +32,14 @@ module fortranbindings_mod
             real(C_DOUBLE), value, intent(IN) :: deltaX
             real(C_DOUBLE), value, intent(IN) :: deltaY
             real(C_DOUBLE), value, intent(IN) :: deltaZ
+            real(C_DOUBLE), value, intent(IN) :: dt
             real(C_DOUBLE), value, intent(IN) :: tolerance
             integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         end subroutine c_init_immersed_eq_d_i32
 
         subroutine c_init_immersed_eq_s_i32(gridHeight, gridWidth, &
                 gridDepth, fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, &
-                tolerance, maxBCGIterations) &
+                dt, tolerance, maxBCGIterations) &
                 bind(C, name="FOR_initImmersedEq_s_i32")
             use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
             implicit none
@@ -52,13 +53,14 @@ module fortranbindings_mod
             real(C_DOUBLE), value, intent(IN) :: deltaX
             real(C_DOUBLE), value, intent(IN) :: deltaY
             real(C_DOUBLE), value, intent(IN) :: deltaZ
+            real(C_DOUBLE), value, intent(IN) :: dt
             real(C_DOUBLE), value, intent(IN) :: tolerance
             integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         end subroutine c_init_immersed_eq_s_i32
 
         subroutine c_init_immersed_eq_d_i64(gridHeight, gridWidth, &
                 gridDepth, fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, &
-                tolerance, maxBCGIterations) &
+                dt, tolerance, maxBCGIterations) &
                 bind(C, name="FOR_initImmersedEq_d_i64")
             use iso_c_binding, only : C_DOUBLE, C_SIZE_T
             implicit none
@@ -72,13 +74,14 @@ module fortranbindings_mod
             real(C_DOUBLE), value, intent(IN) :: deltaX
             real(C_DOUBLE), value, intent(IN) :: deltaY
             real(C_DOUBLE), value, intent(IN) :: deltaZ
+            real(C_DOUBLE), value, intent(IN) :: dt
             real(C_DOUBLE), value, intent(IN) :: tolerance
             integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         end subroutine c_init_immersed_eq_d_i64
 
         subroutine c_init_immersed_eq_s_i64(gridHeight, gridWidth, &
                 gridDepth, fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, &
-                tolerance, maxBCGIterations) &
+                dt, tolerance, maxBCGIterations) &
                 bind(C, name="FOR_initImmersedEq_s_i64")
             use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
             implicit none
@@ -92,6 +95,7 @@ module fortranbindings_mod
             real(C_DOUBLE), value, intent(IN) :: deltaX
             real(C_DOUBLE), value, intent(IN) :: deltaY
             real(C_DOUBLE), value, intent(IN) :: deltaZ
+            real(C_DOUBLE), value, intent(IN) :: dt
             real(C_DOUBLE), value, intent(IN) :: tolerance
             integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         end subroutine c_init_immersed_eq_s_i64
@@ -155,7 +159,7 @@ module fortranbindings_mod
 contains
 
     subroutine init_immersed_eq_d_i32(gridHeight, gridWidth, gridDepth, &
-            nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
+            nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance, &
             maxBCGIterations)
         use iso_c_binding, only : C_DOUBLE, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: gridHeight
@@ -168,18 +172,19 @@ contains
         real(C_DOUBLE), value, intent(IN) :: deltaX
         real(C_DOUBLE), value, intent(IN) :: deltaY
         real(C_DOUBLE), value, intent(IN) :: deltaZ
+        real(C_DOUBLE), value, intent(IN) :: dt
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         ! splicer begin function.init_immersed_eq_d_i32
         SH_fSize = size(f,kind=C_SIZE_T)
         call c_init_immersed_eq_d_i32(gridHeight, gridWidth, gridDepth, &
-            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
-            maxBCGIterations)
+            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, &
+            tolerance, maxBCGIterations)
         ! splicer end function.init_immersed_eq_d_i32
     end subroutine init_immersed_eq_d_i32
 
     subroutine init_immersed_eq_s_i32(gridHeight, gridWidth, gridDepth, &
-            nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
+            nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance, &
             maxBCGIterations)
         use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: gridHeight
@@ -192,18 +197,19 @@ contains
         real(C_DOUBLE), value, intent(IN) :: deltaX
         real(C_DOUBLE), value, intent(IN) :: deltaY
         real(C_DOUBLE), value, intent(IN) :: deltaZ
+        real(C_DOUBLE), value, intent(IN) :: dt
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         ! splicer begin function.init_immersed_eq_s_i32
         SH_fSize = size(f,kind=C_SIZE_T)
         call c_init_immersed_eq_s_i32(gridHeight, gridWidth, gridDepth, &
-            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
-            maxBCGIterations)
+            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, &
+            tolerance, maxBCGIterations)
         ! splicer end function.init_immersed_eq_s_i32
     end subroutine init_immersed_eq_s_i32
 
     subroutine init_immersed_eq_d_i64(gridHeight, gridWidth, gridDepth, &
-            nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
+            nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance, &
             maxBCGIterations)
         use iso_c_binding, only : C_DOUBLE, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: gridHeight
@@ -216,18 +222,19 @@ contains
         real(C_DOUBLE), value, intent(IN) :: deltaX
         real(C_DOUBLE), value, intent(IN) :: deltaY
         real(C_DOUBLE), value, intent(IN) :: deltaZ
+        real(C_DOUBLE), value, intent(IN) :: dt
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         ! splicer begin function.init_immersed_eq_d_i64
         SH_fSize = size(f,kind=C_SIZE_T)
         call c_init_immersed_eq_d_i64(gridHeight, gridWidth, gridDepth, &
-            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
-            maxBCGIterations)
+            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, &
+            tolerance, maxBCGIterations)
         ! splicer end function.init_immersed_eq_d_i64
     end subroutine init_immersed_eq_d_i64
 
     subroutine init_immersed_eq_s_i64(gridHeight, gridWidth, gridDepth, &
-            nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
+            nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance, &
             maxBCGIterations)
         use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: gridHeight
@@ -240,13 +247,14 @@ contains
         real(C_DOUBLE), value, intent(IN) :: deltaX
         real(C_DOUBLE), value, intent(IN) :: deltaY
         real(C_DOUBLE), value, intent(IN) :: deltaZ
+        real(C_DOUBLE), value, intent(IN) :: dt
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         ! splicer begin function.init_immersed_eq_s_i64
         SH_fSize = size(f,kind=C_SIZE_T)
         call c_init_immersed_eq_s_i64(gridHeight, gridWidth, gridDepth, &
-            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, tolerance, &
-            maxBCGIterations)
+            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, &
+            tolerance, maxBCGIterations)
         ! splicer end function.init_immersed_eq_s_i64
     end subroutine init_immersed_eq_s_i64
 

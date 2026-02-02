@@ -1,5 +1,4 @@
 /**
- * @file YuriFileReader.h
  * @brief Handles file I/O and setup for Immersed Boundary equations using CUDA-accelerated sparse structures.
  * @date 1/7/26
  */
@@ -42,7 +41,7 @@ enum class GridInd : size_t {//eularian
     EDS       = 3,
     LHS2      = 4,
     RHS       = 4,
-    LHS1       = 5,
+    LHS1      = 5,
     Count     = 6
 };
 
@@ -52,6 +51,7 @@ enum class LagrangeInd : size_t {
     RHSFPrime = 1,
     fPrime    = 1,
     LHS       = 2,
+    UGamma    = 2,
     Count     = 3
 };
 
@@ -68,36 +68,51 @@ class BaseData {
 
 public:
 
-    mutable Mat<Real> gridVecs,  lagrangeVecs;
+    const GridDim dim;
+
+    SparseCSR<Real, Int> maxB;
+
+    mutable Mat<Real> gridVecs = Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count));
+    mutable Mat<Real> lagrangeVecs = Mat<Real>::create(maxB.rows, static_cast<size_t>(LagrangeInd::Count)) ;
+
+    SimpleArray<Real> velocities = SimpleArray<Real>::create(3 * dim.size() + dim.layers * dim.cols + dim.layers * dim.rows + dim.cols * dim.rows, nullptr); //TODO:move handles here and remove multiple nullptr streams
+
     std::shared_ptr<SimpleArray<Real>> f = std::make_shared<SimpleArray<Real>>(lagrangeVecs.col(static_cast<size_t>(LagrangeInd::f)));
     std::shared_ptr<SimpleArray<Real>> p = std::make_shared<SimpleArray<Real>>(gridVecs.col(static_cast<size_t>(GridInd::p)));
     mutable SimpleArray<Real> result = gridVecs.col(static_cast<size_t>(GridInd::Result));
 
-    SparseCSR<Real, Int> maxB;
-    std::shared_ptr<SparseMat<Real, Int>> B;
-    const GridDim dim;
+    //CSR, maps from Eularian where p lives space to Lagrangian space where f lives (f rows, p cols)
+    std::shared_ptr<SparseMat<Real, Int>> B = std::make_shared<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxB.values.subArray(0,0), maxB.offsets, maxB.inds.subArray(0,0)));
+    //CSC, maps from Lagrangian space to the discretized vector field space R^3 -> R^3 (3p + rows, f cols)
+    std::shared_ptr<SparseMat<Real, Int>> R = std::make_shared<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxB.values.subArray(0,0), maxB.offsets, maxB.inds.subArray(0,0)));
+
     const Real3d delta;
 
+    const Singleton<Real> dT;
     /**
      * @brief Initializes GPU memory and loads data from FileMeta.
      */
     BaseData(const FileMeta &meta, const GridDim &dim, Handle &hand);
+
     /**
      *
-     * @param maxB
+     * @param maxSparse
      * @param fSizeX3
      * @param pSizeX5
      * @param dim
      * @param delta
      */
-    BaseData(SparseCSR<Real, Int> maxB, Mat<Real> fSizeX3, Mat<Real> pSizeX5, const GridDim &dim, const Real3d &delta);
+    BaseData(const FileMeta &meta, const GridDim &dim, double dT, Handle &hand);
 
-    BaseData(const GridDim &dim, size_t fSize, size_t nnzMaxB, const Real3d &delta, Real *f, Real *p, Handle &hand);
+    BaseData(SparseCSR<Real, Int> maxSparse, const GridDim &dim, const Real3d &delta, Singleton<Real> dT);
+
+    BaseData(const GridDim &dim, size_t fSize, size_t nnzMax, const Real3d &delta, Real *f, Real *p, double dT,
+             Handle &hand);
 
     /**
      * @brief Resets all the base values. TODO: ask if modifications to B will be small instead of a total rewrite.
      */
-    void setB(size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valsB, Handle &hand);
+    void setSparse(std::shared_ptr<SparseMat<Real, Int>> &sparse, size_t nnz, Int *offsets, Int *inds, Real *vals, Handle &hand);
 
     void printDenseB(Handle &hand) const;
 
@@ -117,7 +132,7 @@ class ImmersedEq {
 public:
     std::shared_ptr<Handle[]> hand5{new Handle[5]};
     BaseData<Real, Int> baseData;
-    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer;
+    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr;
     Event events11[11]{};
 private:
 
@@ -156,12 +171,14 @@ private:
 public:
     void multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
 
-    ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr);
+    ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations);
+
+
 
     /**
      * @brief Sets up the immersed equation system using the provided base data.
      */
-    ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta, double tolerance, size_t maxBCGIterations, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr);
+    ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta, double dT,  double tolerance, size_t maxBCGIterations);
 
     /**
      * This method creates the LHS matrix.  For large matrices this may be inefficient.
@@ -191,6 +208,8 @@ public:
      * @return
      */
     void solve(Real *result, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool multiStream);
+
+    void solve(Real *result, size_t nnzB,Int *offsetsB, Int *indsB, Real *valuesB,  size_t nnzR, Int* offsetsR, Int *indsR, Int* valuesR, Real* UGamma, bool multiStream);
 };
 
 /**

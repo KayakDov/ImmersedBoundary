@@ -3,6 +3,11 @@
 
 
 template<typename Real, typename Int>
+std::shared_ptr<SparseMat<Real, Int>> SparseCSC<Real, Int>::createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> offsets, SimpleArray<Int> inds) const {
+    return std::make_shared<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(this->rows, vals, offsets, inds));
+}
+
+template<typename Real, typename Int>
 void SparseCSC<Real, Int>::setDescriptor() {
     cusparseSpMatDescr_t descr;
 

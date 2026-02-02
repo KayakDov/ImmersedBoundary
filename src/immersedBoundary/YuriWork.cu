@@ -75,7 +75,7 @@ void smallTestWithoutFiles() {
 
     Real result[size];
     auto start = std::chrono::high_resolution_clock::now();
-    ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1e-6, 1000);
+    ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1, 1e-6, 1000);
     // initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
 
     imEq.solve(result, values.size(), rowOffsets.data(), colInds.data(), values.data(), true);

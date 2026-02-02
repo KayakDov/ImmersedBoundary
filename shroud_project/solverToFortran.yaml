@@ -17,6 +17,7 @@ declarations:
           double deltaX,
           double deltaY,
           double deltaZ,
+          double dt,
           double tolerance, 
           size_t maxBCGIterations
       )
@@ -32,7 +33,8 @@ declarations:
           float* f +intent(in) +rank(1),          
           double deltaX, 
           double deltaY, 
-          double deltaZ,          
+          double deltaZ,
+          double dt,          
           double tolerance, 
           size_t maxBCGIterations
       )
@@ -48,7 +50,8 @@ declarations:
           double* f +intent(in) +rank(1),          
           double deltaX, 
           double deltaY, 
-          double deltaZ,          
+          double deltaZ,
+          double dt,          
           double tolerance, 
           size_t maxBCGIterations
       )
@@ -64,7 +67,8 @@ declarations:
           float* f +intent(in) +rank(1),
           double deltaX, 
           double deltaY, 
-          double deltaZ,          
+          double deltaZ,
+          double dt,          
           double tolerance, 
           size_t maxBCGIterations
       )

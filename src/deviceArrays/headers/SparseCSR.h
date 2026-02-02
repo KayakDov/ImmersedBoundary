@@ -19,6 +19,8 @@ public:
     static SparseCSR create(size_t nnz, size_t rows, size_t cols, cudaStream_t stream);
 
     static SparseCSR create(size_t cols, SimpleArray<Real> values, SimpleArray<Int> rowOffsets, SimpleArray<Int> colInds);
+
+    std::shared_ptr<SparseMat<Real, Int>> createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> offsets, SimpleArray<Int> inds) const override;
 };
 
 

@@ -31,23 +31,23 @@ extern "C" {
 
 void FOR_initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth,
     size_t gridDepth, size_t fSize, size_t nnzMaxB, double *p,
-    double *f, double deltaX, double deltaY, double deltaZ,
+    double *f, double deltaX, double deltaY, double deltaZ, double dt,
     double tolerance, size_t maxBCGIterations);
 
 void FOR_initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth,
     size_t gridDepth, size_t fSize, size_t nnzMaxB, float *p, float *f,
-    double deltaX, double deltaY, double deltaZ, double tolerance,
-    size_t maxBCGIterations);
+    double deltaX, double deltaY, double deltaZ, double dt,
+    double tolerance, size_t maxBCGIterations);
 
 void FOR_initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth,
     size_t gridDepth, size_t fSize, size_t nnzMaxB, double *p,
-    double *f, double deltaX, double deltaY, double deltaZ,
+    double *f, double deltaX, double deltaY, double deltaZ, double dt,
     double tolerance, size_t maxBCGIterations);
 
 void FOR_initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth,
     size_t gridDepth, size_t fSize, size_t nnzMaxB, float *p, float *f,
-    double deltaX, double deltaY, double deltaZ, double tolerance,
-    size_t maxBCGIterations);
+    double deltaX, double deltaY, double deltaZ, double dt,
+    double tolerance, size_t maxBCGIterations);
 
 void FOR_solveImmersedEq_d_i32(double *result, size_t nnzB,
     int32_t *rowOffsetsB, int32_t *colIndsB, double *valuesB,
