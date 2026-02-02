@@ -52,11 +52,11 @@ class PPrimeFprime {
      * SIMPLE-IB pressure-correction step.
      */
     PPrimeFprime(const GridDim &dim, const SimpleArray<Real> &uStar, SparseCSC<Real, Int> R, SimpleArray<Real> UGamma,
-                 const Real3d &delta, double deltaT, ImmersedEq<Real> imEq, Real *pPrimeHost, Real *fPrimeHost,
+                 const Real3d &delta, double deltaT, ImmersedEq<Real, Int> imEq, Real *pPrimeHost, Real *fPrimeHost,
                  bool multiStream);
 
     void divergence(SimpleArray<Real> result, Singleton<Real> scalar, Handle &hand);
-    void setRHSFPrime(SimpleArray<Real> result, SimpleArray<Real> &sparseMultBuffer, Handle &hand);
+    void setRHSFPrime(SimpleArray<Real> result, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer, Handle &hand);
     void setRHSPPrime(SimpleArray<Real> result, Handle &hand);
 };
 

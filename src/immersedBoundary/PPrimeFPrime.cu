@@ -79,7 +79,7 @@ PPrimeFprime<Real, Int>::PPrimeFprime(
     const SimpleArray<Real> UGamma,
     const Real3d &delta,
     double deltaT,
-    ImmersedEq<Real> imEq,
+    ImmersedEq<Real, Int> imEq,
     Real* pPrimeHost,
     Real* fPrimeHost,
     bool multiStream
@@ -94,23 +94,27 @@ PPrimeFprime<Real, Int>::PPrimeFprime(
     delta(delta),
     dT(Singleton<Real>::create(3/(2 * deltaT), imEq.hand5[0])){
 
-    auto& hand1 = imEq.hand5[0];
+    auto& hand = imEq.hand5[0];
     auto& RHSPPrime = imEq.baseData.p;
     auto& RHSFPrime = imEq.baseData.f;
 
-    setRHSPPrime(RHSPPrime, hand1);
-    setRHSFPrime(RHSFPrime, imEq.sparseMultBuffer, hand1);
+    setRHSPPrime(RHSPPrime, hand);
+    setRHSFPrime(RHSFPrime, imEq.sparseMultBuffer, hand);
 
     auto pPrimeDevice = imEq.solve(multiStream);
-
-    imEq.events11[0].record(0);
-    imEq.events11[0].wait(1);
+    imEq.events11[0].record(hand);
+    imEq.events11[1].hold(imEq.hand5[1]);
     pPrimeDevice.get(pPrimeHost, imEq.hand5[1]);
 
-    auto& fPrimeDevice = imEq.baseData.allocatedFSize();
-    imEq.baseData.B->multB(pPrimeDevice, fPrimeDevice, Singleton<Real>::TWO, Singleton<Real>::ZERO, false);
-    fPrimeDevice.subtract(RHSFPrime, Singleton<Real>::TWO, imEq.sparseMultBuffer.get(0), hand1);
-    pPrimeDevice.get(fPrimeHost, hand1);
+    auto fPrimeDevice = imEq.baseData.allocatedFSize();
+    //(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
+    imEq.multB(pPrimeDevice, fPrimeDevice, Singleton<Real>::TWO, Singleton<Real>::ZERO, false);
+    fPrimeDevice.subtract(RHSFPrime, &Singleton<Real>::TWO, imEq.sparseMultBuffer->get(0), &hand);
+
+    fPrimeDevice.get(fPrimeHost, hand);
+
+    cudaStreamSynchronize(hand);
+    cudaStreamSynchronize(imEq.hand5[1]);
 }
 
 /**
@@ -139,8 +143,8 @@ void PPrimeFprime<Real, Int>::divergence(SimpleArray<Real> result, Singleton<Rea
 }
 
 template<typename Real, typename Int>
-void PPrimeFprime<Real, Int>::setRHSFPrime(SimpleArray<Real> result, SimpleArray<Real>& sparseMultBuffer, Handle &hand) {
-    size_t minBufferSize = sparseMultBuffer->size() > R.multWorkspaceSize(uStar, result, dT, Singleton<Real>::ZERO, true, hand);
+void PPrimeFprime<Real, Int>::setRHSFPrime(SimpleArray<Real> result, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer, Handle &hand) {
+    size_t minBufferSize = R.multWorkspaceSize(uStar, result, dT, Singleton<Real>::ZERO, true, hand);
     if (!sparseMultBuffer || sparseMultBuffer->size() > minBufferSize) sparseMultBuffer = std::make_shared<SimpleArray<Real>>(SimpleArray<Real>::create(1.5 * minBufferSize, hand, true));
 
     R.mult(uStar, result, dT, Singleton<Real>::ZERO, true, *sparseMultBuffer, hand);

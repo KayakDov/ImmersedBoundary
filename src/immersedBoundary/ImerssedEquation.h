@@ -94,22 +94,19 @@ template <typename Real, typename Int> class ImmersedEqSolver;
 template <typename Real, typename Int = uint32_t>
 class ImmersedEq {
 
+public:
     std::shared_ptr<Handle[]> hand5{new Handle[5]};
+    BaseData<Real, Int> baseData;
+    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer;
+    Event events11[11]{};
+private:
 
     friend ImmersedEqSolver<Real, Int>;
-
-    BaseData<Real, Int> baseData;
-
-    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer;
-
     Mat<Real> allocatedRHSHeightX7 = Mat<Real>::create(baseData.p.size(), 7);
     Vec<Real> allocated9 = Vec<Real>::create(9, hand5[0]);
     Real tolerance;
     size_t maxIterations;
-    Event events11[11]{};
     Event lhsTimes;
-
-    void multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
 
     SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(baseData.p.size(), hand5[0]);
 
@@ -137,6 +134,7 @@ class ImmersedEq {
     SimpleArray<Real> solve(size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool multithreadBCG);
 
 public:
+    void multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
 
     ImmersedEq(BaseData<Real, Int> baseData, double tolerance, size_t maxBCGIterations, std::shared_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr);
 
@@ -160,7 +158,7 @@ public:
      */
     SimpleArray<Real>& RHS(bool reset = true);
 
-    void solve(bool multiStream);
+    SimpleArray<Real> &solve(bool multiStream);
 
     /**
      *

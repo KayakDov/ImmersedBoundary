@@ -210,7 +210,7 @@ SimpleArray<Real> &ImmersedEq<Real, Int>::RHS(const bool reset) {
 }
 
 template<typename Real, typename Int>
-void ImmersedEq<Real, Int>::solve(const bool multiStream) {
+SimpleArray<Real> &ImmersedEq<Real, Int>::solve(const bool multiStream) {
     //TODO: should the initial guess be random, or the RHS of the equation?
 
     baseData.result.set(RHSSpace, hand5[0]);
@@ -252,7 +252,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
 
     RHS(true);
 
-    solve(multithreadBCG);
+    return solve(multithreadBCG);
 }
 
 

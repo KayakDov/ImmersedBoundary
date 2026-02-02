@@ -12,7 +12,7 @@
 
 using SpMatDescrPtr = std::shared_ptr<std::remove_pointer<cusparseSpMatDescr_t>::type>;
 
-template <typename Real = double, typename Int = uint32_t>
+template <typename Real, typename Int>
 class SparseCSC : public SparseMat<Real, Int> {
 
 //Reminder, in CSC offsets are for columns and inds are for rows.
@@ -32,7 +32,7 @@ void setCSR(SparseCSR<Real, Int> &dest, Handle &hand, std::shared_ptr<SimpleArra
 /**
  * @brief A high-performance utility for assembling sparse matrices in Compressed Sparse Column (CSC) format.
  * * @tparam Real The floating-point type (float or double).
- * @tparam Int The integer type used for indexing (typically uint32_t or size_t).
+ * @tparam Int The integer type used for indexing (typically int32_t).
  * * @note **Performance Requirement:** To ensure $O(1)$ insertion time, elements MUST be added
  * strictly in increasing order of column index (@p col), and then increasing order of
  * row index (@p row) within each column.
@@ -47,7 +47,7 @@ void setCSR(SparseCSR<Real, Int> &dest, Handle &hand, std::shared_ptr<SimpleArra
  * }
  * @endcode
  */
-template <typename Real = double, typename Int = uint32_t>
+template <typename Real, typename Int>
 class CSCBuilder {
     const size_t cols;
 public:
@@ -83,7 +83,7 @@ public:
 /**
  * @brief Helper wrapper to print SparseCSC contents using GpuOut.
  */
-template <typename Real, typename Int = uint32_t>
+template <typename Real, typename Int>
 struct SparseCSCOut {
     const SparseCSC<Real, Int>& mat;
     Handle& handle;
