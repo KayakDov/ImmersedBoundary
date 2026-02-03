@@ -100,4 +100,56 @@ void FOR_solveImmersedEq_s_i64(float *result, size_t nnzB,
     // splicer end function.solveImmersedEq_s_i64
 }
 
+void FOR_solveImmersedEqPrimes_d_i32(double *resultPPrime,
+    double *resultFPrime, size_t nnzB, int32_t *rowOffsetsB,
+    int32_t *colIndsB, double *valuesB, size_t nnzR,
+    int32_t *colOffsetsR, int32_t *rowIndsR, double *valuesR,
+    double *UGamma, double *uStar, bool multiStream)
+{
+    // splicer begin function.solveImmersedEqPrimes_d_i32
+    solveImmersedEqPrimes_d_i32(resultPPrime, resultFPrime, nnzB,
+        rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR,
+        valuesR, UGamma, uStar, multiStream);
+    // splicer end function.solveImmersedEqPrimes_d_i32
+}
+
+void FOR_solveImmersedEqPrimes_s_i32(float *resultPPrime,
+    float *resultFPrime, size_t nnzB, int32_t *rowOffsetsB,
+    int32_t *colIndsB, float *valuesB, size_t nnzR,
+    int32_t *colOffsetsR, int32_t *rowIndsR, float *valuesR,
+    float *UGamma, float *uStar, bool multiStream)
+{
+    // splicer begin function.solveImmersedEqPrimes_s_i32
+    solveImmersedEqPrimes_s_i32(resultPPrime, resultFPrime, nnzB,
+        rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR,
+        valuesR, UGamma, uStar, multiStream);
+    // splicer end function.solveImmersedEqPrimes_s_i32
+}
+
+void FOR_solveImmersedEqPrimes_d_i64(double *resultPPrime,
+    double *resultFPrime, size_t nnzB, int64_t *rowOffsetsB,
+    int64_t *colIndsB, double *valuesB, size_t nnzR,
+    int64_t *colOffsetsR, int64_t *rowIndsR, double *valuesR,
+    double *UGamma, double *uStar, bool multiStream)
+{
+    // splicer begin function.solveImmersedEqPrimes_d_i64
+    solveImmersedEqPrimes_d_i64(resultPPrime, resultFPrime, nnzB,
+        rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR,
+        valuesR, UGamma, uStar, multiStream);
+    // splicer end function.solveImmersedEqPrimes_d_i64
+}
+
+void FOR_solveImmersedEqPrimes_s_i64(float *resultPPrime,
+    float *resultFPrime, size_t nnzB, int64_t *rowOffsetsB,
+    int64_t *colIndsB, float *valuesB, size_t nnzR,
+    int64_t *colOffsetsR, int64_t *rowIndsR, float *valuesR,
+    float *UGamma, float *uStar, bool multiStream)
+{
+    // splicer begin function.solveImmersedEqPrimes_s_i64
+    solveImmersedEqPrimes_s_i64(resultPPrime, resultFPrime, nnzB,
+        rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR,
+        valuesR, UGamma, uStar, multiStream);
+    // splicer end function.solveImmersedEqPrimes_s_i64
+}
+
 }  // extern "C"

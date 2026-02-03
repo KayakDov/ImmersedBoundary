@@ -151,6 +151,94 @@ module fortranbindings_mod
             real(C_FLOAT), intent(IN) :: valuesB(*)
             logical(C_BOOL), value, intent(IN) :: multiStream
         end subroutine c_solve_immersed_eq_s_i64
+
+        subroutine c_solve_immersed_eq_primes_d_i32(resultPPrime, &
+                resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, &
+                nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar, &
+                multiStream) &
+                bind(C, name="FOR_solveImmersedEqPrimes_d_i32")
+            use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT32_T, C_SIZE_T
+            implicit none
+            real(C_DOUBLE), intent(OUT) :: resultPPrime(*)
+            real(C_DOUBLE), intent(OUT) :: resultFPrime(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzB
+            integer(C_INT32_T), intent(IN) :: rowOffsetsB(*)
+            integer(C_INT32_T), intent(IN) :: colIndsB(*)
+            real(C_DOUBLE), intent(IN) :: valuesB(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzR
+            integer(C_INT32_T), intent(IN) :: colOffsetsR(*)
+            integer(C_INT32_T), intent(IN) :: rowIndsR(*)
+            real(C_DOUBLE), intent(IN) :: valuesR(*)
+            real(C_DOUBLE), intent(IN) :: UGamma(*)
+            real(C_DOUBLE), intent(IN) :: uStar(*)
+            logical(C_BOOL), value, intent(IN) :: multiStream
+        end subroutine c_solve_immersed_eq_primes_d_i32
+
+        subroutine c_solve_immersed_eq_primes_s_i32(resultPPrime, &
+                resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, &
+                nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar, &
+                multiStream) &
+                bind(C, name="FOR_solveImmersedEqPrimes_s_i32")
+            use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT32_T, C_SIZE_T
+            implicit none
+            real(C_FLOAT), intent(OUT) :: resultPPrime(*)
+            real(C_FLOAT), intent(OUT) :: resultFPrime(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzB
+            integer(C_INT32_T), intent(IN) :: rowOffsetsB(*)
+            integer(C_INT32_T), intent(IN) :: colIndsB(*)
+            real(C_FLOAT), intent(IN) :: valuesB(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzR
+            integer(C_INT32_T), intent(IN) :: colOffsetsR(*)
+            integer(C_INT32_T), intent(IN) :: rowIndsR(*)
+            real(C_FLOAT), intent(IN) :: valuesR(*)
+            real(C_FLOAT), intent(IN) :: UGamma(*)
+            real(C_FLOAT), intent(IN) :: uStar(*)
+            logical(C_BOOL), value, intent(IN) :: multiStream
+        end subroutine c_solve_immersed_eq_primes_s_i32
+
+        subroutine c_solve_immersed_eq_primes_d_i64(resultPPrime, &
+                resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, &
+                nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar, &
+                multiStream) &
+                bind(C, name="FOR_solveImmersedEqPrimes_d_i64")
+            use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT64_T, C_SIZE_T
+            implicit none
+            real(C_DOUBLE), intent(OUT) :: resultPPrime(*)
+            real(C_DOUBLE), intent(OUT) :: resultFPrime(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzB
+            integer(C_INT64_T), intent(IN) :: rowOffsetsB(*)
+            integer(C_INT64_T), intent(IN) :: colIndsB(*)
+            real(C_DOUBLE), intent(IN) :: valuesB(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzR
+            integer(C_INT64_T), intent(IN) :: colOffsetsR(*)
+            integer(C_INT64_T), intent(IN) :: rowIndsR(*)
+            real(C_DOUBLE), intent(IN) :: valuesR(*)
+            real(C_DOUBLE), intent(IN) :: UGamma(*)
+            real(C_DOUBLE), intent(IN) :: uStar(*)
+            logical(C_BOOL), value, intent(IN) :: multiStream
+        end subroutine c_solve_immersed_eq_primes_d_i64
+
+        subroutine c_solve_immersed_eq_primes_s_i64(resultPPrime, &
+                resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, &
+                nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar, &
+                multiStream) &
+                bind(C, name="FOR_solveImmersedEqPrimes_s_i64")
+            use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT64_T, C_SIZE_T
+            implicit none
+            real(C_FLOAT), intent(OUT) :: resultPPrime(*)
+            real(C_FLOAT), intent(OUT) :: resultFPrime(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzB
+            integer(C_INT64_T), intent(IN) :: rowOffsetsB(*)
+            integer(C_INT64_T), intent(IN) :: colIndsB(*)
+            real(C_FLOAT), intent(IN) :: valuesB(*)
+            integer(C_SIZE_T), value, intent(IN) :: nnzR
+            integer(C_INT64_T), intent(IN) :: colOffsetsR(*)
+            integer(C_INT64_T), intent(IN) :: rowIndsR(*)
+            real(C_FLOAT), intent(IN) :: valuesR(*)
+            real(C_FLOAT), intent(IN) :: UGamma(*)
+            real(C_FLOAT), intent(IN) :: uStar(*)
+            logical(C_BOOL), value, intent(IN) :: multiStream
+        end subroutine c_solve_immersed_eq_primes_s_i64
     end interface
 
     ! splicer begin additional_declarations
@@ -325,6 +413,114 @@ contains
             colIndsB, valuesB, SHT_multiStream_cxx)
         ! splicer end function.solve_immersed_eq_s_i64
     end subroutine solve_immersed_eq_s_i64
+
+    subroutine solve_immersed_eq_primes_d_i32(resultPPrime, &
+            resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, &
+            colOffsetsR, rowIndsR, valuesR, UGamma, uStar, multiStream)
+        use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT32_T, C_SIZE_T
+        real(C_DOUBLE), intent(OUT) :: resultPPrime(:)
+        real(C_DOUBLE), intent(OUT) :: resultFPrime(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzB
+        integer(C_INT32_T), intent(IN) :: rowOffsetsB(:)
+        integer(C_INT32_T), intent(IN) :: colIndsB(:)
+        real(C_DOUBLE), intent(IN) :: valuesB(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzR
+        integer(C_INT32_T), intent(IN) :: colOffsetsR(:)
+        integer(C_INT32_T), intent(IN) :: rowIndsR(:)
+        real(C_DOUBLE), intent(IN) :: valuesR(:)
+        real(C_DOUBLE), intent(IN) :: UGamma(:)
+        real(C_DOUBLE), intent(IN) :: uStar(:)
+        logical, value, intent(IN) :: multiStream
+        ! splicer begin function.solve_immersed_eq_primes_d_i32
+        logical(C_BOOL) :: SHT_multiStream_cxx
+        SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
+        call c_solve_immersed_eq_primes_d_i32(resultPPrime, &
+            resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, &
+            colOffsetsR, rowIndsR, valuesR, UGamma, uStar, &
+            SHT_multiStream_cxx)
+        ! splicer end function.solve_immersed_eq_primes_d_i32
+    end subroutine solve_immersed_eq_primes_d_i32
+
+    subroutine solve_immersed_eq_primes_s_i32(resultPPrime, &
+            resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, &
+            colOffsetsR, rowIndsR, valuesR, UGamma, uStar, multiStream)
+        use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT32_T, C_SIZE_T
+        real(C_FLOAT), intent(OUT) :: resultPPrime(:)
+        real(C_FLOAT), intent(OUT) :: resultFPrime(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzB
+        integer(C_INT32_T), intent(IN) :: rowOffsetsB(:)
+        integer(C_INT32_T), intent(IN) :: colIndsB(:)
+        real(C_FLOAT), intent(IN) :: valuesB(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzR
+        integer(C_INT32_T), intent(IN) :: colOffsetsR(:)
+        integer(C_INT32_T), intent(IN) :: rowIndsR(:)
+        real(C_FLOAT), intent(IN) :: valuesR(:)
+        real(C_FLOAT), intent(IN) :: UGamma(:)
+        real(C_FLOAT), intent(IN) :: uStar(:)
+        logical, value, intent(IN) :: multiStream
+        ! splicer begin function.solve_immersed_eq_primes_s_i32
+        logical(C_BOOL) :: SHT_multiStream_cxx
+        SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
+        call c_solve_immersed_eq_primes_s_i32(resultPPrime, &
+            resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, &
+            colOffsetsR, rowIndsR, valuesR, UGamma, uStar, &
+            SHT_multiStream_cxx)
+        ! splicer end function.solve_immersed_eq_primes_s_i32
+    end subroutine solve_immersed_eq_primes_s_i32
+
+    subroutine solve_immersed_eq_primes_d_i64(resultPPrime, &
+            resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, &
+            colOffsetsR, rowIndsR, valuesR, UGamma, uStar, multiStream)
+        use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT64_T, C_SIZE_T
+        real(C_DOUBLE), intent(OUT) :: resultPPrime(:)
+        real(C_DOUBLE), intent(OUT) :: resultFPrime(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzB
+        integer(C_INT64_T), intent(IN) :: rowOffsetsB(:)
+        integer(C_INT64_T), intent(IN) :: colIndsB(:)
+        real(C_DOUBLE), intent(IN) :: valuesB(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzR
+        integer(C_INT64_T), intent(IN) :: colOffsetsR(:)
+        integer(C_INT64_T), intent(IN) :: rowIndsR(:)
+        real(C_DOUBLE), intent(IN) :: valuesR(:)
+        real(C_DOUBLE), intent(IN) :: UGamma(:)
+        real(C_DOUBLE), intent(IN) :: uStar(:)
+        logical, value, intent(IN) :: multiStream
+        ! splicer begin function.solve_immersed_eq_primes_d_i64
+        logical(C_BOOL) :: SHT_multiStream_cxx
+        SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
+        call c_solve_immersed_eq_primes_d_i64(resultPPrime, &
+            resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, &
+            colOffsetsR, rowIndsR, valuesR, UGamma, uStar, &
+            SHT_multiStream_cxx)
+        ! splicer end function.solve_immersed_eq_primes_d_i64
+    end subroutine solve_immersed_eq_primes_d_i64
+
+    subroutine solve_immersed_eq_primes_s_i64(resultPPrime, &
+            resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, &
+            colOffsetsR, rowIndsR, valuesR, UGamma, uStar, multiStream)
+        use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT64_T, C_SIZE_T
+        real(C_FLOAT), intent(OUT) :: resultPPrime(:)
+        real(C_FLOAT), intent(OUT) :: resultFPrime(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzB
+        integer(C_INT64_T), intent(IN) :: rowOffsetsB(:)
+        integer(C_INT64_T), intent(IN) :: colIndsB(:)
+        real(C_FLOAT), intent(IN) :: valuesB(:)
+        integer(C_SIZE_T), value, intent(IN) :: nnzR
+        integer(C_INT64_T), intent(IN) :: colOffsetsR(:)
+        integer(C_INT64_T), intent(IN) :: rowIndsR(:)
+        real(C_FLOAT), intent(IN) :: valuesR(:)
+        real(C_FLOAT), intent(IN) :: UGamma(:)
+        real(C_FLOAT), intent(IN) :: uStar(:)
+        logical, value, intent(IN) :: multiStream
+        ! splicer begin function.solve_immersed_eq_primes_s_i64
+        logical(C_BOOL) :: SHT_multiStream_cxx
+        SHT_multiStream_cxx = multiStream  ! coerce to C_BOOL
+        call c_solve_immersed_eq_primes_s_i64(resultPPrime, &
+            resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, &
+            colOffsetsR, rowIndsR, valuesR, UGamma, uStar, &
+            SHT_multiStream_cxx)
+        ! splicer end function.solve_immersed_eq_primes_s_i64
+    end subroutine solve_immersed_eq_primes_s_i64
 
     ! splicer begin additional_functions
     ! splicer end additional_functions

@@ -3,7 +3,7 @@ cxx_header: "FortranBindings.hpp"
 
 declarations:
   # ==========================================
-  # Initialization: initImmersedEq (Generics kept)
+  # Initialization: initImmersedEq 
   # ==========================================
   - decl: |
       void initImmersedEq_d_i32(          
@@ -74,7 +74,7 @@ declarations:
       )
     
   # ==========================================
-  # Solver: solveImmersedEq (Specific calls only)
+  # Solver: solveImmersedEq 
   # ==========================================
   - decl: |
       void solveImmersedEq_d_i32(
@@ -113,5 +113,73 @@ declarations:
           int64_t* rowOffsetsB +intent(in) +rank(1),          
           int64_t* colIndsB +intent(in) +rank(1),          
           float* valuesB +intent(in) +rank(1),
+          bool multiStream
+      )
+        
+    # ==========================================
+    # Solver: primes 
+    # ==========================================
+  - decl: |
+      void solveImmersedEqPrimes_d_i32(
+          double* resultPPrime +intent(out) +rank(1),
+          double* resultFPrime +intent(out) +rank(1),
+          size_t nnzB,
+          int32_t *rowOffsetsB +intent(in) +rank(1),
+          int32_t *colIndsB +intent(in) +rank(1),
+          double *valuesB +intent(in) +rank(1),
+          size_t nnzR,
+          int32_t *colOffsetsR +intent(in) +rank(1),
+          int32_t *rowIndsR +intent(in) +rank(1),
+          double *valuesR +intent(in) +rank(1),
+          double *UGamma +intent(in) +rank(1),
+          double* uStar +intent(in) +rank(1),
+          bool multiStream
+      )
+  - decl: |
+      void solveImmersedEqPrimes_s_i32(
+          float* resultPPrime +intent(out) +rank(1),
+          float* resultFPrime +intent(out) +rank(1),
+          size_t nnzB,
+          int32_t *rowOffsetsB +intent(in) +rank(1),
+          int32_t *colIndsB +intent(in) +rank(1),
+          float *valuesB +intent(in) +rank(1),
+          size_t nnzR,
+          int32_t *colOffsetsR +intent(in) +rank(1),
+          int32_t *rowIndsR +intent(in) +rank(1),
+          float *valuesR +intent(in) +rank(1),
+          float *UGamma +intent(in) +rank(1),
+          float* uStar +intent(in) +rank(1),
+          bool multiStream
+      )
+  - decl: |
+      void solveImmersedEqPrimes_d_i64(
+          double* resultPPrime +intent(out) +rank(1),
+          double* resultFPrime +intent(out) +rank(1),
+          size_t nnzB,
+          int64_t *rowOffsetsB +intent(in) +rank(1),
+          int64_t *colIndsB +intent(in) +rank(1),
+          double *valuesB +intent(in) +rank(1),
+          size_t nnzR,
+          int64_t *colOffsetsR +intent(in) +rank(1),
+          int64_t *rowIndsR +intent(in) +rank(1),
+          double *valuesR +intent(in) +rank(1),
+          double *UGamma +intent(in) +rank(1),
+          double* uStar +intent(in) +rank(1),
+          bool multiStream
+      )
+  - decl: |
+      void solveImmersedEqPrimes_s_i64(
+          float* resultPPrime +intent(out) +rank(1),
+          float* resultFPrime +intent(out) +rank(1),
+          size_t nnzB,
+          int64_t *rowOffsetsB +intent(in) +rank(1),
+          int64_t *colIndsB +intent(in) +rank(1),
+          float *valuesB +intent(in) +rank(1),
+          size_t nnzR,
+          int64_t *colOffsetsR +intent(in) +rank(1),
+          int64_t *rowIndsR +intent(in) +rank(1),
+          float *valuesR +intent(in) +rank(1),
+          float *UGamma +intent(in) +rank(1),
+          float* uStar +intent(in) +rank(1),
           bool multiStream
       )
