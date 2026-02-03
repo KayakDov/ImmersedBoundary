@@ -70,7 +70,7 @@ You must use "iso_c_binding" types to ensure Fortran memory matches the GPU:
 
 ## 4. Argument Reference
 
-### Initialization Routine (`init_immersed_eq_*`)
+### Initialization Routine (`initImmersedEq_*`)
 This routine allocates GPU memory and pre-computes the Eigen Decomposition.
 
 | Argument | Type | Description                                |
@@ -87,7 +87,7 @@ This routine allocates GPU memory and pre-computes the Eigen Decomposition.
 
 ---
 
-### Solve Routine (`solve_immersed_eq_*`)
+### Solve Routine (`solveImmersedEq_*`)
 This routine executes the iterative solver for a specific state of CSR matrix B
 or CSC matrix B^T.  If B^T is passed as a CSC, use colOffsetsBT instead of rowOffsets B
 and rowIndsBT instead of colIndsB.
@@ -100,7 +100,33 @@ and rowIndsBT instead of colIndsB.
 | indsB       | integer array | Sparse column indices (MUST BE 0-BASED).        |
 | valuesB     | real array | Non-zero values for matrix B for this step.     |
 | multiStream | logical | .true. to run solver in parallel CUDA streams.  |
+
 ---
+
+### Coupled Solve Routine (`solveImmersedEqPrimes_*`)
+This routine executes the coupled solver, returning results for both the grid domain ($P$) and the boundary interface ($F$).
+
+| Argument    | Type | Description |
+|:------------| :--- |:------------------------------------------------|
+| resultP     | real array | Output: Grid-based result (Size: H*W*D). |
+| resultF     | real array | Output: Boundary-based result (e.g., Force). |
+| nnzB        | integer(C_SIZE_T) | Non-zero count for matrix B. |
+| offsetsB    | integer array | Row offsets for B (or NULL to reuse previous). |
+| indsB       | integer array | Column indices for B (or NULL to reuse previous).|
+| valuesB     | real array | Matrix values for B (or NULL to reuse previous). |
+| nnzR        | integer(C_SIZE_T) | Non-zero count for matrix R. |
+| offsetsR    | integer array | Sparse offsets for R. |
+| indsR       | integer array | Sparse indices for R. |
+| valuesR     | real array | Matrix values for R. |
+| UGamma      | real array | Prescribed boundary velocity/boundary state. |
+| uStar       | real array | Staggered intermediate velocity field ($u^*$). |
+| multiStream | logical | .true. to run solver in parallel CUDA streams. |
+
+> **Note on Matrix R:** Matrix R can be provided as CSC, or $R^T$ can be provided in CSR format.
+>
+> **Note on `uStar`:** The input velocity field $u^*$ must be defined on a staggered grid matching the solver's internal discretization.
+>
+> **Optimization (Reusing B):** If the boundary geometry has not changed since the last call, you may pass `C_NULL_PTR` for `offsetsB`, `indsB`, and `valuesB` to skip redundant GPU memory transfers.
 
 ## 5. Compiling & Linking
 
