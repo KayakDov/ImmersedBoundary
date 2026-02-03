@@ -53,6 +53,95 @@ void printL(const GridDim &dim, Handle &hand) {
 }
 
 template<typename Real, typename Int>
+void testPrimes() {
+    GridDim dim(3, 2, 1);
+    Real3d delta(1, 1, 1);
+
+    Handle hand;
+
+    constexpr size_t size = 6;
+    constexpr size_t fSize = 2;
+
+    size_t uStarSize = dim.numDims() * dim.size()
+        + dim.cols * dim.layers
+        + dim.rows * dim.layers
+        + dim.cols * dim.rows * (dim.layers > 1);
+
+    std::vector<Real> uStar(uStarSize, 0);
+    uStar[3] = 1;
+    uStar[9] = 1;
+
+    std::vector<Int> colOffsetsR(3);
+    colOffsetsR[0] = 0;
+    colOffsetsR[1] = uStarSize;
+    colOffsetsR[2] = uStarSize;
+
+    std::vector<Int> rowIndsR(uStarSize);
+    for (size_t i = 0; i < rowIndsR.size(); i++) rowIndsR[i] = i;
+
+    std::vector<Real> valsR(uStarSize, 1);
+
+    std::vector<Real> UGamma(2, 3);
+
+    double deltaT = 3.0/2.0;
+
+
+    printL<Real>(dim, hand);
+
+    std::vector<Int> rowOffsetsB(3);
+    rowOffsetsB[0] = 0;
+    rowOffsetsB[1] = 1;
+    rowOffsetsB[2] = 2;
+
+    std::vector<Real> valuesB = {1, 1};
+    std::vector<Int> colIndsB(2);
+    colIndsB[0] = 0;
+    colIndsB[1] = 1;
+
+    std::vector<Real> f = {1,2};
+    std::vector<Real> p(size, 0);
+    p[0] = 2;
+    p[size - 1] = -2;
+
+    Real resultP[size];
+    Real resultF[fSize];
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    ImmersedEq<Real, Int> imEq(dim, f.size(), valsR.size(), p.data(), f.data(), delta, deltaT, 1e-6, 1000);
+    // initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
+
+    // imEq.solve(resultP, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data(), true);
+    imEq.solve(resultP, resultF, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data(), valsR.size(), colOffsetsR.data(), rowIndsR.data(), valsR.data(), UGamma.data(), uStar.data(), true);
+    // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
+
+    cudaDeviceSynchronize();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
+    std::cout << "Total Solver Time: " << duration.count() << " ms" << std::endl;
+
+    std::cout << "resultP = ";
+    for(auto & i : resultP) std::cout << i << " ";
+
+    std::cout << "\nexpected 7.61797, 10.1498, 2.955056, 3.08614, 3.72659, 1.67041" << std::endl;
+
+    std::cout << "resultF = ";
+    for(auto & i : resultF) std::cout << i << " ";
+
+    std::cout << "\nexpected 17.23595, 26.29962" << std::endl;
+
+    // auto denseB = Mat<Real>::create(f.size(), p.size());
+    // imEq.baseData.B->getDense(denseB, hand);
+    // std::cout << "\nB = \n" << GpuOut<Real>(denseB, hand) << std::endl;
+
+    // auto inverseL = imEq.eds->inverseL(hand);
+    // std::cout << "L^-1 = \n" << GpuOut<Real>(inverseL, hand) << std::endl;
+    // std::cout << "LHS of equation is\n" << GpuOut<Real>(imEq.LHSMat(), hand) << std::endl;
+    // std::cout << "RHS of equation is\n" << GpuOut<Real>(imEq.RHS(false), hand) << std::endl;
+
+}
+
+template<typename Real, typename Int>
 void smallTestWithoutFiles() {
     GridDim dim(3, 2, 1);
     Real3d delta(1, 1, 1);
@@ -86,7 +175,6 @@ void smallTestWithoutFiles() {
     std::chrono::duration<double, std::milli> duration = end - start;
     std::cout << "Total Solver Time: " << duration.count() << " ms" << std::endl;
 
-//25.9347
     std::cout << "result = ";
     for(auto & i : result) std::cout << i << " ";
 
@@ -137,8 +225,9 @@ void smallTestWithoutFiles() {
 
 int main(int argc, char *argv[]) {
     // testOnFiles(GridDim(2000, 2000, 1));
-    smallTestWithoutFiles<double, int64_t>();
+    // smallTestWithoutFiles<double, int64_t>();
 
+    testPrimes<double, int32_t>();
     // BCGBanded<double>::test();
 
     // BCGDense<double>::test();

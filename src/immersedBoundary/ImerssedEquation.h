@@ -49,8 +49,8 @@ enum class GridInd : size_t {//eularian
 enum class LagrangeInd : size_t {
     f         = 0,
     RHSFPrime = 1,
-    fPrime    = 1,
     LHS       = 2,
+    fPrime    = 2,
     UGamma    = 2,
     Count     = 3
 };
@@ -70,21 +70,26 @@ public:
 
     const GridDim dim;
 
-    SparseCSR<Real, Int> maxB;
+    SimpleArray<Int> maxSparseInds;
+    SimpleArray<Int> maxSparseOffsets;
+    SimpleArray<Real> maxSparseVals = SimpleArray<Real>::create(maxSparseInds.size(), nullptr);//TODO:move handles here and remove multiple nullptr streams
 
     mutable Mat<Real> gridVecs = Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count));
-    mutable Mat<Real> lagrangeVecs = Mat<Real>::create(maxB.rows, static_cast<size_t>(LagrangeInd::Count)) ;
+    mutable Mat<Real> lagrangeVecs = Mat<Real>::create(maxSparseOffsets.size() - 1, static_cast<size_t>(LagrangeInd::Count)) ;
 
-    SimpleArray<Real> velocities = SimpleArray<Real>::create(3 * dim.size() + dim.layers * dim.cols + dim.layers * dim.rows + dim.cols * dim.rows, nullptr); //TODO:move handles here and remove multiple nullptr streams
+    SimpleArray<Real> velocities = SimpleArray<Real>::create(dim.numDims() * dim.size()
+        + dim.cols * dim.layers
+        + dim.rows * dim.layers
+        + dim.cols * dim.rows * (dim.layers > 1), nullptr); //TODO:move handles here and remove multiple nullptr streams
 
     std::shared_ptr<SimpleArray<Real>> f = std::make_shared<SimpleArray<Real>>(lagrangeVecs.col(static_cast<size_t>(LagrangeInd::f)));
     std::shared_ptr<SimpleArray<Real>> p = std::make_shared<SimpleArray<Real>>(gridVecs.col(static_cast<size_t>(GridInd::p)));
     mutable SimpleArray<Real> result = gridVecs.col(static_cast<size_t>(GridInd::Result));
 
     //CSR, maps from Eularian where p lives space to Lagrangian space where f lives (f rows, p cols)
-    std::shared_ptr<SparseMat<Real, Int>> B = std::make_shared<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxB.values.subArray(0,0), maxB.offsets, maxB.inds.subArray(0,0)));
+    std::shared_ptr<SparseMat<Real, Int>> B = std::make_shared<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
     //CSC, maps from Lagrangian space to the discretized vector field space R^3 -> R^3 (3p + rows, f cols)
-    std::shared_ptr<SparseMat<Real, Int>> R = std::make_shared<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxB.values.subArray(0,0), maxB.offsets, maxB.inds.subArray(0,0)));
+    std::shared_ptr<SparseMat<Real, Int>> R = std::make_shared<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
 
     const Real3d delta;
 
@@ -104,7 +109,8 @@ public:
      */
     BaseData(const FileMeta &meta, const GridDim &dim, double dT, Handle &hand);
 
-    BaseData(SparseCSR<Real, Int> maxSparse, const GridDim &dim, const Real3d &delta, Singleton<Real> dT);
+    BaseData(SimpleArray<Int> maxSparseInds, SimpleArray<Int> maxSparseOffsets, const GridDim &dim, const Real3d &delta,
+             Singleton<Real> dT);
 
     BaseData(const GridDim &dim, size_t fSize, size_t nnzMax, const Real3d &delta, Real *f, Real *p, double dT,
              Handle &hand);
@@ -164,9 +170,6 @@ private:
 
     void setRHSFPrime(Handle &hand);
 
-    void solve(Real *resultP, Real *resultF, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, size_t nnzR,
-               Int *offsetsR, Int *indsR, Real *valuesR, Real *UGamma, Real *uStar, bool multiStream);
-
     /**
      *
      * @param nnzB  The number of non zero elements in B.
@@ -188,7 +191,7 @@ public:
     /**
      * @brief Sets up the immersed equation system using the provided base data.
      */
-    ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta, double dT,  double tolerance, size_t maxBCGIterations);
+    ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxSparse, Real *p, Real *f, const Real3d &delta, double dT,  double tolerance, size_t maxBCGIterations);
 
     /**
      * This method creates the LHS matrix.  For large matrices this may be inefficient.
@@ -220,6 +223,9 @@ public:
      * @return
      */
     void solve(Real *result, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool multiStream);
+
+    void solve(Real *resultP, Real *resultF, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR,
+               Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real *uStar, bool multiStream);
 
 
 };

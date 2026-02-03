@@ -23,17 +23,18 @@ FileMeta::FileMeta(std::ifstream &xFile, std::ifstream &bFile) : xFile(xFile), b
 
 template<typename Real, typename Int>
 void BaseData<Real, Int>::checkNNZB(size_t nnzB) const {
-    if (nnzB > maxB.nnz()) {
+    if (nnzB > maxSparseVals.size()) {
         throw std::invalid_argument(
             "BaseData::setB - NNZ Overflow: Requested nnzB (" + std::to_string(nnzB) +
-            ") exceeds maxB capacity (" + std::to_string(maxB.nnz()) + ")."
+            ") exceeds maxB capacity (" + std::to_string(maxSparseVals.size()) + ")."
         );
     }
 }
 
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, double dT, Handle& hand) :
-    maxB(SparseCSR<Real, Int>::create(meta.nnz, meta.bRows, meta.bCols, hand)),
+    maxSparseInds(SimpleArray<Int>::create(meta.nnz, hand)),
+    maxSparseOffsets(SimpleArray<Int>::create(meta.fSize + 1, hand)),
     delta(1.0 / dim.cols, 1.0 / dim.rows, 1.0 / dim.layers),
     dim(dim),
     dT(Singleton<Real>::create(3/(2 * dT), hand))
@@ -43,17 +44,19 @@ BaseData<Real, Int>::BaseData(const FileMeta &meta, const GridDim &dim, double d
     auto f = lagrangeVecs.col(0);
     meta.xFile >> GpuIn<Real>(f, hand, false, true);
 
-    meta.bFile >> GpuIn<Real>(maxB.values, hand, false, true);
+    meta.bFile >> GpuIn<Real>(maxSparseVals, hand, false, true);
 }
 
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(
-    SparseCSR<Real, Int> maxSparse,
+    SimpleArray<Int> maxSparseInds,
+    SimpleArray<Int> maxSparseOffsets,
     const GridDim &dim,
     const Real3d &delta,
     Singleton<Real> dT
 ) :
-    maxB(maxSparse),
+    maxSparseInds(maxSparseInds),
+    maxSparseOffsets(maxSparseOffsets),
     dim(dim),
     delta(delta),
     dT(dT)
@@ -63,7 +66,8 @@ BaseData<Real, Int>::BaseData(
 template<typename Real, typename Int>
 BaseData<Real, Int>::BaseData(const GridDim &dim, size_t fSize, size_t nnzMax, const Real3d &delta, Real *f, Real *p, double dT, Handle& hand) :
     BaseData(
-        SparseCSR<Real, Int>::create(nnzMax, fSize, dim.size(), hand),
+        SimpleArray<Int>::create(nnzMax, hand),
+        SimpleArray<Int>::create(fSize + 1, hand),
         dim,
         delta,
         Singleton<Real>::create(3/(2 * dT), hand)
@@ -83,9 +87,9 @@ void BaseData<Real, Int>::setSparse(
 ) {//TODO: deal with B = null case.
     checkNNZB(nnz);
     sparse = sparse->createWithPointer(
-            maxB.values.subArray(0, nnz),
-            maxB.offsets,
-            maxB.inds.subArray(0, nnz)
+            maxSparseVals.subArray(0, nnz),
+            maxSparseOffsets,
+            maxSparseInds.subArray(0, nnz)
         );
     sparse->set(offsets, inds, vals, hand);
 }
@@ -130,7 +134,7 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(
     }
 }
 
-template<typename Real, typename Int>
+template<typename Real, typename Int>//TODO: chnage this so it can mult B or R.
 void ImmersedEq<Real, Int>::multB(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const {
 
     const size_t multBufferSizeNeeded = baseData.B->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeB, hand5[0]);
@@ -148,8 +152,8 @@ ImmersedEq<Real, Int>::ImmersedEq(BaseData<Real, Int> baseData, double tolerance
 }
 
 template<typename Real, typename Int>
-ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxB, Real *p, Real *f, const Real3d &delta, double dT, double tolerance, size_t maxBCGIterations) :
-    baseData(dim, fSize, nnzMaxB, delta, f, p, dT, hand5[0]),
+ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim, size_t fSize, size_t nnzMaxSparse, Real *p, Real *f, const Real3d &delta, double dT, double tolerance, size_t maxBCGIterations) :
+    baseData(dim, fSize, nnzMaxSparse, delta, f, p, dT, hand5[0]),
     tolerance(tolerance),
     maxIterations(maxBCGIterations)
     {
@@ -281,7 +285,7 @@ __global__ void divergenceKernel3d(
     const Real* scalar
 ) {
     if (GridInd3d ind; ind < dst)
-        dst[ind] = *scalar * (
+        dst[ind] = -(*scalar) * (
             (u(ind, 0, 1, 0) - u[ind])/deltaCols +
             (v(ind, 1, 0, 0) - v[ind])/deltaRows +
             (w(ind, 0, 0, 1) - w[ind])/deltaLayers);
@@ -317,8 +321,8 @@ void BaseData<Real, Int>::setRHSPPrime(Handle &hand) {
 
     auto u = velocities.subArray(0, dim.rows *(dim.cols + 1) * dim.layers);
     auto v = velocities.subArray(u.size(),(dim.rows + 1) * dim.cols * dim.layers);
-    auto w = velocities.subArray(u.size() + v.size(), velocities.size() - u.size() - v.size());//TODO:verify this works for 2d u*
-    
+    auto w = velocities.subArray(u.size() + v.size(), velocities.size() - u.size() - v.size());
+
     auto RHSPPrime = gridVec(GridInd::RHSPPrime);
     const KernelPrep kp = RHSPPrime.kernelPrep();
 
@@ -337,6 +341,7 @@ void BaseData<Real, Int>::setRHSPPrime(Handle &hand) {
             delta.x, delta.y,
             dT.data()
         );
+
 }
 
 template<typename Real, typename Int>
@@ -357,18 +362,18 @@ void ImmersedEq<Real, Int>::solve(
     Real* resultP,
     Real* resultF,
     size_t nnzB,
-    Int *offsetsB,
-    Int *indsB,
+    Int *rowOffsetsB,
+    Int *colIndsB,
     Real *valuesB,
     size_t nnzR,
-    Int *offsetsR,
-    Int *indsR,
+    Int *colOffsetsR,
+    Int *rowIndsR,
     Real *valuesR,
     Real *UGamma,
     Real* uStar,
     bool multiStream) {
 
-    baseData.setSparse(baseData.R, nnzR, offsetsR, indsR, valuesR, hand5[0]);
+    baseData.setSparse(baseData.R, nnzR, colOffsetsR, rowIndsR, valuesR, hand5[0]);
     baseData.velocities.set(uStar, hand5[0]);
     baseData.setRHSPPrime(hand5[0]);
 
@@ -382,13 +387,14 @@ void ImmersedEq<Real, Int>::solve(
     baseData.p = std::make_shared<SimpleArray<Real>>(baseData.gridVec(GridInd::RHSPPrime));
     baseData.f = std::make_shared<SimpleArray<Real>>(baseData.lagrangeVec(LagrangeInd::RHSFPrime));
 
-    solve(resultP, nnzB, offsetsB, indsB, valuesB, multiStream);
+    solve(resultP, nnzB, rowOffsetsB, colIndsB, valuesB, multiStream);
 
     baseData.p = std::make_shared<SimpleArray<Real>>(baseData.gridVec(GridInd::p));
-    baseData.f = std::make_shared<SimpleArray<Real>>(baseData.lagrangeVec(LagrangeInd::f));
+    baseData.f = std::make_shared<SimpleArray<Real>>(baseData.lagrangeVec(LagrangeInd::f));//2 (B p' - RHSf')
 
     auto fResultDevice = baseData.lagrangeVec(LagrangeInd::fPrime);
     multB(baseData.gridVec(GridInd::pPrime), fResultDevice, Singleton<Real>::TWO, Singleton<Real>::ZERO, false);
+
     fResultDevice.add(baseData.lagrangeVec(LagrangeInd::RHSFPrime), &Singleton<Real>::MINUS_ONE, &hand5[0]);
     fResultDevice.get(resultF, hand5[0]);
 }
@@ -408,8 +414,6 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
 
     return solve(multithreadBCG);
 }
-
-
 
 template<typename Real, typename Int>
 ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
