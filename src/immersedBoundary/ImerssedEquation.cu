@@ -5,6 +5,8 @@
 #include "solvers/Event.h"
 #include <span>
 
+//todo: merge base Data, ImmerssedEq, and the solver.
+
 FileMeta::FileMeta(std::ifstream &xFile, std::ifstream &bFile) : xFile(xFile), bFile(bFile) {
     {
         bFile.read((char *) &bRows, 8);
@@ -190,7 +192,7 @@ SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
     return result;
 }
 
-template<typename Real, typename Int>
+template<typename Real, typename Int>//TODO: rewrite this method so that it takes indices for p and F, and remove p and f as pointers all together.
 SimpleArray<Real> &ImmersedEq<Real, Int>::RHS(const bool reset) {
 
     if (reset) {
@@ -238,9 +240,157 @@ void ImmersedEq<Real, Int>::solve(
     resultDevice.get(result, hand5[0]);
 }
 
+
+/**
+ * @brief Computes the discrete divergence (\nabla \cdot u*) on a staggered MAC grid.
+ *
+ * This kernel calculates the divergence at the cell centers (Eulerian grid) using
+ * the intermediate velocity components stored on the cell faces. This represents
+ * the "volume error" or source term for the Pressure Poisson equation in the
+ * SIMPLE-based Immersed Boundary Method.
+ *
+ * @tparam Real Floating point type (float or double).
+ *
+ * @param u           The x-velocity component grid (staggered).
+ * @param v           The y-velocity component grid (staggered).
+ * @param w           The z-velocity component grid (staggered).
+ * @param dst         Output scalar grid (cell centers) where divergence is stored.
+ * @param deltaCols   The grid spacing in the x-direction (dx).
+ * @param deltaRows   The grid spacing in the y-direction (dy).
+ * @param deltaLayers The grid spacing in the z-direction (dz).
+ *
+ * @note **Grid Dimension Requirements:**
+ * To ensure every cell center in @p dst has a bounding pair of faces:
+ * - @p u must have dimensions (dst.cols + 1, dst.rows, dst.layers).
+ * - @p v must have dimensions (dst.cols, dst.rows + 1, dst.layers).
+ * - @p w must have dimensions (dst.cols, dst.rows, dst.layers + 1).
+ *
+ * @details
+ * The calculation follows the second-order central difference for staggered grids:
+ * div = (u[i+1,j,k] - u[i,j,k])/dx + (v[i,j+1,k] - v[i,j,k])/dy + (w[i,j,k+1] - w[i,j,k])/dz
+ */
+template <typename Real>
+__global__ void divergenceKernel3d(
+    DeviceData3d<Real> u,
+    DeviceData3d<Real> v,
+    DeviceData3d<Real> w,
+    DeviceData3d<Real> dst,
+    const double deltaCols,
+    const double deltaRows,
+    const double deltaLayers,
+    const Real* scalar
+) {
+    if (GridInd3d ind; ind < dst)
+        dst[ind] = *scalar * (
+            (u(ind, 0, 1, 0) - u[ind])/deltaCols +
+            (v(ind, 1, 0, 0) - v[ind])/deltaRows +
+            (w(ind, 0, 0, 1) - w[ind])/deltaLayers);
+
+}
+
+/**
+ * @brief Computes the discrete divergence (∇·u*) on a 2D staggered MAC grid.
+ *
+ * @tparam T Floating point type (float or double).
+ * @param u The x-velocity component grid.
+ * @param v The y-velocity component grid.
+ * @param dst Output scalar grid (cell centers) for divergence results.
+ * @param deltaCols Grid spacing in x (dx).
+ * @param deltaRows Grid spacing in y (dy).
+ *
+ * @note **Requirement:** @p u and @p v must have 1 more element in their
+ * respective staggered dimension than @p dst.
+ */
+template <typename Real>
+__global__ void divergenceKernel2d(DeviceData2d<Real> u, DeviceData2d<Real> v, DeviceData2d<Real> dst, const double deltaCols, const double deltaRows, const Real* scalar) {
+
+    if(GridInd2d ind;ind < dst)
+        dst[ind] = *scalar * (
+            (u(ind, 0, 1) - u[ind])/deltaCols +
+            (v(ind, 1, 0) - v[ind])/deltaRows
+        );
+}
+
+
 template<typename Real, typename Int>
-void ImmersedEq<Real, Int>::solve(Real *result, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, size_t nnzR, Int *offsetsR, Int *indsR, Int *valuesR, Real *UGamma, bool multiStream) {
+void BaseData<Real, Int>::setRHSPPrime(Handle &hand) {
+
+    auto u = velocities.subArray(0, dim.rows *(dim.cols + 1) * dim.layers);
+    auto v = velocities.subArray(u.size(),(dim.rows + 1) * dim.cols * dim.layers);
+    auto w = velocities.subArray(u.size() + v.size(), velocities.size() - u.size() - v.size());//TODO:verify this works for 2d u*
     
+    auto RHSPPrime = gridVec(GridInd::RHSPPrime);
+    const KernelPrep kp = RHSPPrime.kernelPrep();
+
+    if (dim.layers > 1) divergenceKernel3d<Real><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+            u.tensor(dim.rows, dim.layers).toKernel3d(),
+            v.tensor(dim.rows, dim.layers).toKernel3d(),
+            w.tensor(dim.rows, dim.layers).toKernel3d(),
+            RHSPPrime.tensor(dim.rows, dim.layers).toKernel3d(),
+            delta.x, delta.y, delta.z,
+            dT.data()
+        );
+    else divergenceKernel2d<Real><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+            u.matrix(dim.rows).toKernel2d(),
+            v.matrix(dim.rows).toKernel2d(),
+            RHSPPrime.matrix(dim.rows).toKernel2d(),
+            delta.x, delta.y,
+            dT.data()
+        );
+}
+
+template<typename Real, typename Int>
+void ImmersedEq<Real, Int>::setRHSFPrime(Handle &hand) {
+
+    auto RHSF = baseData.lagrangeVec(LagrangeInd::RHSFPrime);
+
+    size_t minBufferSize = baseData.R->multWorkspaceSize(baseData.velocities, RHSF, baseData.dT, Singleton<Real>::ZERO, true, hand);//TODO:this code seems redundant with the multB code.
+    if (!sparseMultBuffer || sparseMultBuffer->size() > minBufferSize) sparseMultBuffer = std::make_shared<SimpleArray<Real>>(SimpleArray<Real>::create(1.5 * minBufferSize, hand, true));
+
+    baseData.R->mult(baseData.velocities, RHSF, baseData.dT, Singleton<Real>::ZERO, true, *sparseMultBuffer, hand);
+
+    RHSF.subtract(baseData.lagrangeVec(LagrangeInd::UGamma), &baseData.dT, sparseMultBuffer->get(0), &hand);
+}
+
+template<typename Real, typename Int>
+void ImmersedEq<Real, Int>::solve(
+    Real* resultP,
+    Real* resultF,
+    size_t nnzB,
+    Int *offsetsB,
+    Int *indsB,
+    Real *valuesB,
+    size_t nnzR,
+    Int *offsetsR,
+    Int *indsR,
+    Real *valuesR,
+    Real *UGamma,
+    Real* uStar,
+    bool multiStream) {
+
+    baseData.setSparse(baseData.R, nnzR, offsetsR, indsR, valuesR, hand5[0]);
+    baseData.velocities.set(uStar, hand5[0]);
+    baseData.setRHSPPrime(hand5[0]);
+
+    events11[0].record(hand5[0]);
+    events11[0].hold(hand5[1]);
+    baseData.lagrangeVec(LagrangeInd::UGamma).set(UGamma, hand5[1]);
+    setRHSFPrime(hand5[1]);
+    events11[1].record(hand5[1]);
+    events11[1].hold(hand5[0]);
+
+    baseData.p = std::make_shared<SimpleArray<Real>>(baseData.gridVec(GridInd::RHSPPrime));
+    baseData.f = std::make_shared<SimpleArray<Real>>(baseData.lagrangeVec(LagrangeInd::RHSFPrime));
+
+    solve(resultP, nnzB, offsetsB, indsB, valuesB, multiStream);
+
+    baseData.p = std::make_shared<SimpleArray<Real>>(baseData.gridVec(GridInd::p));
+    baseData.f = std::make_shared<SimpleArray<Real>>(baseData.lagrangeVec(LagrangeInd::f));
+
+    auto fResultDevice = baseData.lagrangeVec(LagrangeInd::fPrime);
+    multB(baseData.gridVec(GridInd::pPrime), fResultDevice, Singleton<Real>::TWO, Singleton<Real>::ZERO, false);
+    fResultDevice.add(baseData.lagrangeVec(LagrangeInd::RHSFPrime), &Singleton<Real>::MINUS_ONE, &hand5[0]);
+    fResultDevice.get(resultF, hand5[0]);
 }
 
 template<typename Real, typename Int>

@@ -118,6 +118,11 @@ public:
 
     SimpleArray<Real> lagrangeVec(LagrangeInd ind) const;
     SimpleArray<Real> gridVec(GridInd ind)const ;
+
+    void setRHSPPrime(Handle &hand);
+
+    void divergence(SimpleArray<Real> result, SimpleArray<Real> u, SimpleArray<Real> v, SimpleArray<Real> w,
+                    Singleton<Real> scalar, Handle &hand);
 };
 
 
@@ -157,6 +162,11 @@ private:
      */
     void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const;
 
+    void setRHSFPrime(Handle &hand);
+
+    void solve(Real *resultP, Real *resultF, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, size_t nnzR,
+               Int *offsetsR, Int *indsR, Real *valuesR, Real *UGamma, Real *uStar, bool multiStream);
+
     /**
      *
      * @param nnzB  The number of non zero elements in B.
@@ -188,12 +198,14 @@ public:
      */
     SquareMat<Real> LHSMat();
 
+
+
     /**
      * Generates the RHS value from the base data.
      * @param reset Check to false if this method was already called with the current base data.
      * @return The right hand side of the equation.
      */
-    SimpleArray<Real>& RHS(bool reset = true);
+    SimpleArray<Real> &RHS(bool reset = true);
 
     SimpleArray<Real> &solve(bool multiStream);
 
@@ -209,7 +221,7 @@ public:
      */
     void solve(Real *result, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool multiStream);
 
-    void solve(Real *result, size_t nnzB,Int *offsetsB, Int *indsB, Real *valuesB,  size_t nnzR, Int* offsetsR, Int *indsR, Int* valuesR, Real* UGamma, bool multiStream);
+
 };
 
 /**
