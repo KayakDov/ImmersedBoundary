@@ -395,20 +395,22 @@ void ImmersedEq<Real, Int>::solve(
     auto fResultDevice = baseData.lagrangeVec(LagrangeInd::fPrime);
     multB(baseData.gridVec(GridInd::pPrime), fResultDevice, Singleton<Real>::TWO, Singleton<Real>::ZERO, false);
 
-    fResultDevice.add(baseData.lagrangeVec(LagrangeInd::RHSFPrime), &Singleton<Real>::MINUS_ONE, &hand5[0]);
+    std::cout << "solve, fResultDevice " << GpuOut<Real>(fResultDevice, hand5[0]) << std::endl;
+
+    fResultDevice.add(baseData.lagrangeVec(LagrangeInd::RHSFPrime), &Singleton<Real>::MINUS_TWO, &hand5[0]);
     fResultDevice.get(resultF, hand5[0]);
 }
 
 template<typename Real, typename Int>
 SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     size_t nnzB,
-    Int *offsetsB, //
-    Int *indsB, //
+    Int *offsetsB,
+    Int *indsB,
     Real *valuesB,
     const bool multithreadBCG
 ) {
 
-    baseData.setSparse(baseData.B, nnzB, offsetsB, indsB, valuesB, hand5[0]);
+    if (valuesB) baseData.setSparse(baseData.B, nnzB, offsetsB, indsB, valuesB, hand5[0]);
 
     RHS(true);
 

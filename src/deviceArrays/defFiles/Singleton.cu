@@ -86,6 +86,9 @@ const Singleton<T> Singleton<T>::ZERO = Singleton<T>::create(static_cast<T>(0));
 template <typename T>
 const Singleton<T> Singleton<T>::MINUS_ONE = Singleton<T>::create(static_cast<T>(-1));
 
+template <typename T>
+const Singleton<T> Singleton<T>::MINUS_TWO = Singleton<T>::create(static_cast<T>(-2));
+
 
 template class Singleton<int32_t>;
 template class Singleton<size_t>;

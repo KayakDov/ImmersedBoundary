@@ -85,8 +85,7 @@ void testPrimes() {
 
     double deltaT = 3.0/2.0;
 
-
-    printL<Real>(dim, hand);
+    // printL<Real>(dim, hand);
 
     std::vector<Int> rowOffsetsB(3);
     rowOffsetsB[0] = 0;
