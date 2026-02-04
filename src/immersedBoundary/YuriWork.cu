@@ -11,36 +11,126 @@
 #include "../solvers/EigenDecompSolver.h"
 #include "solvers/BiCGSTAB.cuh"
 
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <cstdint>
 
-// void benchmark(size_t maxSize) {
-//     for (size_t dim = 2; dim < maxSize; dim++) {
-//         size_t dim3 = dim * dim * dim;
-//         std::vector<size_t> rows;
-//         std::vector<size_t> cols;
-//         std::vector<double> vals;
-//         std::vector<double> f;
-//         std::vector<double> p;
-//
-//         for (size_t i = 0; i < dim3; i++ ) {
-//             rows.push_back(1);
-//             cols.push_back(1);
-//             vals.push_back(1);
-//             f.push_back(1);
-//             p.push_back(1);
-//         }
-//
-//         cols.push_back(1);
-//         std::unique_ptr<double[]> result(new double[dim3]);
-//
-//         cudaDeviceSynchronize();
-//         auto start = std::chrono::high_resolution_clock::now();
-//         solveImmersedBody(dim, dim, dim, dim3, dim3, cols.data(), rows.data(), vals.data(), f.data(), p.data(), result.get());
-//         auto end = std::chrono::high_resolution_clock::now();
-//         std::chrono::duration<double, std::milli> duration = end - start;
-//         std::cout << "Time: " << duration.count()  << std::endl;
-//
-//     }
-// }
+class LoadBHost {
+public:
+    std::vector<int32_t> bRows, bCols;
+    std::vector<double> bVals;
+
+    LoadBHost(std::string bPath = "../dataFromYuri/B.dat", size_t defSize = 40000) {
+        bRows.reserve(defSize);
+        bCols.reserve(defSize);
+        bVals.reserve(defSize);
+
+        std::ifstream bFile(bPath);
+
+        if (bFile.is_open()) {
+            int32_t r, c;
+            double v;
+            while (bFile >> r >> c >> v) {
+                bRows.push_back(r - 1);
+                bCols.push_back(c - 1);
+                bVals.push_back(v);
+            }
+            bFile.close();
+            std::cout << "Loaded B.dat: " << bRows.size() << " entries." << std::endl;
+        } else {
+            std::cerr << "Unable to open B.dat at " << bPath << std::endl;
+        }
+    }
+
+    size_t nnz() {
+        return bVals.size();
+    }
+};
+
+class LoadRHSHost {
+public:
+    std::vector<double> pHost;
+    std::vector<double> FHost;
+
+    LoadRHSHost(std::string rhsPath = "../dataFromYuri/rhs.dat", size_t defSizeP = 1000000, size_t defSizeF = 1300) {
+        std::ifstream rhsFile(rhsPath);
+        pHost.reserve(defSizeP);
+        FHost.reserve(defSizeF);
+
+        if (rhsFile.is_open()) {
+            int32_t idx;
+            double val;
+            while (pHost.size() < 1000000 && rhsFile >> idx >> val) pHost.push_back(val);
+            while (rhsFile >> idx >> val) FHost.push_back(val);
+
+            rhsFile.close();
+            std::cout << "Loaded rhs.dat: Total " << FHost.size() << " rows." << std::endl;
+            std::cout << "pHost size: " << pHost.size() << ", FHost size: " << FHost.size() << std::endl;
+        } else {
+            std::cerr << "Unable to open rhs.dat at " << rhsPath << std::endl;
+        }
+    }
+};
+
+template<typename Real>
+void loadYuriData() {
+
+    Handle hand;
+
+    size_t n = 1000000;
+
+    LoadBHost b;
+
+    auto cooB = SparseCOO<Real, int32_t>::create(b.bVals.size(), n, n, hand);
+    cooB.set(b.bRows.data(), b.bCols.data(), b.bVals.data(), hand);
+
+    auto offsets = SimpleArray<int32_t>::create(cooB.rows + 1, hand);
+    auto nnzAllocated = SimpleArray<int32_t>::create(b.nnz(), hand);
+    std::unique_ptr<SimpleArray<Real>> buffer = nullptr;
+
+    auto csrB = cooB.getCSR(offsets, nnzAllocated, buffer, hand);
+
+    std::vector<Real> bVals(csrB.values.size());
+    csrB.values.get(bVals.data(), hand);
+    std::vector<int32_t> bColInds(csrB.inds.size());
+    csrB.inds.get(bColInds.data(), hand);
+    std::vector<int32_t> bRowOffsets(csrB.offsets.size());
+    csrB.offsets.get(bRowOffsets.data(), hand);
+
+    LoadRHSHost rhs;
+
+    std::cout << "f size = " << rhs.FHost.size() << std::endl;
+
+    cudaDeviceSynchronize();
+
+    std::vector<Real> result(n);
+
+    GridDim dim(1000, 1000, 1);
+    Real3d delta(1.0/1000, 1.0/1000, 1.0/1000);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    ImmersedEq<Real, int32_t> imEq(dim, rhs.FHost.size(), b.nnz(), rhs.pHost.data(), rhs.FHost.data(), delta, 1, 1e-6, 100);
+    imEq.solve(result.data(), b.nnz(), bRowOffsets.data(), bColInds.data(), bVals.data(), true);
+
+    cudaDeviceSynchronize();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
+    std::cout << "Total Solver Time: " << duration.count() << " ms" << std::endl;
+
+    std::ofstream resFile("../dataFromYuri/result.dat");
+    if (resFile.is_open()) {
+        for (size_t i = 0; i < result.size(); ++i) {
+            resFile << i << " " << std::scientific << result[i] << "\n";
+        }
+        resFile.close();
+        std::cout << "Saved results to result.dat" << std::endl;
+    }
+
+}
+
+
 
 template<typename Real>
 void printL(const GridDim &dim, Handle &hand) {
@@ -228,38 +318,5 @@ int main(int argc, char *argv[]) {
     // smallTestWithoutFiles<double, int64_t>();
     // testPrimes<double, int32_t>();
 
-    // BCGBanded<double>::test();
-
-    // BCGDense<double>::test();
-
-    Handle hand;
-
-    auto coo = SparseCOO<double, int32_t>::create(4, 6, 6, hand);
-
-    std::vector<int32_t> rowsHost = {2,3,2,3};
-    std::vector<int32_t> colsHost = {2,2,3,3};
-    std::vector<double>  valsHost = {1,2,3,4};
-    coo.set(rowsHost.data(), colsHost.data(), valsHost.data(), hand);
-
-    auto dense = SquareMat<double>::create(6);
-    coo.getDense(dense, hand);
-    std::cout << GpuOut<double>(dense, hand) << std::endl;
-
-
-    auto permBuffer = SimpleArray<int32_t>::create(coo.nnz(), hand);
-
-
-    std::unique_ptr<SimpleArray<double>> buffer = nullptr;//std::make_unique<SimpleArray<double>>(SimpleArray<double>::create(1000, hand));
-
-    auto offsets = SimpleArray<int32_t>::create(coo.rows + 1, hand);
-    auto csr = coo.getCSR(offsets, permBuffer, buffer, hand);
-
-    std::cout << "csr offsets " << GpuOut<int32_t>(csr.offsets, hand) << std::endl;
-    std::cout << "csr row inds " << GpuOut<int32_t>(csr.inds, hand) << std::endl;
-    std::cout << "csr vals " << GpuOut<double>(csr.values, hand) << std::endl;
-    std::cout << "permutations  " << GpuOut<int32_t>(permBuffer, hand) << std::endl;
-
-
-    csr.getDense(dense, hand);
-    std::cout << GpuOut<double>(dense, hand) << std::endl;
+    loadYuriData<double>();
 }

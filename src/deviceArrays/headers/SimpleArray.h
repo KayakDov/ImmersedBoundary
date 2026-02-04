@@ -71,4 +71,6 @@ public:
 
 };
 
+
+
 #endif //CUDABANDED_GPUSIMPLEARRAY_H
