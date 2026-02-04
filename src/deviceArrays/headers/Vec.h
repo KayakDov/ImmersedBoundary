@@ -269,6 +269,25 @@ public:
     operator Mat<T>();
     operator Mat<T>() const;
 
+    /**
+     * @brief Initializes the vector with a sequence of its own indices.
+     * * Performs the operation: this[i] = i for all elements in the vector.
+     * Typically used to create an initial identity permutation before sorting.
+     * * @param hand CUDA handle for stream synchronization and execution.
+     */
+    void setValsToIndecies(Handle& hand);
+
+    /**
+     * @brief Reorders vector elements into a destination vector using a gather permutation.
+     * * Performs the operation: dst[i] = this[permutation[i]].
+     * * @tparam Int   Integer type used for indices (e.g., int, size_t).
+     * @param permutation A vector containing source indices (gather map).
+     * @param dst         Destination vector to store reordered elements.
+     * @param hand        CUDA handle for stream synchronization and execution.
+     */
+    template<class Int>
+    void permute(Vec<Int> permutation, Vec<T> dst, Handle &hand);
+
 };
 
 #endif //BICGSTAB_VEC_H

@@ -432,6 +432,32 @@ Vec<T> GpuArray<T>::diag(int32_t index) const {
     return (const_cast<GpuArray<T>*>(this))->diag(index);
 }
 
+template<typename T>
+__global__ void valsToIndsKernel(DeviceData1d<T> src) {
+    if (size_t idx = blockIdx.x * blockDim.x + threadIdx.x; idx < src.cols) src[idx] = idx;
+}
+
+template<typename T>
+void Vec<T>::setValsToIndecies(Handle& hand) {
+    KernelPrep kp = kernelPrep();
+    valsToIndsKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(this->toKernel1d());
+}
+
+template<typename Real, typename Int>
+__global__ void permuteKernel(DeviceData1d<Int> permutation, DeviceData1d<Real> src, DeviceData1d<Real> dst) {
+    if (size_t idx = blockIdx.x * blockDim.x + threadIdx.x; idx < src.cols)
+        dst[idx] = src[permutation[idx]];
+}
+
+template<typename T>
+template<typename Int>
+void Vec<T>::permute(Vec<Int> permutation, Vec<T> dst, Handle& hand) {
+    KernelPrep kp = kernelPrep();
+    permuteKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(permutation.toKernel1d(), this->toKernel1d(), dst.toKernel1d());
+}
+
+
+
 template class Vec<float>;
 template class Vec<double>;
 template class Vec<size_t>;
@@ -450,5 +476,8 @@ template Vec<uint32_t> GpuArray<uint32_t>::row(size_t) const;
 template Vec<int64_t> GpuArray<int64_t>::row(size_t) const;
 template Vec<int32_t> GpuArray<int32_t>::row(size_t) const;
 
-// template Vec<float> Vec<float>::create(size_t, size_t, float const*);
-// template Vec<double> Vec<double>::create(size_t, size_t, double const*);
+// Explicitly instantiate permute for the combinations used in getCSR
+template void Vec<int32_t>::permute<int32_t>(Vec<int32_t>, Vec<int32_t>, Handle&);
+template void Vec<double>::permute<int32_t>(Vec<int32_t>, Vec<double>, Handle&);
+template void Vec<float>::permute<int32_t>(Vec<int32_t>, Vec<float>, Handle&);
+template void Vec<int64_t>::permute<int32_t>(Vec<int32_t>, Vec<int64_t>, Handle&);

@@ -82,14 +82,14 @@ public:
         + dim.rows * dim.layers
         + dim.cols * dim.rows * (dim.layers > 1), nullptr); //TODO:move handles here and remove multiple nullptr streams
 
-    std::shared_ptr<SimpleArray<Real>> f = std::make_shared<SimpleArray<Real>>(lagrangeVecs.col(static_cast<size_t>(LagrangeInd::f)));
+    std::shared_ptr<SimpleArray<Real>> f = std::make_shared<SimpleArray<Real>>(lagrangeVecs.col(static_cast<size_t>(LagrangeInd::f)));//TODO:these should probably be deleted and the primes should be resolved with passing indecies to setRHS.
     std::shared_ptr<SimpleArray<Real>> p = std::make_shared<SimpleArray<Real>>(gridVecs.col(static_cast<size_t>(GridInd::p)));
     mutable SimpleArray<Real> result = gridVecs.col(static_cast<size_t>(GridInd::Result));
 
     //CSR, maps from Eularian where p lives space to Lagrangian space where f lives (f rows, p cols)
-    std::shared_ptr<SparseMat<Real, Int>> B = std::make_shared<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
+    std::shared_ptr<SparseMat<Real, Int>> B = std::make_shared<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));//TODO:these would probably be safer as unique pointers, since reasignment doesn't change every copy.
     //CSC, maps from Lagrangian space to the discretized vector field space R^3 -> R^3 (3p + rows, f cols)
-    std::shared_ptr<SparseMat<Real, Int>> R = std::make_shared<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
+    std::shared_ptr<SparseMat<Real, Int>> R = std::make_shared<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));//TODO:these would probably be safer as unique pointers, since reasignment doesn't change every copy.
 
     const Real3d delta;
 
@@ -143,7 +143,7 @@ class ImmersedEq {
 public:
     std::shared_ptr<Handle[]> hand5{new Handle[5]};
     BaseData<Real, Int> baseData;
-    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr;
+    mutable std::shared_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr;  //TODO:these would probably be safer as unique pointers, since reasignment doesn't change every copy.
     Event events11[11]{};
 private:
 

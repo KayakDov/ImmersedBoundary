@@ -60,6 +60,8 @@ public:
 
     /**
      * Creates a dense version of this matrix.
+     * This method creates a buffer, so it can be made more efficient, but since it'll probably only be used for
+     * debugging, I skipped that.
      * @param dest Where the dense matrix will be put.
      * @param h the handle.
      */

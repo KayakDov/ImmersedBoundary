@@ -6,6 +6,7 @@
 
 
 #include "FortranBindings.hpp"
+#include "SparseCOO.h"
 #include "ToeplitzLaplacian.cuh"
 #include "../solvers/EigenDecompSolver.h"
 #include "solvers/BiCGSTAB.cuh"
@@ -225,11 +226,40 @@ void smallTestWithoutFiles() {
 int main(int argc, char *argv[]) {
     // testOnFiles(GridDim(2000, 2000, 1));
     // smallTestWithoutFiles<double, int64_t>();
+    // testPrimes<double, int32_t>();
 
-    testPrimes<double, int32_t>();
     // BCGBanded<double>::test();
 
     // BCGDense<double>::test();
 
+    Handle hand;
 
+    auto coo = SparseCOO<double, int32_t>::create(4, 6, 6, hand);
+
+    std::vector<int32_t> rowsHost = {2,3,2,3};
+    std::vector<int32_t> colsHost = {2,2,3,3};
+    std::vector<double>  valsHost = {1,2,3,4};
+    coo.set(rowsHost.data(), colsHost.data(), valsHost.data(), hand);
+
+    auto dense = SquareMat<double>::create(6);
+    coo.getDense(dense, hand);
+    std::cout << GpuOut<double>(dense, hand) << std::endl;
+
+
+    auto permBuffer = SimpleArray<int32_t>::create(coo.nnz(), hand);
+
+
+    std::unique_ptr<SimpleArray<double>> buffer = nullptr;//std::make_unique<SimpleArray<double>>(SimpleArray<double>::create(1000, hand));
+
+    auto offsets = SimpleArray<int32_t>::create(coo.rows + 1, hand);
+    auto csr = coo.getCSR(offsets, permBuffer, buffer, hand);
+
+    std::cout << "csr offsets " << GpuOut<int32_t>(csr.offsets, hand) << std::endl;
+    std::cout << "csr row inds " << GpuOut<int32_t>(csr.inds, hand) << std::endl;
+    std::cout << "csr vals " << GpuOut<double>(csr.values, hand) << std::endl;
+    std::cout << "permutations  " << GpuOut<int32_t>(permBuffer, hand) << std::endl;
+
+
+    csr.getDense(dense, hand);
+    std::cout << GpuOut<double>(dense, hand) << std::endl;
 }
