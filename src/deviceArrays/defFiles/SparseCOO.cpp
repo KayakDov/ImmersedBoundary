@@ -2,9 +2,9 @@
 // Created by usr on 2/3/26.
 //
 
-#include "../headers/SparseCOO.h"
+#include "../headers/sparse/SparseCOO.h"
 
-#include "SparseCSR.h"
+#include "sparse/SparseCSR.h"
 
 // row pointers is offsets,
 // col pointers is inds
@@ -36,8 +36,8 @@ void SparseCOO<Real, Int>::setDescriptor() {
 }
 
 template<typename Real, typename Int>
-std::shared_ptr<SparseMat<Real, Int>> SparseCOO<Real, Int>::createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> rowPointers, SimpleArray<Int> colPointers) const {
-    return std::make_shared<SparseCOO<Real, Int>>(SparseCOO<Real, Int>::create(this->rows, this->cols, vals, rowPointers, colPointers));
+std::unique_ptr<SparseMat<Real, Int>> SparseCOO<Real, Int>::createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> rowPointers, SimpleArray<Int> colPointers) const {
+    return std::make_unique<SparseCOO<Real, Int>>(SparseCOO<Real, Int>::create(this->rows, this->cols, vals, rowPointers, colPointers));
 }
 
 

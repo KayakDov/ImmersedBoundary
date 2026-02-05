@@ -3,8 +3,8 @@
 #include <numeric>
 #include <algorithm>
 
-#include "GridDim.hpp"
-#include "SparseCSC.cuh"
+#include "../deviceArrays/headers/Support/GridDim.hpp"
+#include "../deviceArrays/headers/sparse/SparseCSC.cuh"
 #include "math/Real3d.h"
 
 /**

@@ -2,7 +2,7 @@
 // Created by usr on 1/28/26.
 //
 
-#include "../headers/SparseCSR.h"
+#include "../headers/sparse/SparseCSR.h"
 
 template<typename Real, typename Int>
 void SparseCSR<Real, Int>::setDescriptor() {
@@ -50,8 +50,8 @@ SparseCSR<Real, Int> SparseCSR<Real, Int>::create(size_t cols, SimpleArray<Real>
 }
 
 template<typename Real, typename Int>
-std::shared_ptr<SparseMat<Real, Int>> SparseCSR<Real, Int>::createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> offsets, SimpleArray<Int> inds) const {
-    return std::make_shared<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(this->cols, vals, offsets, inds));
+std::unique_ptr<SparseMat<Real, Int>> SparseCSR<Real, Int>::createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> offsets, SimpleArray<Int> inds) const {
+    return std::make_unique<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(this->cols, vals, offsets, inds));
 }
 
 template class SparseCSR<float, int32_t>;

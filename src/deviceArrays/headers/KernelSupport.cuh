@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "GridDim.hpp"
+#include "Support/GridDim.hpp"
 
 /**
  * @brief Helper class to map a row/column in a banded matrix to the corresponding element

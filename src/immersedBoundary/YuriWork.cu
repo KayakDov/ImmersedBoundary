@@ -1,12 +1,12 @@
 #include <iostream>
 #include <ostream>
 
-#include "Streamable.h"
+#include "../deviceArrays/headers/Support/Streamable.h"
 #include <vector>
 
 
 #include "FortranBindings.hpp"
-#include "SparseCOO.h"
+#include "../deviceArrays/headers/sparse/SparseCOO.h"
 #include "ToeplitzLaplacian.cuh"
 #include "../solvers/EigenDecompSolver.h"
 #include "solvers/BiCGSTAB.cuh"
@@ -66,7 +66,7 @@ public:
             while (rhsFile >> idx >> val) FHost.push_back(val);
 
             rhsFile.close();
-            std::cout << "Loaded rhs.dat: Total " << FHost.size() << " rows." << std::endl;
+            std::cout << "Loaded rhs.dat: Total " << FHost.size() + pHost.size() << " rows." << std::endl;
             std::cout << "pHost size: " << pHost.size() << ", FHost size: " << FHost.size() << std::endl;
         } else {
             std::cerr << "Unable to open rhs.dat at " << rhsPath << std::endl;
@@ -201,7 +201,11 @@ void testPrimes() {
     ImmersedEq<Real, Int> imEq(dim, f.size(), valsR.size(), p.data(), f.data(), delta, deltaT, 1e-6, 1000);
     // initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
 
-    // imEq.solve(resultP, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data(), true);
+    imEq.solve(resultP, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data(), true);
+    std::cout << "resultP = ";
+    for(auto & i : resultP) std::cout << i << " ";
+    std:: cout << "\nexpected: -7.483126, -8.359545, -2.292128, -2.606740, -2.943816, -0.808988" << std::endl;
+
     imEq.solve(resultP, resultF, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data(), valsR.size(), colOffsetsR.data(), rowIndsR.data(), valsR.data(), UGamma.data(), uStar.data(), true);
     // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
 
@@ -236,10 +240,7 @@ void smallTestWithoutFiles() {
     GridDim dim(3, 2, 1);
     Real3d delta(1, 1, 1);
 
-    Handle hand;
-
     constexpr size_t size = 6;
-
 
     // printL<Real>(dim, hand);
 
@@ -314,9 +315,9 @@ void smallTestWithoutFiles() {
 
 
 int main(int argc, char *argv[]) {
-    // testOnFiles(GridDim(2000, 2000, 1));
+
     // smallTestWithoutFiles<double, int64_t>();
-    // testPrimes<double, int32_t>();
+    testPrimes<double, int32_t>();
 
     loadYuriData<double>();
 }

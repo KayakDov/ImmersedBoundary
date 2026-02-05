@@ -35,7 +35,7 @@ public:
      * A tool for creating vectors from within larger matrices.
      *
      */
-    __device__ DeviceData1d(size_t size, DeviceData3d<T> &src, GridInd3d &ind0, size_t dRow, size_t dCol, size_t dLayer);
+    __device__  DeviceData1d(size_t size, DeviceData3d<T> &src, GridInd3d &ind0, size_t dRow, size_t dCol, size_t dLayer);
 
     /**
      * @brief Provides 1D array access to the data using the logical flat index.

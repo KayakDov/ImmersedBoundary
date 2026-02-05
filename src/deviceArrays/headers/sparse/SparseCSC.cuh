@@ -3,9 +3,9 @@
 #define CUDABANDED_SPARSE_CUH
 #include <vector>
 
-#include "SimpleArray.h"
+#include "../SimpleArray.h"
 #include "SparseCSR.h"
-#include "Streamable.h"
+#include "../Support/Streamable.h"
 
 //TODO:Check to see if SELL format would be a better fit.
 
@@ -27,7 +27,7 @@ public:
 
     static SparseCSC create(size_t rows, SimpleArray<Real> values, SimpleArray<Int> colOffsets, SimpleArray<Int> rowInds);
 
-    std::shared_ptr<SparseMat<Real, Int>> createWithPointer(SimpleArray<Real> vals,
+    std::unique_ptr<SparseMat<Real, Int>> createWithPointer(SimpleArray<Real> vals,
         SimpleArray<Int> offsets, SimpleArray<Int> inds) const override;
 };
 /**

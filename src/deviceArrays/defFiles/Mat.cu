@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "../headers/GridDim.hpp"
+#include "../headers/Support/GridDim.hpp"
 
 template <typename T>
 Mat<T> Mat<T>::mult(

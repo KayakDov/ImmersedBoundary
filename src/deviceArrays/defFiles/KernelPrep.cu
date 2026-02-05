@@ -1,4 +1,4 @@
-#include "deviceArrays/headers/KernelPrep.cuh"
+#include "../headers/Support/KernelPrep.cuh"
 
 /**
  * @brief Adjusts a block dimension to ensure the corresponding grid dimension fits within

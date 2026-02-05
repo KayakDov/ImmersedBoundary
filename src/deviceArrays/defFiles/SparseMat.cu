@@ -1,4 +1,4 @@
-#include "deviceArrays/headers/SparseMat.h"
+#include "../headers/sparse/SparseMat.h"
 
 cusparseOperation_t cuTranspose(bool trans) {
     return trans? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE;
@@ -54,9 +54,9 @@ void SparseMat<Real, Int>::getDense(Mat<Real>& dest, Handle& h) const {
 
 template<typename Real, typename Int>
 void SparseMat<Real, Int>::set(Int *offsets, Int *inds, Real *vals, Handle &hand) {
-    this->offsets.set(offsets, hand);
-    this->inds.set(inds, hand);
-    this->values.set(vals, hand);
+    if (offsets) this->offsets.set(offsets, hand);
+    if (inds) this->inds.set(inds, hand);
+    if (vals) this->values.set(vals, hand);
 
 }
 

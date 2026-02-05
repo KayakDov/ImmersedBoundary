@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../headers/BandedMat.h"
+#include "../headers/sparse/BandedMat.h"
 #include "../headers/KernelSupport.cuh"
 #include "../headers/Singleton.h"
 #include "../headers/SquareMat.h"

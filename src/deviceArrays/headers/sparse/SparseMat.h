@@ -4,7 +4,7 @@
 #include <cusparse.h>
 #include <memory>
 
-#include "SimpleArray.h"
+#include "../SimpleArray.h"
 
 using SpMatDescrPtr = std::shared_ptr<std::remove_pointer<cusparseSpMatDescr_t>::type>;
 
@@ -69,7 +69,7 @@ public:
 
     void set(Int* offsets, Int* inds, Real* vals, Handle& hand);
 
-    virtual std::shared_ptr<SparseMat<Real, Int>> createWithPointer(
+    virtual std::unique_ptr<SparseMat<Real, Int>> createWithPointer(
         SimpleArray<Real> vals,
         SimpleArray<Int> offsets,
         SimpleArray<Int> inds

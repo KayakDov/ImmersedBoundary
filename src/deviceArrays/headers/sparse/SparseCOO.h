@@ -19,15 +19,12 @@ protected:
     void setDescriptor() override;
 
 public:
-    std::shared_ptr<SparseMat<Real, Int>> createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> rowPointers,
+    std::unique_ptr<SparseMat<Real, Int>> createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> rowPointers,
         SimpleArray<Int> colPointers) const override;
 
     static SparseCOO create(size_t nnz, size_t rows, size_t cols, cudaStream_t stream);
 
     static SparseCOO create(size_t rows, size_t cols, SimpleArray<Real> values, SimpleArray<Int> rowPointers, SimpleArray<Int> colPointers);
-
-
-
 
 
     /**

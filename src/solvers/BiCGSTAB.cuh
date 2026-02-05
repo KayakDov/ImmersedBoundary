@@ -1,7 +1,7 @@
 #ifndef BICGSTAB_H
 #define BICGSTAB_H
 
-#include "deviceArrays/headers/BandedMat.h"
+#include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
 
 #include "solvers/Event.h"
@@ -10,7 +10,7 @@
 #include <array>
 #include <functional> // For std::reference_wrapper
 
-#include "deviceArrays/headers/Streamable.h"
+#include "../deviceArrays/headers/Support/Streamable.h"
 
 // Forward declaration of required types (assuming they are defined elsewhere)
 template<typename T> class DeviceData1d;

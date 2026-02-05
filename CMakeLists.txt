@@ -42,12 +42,12 @@ set(SHROUD_CPP
         shroud_project/wrapFortranBindings.cpp
         shroud_project/utilFortranBindings.cpp
         shroud_project/wrapffortranbindings.f90
-        src/deviceArrays/headers/SparseMat.h
+        src/deviceArrays/headers/sparse/SparseMat.h
         src/deviceArrays/defFiles/SparseMat.cu
         src/deviceArrays/defFiles/SparseCSR.cpp
-        src/deviceArrays/headers/SparseCSR.h
+        src/deviceArrays/headers/sparse/SparseCSR.h
         src/deviceArrays/defFiles/SparseCOO.cpp
-        src/deviceArrays/headers/SparseCOO.h
+        src/deviceArrays/headers/sparse/SparseCOO.h
 )
 
 # =========================

@@ -126,7 +126,7 @@ This routine executes the coupled solver, returning results for both the grid do
 >
 > **Note on `uStar`:** The input velocity field $u^*$ must be defined on a staggered grid matching the solver's internal discretization.
 >
-> **Optimization (Reusing B):** If the boundary geometry has not changed since the last call, you may pass `C_NULL_PTR` for `offsetsB`, `indsB`, and `valuesB` to skip redundant GPU memory transfers.
+> **Optimization (Reusing B and R):** If any of the arrays in B or R have not changed, pass `C_NULL_PTR` for `offsetsB`, `indsB`, or `valuesB` to skip redundant GPU memory transfers.
 
 ## 5. Compiling & Linking
 

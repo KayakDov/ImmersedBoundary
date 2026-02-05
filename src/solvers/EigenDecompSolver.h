@@ -5,7 +5,7 @@
 #include "deviceArrays/headers/SquareMat.h"
 #include "deviceArrays/headers/Vec.h"
 #include "../poisson/PoissonRHS.h"
-#include "deviceArrays/headers/Streamable.h"
+#include "../deviceArrays/headers/Support/Streamable.h"
 
 #include <cstddef>
 #include <vector>

@@ -20,7 +20,7 @@ public:
 
     static SparseCSR create(size_t cols, SimpleArray<Real> values, SimpleArray<Int> rowOffsets, SimpleArray<Int> colInds);
 
-    std::shared_ptr<SparseMat<Real, Int>> createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> offsets, SimpleArray<Int> inds) const override;
+    std::unique_ptr<SparseMat<Real, Int>> createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> offsets, SimpleArray<Int> inds) const override;
 };
 
 

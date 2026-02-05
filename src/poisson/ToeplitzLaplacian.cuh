@@ -3,7 +3,7 @@
 #define CUDABANDED_POISSONLHS_H
 #include <array>
 
-#include "BandedMat.h"
+#include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "math/Real3d.h"
 #include "SimpleArray.h"
 

@@ -7,8 +7,8 @@
 #include "../headers/deviceArraySupport.h"
 #include "../headers/Singleton.h"
 #include "../headers/Vec.h"
-#include "../headers/BandedMat.h"
-#include "../headers/GridDim.hpp"
+#include "../headers/sparse/BandedMat.h"
+#include "../headers/Support/GridDim.hpp"
 
 
 template<typename T>

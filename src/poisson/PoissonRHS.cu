@@ -4,8 +4,8 @@
 #include <iostream>
 #include <optional>
 
-#include "../deviceArrays/headers/GridDim.hpp"
-#include "deviceArrays/headers/Streamable.h"
+#include "../deviceArrays/headers/Support/GridDim.hpp"
+#include "../deviceArrays/headers/Support/Streamable.h"
 
 
 template <typename T>

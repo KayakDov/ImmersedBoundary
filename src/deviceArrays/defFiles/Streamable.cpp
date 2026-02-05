@@ -1,4 +1,4 @@
-#include "deviceArrays/headers/Streamable.h"
+#include "../headers/Support/Streamable.h"
 
 #include "../headers/Tensor.h"
 #include <vector>

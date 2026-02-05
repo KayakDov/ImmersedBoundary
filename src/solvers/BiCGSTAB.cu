@@ -1,6 +1,6 @@
 #include "solvers/BiCGSTAB.cuh"
 
-#include "deviceArrays/headers/Streamable.h"
+#include "../deviceArrays/headers/Support/Streamable.h"
 
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
