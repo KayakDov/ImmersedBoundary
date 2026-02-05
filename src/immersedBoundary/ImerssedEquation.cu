@@ -10,7 +10,7 @@ template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::checkNNZB(size_t nnzB) const {
     if (nnzB > maxSparseVals.size()) {
         throw std::invalid_argument(
-            "ImmersedEq::setB - NNZ Overflow: Requested nnzB (" + std::to_string(nnzB) +
+            "ImmersedEq::setSparse - NNZ Overflow: Requested nnzB (" + std::to_string(nnzB) +
             ") exceeds maxB capacity (" + std::to_string(maxSparseVals.size()) + ")."
         );
     }

@@ -207,17 +207,16 @@ void testPrimes() {
     std:: cout << "\nexpected: -7.483126, -8.359545, -2.292128, -2.606740, -2.943816, -0.808988" << std::endl;
 
     imEq.solve(resultP, resultF, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data(), valsR.size(), colOffsetsR.data(), rowIndsR.data(), valsR.data(), UGamma.data(), uStar.data(), true);
-    // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
+    std::cout << "resultP = ";
+    for(auto & i : resultP) std::cout << i << " ";
+    std::cout << "\nexpected 7.61797, 10.1498, 2.955056, 3.08614, 3.72659, 1.67041" << std::endl;// solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
 
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
     std::cout << "Total Solver Time: " << duration.count() << " ms" << std::endl;
 
-    std::cout << "resultP = ";
-    for(auto & i : resultP) std::cout << i << " ";
 
-    std::cout << "\nexpected 7.61797, 10.1498, 2.955056, 3.08614, 3.72659, 1.67041" << std::endl;
 
     std::cout << "resultF = ";
     for(auto & i : resultF) std::cout << i << " ";
