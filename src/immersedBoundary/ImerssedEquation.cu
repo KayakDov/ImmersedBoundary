@@ -50,20 +50,22 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(
     const GridDim &dim,
     SimpleArray<Real> sizeOfP,
     Handle *hand,
-    Real3d delta = Real3d(1, 1, 1))
-{
+    Real3d delta,
+    Event* event
+) {
     auto maxDimX2Or3 = Mat<Real>::create(dim.maxDim(), dim.numDims());
     auto rowsXrows = SquareMat<Real>::create(dim.rows);
     auto colsXcols = dim.cols != dim.rows ? SquareMat<Real>::create(dim.cols) : rowsXrows;
 
     if (dim.numDims() == 3) {
         //(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3, SimpleArray<T>& sizeOfB, Handle* hand3, Real3d delta = Real3d(1, 1, 1));
-        auto layersXLayers = dim.layers != dim.rows ? SquareMat<Real>::create(dim.layers) : rowsXrows;
-        return std::make_shared<EigenDecompSolver3d<Real>>(rowsXrows, colsXcols, layersXLayers, maxDimX2Or3, sizeOfP, hand, delta);
-    } else {
-        return std::make_shared<EigenDecompSolver2d<Real>>(rowsXrows, colsXcols, maxDimX2Or3, sizeOfP, hand,
-                                             Real2d(delta.x, delta.y));
+        auto layersXLayers = dim.layers == dim.rows ?  rowsXrows :
+            (dim.layers == dim.cols ? colsXcols : SquareMat<Real>::create(dim.layers));
+        return std::make_shared<EigenDecompSolver3d<Real>>(rowsXrows, colsXcols, layersXLayers, maxDimX2Or3, sizeOfP, hand, delta, event);
     }
+
+    return std::make_shared<EigenDecompSolver2d<Real>>(rowsXrows, colsXcols, maxDimX2Or3, sizeOfP, hand, Real2d(delta.x, delta.y), event[0]);
+
 }
 
 template<typename Real, typename Int>//TODO: chnage this so it can mult B or R.

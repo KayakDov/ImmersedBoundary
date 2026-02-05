@@ -111,7 +111,7 @@ void loadYuriData() {
     Real3d delta(1.0/1000, 1.0/1000, 1.0/1000);
 
     auto start = std::chrono::high_resolution_clock::now();
-    ImmersedEq<Real, int32_t> imEq(dim, rhs.FHost.size(), b.nnz(), rhs.pHost.data(), rhs.FHost.data(), delta, 1, 1e-6, 100);
+    ImmersedEq<Real, int32_t> imEq(dim, rhs.FHost.size(), b.nnz(), rhs.pHost.data(), rhs.FHost.data(), delta, 1, 1e-18, 100);
     imEq.solve(result.data(), b.nnz(), bRowOffsets.data(), bColInds.data(), bVals.data(), true);
 
     cudaDeviceSynchronize();

@@ -148,31 +148,44 @@ EigenDecompSolver<T>::EigenDecompSolver(std::vector<SquareMat<T> > eMats,
 
 template<typename T>
 EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2,
-                                            SimpleArray<T> &sizeOfB, Handle* hand2, const Real2d delta)
+                                            SimpleArray<T> &sizeOfB, Handle* hand2, const Real2d delta, Event& event)
     : EigenDecompSolver<T>({colsXCols, rowsXRows}, maxDimX2, sizeOfB) {
-    Event doneEigen;
     this->eigenL(1, delta.y, hand2[1]);
-    doneEigen.record(hand2[1]);
-    this->eigenL(0, delta.x, hand2[0]);
-    doneEigen.hold(hand2[0]);
+    event.record(hand2[1]);
+    if (colsXCols.ptr() != rowsXRows.ptr()){
+        this->eigenL(0, delta.x, hand2[0]);
+        event.hold(hand2[0]);
+    }
 }
 
 template<typename T>
-EigenDecompSolver3d<T>::EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols,
-                                            SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3, SimpleArray<T> &sizeOfB,
-                                            Handle* hand3, Real3d delta) : EigenDecompSolver<T>(
-    {colsXCols, rowsXRows, depthsXDepths}, maxDimX3, sizeOfB) {
-    Event doneEigen[2]{};
+EigenDecompSolver3d<T>::EigenDecompSolver3d(
+    SquareMat<T> &rowsXRows,
+    SquareMat<T> &colsXCols,
+    SquareMat<T> &depthsXDepths,
+    Mat<T> &maxDimX3,
+    SimpleArray<T> &sizeOfB,
+    Handle* hand3,
+    Real3d delta,
+    Event* event
+) :
+    EigenDecompSolver<T>({colsXCols, rowsXRows, depthsXDepths}, maxDimX3, sizeOfB) {
+
 
     this->eigenL(0, delta.x, hand3[1]);
-    doneEigen[0].record(hand3[1]);
+    event[0].record(hand3[1]);
 
-    this->eigenL(1, delta.y, hand3[2]);
-    doneEigen[1].record(hand3[2]);
+    if (rowsXRows.ptr() != colsXCols.ptr()) {
+        this->eigenL(1, delta.y, hand3[2]);
+        event[1].record(hand3[2]);
+        event[1].hold(hand3[0]);
+    }
 
-    this->eigenL(2, delta.z, hand3[0]);
-    doneEigen[0].hold(hand3[0]);
-    doneEigen[1].hold(hand3[0]);
+    if (depthsXDepths.ptr() != colsXCols.ptr() && depthsXDepths.ptr() != rowsXRows.ptr()) {
+        this->eigenL(2, delta.z, hand3[0]);
+        event[0].hold(hand3[0]);
+    }
+
 }
 
 //TODO: make sure this class is efficiently reuing memory if rowsXrows = colsXcols or the like.

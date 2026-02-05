@@ -97,10 +97,8 @@ private:
     Real tolerance;
     size_t maxIterations;
     Event lhsTimes;
-
     SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(p->size(), hand5[0]);
-
-    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(dim, gridVec(GridInd::EDS), &hand5[0], delta);
+    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(dim, gridVec(GridInd::EDS), &hand5[0], delta, events11);
 
 
     /**
