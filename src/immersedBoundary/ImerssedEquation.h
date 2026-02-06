@@ -46,7 +46,6 @@ template <typename Real, typename Int> class ImmersedEqSolver;
 template <typename Real, typename Int>
 class ImmersedEq {
 
-public:
     std::shared_ptr<Handle[]> hand5{new Handle[5]};
     mutable std::unique_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr;
     Event events11[11]{};
@@ -87,7 +86,7 @@ public:
 
     void divergence(SimpleArray<Real> result, SimpleArray<Real> u, SimpleArray<Real> v, SimpleArray<Real> w,
                     Singleton<Real> scalar, Handle &hand);
-private:
+
     void checkNNZB(size_t nnzB) const;
     friend ImmersedEqSolver<Real, Int>;
 
@@ -121,11 +120,29 @@ private:
      */
     SimpleArray<Real> solve(size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool prime);
 
-public:
     void multSparse(const std::unique_ptr<SparseMat<Real, Int>> &mat, const SimpleArray<Real> &vec, SimpleArray<Real> &result, const
                     Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
 
     ImmersedEq(SimpleArray<Int> maxSparseInds, SimpleArray<Int> maxSparseOffsets, const GridDim &dim, const Real3d &delta, Singleton<Real> dT, double tolerance, size_t maxBCGIterations);
+
+
+    /**
+     * This method creates the LHS matrix.  For large matrices this may be inefficient.
+     * It's really just meant for debugging purposes.
+     * @param hand
+     * @return
+     */
+    SquareMat<Real> LHSMat();
+
+    /**
+     * Generates the RHS value from the base data.
+     * @return The right hand side of the equation.
+     */
+    void setRHS(bool prime);
+
+
+    SimpleArray<Real> solve();
+public:
 
     ImmersedEq(
         const GridDim &dim,
@@ -138,24 +155,6 @@ public:
         double tolerance,
         size_t maxBCGIterations
     );
-
-    /**
-     * This method creates the LHS matrix.  For large matrices this may be inefficient.
-     * It's really just meant for debugging purposes.
-     * @param hand
-     * @return
-     */
-    SquareMat<Real> LHSMat();
-
-
-
-    /**
-     * Generates the RHS value from the base data.
-     * @return The right hand side of the equation.
-     */
-    void setRHS(bool prime);
-
-    SimpleArray<Real> solve();
 
     /**
      *
