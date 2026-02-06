@@ -15,7 +15,6 @@
 #else
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
 #endif
 #include "typesFortranBindings.h"
 
@@ -50,44 +49,40 @@ void FOR_initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth,
     double tolerance, size_t maxBCGIterations);
 
 void FOR_solveImmersedEq_d_i32(double *result, size_t nnzB,
-    int32_t *rowOffsetsB, int32_t *colIndsB, double *valuesB,
-    bool multiStream);
+    int32_t *rowOffsetsB, int32_t *colIndsB, double *valuesB);
 
 void FOR_solveImmersedEq_s_i32(float *result, size_t nnzB,
-    int32_t *rowOffsetsB, int32_t *colIndsB, float *valuesB,
-    bool multiStream);
+    int32_t *rowOffsetsB, int32_t *colIndsB, float *valuesB);
 
 void FOR_solveImmersedEq_d_i64(double *result, size_t nnzB,
-    int64_t *rowOffsetsB, int64_t *colIndsB, double *valuesB,
-    bool multiStream);
+    int64_t *rowOffsetsB, int64_t *colIndsB, double *valuesB);
 
 void FOR_solveImmersedEq_s_i64(float *result, size_t nnzB,
-    int64_t *rowOffsetsB, int64_t *colIndsB, float *valuesB,
-    bool multiStream);
+    int64_t *rowOffsetsB, int64_t *colIndsB, float *valuesB);
 
 void FOR_solveImmersedEqPrimes_d_i32(double *resultPPrime,
     double *resultFPrime, size_t nnzB, int32_t *rowOffsetsB,
     int32_t *colIndsB, double *valuesB, size_t nnzR,
     int32_t *colOffsetsR, int32_t *rowIndsR, double *valuesR,
-    double *UGamma, double *uStar, bool multiStream);
+    double *UGamma, double *uStar);
 
 void FOR_solveImmersedEqPrimes_s_i32(float *resultPPrime,
     float *resultFPrime, size_t nnzB, int32_t *rowOffsetsB,
     int32_t *colIndsB, float *valuesB, size_t nnzR,
     int32_t *colOffsetsR, int32_t *rowIndsR, float *valuesR,
-    float *UGamma, float *uStar, bool multiStream);
+    float *UGamma, float *uStar);
 
 void FOR_solveImmersedEqPrimes_d_i64(double *resultPPrime,
     double *resultFPrime, size_t nnzB, int64_t *rowOffsetsB,
     int64_t *colIndsB, double *valuesB, size_t nnzR,
     int64_t *colOffsetsR, int64_t *rowIndsR, double *valuesR,
-    double *UGamma, double *uStar, bool multiStream);
+    double *UGamma, double *uStar);
 
 void FOR_solveImmersedEqPrimes_s_i64(float *resultPPrime,
     float *resultFPrime, size_t nnzB, int64_t *rowOffsetsB,
     int64_t *colIndsB, float *valuesB, size_t nnzR,
     int64_t *colOffsetsR, int64_t *rowIndsR, float *valuesR,
-    float *UGamma, float *uStar, bool multiStream);
+    float *UGamma, float *uStar);
 
 #ifdef __cplusplus
 }

@@ -5256,16 +5256,6 @@
                                     "double"
                                 ],
                                 "typemap_name": "double"
-                            },
-                            {
-                                "declarator": {
-                                    "name": "multiStream",
-                                    "typemap_name": "bool"
-                                },
-                                "specifier": [
-                                    "bool"
-                                ],
-                                "typemap_name": "bool"
                             }
                         ],
                         "typemap_name": "void"
@@ -5275,8 +5265,8 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEq_d_i32(\n    double* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int32_t* rowOffsetsB +intent(in) +rank(1),          \n    int32_t* colIndsB +intent(in) +rank(1),          \n    double* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n",
-                "declgen": "void solveImmersedEq_d_i32(double *result +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), bool multiStream)",
+                "decl": "void solveImmersedEq_d_i32(\n    double* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int32_t* rowOffsetsB +intent(in) +rank(1),          \n    int32_t* colIndsB +intent(in) +rank(1),          \n    double* valuesB +intent(in) +rank(1)\n)\n",
+                "declgen": "void solveImmersedEq_d_i32(double *result +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1))",
                 "linenumber": 79,
                 "name": "solveImmersedEq_d_i32",
                 "options": {},
@@ -5288,10 +5278,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_d_i32(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_d_i32(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB)",
+                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "C_name": "FOR_solveImmersedEq_d_i32",
-                                "C_prototype": "double *result,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t double *valuesB,\t bool multiStream",
+                                "C_prototype": "double *result,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t double *valuesB",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_d_i32",
                                 "stmt_name": "c_subroutine",
@@ -5332,37 +5322,6 @@
                                 "rank": 1
                             },
                             "stmt": "c_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -5489,17 +5448,17 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_d_i32(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_d_i32(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB)",
+                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "C_name": "FOR_solveImmersedEq_d_i32",
-                                "C_prototype": "double *result,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t double *valuesB,\t bool multiStream",
+                                "C_prototype": "double *result,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t double *valuesB",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t SHT_multiStream_cxx",
-                                "F_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "F_arg_c_call": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
+                                "F_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_d_i32",
-                                "i_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
-                                "i_name_function": "c_solve_immersed_eq_d_i32",
+                                "i_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
+                                "i_name_function": "solve_immersed_eq_d_i32",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
                                 "typemap_name": "void"
@@ -5553,45 +5512,6 @@
                                 "rank": 1
                             },
                             "stmt": "f_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_type": "logical",
-                                "f_value_attr": ", value",
-                                "f_var": "multiStream",
-                                "f_var_cxx": "SHT_multiStream_cxx",
-                                "fc_var": "multiStream",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_BOOL",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "logical(C_BOOL)",
-                                "i_var": "multiStream",
-                                "idtor": "0",
-                                "stmt_name": "f_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -5780,13 +5700,6 @@
                                 "rank": 1
                             }
                         },
-                        "multiStream": {
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "nnzB": {
                             "meta": {
                                 "abstract": "native",
@@ -5829,8 +5742,7 @@
                         "nnzB",
                         "rowOffsetsB",
                         "colIndsB",
-                        "valuesB",
-                        "multiStream"
+                        "valuesB"
                     ],
                     "f_arglist": [
                         "f_var",
@@ -5838,8 +5750,7 @@
                         "nnzB",
                         "rowOffsetsB",
                         "colIndsB",
-                        "valuesB",
-                        "multiStream"
+                        "valuesB"
                     ],
                     "function_name": "solveImmersedEq_d_i32"
                 }
@@ -5935,16 +5846,6 @@
                                     "float"
                                 ],
                                 "typemap_name": "float"
-                            },
-                            {
-                                "declarator": {
-                                    "name": "multiStream",
-                                    "typemap_name": "bool"
-                                },
-                                "specifier": [
-                                    "bool"
-                                ],
-                                "typemap_name": "bool"
                             }
                         ],
                         "typemap_name": "void"
@@ -5954,9 +5855,9 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEq_s_i32(\n    float* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int32_t* rowOffsetsB +intent(in) +rank(1),          \n    int32_t* colIndsB +intent(in) +rank(1),          \n    float* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n",
-                "declgen": "void solveImmersedEq_s_i32(float *result +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), bool multiStream)",
-                "linenumber": 89,
+                "decl": "void solveImmersedEq_s_i32(\n    float* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int32_t* rowOffsetsB +intent(in) +rank(1),          \n    int32_t* colIndsB +intent(in) +rank(1),          \n    float* valuesB +intent(in) +rank(1)\n)\n",
+                "declgen": "void solveImmersedEq_s_i32(float *result +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1))",
+                "linenumber": 88,
                 "name": "solveImmersedEq_s_i32",
                 "options": {},
                 "wrap": {
@@ -5967,10 +5868,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_s_i32(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_s_i32(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB)",
+                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "C_name": "FOR_solveImmersedEq_s_i32",
-                                "C_prototype": "float *result,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t float *valuesB,\t bool multiStream",
+                                "C_prototype": "float *result,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t float *valuesB",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_s_i32",
                                 "stmt_name": "c_subroutine",
@@ -6011,37 +5912,6 @@
                                 "rank": 1
                             },
                             "stmt": "c_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -6168,17 +6038,17 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_s_i32(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_s_i32(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB)",
+                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "C_name": "FOR_solveImmersedEq_s_i32",
-                                "C_prototype": "float *result,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t float *valuesB,\t bool multiStream",
+                                "C_prototype": "float *result,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t float *valuesB",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t SHT_multiStream_cxx",
-                                "F_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "F_arg_c_call": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
+                                "F_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_s_i32",
-                                "i_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
-                                "i_name_function": "c_solve_immersed_eq_s_i32",
+                                "i_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
+                                "i_name_function": "solve_immersed_eq_s_i32",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
                                 "typemap_name": "void"
@@ -6232,45 +6102,6 @@
                                 "rank": 1
                             },
                             "stmt": "f_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_type": "logical",
-                                "f_value_attr": ", value",
-                                "f_var": "multiStream",
-                                "f_var_cxx": "SHT_multiStream_cxx",
-                                "fc_var": "multiStream",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_BOOL",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "logical(C_BOOL)",
-                                "i_var": "multiStream",
-                                "idtor": "0",
-                                "stmt_name": "f_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -6459,13 +6290,6 @@
                                 "rank": 1
                             }
                         },
-                        "multiStream": {
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "nnzB": {
                             "meta": {
                                 "abstract": "native",
@@ -6508,8 +6332,7 @@
                         "nnzB",
                         "rowOffsetsB",
                         "colIndsB",
-                        "valuesB",
-                        "multiStream"
+                        "valuesB"
                     ],
                     "f_arglist": [
                         "f_var",
@@ -6517,8 +6340,7 @@
                         "nnzB",
                         "rowOffsetsB",
                         "colIndsB",
-                        "valuesB",
-                        "multiStream"
+                        "valuesB"
                     ],
                     "function_name": "solveImmersedEq_s_i32"
                 }
@@ -6614,16 +6436,6 @@
                                     "double"
                                 ],
                                 "typemap_name": "double"
-                            },
-                            {
-                                "declarator": {
-                                    "name": "multiStream",
-                                    "typemap_name": "bool"
-                                },
-                                "specifier": [
-                                    "bool"
-                                ],
-                                "typemap_name": "bool"
                             }
                         ],
                         "typemap_name": "void"
@@ -6633,9 +6445,9 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEq_d_i64(\n    double* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int64_t* rowOffsetsB +intent(in) +rank(1),          \n    int64_t* colIndsB +intent(in) +rank(1),          \n    double* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n",
-                "declgen": "void solveImmersedEq_d_i64(double *result +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), bool multiStream)",
-                "linenumber": 99,
+                "decl": "void solveImmersedEq_d_i64(\n    double* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int64_t* rowOffsetsB +intent(in) +rank(1),          \n    int64_t* colIndsB +intent(in) +rank(1),          \n    double* valuesB +intent(in) +rank(1)\n)\n",
+                "declgen": "void solveImmersedEq_d_i64(double *result +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1))",
+                "linenumber": 97,
                 "name": "solveImmersedEq_d_i64",
                 "options": {},
                 "wrap": {
@@ -6646,10 +6458,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_d_i64(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_d_i64(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB)",
+                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "C_name": "FOR_solveImmersedEq_d_i64",
-                                "C_prototype": "double *result,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t double *valuesB,\t bool multiStream",
+                                "C_prototype": "double *result,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t double *valuesB",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_d_i64",
                                 "stmt_name": "c_subroutine",
@@ -6690,37 +6502,6 @@
                                 "rank": 1
                             },
                             "stmt": "c_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -6847,17 +6628,17 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_d_i64(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_d_i64(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB)",
+                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "C_name": "FOR_solveImmersedEq_d_i64",
-                                "C_prototype": "double *result,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t double *valuesB,\t bool multiStream",
+                                "C_prototype": "double *result,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t double *valuesB",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t SHT_multiStream_cxx",
-                                "F_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "F_arg_c_call": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
+                                "F_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_d_i64",
-                                "i_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
-                                "i_name_function": "c_solve_immersed_eq_d_i64",
+                                "i_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
+                                "i_name_function": "solve_immersed_eq_d_i64",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
                                 "typemap_name": "void"
@@ -6911,45 +6692,6 @@
                                 "rank": 1
                             },
                             "stmt": "f_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_type": "logical",
-                                "f_value_attr": ", value",
-                                "f_var": "multiStream",
-                                "f_var_cxx": "SHT_multiStream_cxx",
-                                "fc_var": "multiStream",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_BOOL",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "logical(C_BOOL)",
-                                "i_var": "multiStream",
-                                "idtor": "0",
-                                "stmt_name": "f_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -7138,13 +6880,6 @@
                                 "rank": 1
                             }
                         },
-                        "multiStream": {
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "nnzB": {
                             "meta": {
                                 "abstract": "native",
@@ -7187,8 +6922,7 @@
                         "nnzB",
                         "rowOffsetsB",
                         "colIndsB",
-                        "valuesB",
-                        "multiStream"
+                        "valuesB"
                     ],
                     "f_arglist": [
                         "f_var",
@@ -7196,8 +6930,7 @@
                         "nnzB",
                         "rowOffsetsB",
                         "colIndsB",
-                        "valuesB",
-                        "multiStream"
+                        "valuesB"
                     ],
                     "function_name": "solveImmersedEq_d_i64"
                 }
@@ -7293,16 +7026,6 @@
                                     "float"
                                 ],
                                 "typemap_name": "float"
-                            },
-                            {
-                                "declarator": {
-                                    "name": "multiStream",
-                                    "typemap_name": "bool"
-                                },
-                                "specifier": [
-                                    "bool"
-                                ],
-                                "typemap_name": "bool"
                             }
                         ],
                         "typemap_name": "void"
@@ -7312,9 +7035,9 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEq_s_i64(\n    float* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int64_t* rowOffsetsB +intent(in) +rank(1),          \n    int64_t* colIndsB +intent(in) +rank(1),          \n    float* valuesB +intent(in) +rank(1),\n    bool multiStream\n)\n  \n",
-                "declgen": "void solveImmersedEq_s_i64(float *result +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), bool multiStream)",
-                "linenumber": 109,
+                "decl": "void solveImmersedEq_s_i64(\n    float* result +intent(out) +rank(1),\n    size_t nnzB,          \n    int64_t* rowOffsetsB +intent(in) +rank(1),          \n    int64_t* colIndsB +intent(in) +rank(1),          \n    float* valuesB +intent(in) +rank(1)\n)\n  \n",
+                "declgen": "void solveImmersedEq_s_i64(float *result +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1))",
+                "linenumber": 106,
                 "name": "solveImmersedEq_s_i64",
                 "options": {},
                 "wrap": {
@@ -7325,10 +7048,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_s_i64(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_s_i64(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB)",
+                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "C_name": "FOR_solveImmersedEq_s_i64",
-                                "C_prototype": "float *result,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t float *valuesB,\t bool multiStream",
+                                "C_prototype": "float *result,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t float *valuesB",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_s_i64",
                                 "stmt_name": "c_subroutine",
@@ -7369,37 +7092,6 @@
                                 "rank": 1
                             },
                             "stmt": "c_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -7526,17 +7218,17 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEq_s_i64(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream)",
-                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "C_call_function": "solveImmersedEq_s_i64(\tresult,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB)",
+                                "C_call_list": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "C_name": "FOR_solveImmersedEq_s_i64",
-                                "C_prototype": "float *result,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t float *valuesB,\t bool multiStream",
+                                "C_prototype": "float *result,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t float *valuesB",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t SHT_multiStream_cxx",
-                                "F_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
+                                "F_arg_c_call": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
+                                "F_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_s_i64",
-                                "i_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t multiStream",
-                                "i_name_function": "c_solve_immersed_eq_s_i64",
+                                "i_arguments": "result,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB",
+                                "i_name_function": "solve_immersed_eq_s_i64",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
                                 "typemap_name": "void"
@@ -7590,45 +7282,6 @@
                                 "rank": 1
                             },
                             "stmt": "f_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_type": "logical",
-                                "f_value_attr": ", value",
-                                "f_var": "multiStream",
-                                "f_var_cxx": "SHT_multiStream_cxx",
-                                "fc_var": "multiStream",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_BOOL",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "logical(C_BOOL)",
-                                "i_var": "multiStream",
-                                "idtor": "0",
-                                "stmt_name": "f_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -7817,13 +7470,6 @@
                                 "rank": 1
                             }
                         },
-                        "multiStream": {
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "nnzB": {
                             "meta": {
                                 "abstract": "native",
@@ -7866,8 +7512,7 @@
                         "nnzB",
                         "rowOffsetsB",
                         "colIndsB",
-                        "valuesB",
-                        "multiStream"
+                        "valuesB"
                     ],
                     "f_arglist": [
                         "f_var",
@@ -7875,8 +7520,7 @@
                         "nnzB",
                         "rowOffsetsB",
                         "colIndsB",
-                        "valuesB",
-                        "multiStream"
+                        "valuesB"
                     ],
                     "function_name": "solveImmersedEq_s_i64"
                 }
@@ -8096,16 +7740,6 @@
                                     "double"
                                 ],
                                 "typemap_name": "double"
-                            },
-                            {
-                                "declarator": {
-                                    "name": "multiStream",
-                                    "typemap_name": "bool"
-                                },
-                                "specifier": [
-                                    "bool"
-                                ],
-                                "typemap_name": "bool"
                             }
                         ],
                         "typemap_name": "void"
@@ -8115,9 +7749,9 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEqPrimes_d_i32(\n    double* resultPPrime +intent(out) +rank(1),\n    double* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int32_t *rowOffsetsB +intent(in) +rank(1),\n    int32_t *colIndsB +intent(in) +rank(1),\n    double *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int32_t *colOffsetsR +intent(in) +rank(1),\n    int32_t *rowIndsR +intent(in) +rank(1),\n    double *valuesR +intent(in) +rank(1),\n    double *UGamma +intent(in) +rank(1),\n    double* uStar +intent(in) +rank(1),\n    bool multiStream\n)\n",
-                "declgen": "void solveImmersedEqPrimes_d_i32(double *resultPPrime +intent(out)+rank(1), double *resultFPrime +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), size_t nnzR, int32_t *colOffsetsR +intent(in)+rank(1), int32_t *rowIndsR +intent(in)+rank(1), double *valuesR +intent(in)+rank(1), double *UGamma +intent(in)+rank(1), double *uStar +intent(in)+rank(1), bool multiStream)",
-                "linenumber": 122,
+                "decl": "void solveImmersedEqPrimes_d_i32(\n    double* resultPPrime +intent(out) +rank(1),\n    double* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int32_t *rowOffsetsB +intent(in) +rank(1),\n    int32_t *colIndsB +intent(in) +rank(1),\n    double *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int32_t *colOffsetsR +intent(in) +rank(1),\n    int32_t *rowIndsR +intent(in) +rank(1),\n    double *valuesR +intent(in) +rank(1),\n    double *UGamma +intent(in) +rank(1),\n    double* uStar +intent(in) +rank(1)\n)\n",
+                "declgen": "void solveImmersedEqPrimes_d_i32(double *resultPPrime +intent(out)+rank(1), double *resultFPrime +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), size_t nnzR, int32_t *colOffsetsR +intent(in)+rank(1), int32_t *rowIndsR +intent(in)+rank(1), double *valuesR +intent(in)+rank(1), double *UGamma +intent(in)+rank(1), double *uStar +intent(in)+rank(1))",
+                "linenumber": 118,
                 "name": "solveImmersedEqPrimes_d_i32",
                 "options": {},
                 "wrap": {
@@ -8128,10 +7762,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEqPrimes_d_i32(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream)",
-                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "C_call_function": "solveImmersedEqPrimes_d_i32(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar)",
+                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "C_name": "FOR_solveImmersedEqPrimes_d_i32",
-                                "C_prototype": "double *resultPPrime,\t double *resultFPrime,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t double *valuesB,\t size_t nnzR,\t int32_t *colOffsetsR,\t int32_t *rowIndsR,\t double *valuesR,\t double *UGamma,\t double *uStar,\t bool multiStream",
+                                "C_prototype": "double *resultPPrime,\t double *resultFPrime,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t double *valuesB,\t size_t nnzR,\t int32_t *colOffsetsR,\t int32_t *rowIndsR,\t double *valuesR,\t double *UGamma,\t double *uStar",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_primes_d_i32",
                                 "stmt_name": "c_subroutine",
@@ -8232,37 +7866,6 @@
                                 "rank": 1
                             },
                             "stmt": "c_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -8540,17 +8143,17 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEqPrimes_d_i32(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream)",
-                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "C_call_function": "solveImmersedEqPrimes_d_i32(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar)",
+                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "C_name": "FOR_solveImmersedEqPrimes_d_i32",
-                                "C_prototype": "double *resultPPrime,\t double *resultFPrime,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t double *valuesB,\t size_t nnzR,\t int32_t *colOffsetsR,\t int32_t *rowIndsR,\t double *valuesR,\t double *UGamma,\t double *uStar,\t bool multiStream",
+                                "C_prototype": "double *resultPPrime,\t double *resultFPrime,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t double *valuesB,\t size_t nnzR,\t int32_t *colOffsetsR,\t int32_t *rowIndsR,\t double *valuesR,\t double *UGamma,\t double *uStar",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t SHT_multiStream_cxx",
-                                "F_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "F_arg_c_call": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
+                                "F_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_primes_d_i32",
-                                "i_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
-                                "i_name_function": "c_solve_immersed_eq_primes_d_i32",
+                                "i_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
+                                "i_name_function": "solve_immersed_eq_primes_d_i32",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
                                 "typemap_name": "void"
@@ -8692,45 +8295,6 @@
                                 "rank": 1
                             },
                             "stmt": "f_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_type": "logical",
-                                "f_value_attr": ", value",
-                                "f_var": "multiStream",
-                                "f_var_cxx": "SHT_multiStream_cxx",
-                                "fc_var": "multiStream",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_BOOL",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "logical(C_BOOL)",
-                                "i_var": "multiStream",
-                                "idtor": "0",
-                                "stmt_name": "f_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -9149,13 +8713,6 @@
                                 "rank": 1
                             }
                         },
-                        "multiStream": {
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "nnzB": {
                             "meta": {
                                 "abstract": "native",
@@ -9240,8 +8797,7 @@
                         "rowIndsR",
                         "valuesR",
                         "UGamma",
-                        "uStar",
-                        "multiStream"
+                        "uStar"
                     ],
                     "f_arglist": [
                         "f_var",
@@ -9256,8 +8812,7 @@
                         "rowIndsR",
                         "valuesR",
                         "UGamma",
-                        "uStar",
-                        "multiStream"
+                        "uStar"
                     ],
                     "function_name": "solveImmersedEqPrimes_d_i32"
                 }
@@ -9477,16 +9032,6 @@
                                     "float"
                                 ],
                                 "typemap_name": "float"
-                            },
-                            {
-                                "declarator": {
-                                    "name": "multiStream",
-                                    "typemap_name": "bool"
-                                },
-                                "specifier": [
-                                    "bool"
-                                ],
-                                "typemap_name": "bool"
                             }
                         ],
                         "typemap_name": "void"
@@ -9496,9 +9041,9 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEqPrimes_s_i32(\n    float* resultPPrime +intent(out) +rank(1),\n    float* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int32_t *rowOffsetsB +intent(in) +rank(1),\n    int32_t *colIndsB +intent(in) +rank(1),\n    float *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int32_t *colOffsetsR +intent(in) +rank(1),\n    int32_t *rowIndsR +intent(in) +rank(1),\n    float *valuesR +intent(in) +rank(1),\n    float *UGamma +intent(in) +rank(1),\n    float* uStar +intent(in) +rank(1),\n    bool multiStream\n)\n",
-                "declgen": "void solveImmersedEqPrimes_s_i32(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int32_t *colOffsetsR +intent(in)+rank(1), int32_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1), bool multiStream)",
-                "linenumber": 138,
+                "decl": "void solveImmersedEqPrimes_s_i32(\n    float* resultPPrime +intent(out) +rank(1),\n    float* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int32_t *rowOffsetsB +intent(in) +rank(1),\n    int32_t *colIndsB +intent(in) +rank(1),\n    float *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int32_t *colOffsetsR +intent(in) +rank(1),\n    int32_t *rowIndsR +intent(in) +rank(1),\n    float *valuesR +intent(in) +rank(1),\n    float *UGamma +intent(in) +rank(1),\n    float* uStar +intent(in) +rank(1)\n)\n",
+                "declgen": "void solveImmersedEqPrimes_s_i32(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int32_t *colOffsetsR +intent(in)+rank(1), int32_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1))",
+                "linenumber": 133,
                 "name": "solveImmersedEqPrimes_s_i32",
                 "options": {},
                 "wrap": {
@@ -9509,10 +9054,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEqPrimes_s_i32(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream)",
-                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "C_call_function": "solveImmersedEqPrimes_s_i32(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar)",
+                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "C_name": "FOR_solveImmersedEqPrimes_s_i32",
-                                "C_prototype": "float *resultPPrime,\t float *resultFPrime,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t float *valuesB,\t size_t nnzR,\t int32_t *colOffsetsR,\t int32_t *rowIndsR,\t float *valuesR,\t float *UGamma,\t float *uStar,\t bool multiStream",
+                                "C_prototype": "float *resultPPrime,\t float *resultFPrime,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t float *valuesB,\t size_t nnzR,\t int32_t *colOffsetsR,\t int32_t *rowIndsR,\t float *valuesR,\t float *UGamma,\t float *uStar",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_primes_s_i32",
                                 "stmt_name": "c_subroutine",
@@ -9613,37 +9158,6 @@
                                 "rank": 1
                             },
                             "stmt": "c_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -9921,17 +9435,17 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEqPrimes_s_i32(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream)",
-                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "C_call_function": "solveImmersedEqPrimes_s_i32(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar)",
+                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "C_name": "FOR_solveImmersedEqPrimes_s_i32",
-                                "C_prototype": "float *resultPPrime,\t float *resultFPrime,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t float *valuesB,\t size_t nnzR,\t int32_t *colOffsetsR,\t int32_t *rowIndsR,\t float *valuesR,\t float *UGamma,\t float *uStar,\t bool multiStream",
+                                "C_prototype": "float *resultPPrime,\t float *resultFPrime,\t size_t nnzB,\t int32_t *rowOffsetsB,\t int32_t *colIndsB,\t float *valuesB,\t size_t nnzR,\t int32_t *colOffsetsR,\t int32_t *rowIndsR,\t float *valuesR,\t float *UGamma,\t float *uStar",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t SHT_multiStream_cxx",
-                                "F_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "F_arg_c_call": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
+                                "F_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_primes_s_i32",
-                                "i_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
-                                "i_name_function": "c_solve_immersed_eq_primes_s_i32",
+                                "i_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
+                                "i_name_function": "solve_immersed_eq_primes_s_i32",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
                                 "typemap_name": "void"
@@ -10073,45 +9587,6 @@
                                 "rank": 1
                             },
                             "stmt": "f_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_type": "logical",
-                                "f_value_attr": ", value",
-                                "f_var": "multiStream",
-                                "f_var_cxx": "SHT_multiStream_cxx",
-                                "fc_var": "multiStream",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_BOOL",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "logical(C_BOOL)",
-                                "i_var": "multiStream",
-                                "idtor": "0",
-                                "stmt_name": "f_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -10530,13 +10005,6 @@
                                 "rank": 1
                             }
                         },
-                        "multiStream": {
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "nnzB": {
                             "meta": {
                                 "abstract": "native",
@@ -10621,8 +10089,7 @@
                         "rowIndsR",
                         "valuesR",
                         "UGamma",
-                        "uStar",
-                        "multiStream"
+                        "uStar"
                     ],
                     "f_arglist": [
                         "f_var",
@@ -10637,8 +10104,7 @@
                         "rowIndsR",
                         "valuesR",
                         "UGamma",
-                        "uStar",
-                        "multiStream"
+                        "uStar"
                     ],
                     "function_name": "solveImmersedEqPrimes_s_i32"
                 }
@@ -10858,16 +10324,6 @@
                                     "double"
                                 ],
                                 "typemap_name": "double"
-                            },
-                            {
-                                "declarator": {
-                                    "name": "multiStream",
-                                    "typemap_name": "bool"
-                                },
-                                "specifier": [
-                                    "bool"
-                                ],
-                                "typemap_name": "bool"
                             }
                         ],
                         "typemap_name": "void"
@@ -10877,9 +10333,9 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEqPrimes_d_i64(\n    double* resultPPrime +intent(out) +rank(1),\n    double* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int64_t *rowOffsetsB +intent(in) +rank(1),\n    int64_t *colIndsB +intent(in) +rank(1),\n    double *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int64_t *colOffsetsR +intent(in) +rank(1),\n    int64_t *rowIndsR +intent(in) +rank(1),\n    double *valuesR +intent(in) +rank(1),\n    double *UGamma +intent(in) +rank(1),\n    double* uStar +intent(in) +rank(1),\n    bool multiStream\n)\n",
-                "declgen": "void solveImmersedEqPrimes_d_i64(double *resultPPrime +intent(out)+rank(1), double *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), double *valuesR +intent(in)+rank(1), double *UGamma +intent(in)+rank(1), double *uStar +intent(in)+rank(1), bool multiStream)",
-                "linenumber": 154,
+                "decl": "void solveImmersedEqPrimes_d_i64(\n    double* resultPPrime +intent(out) +rank(1),\n    double* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int64_t *rowOffsetsB +intent(in) +rank(1),\n    int64_t *colIndsB +intent(in) +rank(1),\n    double *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int64_t *colOffsetsR +intent(in) +rank(1),\n    int64_t *rowIndsR +intent(in) +rank(1),\n    double *valuesR +intent(in) +rank(1),\n    double *UGamma +intent(in) +rank(1),\n    double* uStar +intent(in) +rank(1)\n)\n",
+                "declgen": "void solveImmersedEqPrimes_d_i64(double *resultPPrime +intent(out)+rank(1), double *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), double *valuesR +intent(in)+rank(1), double *UGamma +intent(in)+rank(1), double *uStar +intent(in)+rank(1))",
+                "linenumber": 148,
                 "name": "solveImmersedEqPrimes_d_i64",
                 "options": {},
                 "wrap": {
@@ -10890,10 +10346,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEqPrimes_d_i64(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream)",
-                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "C_call_function": "solveImmersedEqPrimes_d_i64(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar)",
+                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "C_name": "FOR_solveImmersedEqPrimes_d_i64",
-                                "C_prototype": "double *resultPPrime,\t double *resultFPrime,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t double *valuesB,\t size_t nnzR,\t int64_t *colOffsetsR,\t int64_t *rowIndsR,\t double *valuesR,\t double *UGamma,\t double *uStar,\t bool multiStream",
+                                "C_prototype": "double *resultPPrime,\t double *resultFPrime,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t double *valuesB,\t size_t nnzR,\t int64_t *colOffsetsR,\t int64_t *rowIndsR,\t double *valuesR,\t double *UGamma,\t double *uStar",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_primes_d_i64",
                                 "stmt_name": "c_subroutine",
@@ -10994,37 +10450,6 @@
                                 "rank": 1
                             },
                             "stmt": "c_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -11302,17 +10727,17 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEqPrimes_d_i64(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream)",
-                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "C_call_function": "solveImmersedEqPrimes_d_i64(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar)",
+                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "C_name": "FOR_solveImmersedEqPrimes_d_i64",
-                                "C_prototype": "double *resultPPrime,\t double *resultFPrime,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t double *valuesB,\t size_t nnzR,\t int64_t *colOffsetsR,\t int64_t *rowIndsR,\t double *valuesR,\t double *UGamma,\t double *uStar,\t bool multiStream",
+                                "C_prototype": "double *resultPPrime,\t double *resultFPrime,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t double *valuesB,\t size_t nnzR,\t int64_t *colOffsetsR,\t int64_t *rowIndsR,\t double *valuesR,\t double *UGamma,\t double *uStar",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t SHT_multiStream_cxx",
-                                "F_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "F_arg_c_call": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
+                                "F_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_primes_d_i64",
-                                "i_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
-                                "i_name_function": "c_solve_immersed_eq_primes_d_i64",
+                                "i_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
+                                "i_name_function": "solve_immersed_eq_primes_d_i64",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
                                 "typemap_name": "void"
@@ -11454,45 +10879,6 @@
                                 "rank": 1
                             },
                             "stmt": "f_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_type": "logical",
-                                "f_value_attr": ", value",
-                                "f_var": "multiStream",
-                                "f_var_cxx": "SHT_multiStream_cxx",
-                                "fc_var": "multiStream",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_BOOL",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "logical(C_BOOL)",
-                                "i_var": "multiStream",
-                                "idtor": "0",
-                                "stmt_name": "f_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -11911,13 +11297,6 @@
                                 "rank": 1
                             }
                         },
-                        "multiStream": {
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "nnzB": {
                             "meta": {
                                 "abstract": "native",
@@ -12002,8 +11381,7 @@
                         "rowIndsR",
                         "valuesR",
                         "UGamma",
-                        "uStar",
-                        "multiStream"
+                        "uStar"
                     ],
                     "f_arglist": [
                         "f_var",
@@ -12018,8 +11396,7 @@
                         "rowIndsR",
                         "valuesR",
                         "UGamma",
-                        "uStar",
-                        "multiStream"
+                        "uStar"
                     ],
                     "function_name": "solveImmersedEqPrimes_d_i64"
                 }
@@ -12239,16 +11616,6 @@
                                     "float"
                                 ],
                                 "typemap_name": "float"
-                            },
-                            {
-                                "declarator": {
-                                    "name": "multiStream",
-                                    "typemap_name": "bool"
-                                },
-                                "specifier": [
-                                    "bool"
-                                ],
-                                "typemap_name": "bool"
                             }
                         ],
                         "typemap_name": "void"
@@ -12258,9 +11625,9 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEqPrimes_s_i64(\n    float* resultPPrime +intent(out) +rank(1),\n    float* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int64_t *rowOffsetsB +intent(in) +rank(1),\n    int64_t *colIndsB +intent(in) +rank(1),\n    float *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int64_t *colOffsetsR +intent(in) +rank(1),\n    int64_t *rowIndsR +intent(in) +rank(1),\n    float *valuesR +intent(in) +rank(1),\n    float *UGamma +intent(in) +rank(1),\n    float* uStar +intent(in) +rank(1),\n    bool multiStream\n)",
-                "declgen": "void solveImmersedEqPrimes_s_i64(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1), bool multiStream)",
-                "linenumber": 170,
+                "decl": "void solveImmersedEqPrimes_s_i64(\n    float* resultPPrime +intent(out) +rank(1),\n    float* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int64_t *rowOffsetsB +intent(in) +rank(1),\n    int64_t *colIndsB +intent(in) +rank(1),\n    float *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int64_t *colOffsetsR +intent(in) +rank(1),\n    int64_t *rowIndsR +intent(in) +rank(1),\n    float *valuesR +intent(in) +rank(1),\n    float *UGamma +intent(in) +rank(1),\n    float* uStar +intent(in) +rank(1)\n)",
+                "declgen": "void solveImmersedEqPrimes_s_i64(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1))",
+                "linenumber": 163,
                 "name": "solveImmersedEqPrimes_s_i64",
                 "options": {},
                 "wrap": {
@@ -12271,10 +11638,10 @@
                     "c": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEqPrimes_s_i64(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream)",
-                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "C_call_function": "solveImmersedEqPrimes_s_i64(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar)",
+                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "C_name": "FOR_solveImmersedEqPrimes_s_i64",
-                                "C_prototype": "float *resultPPrime,\t float *resultFPrime,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t float *valuesB,\t size_t nnzR,\t int64_t *colOffsetsR,\t int64_t *rowIndsR,\t float *valuesR,\t float *UGamma,\t float *uStar,\t bool multiStream",
+                                "C_prototype": "float *resultPPrime,\t float *resultFPrime,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t float *valuesB,\t size_t nnzR,\t int64_t *colOffsetsR,\t int64_t *rowIndsR,\t float *valuesR,\t float *UGamma,\t float *uStar",
                                 "C_return_type": "void",
                                 "i_name_function": "c_solve_immersed_eq_primes_s_i64",
                                 "stmt_name": "c_subroutine",
@@ -12375,37 +11742,6 @@
                                 "rank": 1
                             },
                             "stmt": "c_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_value_attr": ", value",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "idtor": "0",
-                                "stmt_name": "c_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "c_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -12683,17 +12019,17 @@
                     "f": {
                         "+result": {
                             "fmtdict": {
-                                "C_call_function": "solveImmersedEqPrimes_s_i64(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream)",
-                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "C_call_function": "solveImmersedEqPrimes_s_i64(\tresultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar)",
+                                "C_call_list": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "C_name": "FOR_solveImmersedEqPrimes_s_i64",
-                                "C_prototype": "float *resultPPrime,\t float *resultFPrime,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t float *valuesB,\t size_t nnzR,\t int64_t *colOffsetsR,\t int64_t *rowIndsR,\t float *valuesR,\t float *UGamma,\t float *uStar,\t bool multiStream",
+                                "C_prototype": "float *resultPPrime,\t float *resultFPrime,\t size_t nnzB,\t int64_t *rowOffsetsB,\t int64_t *colIndsB,\t float *valuesB,\t size_t nnzR,\t int64_t *colOffsetsR,\t int64_t *rowIndsR,\t float *valuesR,\t float *UGamma,\t float *uStar",
                                 "C_return_type": "void",
-                                "F_arg_c_call": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t SHT_multiStream_cxx",
-                                "F_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
+                                "F_arg_c_call": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
+                                "F_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
                                 "F_subprogram": "subroutine",
                                 "f_call_function": "c_solve_immersed_eq_primes_s_i64",
-                                "i_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar,\t multiStream",
-                                "i_name_function": "c_solve_immersed_eq_primes_s_i64",
+                                "i_arguments": "resultPPrime,\t resultFPrime,\t nnzB,\t rowOffsetsB,\t colIndsB,\t valuesB,\t nnzR,\t colOffsetsR,\t rowIndsR,\t valuesR,\t UGamma,\t uStar",
+                                "i_name_function": "solve_immersed_eq_primes_s_i64",
                                 "i_subprogram": "subroutine",
                                 "stmt_name": "f_subroutine",
                                 "typemap_name": "void"
@@ -12835,45 +12171,6 @@
                                 "rank": 1
                             },
                             "stmt": "f_in_native*"
-                        },
-                        "multiStream": {
-                            "fmtdict": {
-                                "c_abstract_decl": "bool",
-                                "c_addr": "&",
-                                "c_const": "",
-                                "c_deref": "",
-                                "c_member": ".",
-                                "c_type": "bool",
-                                "c_var": "multiStream",
-                                "cxx_abstract_decl": "bool",
-                                "cxx_addr": "&",
-                                "cxx_member": ".",
-                                "cxx_nonconst_ptr": "&multiStream",
-                                "cxx_type": "bool",
-                                "cxx_var": "multiStream",
-                                "f_intent": "IN",
-                                "f_intent_attr": ", intent(IN)",
-                                "f_type": "logical",
-                                "f_value_attr": ", value",
-                                "f_var": "multiStream",
-                                "f_var_cxx": "SHT_multiStream_cxx",
-                                "fc_var": "multiStream",
-                                "i_intent": "IN",
-                                "i_intent_attr": ", intent(IN)",
-                                "i_kind": "C_BOOL",
-                                "i_module_name": "iso_c_binding",
-                                "i_type": "logical(C_BOOL)",
-                                "i_var": "multiStream",
-                                "idtor": "0",
-                                "stmt_name": "f_in_bool",
-                                "typemap_name": "bool"
-                            },
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            },
-                            "stmt": "f_in_bool"
                         },
                         "nnzB": {
                             "fmtdict": {
@@ -13292,13 +12589,6 @@
                                 "rank": 1
                             }
                         },
-                        "multiStream": {
-                            "meta": {
-                                "abstract": "bool",
-                                "intent": "in",
-                                "value": true
-                            }
-                        },
                         "nnzB": {
                             "meta": {
                                 "abstract": "native",
@@ -13383,8 +12673,7 @@
                         "rowIndsR",
                         "valuesR",
                         "UGamma",
-                        "uStar",
-                        "multiStream"
+                        "uStar"
                     ],
                     "f_arglist": [
                         "f_var",
@@ -13399,8 +12688,7 @@
                         "rowIndsR",
                         "valuesR",
                         "UGamma",
-                        "uStar",
-                        "multiStream"
+                        "uStar"
                     ],
                     "function_name": "solveImmersedEqPrimes_s_i64"
                 }

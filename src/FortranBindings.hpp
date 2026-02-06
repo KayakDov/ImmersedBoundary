@@ -32,10 +32,10 @@ void initImmersedEq(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_
 }
 
 template<typename Real, typename Int>
-void solveImmersedEq(Real *result, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valB, bool multi = true) {
+void solveImmersedEq(Real *result, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valB) {
     if (!eq<Real, Int>) throw std::runtime_error(
         "The solver is not initialized.  Be sure you're using consistent types.");
-    eq<Real, Int>->solve(result, nnzB, rowOffsetsB, colIndsB, valB, multi);
+    eq<Real, Int>->solve(result, nnzB, rowOffsetsB, colIndsB, valB);
 }
 
 template<typename Real, typename Int>
@@ -51,12 +51,11 @@ void solveImmersedEq(
     Int *rowIndsR,
     Real *valuesR,
     Real *UGamma,
-    Real* uStar,
-    bool multiStream
+    Real* uStar
 ) {
     if (!eq<Real, Int>) throw std::runtime_error(
         "The solver is not initialized.  Be sure you're using consistent types.");
-    eq<Real, Int>->solve(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB,nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar, multiStream);
+    eq<Real, Int>->solve(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB,nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
 }
 
 // void ImmersedEq<Real, Int>::solve(
@@ -85,19 +84,19 @@ inline void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gri
     // --- Solve Functions ---
 
 inline void solveImmersedEq_d_i32(double *result, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, double *val, bool multi = true) {
-        solveImmersedEq<double, int32_t>(result, nnzB, rowOffsetsB, colIndsB, val, multi);
+        solveImmersedEq<double, int32_t>(result, nnzB, rowOffsetsB, colIndsB, val);
     }
 
 inline void solveImmersedEq_s_i32(float *result, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, float *val, bool multi = true) {
-        solveImmersedEq<float, int32_t>(result, nnzB, rowOffsetsB, colIndsB, val, multi);
+        solveImmersedEq<float, int32_t>(result, nnzB, rowOffsetsB, colIndsB, val);
     }
 
 inline void solveImmersedEq_d_i64(double *result, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, double *val, bool multi = true) {
-        solveImmersedEq<double, int64_t>(result, nnzB, rowOffsetsB, colIndsB, val, multi);
+        solveImmersedEq<double, int64_t>(result, nnzB, rowOffsetsB, colIndsB, val);
     }
 
 inline void solveImmersedEq_s_i64(float *result, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, float *val, bool multi = true) {
-        solveImmersedEq<float, int64_t>(result, nnzB, rowOffsetsB, colIndsB, val, multi);
+        solveImmersedEq<float, int64_t>(result, nnzB, rowOffsetsB, colIndsB, val);
     }
 
     //-----------prime functions -------------
@@ -113,10 +112,9 @@ inline void solveImmersedEqPrimes_d_i32(
     int32_t *rowIndsR,
     double *valuesR,
     double *UGamma,
-    double* uStar,
-    bool multiStream
+    double* uStar
 ) {
-    solveImmersedEq<double, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar, multiStream);
+    solveImmersedEq<double, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
 }
 
 inline void solveImmersedEqPrimes_s_i32(
@@ -131,10 +129,9 @@ inline void solveImmersedEqPrimes_s_i32(
    int32_t *rowIndsR,
    float *valuesR,
    float *UGamma,
-   float* uStar,
-   bool multiStream
+   float* uStar
    ) {
-    solveImmersedEq<float, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar, multiStream);
+    solveImmersedEq<float, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
 }
 
 inline void solveImmersedEqPrimes_d_i64(
@@ -149,10 +146,9 @@ inline void solveImmersedEqPrimes_d_i64(
     int64_t *rowIndsR,
     double *valuesR,
     double *UGamma,
-    double* uStar,
-    bool multiStream
+    double* uStar
 ) {
-    solveImmersedEq<double, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar, multiStream);
+    solveImmersedEq<double, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
 }
 
 inline void solveImmersedEqPrimes_s_i64(
@@ -167,9 +163,8 @@ inline void solveImmersedEqPrimes_s_i64(
     int64_t *rowIndsR,
     float *valuesR,
     float *UGamma,
-    float* uStar,
-    bool multiStream
+    float* uStar
 ) {
-    solveImmersedEq<float, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar, multiStream);
+    solveImmersedEq<float, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
 }
 }

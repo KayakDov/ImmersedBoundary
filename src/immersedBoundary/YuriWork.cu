@@ -114,7 +114,7 @@ void loadYuriData() {
 
     auto start = std::chrono::high_resolution_clock::now();
     ImmersedEq<Real, int32_t> imEq(dim, rhs.FHost.size(), b.nnz(), rhs.pHost.data(), rhs.FHost.data(), delta, 1, 1e-18, 100);
-    imEq.solve(result.data(), b.nnz(), bRowOffsets.data(), bColInds.data(), bVals.data(), true);
+    imEq.solve(result.data(), b.nnz(), bRowOffsets.data(), bColInds.data(), bVals.data());
 
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
@@ -203,15 +203,15 @@ void testPrimes() {
     ImmersedEq<Real, Int> imEq(dim, f.size(), valsR.size(), p.data(), f.data(), delta, deltaT, 1e-6, 1000);
     // initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
 
-    imEq.solve(resultP, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data(), true);
+    imEq.solve(resultP, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
     std::cout << "resultP = ";
     for(auto & i : resultP) std::cout << i << " ";
     std:: cout << "\nexpected: -7.483126, -8.359545, -2.292128, -2.606740, -2.943816, -0.808988" << std::endl;
 
-    imEq.solve(resultP, resultF, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data(), valsR.size(), colOffsetsR.data(), rowIndsR.data(), valsR.data(), UGamma.data(), uStar.data(), true);
+    imEq.solve(resultP, resultF, valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data(), valsR.size(), colOffsetsR.data(), rowIndsR.data(), valsR.data(), UGamma.data(), uStar.data());
     std::cout << "resultP = ";
     for(auto & i : resultP) std::cout << i << " ";
-    std::cout << "\nexpected 7.61797, 10.1498, 2.955056, 3.08614, 3.72659, 1.67041" << std::endl;// solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
+    std::cout << "\nexpected 7.61797, 10.1498, 2.955056, 3.08614, 3.72659, 1.67041" << std::endl;// solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data());
 
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
@@ -259,8 +259,8 @@ void smallTestWithoutFiles() {
     ImmersedEq<Real, Int> imEq(dim, f.size(), values.size(), p.data(), f.data(), delta, 1, 1e-6, 1000);
     // initImmersedEq<Real, Int>(dim.rows, dim.cols, dim.layers, f.size(), f.size(), p.data(), f.data(), delta.x, delta.y, delta.z, 1e-6, 3000);
 
-    imEq.solve(result, values.size(), rowOffsets.data(), colInds.data(), values.data(), true);
-    // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data(), true);
+    imEq.solve(result, values.size(), rowOffsets.data(), colInds.data(), values.data());
+    // solveImmersedEq<Real, Int>(result, values.size(), rowPointers.data(), colOffsets, values.data());
 
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
@@ -311,7 +311,7 @@ void smallTestWithoutFiles() {
 //     std::cout << "Total Solver Time: " << duration.count() << " ms" << std::endl;
 //
 //     std::ofstream outResult("../dataFromYuri/result.bin", std::ios::binary);
-//     outResult << GpuOut<double>(result, hand2[0], false, true);
+//     outResult << GpuOut<double>(result, hand2[0], false);
 // }
 
 

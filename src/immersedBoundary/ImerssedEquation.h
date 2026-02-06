@@ -20,9 +20,9 @@ enum class GridInd : size_t {//eularian
     Result    = 2,
     pPrime    = 2,
     EDS       = 3,
-    LHS2      = 4,
+    LHS_invLBTBx      = 4,
     RHS       = 4,
-    LHS1      = 5,
+    LHS_BTBx      = 5,
     Count     = 6
 };
 
@@ -30,7 +30,7 @@ enum class GridInd : size_t {//eularian
 enum class LagrangeInd : size_t {
     f         = 0,
     RHSFPrime = 1,
-    LHS       = 2,
+    LHS_Bx       = 2,
     fPrime    = 2,
     UGamma    = 2,
     Count     = 3
@@ -57,8 +57,9 @@ public:
     SimpleArray<Int> maxSparseOffsets;
     SimpleArray<Real> maxSparseVals = SimpleArray<Real>::create(maxSparseInds.size(), hand5[0]);
 
-    mutable Mat<Real> gridVecs = Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count));
+    mutable Mat<Real> gridVecs = Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count) + 7);
     mutable Mat<Real> lagrangeVecs = Mat<Real>::create(maxSparseOffsets.size() - 1, static_cast<size_t>(LagrangeInd::Count)) ;
+    Mat<Real> allocatedRHSHeightX7 = gridVecs.subMat(0, static_cast<size_t>(GridInd::Count), dim.size(), 7);
 
     SimpleArray<Real> velocities = SimpleArray<Real>::create(dim.numDims() * dim.size()
         + dim.cols * dim.layers
@@ -69,9 +70,9 @@ public:
     std::shared_ptr<SimpleArray<Real>> p = std::make_shared<SimpleArray<Real>>(gridVecs.col(static_cast<size_t>(GridInd::p)));
 
     //CSR, maps from Eularian where p lives space to Lagrangian space where f lives (f rows, p cols)
-    std::unique_ptr<SparseMat<Real, Int>> B = std::make_unique<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));//TODO:these would probably be safer as unique pointers, since reasignment doesn't change every copy.
+    std::unique_ptr<SparseMat<Real, Int>> B = std::make_unique<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
     //CSC, maps from Lagrangian space to the discretized vector field space R^3 -> R^3 (3p + rows, f cols)
-    std::unique_ptr<SparseMat<Real, Int>> R = std::make_unique<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));//TODO:these would probably be safer as unique pointers, since reasignment doesn't change every copy.
+    std::unique_ptr<SparseMat<Real, Int>> R = std::make_unique<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
 
     const Real3d delta;
 
@@ -92,12 +93,12 @@ public:
 private:
     void checkNNZB(size_t nnzB) const;
     friend ImmersedEqSolver<Real, Int>;
-    Mat<Real> allocatedRHSHeightX7 = Mat<Real>::create(p->size(), 7);
+
     Vec<Real> allocated9 = Vec<Real>::create(9, hand5[0]);
     Real tolerance;
     size_t maxIterations;
     Event lhsTimes;
-    SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(p->size(), hand5[0]);
+    SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(dim.size(), hand5[0]);
     std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(dim, gridVec(GridInd::EDS), &hand5[0], delta, events11);
 
 
@@ -118,10 +119,9 @@ private:
      * @param offsetsB if csc == true, then this is the column offsets, otherwise the row offsets.
      * @param indsB  if csc == true then this should be row indices, otherwise the column indices.
      * @param valuesB The non zero values in B.
-     * @param multithreadBCG true to multistream BiCGSTAB, false to run in a single stream.
      * @return The solution, best to write this data to somewhere else as it will be overwritten when the method runs again.
      */
-    SimpleArray<Real> solve(size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool multithreadBCG);
+    SimpleArray<Real> solve(size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB);
 
 public:
     void multSparse(const std::unique_ptr<SparseMat<Real, Int>> &mat, const SimpleArray<Real> &vec, SimpleArray<Real> &result, const
@@ -158,7 +158,7 @@ public:
      */
     SimpleArray<Real> RHS(bool reset = true);
 
-    SimpleArray<Real> solve(bool multiStream);
+    SimpleArray<Real> solve();
 
     /**
      *
@@ -170,10 +170,10 @@ public:
      * @param multiStream true to multistream BiCGSTAB, false to run in a single stream.
      * @return
      */
-    void solve(Real *result, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool multiStream);
+    void solve(Real *result, size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB);
 
     void solve(Real *resultP, Real *resultF, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR,
-               Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real *uStar, bool multiStream);
+               Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real *uStar);
 
 
 };

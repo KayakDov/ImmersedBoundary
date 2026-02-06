@@ -58,12 +58,10 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(
     auto colsXcols = dim.cols != dim.rows ? SquareMat<Real>::create(dim.cols) : rowsXrows;
 
     if (dim.numDims() == 3) {
-        //(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3, SimpleArray<T>& sizeOfB, Handle* hand3, Real3d delta = Real3d(1, 1, 1));
         auto layersXLayers = dim.layers == dim.rows ?  rowsXrows :
             (dim.layers == dim.cols ? colsXcols : SquareMat<Real>::create(dim.layers));
         return std::make_shared<EigenDecompSolver3d<Real>>(rowsXrows, colsXcols, layersXLayers, maxDimX2Or3, sizeOfP, hand, delta, event);
     }
-
     return std::make_shared<EigenDecompSolver2d<Real>>(rowsXrows, colsXcols, maxDimX2Or3, sizeOfP, hand, Real2d(delta.x, delta.y), event[0]);
 
 }
@@ -124,9 +122,9 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
     else result.mult(preMultResult, &hand5[4]);
     lhsTimes.record(hand5[4]);
 
-    auto Bx = lagrangeVec(LagrangeInd::LHS);
-    auto BTBx = gridVec(GridInd::LHS1);
-    auto invLBTBx = gridVec(GridInd::LHS2);
+    auto Bx = lagrangeVec(LagrangeInd::LHS_Bx);
+    auto BTBx = gridVec(GridInd::LHS_BTBx);
+    auto invLBTBx = gridVec(GridInd::LHS_invLBTBx);
 
     multSparse(B, x, Bx, Singleton<Real>::ONE, Singleton<Real>::ZERO, false);// f <- B * x
     multSparse(B, Bx, BTBx, Singleton<Real>::TWO, Singleton<Real>::ZERO, true);// p <- B^T * (B * x)
@@ -143,11 +141,11 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
 
 template<typename Real, typename Int>
 SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
-    auto id = SquareMat<Real>::create(p->size());
+    auto id = SquareMat<Real>::create(dim.size());
     id.setToIdentity(hand5[0]);
 
-    auto result = SquareMat<Real>::create(p->size());
-    for (size_t i = 0; i < p->size(); ++i) {
+    auto result = SquareMat<Real>::create(dim.size());
+    for (size_t i = 0; i < dim.size(); ++i) {
         auto col = result.col(i);
         LHSTimes(id.col(i), static_cast<SimpleArray<Real> &>(col), Singleton<Real>::ONE, Singleton<Real>::ZERO);
     }
@@ -293,8 +291,7 @@ void ImmersedEq<Real, Int>::solve(
     Int *rowIndsR,
     Real *valuesR,
     Real *UGamma,
-    Real* uStar,
-    bool multiStream) {
+    Real* uStar) {
 
     setSparse(R, nnzR, colOffsetsR, rowIndsR, valuesR, hand5[0]);
     velocities.set(uStar, hand5[0]);
@@ -310,7 +307,7 @@ void ImmersedEq<Real, Int>::solve(
     p = std::make_shared<SimpleArray<Real>>(gridVec(GridInd::RHSPPrime));
     f = std::make_shared<SimpleArray<Real>>(lagrangeVec(LagrangeInd::RHSFPrime));
 
-    solve(resultP, nnzB, rowOffsetsB, colIndsB, valuesB, multiStream);
+    solve(resultP, nnzB, rowOffsetsB, colIndsB, valuesB);
 
     p = std::make_shared<SimpleArray<Real>>(gridVec(GridInd::p));
     f = std::make_shared<SimpleArray<Real>>(lagrangeVec(LagrangeInd::f));//2 (B p' - RHSf')
@@ -329,20 +326,19 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     size_t nnzB,
     Int *offsetsB,
     Int *indsB,
-    Real *valuesB,
-    const bool multithreadBCG
+    Real *valuesB
 ) {
 
     setSparse(B, nnzB, offsetsB, indsB, valuesB, hand5[0]);
 
     RHS(true);
 
-    return solve(multithreadBCG);
+    return solve();
 }
 
 
 template<typename Real, typename Int>
-SimpleArray<Real> ImmersedEq<Real, Int>::solve(const bool multiStream) {
+SimpleArray<Real> ImmersedEq<Real, Int>::solve() {
     //TODO: should the initial guess be random, or the RHS of the equation?
 
     auto result = gridVec(GridInd::Result);
@@ -351,9 +347,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(const bool multiStream) {
 
     ImmersedEqSolver<Real, Int> solver(*this, allocatedRHSHeightX7, allocated9, events11, tolerance, maxIterations);
 
-    if (multiStream) solver.solveUnconditionedMultiStream(result);
-    else solver.solveUnpreconditioned(result);
-
+    solver.solveUnconditionedMultiStream(result);
     return result;
 }
 
@@ -364,11 +358,10 @@ void ImmersedEq<Real, Int>::solve(
     const size_t nnzB,
     Int *offsetsB,
     Int *indsB,
-    Real *valuesB,
-    const bool multiStream
+    Real *valuesB
 ) {
 
-    auto resultDevice = solve(nnzB, offsetsB, indsB, valuesB, multiStream);
+    auto resultDevice = solve(nnzB, offsetsB, indsB, valuesB);
     resultDevice.get(result, hand5[0]);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
