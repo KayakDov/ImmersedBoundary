@@ -161,19 +161,17 @@ void EigenDecompSolver3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, Tens
 }
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(std::vector<SquareMat<T> > eMats,
-                                        Mat<T> &maxDimX2Or3,
-                                        SimpleArray<T> &sizeOfB) : dim(eMats[1]._rows, eMats[0]._cols,
-                                                                       maxDimX2Or3._cols == 3 ? eMats[2]._rows : 1),
-                                                                   eVecs(eMats),
-                                                                   eVals(maxDimX2Or3),
-                                                                   sizeOfB(sizeOfB) {
+EigenDecompSolver<T>::EigenDecompSolver(std::vector<SquareMat<T> > eMats, Mat<T> &maxDimX2Or3, SimpleArray<T> &sizeOfB) :
+    dim(eMats[1]._rows, eMats[0]._cols,
+    maxDimX2Or3._cols == 3 ? eMats[2]._rows : 1),
+    eVecs(eMats),
+    eVals(maxDimX2Or3),
+    sizeOfB(sizeOfB) {
 }
 
 template<typename T>
-EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2,
-                                            SimpleArray<T> &sizeOfB, Handle* hand2, const Real2d delta, Event& event)
-    : EigenDecompSolver<T>({colsXCols, rowsXRows}, maxDimX2, sizeOfB) {
+EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2, SimpleArray<T> &sizeOfB, Handle* hand2, const Real2d delta, Event& event) :
+EigenDecompSolver<T>({colsXCols, rowsXRows}, maxDimX2, sizeOfB) {
     this->eigenL(1, delta, hand2[1]);
     event.record(hand2[1]);
 

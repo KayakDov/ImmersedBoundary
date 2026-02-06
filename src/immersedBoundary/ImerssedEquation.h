@@ -15,22 +15,23 @@
 template <typename Real, typename Int> class ImmersedEq;
 
 enum class GridInd : size_t {//eularian
-    p         = 0,
-    RHSPPrime = 1,
-    Result    = 2,
-    pPrime    = 2,
-    EDS       = 3,
-    LHS_invLBTBx      = 4,
-    RHS       = 4,
-    LHS_BTBx      = 5,
-    Count     = 6
+    p           = 0,
+    RHSPPrime   = 1,
+    Result      = 2,
+    pPrime      = 2,
+    EDS         = 3,
+    LHS_invLBTBx= 4,
+    RHS         = 4,
+    RHS_BTF     = 5,
+    LHS_BTBx    = 5,
+    Count       = 6
 };
 
 // Grouping F-size vector indices
 enum class LagrangeInd : size_t {
     f         = 0,
     RHSFPrime = 1,
-    LHS_Bx       = 2,
+    LHS_Bx    = 2,
     fPrime    = 2,
     UGamma    = 2,
     Count     = 3

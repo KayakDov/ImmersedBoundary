@@ -176,14 +176,15 @@ void ImmersedEq<Real, Int>::setRHS(bool prime) {
     auto p = gridVec(prime ? GridInd::RHSPPrime : GridInd::p);
     auto f = lagrangeVec(prime? LagrangeInd::RHSFPrime : LagrangeInd::f);
 
-    auto BTF = gridVec(GridInd::RHS);
+    auto BTF = gridVec(GridInd::RHS_BTF);
 
     BTF.set(p, hand5[0]);
 
     multSparse(B, f, BTF, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
     //p <- BT*f+p
 
-    eds->solve(BTF, BTF, hand5[0]);
+    auto RHS = gridVec(GridInd::RHS);
+    eds->solve(RHS, BTF, hand5[0]);
 
 }
 

@@ -9,3 +9,5 @@ obj/
 *.exe
 *.out
 dataFromYuri/*.bin
+dataFromYuri/*.dat
+dataFromYuri/result.dat
