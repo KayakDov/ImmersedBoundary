@@ -18,6 +18,20 @@ void ImmersedEq<Real, Int>::checkNNZB(size_t nnzB) const {
 
 
 template<typename Real, typename Int>
+SolverLauncher<Real, Int>::SolverLauncher(const Real &tolerance, size_t max_iterations, const Mat<Real>& gridVecs, Handle& hand):
+    tolerance(tolerance),
+    maxIterations(max_iterations),
+    allocated9(Vec<Real>::create(9, hand)),
+    allocatedRHSHeightX7(gridVecs.subMat(0, static_cast<size_t>(GridInd::Count), gridVecs._rows, 7)) {
+}
+
+template<typename Real, typename Int>
+void SolverLauncher<Real, Int>::launch(ImmersedEq<Real, Int> &imEq, Event *events11, SimpleArray<Real>& result) {
+    ImmersedEqSolver<Real, Int> solver(imEq, allocatedRHSHeightX7, allocated9, events11, tolerance, maxIterations);
+    solver.solveUnconditionedMultiStream(result);
+}
+
+template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::setSparse(
     std::unique_ptr<SparseMat<Real, Int>>& sparse,
     size_t nnz,
@@ -88,8 +102,7 @@ ImmersedEq<Real, Int>::ImmersedEq(
     maxSparseOffsets(maxSparseOffsets),
     delta(delta),
     dT(dT),
-    tolerance(tolerance),
-    maxIterations(maxBCGIterations){
+    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5[0]){
 }
 
 template<typename Real, typename Int>
@@ -108,8 +121,13 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim,
     dim(dim),
     delta(delta),
     dT(Singleton<Real>::create(3/(2 * dT), hand5[0])),
-    tolerance(tolerance),
-    maxIterations(maxBCGIterations){
+    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5[0]){
+
+    // Vec<Real> allocated9 = ;
+    // Event lhsTimes;
+    // SimpleArray<Real> RHS = SimpleArray<Real>::create(dim.size(), hand5[0]);
+    // Mat<Real> allocatedRHSHeightX7 = ;
+
 
     this->lagrangeVec(LagrangeInd::f).set(f, hand5[0]);
     this->gridVec(GridInd::p).set(p, hand5[0]);
@@ -158,14 +176,14 @@ void ImmersedEq<Real, Int>::setRHS(bool prime) {
     auto p = gridVec(prime ? GridInd::RHSPPrime : GridInd::p);
     auto f = lagrangeVec(prime? LagrangeInd::RHSFPrime : LagrangeInd::f);
 
-    auto pSize = gridVec(GridInd::RHS);
+    auto BTF = gridVec(GridInd::RHS);
 
-    pSize.set(p, hand5[0]);
+    BTF.set(p, hand5[0]);
 
-    multSparse(B, f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
+    multSparse(B, f, BTF, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
     //p <- BT*f+p
 
-    eds->solve(RHS, pSize, hand5[0]);
+    eds->solve(BTF, BTF, hand5[0]);
 
 }
 
@@ -338,12 +356,13 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve() {
     //TODO: should the initial guess be random, or the RHS of the equation?
 
     auto result = gridVec(GridInd::Result);
-    result.set(RHS, hand5[0]);
+
+    result.set(gridVec(GridInd::RHS), hand5[0]);
     // baseData.result.fillRandom(&hand5[0]);
 
-    ImmersedEqSolver<Real, Int> solver(*this, allocatedRHSHeightX7, allocated9, events11, tolerance, maxIterations);
 
-    solver.solveUnconditionedMultiStream(result);
+    solverLauncher.launch(*this, events11, result);
+
     return result;
 }
 
@@ -362,7 +381,7 @@ void ImmersedEq<Real, Int>::solve(
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename Real, typename Int>
-ImmersedEqSolver<Real, Int>::ImmersedEqSolver(//TODO: build this into EmerssedEq
+ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
     ImmersedEq<Real, Int>& imEq,
     Mat<Real> &allocatedRHSHeightX7,
     Vec<Real> &allocated9,
@@ -370,7 +389,7 @@ ImmersedEqSolver<Real, Int>::ImmersedEqSolver(//TODO: build this into EmerssedEq
     Real tolerance,
     size_t maxIterations
 )
-    : BiCGSTAB<Real>(imEq.RHS, imEq.hand5.get(), events11, &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
+    : BiCGSTAB<Real>(imEq.gridVec(GridInd::RHS), imEq.hand5.get(), events11, &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
       imEq(imEq) {
 }
 

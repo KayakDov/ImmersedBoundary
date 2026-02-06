@@ -12,7 +12,7 @@
 #include "solvers/BiCGSTAB.cuh"
 #include "solvers/EigenDecompSolver.h"
 
-
+template <typename Real, typename Int> class ImmersedEq;
 
 enum class GridInd : size_t {//eularian
     p         = 0,
@@ -36,7 +36,42 @@ enum class LagrangeInd : size_t {
     Count     = 3
 };
 
+/**
+ * @class ImmersedEqSolver
+ * @brief BiCGSTAB implementation specifically tailored for ImmersedEq systems.
+ */
+template <typename Real, typename Int>
+class ImmersedEqSolver:  public BiCGSTAB<Real> {
 
+    ImmersedEq<Real, Int>& imEq;
+
+    /**
+     * @brief Implementation of the matrix-vector multiplication for the BiCGSTAB loop.
+     */
+    void mult(Vec<Real>& vec, Vec<Real>& product, Singleton<Real> multProduct, Singleton<Real> preMultResult) const override;
+
+public:
+    /**
+     * @brief Constructor for the iterative solver.
+     * @param p
+     */
+    ImmersedEqSolver(ImmersedEq<Real, Int> &imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> &allocated9, Event* events11, Real tolerance, size_t maxIterations);
+};
+
+template <typename Real, typename Int>
+class SolverLauncher {
+private:
+    Real tolerance;
+    size_t maxIterations;
+    Vec<Real> allocated9;
+    Mat<Real> allocatedRHSHeightX7;
+
+public:
+
+    SolverLauncher(const Real &tolerance, size_t max_iterations, const Mat<Real> &gridVecs, Handle &hand);
+    void launch(ImmersedEq<Real, Int> &imEq, Event *events11, SimpleArray<Real> &result);
+
+};
 
 template <typename Real, typename Int> class ImmersedEqSolver;
 /**
@@ -58,7 +93,7 @@ class ImmersedEq {
 
     mutable Mat<Real> gridVecs = Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count) + 7);
     mutable Mat<Real> lagrangeVecs = Mat<Real>::create(maxSparseOffsets.size() - 1, static_cast<size_t>(LagrangeInd::Count)) ;
-    Mat<Real> allocatedRHSHeightX7 = gridVecs.subMat(0, static_cast<size_t>(GridInd::Count), dim.size(), 7);
+
 
     SimpleArray<Real> velocities = SimpleArray<Real>::create(dim.numDims() * dim.size()
         + dim.cols * dim.layers
@@ -73,6 +108,8 @@ class ImmersedEq {
     const Real3d delta;
 
     const Singleton<Real> dT;
+
+    Event lhsTimes;
 
     /**
      * @brief Resets all the base values. TODO: ask if modifications to B will be small instead of a total rewrite.
@@ -90,11 +127,9 @@ class ImmersedEq {
     void checkNNZB(size_t nnzB) const;
     friend ImmersedEqSolver<Real, Int>;
 
-    Vec<Real> allocated9 = Vec<Real>::create(9, hand5[0]);
-    Real tolerance;
-    size_t maxIterations;
-    Event lhsTimes;
-    SimpleArray<Real> RHS = SimpleArray<Real>::create(dim.size(), hand5[0]);
+
+    SolverLauncher<Real, Int> solverLauncher;
+
     std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(dim, gridVec(GridInd::EDS), &hand5[0], delta, events11);
 
 
@@ -173,30 +208,5 @@ public:
 
 
 };
-
-/**
- * @class ImmersedEqSolver
- * @brief BiCGSTAB implementation specifically tailored for ImmersedEq systems.
- */
-template <typename Real, typename Int>
-class ImmersedEqSolver:  public BiCGSTAB<Real> {
-
-    ImmersedEq<Real, Int>& imEq;
-
-    /**
-     * @brief Implementation of the matrix-vector multiplication for the BiCGSTAB loop.
-     */
-    void mult(Vec<Real>& vec, Vec<Real>& product, Singleton<Real> multProduct, Singleton<Real> preMultResult) const override;
-
-public:
-    /**
-     * @brief Constructor for the iterative solver.
-     * @param p
-     */
-    ImmersedEqSolver(ImmersedEq<Real, Int> &imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> &allocated9, Event* events11, Real tolerance, size_t maxIterations);
-};
-
-
-
 
 #endif //CUDABANDED_YURIFILEREADER_H
