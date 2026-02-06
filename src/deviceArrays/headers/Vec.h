@@ -183,6 +183,8 @@ public:
      */
     void add(const Vec<T>& x, const Singleton<T> *alpha, Handle* handle);
 
+    void add(const Vec &other, const Singleton<T> &timesOther, const Singleton<T> &timesThis, cudaStream_t &stream);
+
     /**
      * @brief Subtracts a scaled vector from this vector.
      * 

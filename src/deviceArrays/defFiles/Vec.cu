@@ -214,6 +214,26 @@ void Vec<T>::add(const Vec<T> &x, const Singleton<T> *alpha, Handle *handle) {
     else throw std::invalid_argument("Vec::add unsupported type.");
 }
 
+/**
+ * @brief Fused Multiply-Add kernel: A <- *a * A + *b * B
+ */
+template<typename T>
+__global__ void addWithScalarMultKernel(DeviceData1d<T> A, const DeviceData1d<T> B, const T* a, const T* b) {
+
+    if (const size_t idx = blockIdx.x * blockDim.x + threadIdx.x; idx < A.cols) A[idx] = (*a) * A[idx] + (*b) * B[idx];
+}
+
+template<typename T>
+void Vec<T>::add(const Vec<T>& other, const Singleton<T>& timesOther, const Singleton<T> &timesThis, cudaStream_t& stream) {
+    KernelPrep kp = this->kernelPrep();
+    addWithScalarMultKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
+        this->toKernel1d(),
+        other.toKernel1d(),
+        timesThis.data(),
+        timesOther.data()
+    );
+}
+
 template<typename T>
 void Vec<T>::subtract(const Vec<T> &x, const Singleton<T> *alpha, Singleton<T> buffer, Handle *handle) {
     std::unique_ptr<Handle> temp_hand_ptr;

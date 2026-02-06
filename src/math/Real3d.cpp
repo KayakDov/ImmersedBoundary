@@ -18,6 +18,15 @@ double &Real3d::operator[](size_t i) {
     }
 }
 
+double Real3d::operator[](size_t i) const{
+    switch (i) {
+        case 0: return x;
+        case 1: return y;
+        case 2: return z;
+        default: throw std::out_of_range("index out of range");
+    }
+}
+
 const Real3d Real3d::ZERO(0, 0, 0);
 
 double Real3d::normInf(const Real3d &other) const {

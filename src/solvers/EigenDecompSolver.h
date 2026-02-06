@@ -74,13 +74,17 @@ protected:
      */
     mutable SimpleArray<T> sizeOfB;
 
+    void eigenVecsL(size_t i, cudaStream_t stream);
+
+    void eigenValsL(size_t i, double delta, cudaStream_t stream);
+
     /**
      * @brief Compute eigenvalues and eigenvectors for L[i].
      *
      * @param i Index (0=x, 1=y, 2=z).
      * @param stream CUDA stream to execute kernels on.
      */
-    void eigenL(size_t idouble, double delta, cudaStream_t stream);
+    void eigenL(size_t i, Real3d delta, cudaStream_t stream);
 
 
 public:

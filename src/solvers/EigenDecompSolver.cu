@@ -47,17 +47,41 @@ __global__ void setUTildeKernel2d(DeviceData2d<T> uTilde,
 // ============================================================================
 
 template<typename T>
-void EigenDecompSolver<T>::eigenL(size_t i, const double delta, cudaStream_t stream) {//TODO: avoid redundant computation when eigen matrices are the same size
+void EigenDecompSolver<T>::eigenVecsL(size_t i, cudaStream_t stream) {
     KernelPrep kpVec = eVecs[i].kernelPrep();
     eigenMatLKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, stream>>>(
         eVecs[i].toKernel2d());
+}
 
+template<typename T>
+void EigenDecompSolver<T>::eigenValsL(size_t i, const double delta, cudaStream_t stream) {
     size_t n = eVecs[i]._cols;
     KernelPrep kpVal(n);
     eigenValLKernel<T><<<kpVal.numBlocks, kpVal.threadsPerBlock, 0, stream>>>(
         eVals.col(i).subVec(0, n, 1).toKernel1d(),
         delta
     );
+}
+
+template<typename T>
+void EigenDecompSolver<T>::eigenL(size_t i, const Real3d delta, cudaStream_t stream) {
+
+    int32_t sameAs = -1;
+
+    for (size_t j = 0; j < i; j++) if (eVecs[i].ptr() == eVecs[j].ptr()) {
+            sameAs = j;
+            break;
+        }
+
+    if (sameAs < 0) {
+        eigenVecsL(i, stream);
+        eigenValsL(i, delta[i], stream);
+    } else if (delta[i] == delta[sameAs]) eVals.col(i).set(eVals.col(sameAs), stream);
+    else  {
+        auto scale = sizeOfB.get(i);
+        scale.set(delta[sameAs] * delta[sameAs] / delta[i] / delta[i], stream);
+        this->eVals.col(i).add(eVals.col(sameAs), scale, Singleton<T>::ZERO, stream);
+    }
 }
 
 template<typename T>
@@ -150,12 +174,11 @@ template<typename T>
 EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2,
                                             SimpleArray<T> &sizeOfB, Handle* hand2, const Real2d delta, Event& event)
     : EigenDecompSolver<T>({colsXCols, rowsXRows}, maxDimX2, sizeOfB) {
-    this->eigenL(1, delta.y, hand2[1]);
+    this->eigenL(1, delta, hand2[1]);
     event.record(hand2[1]);
-    if (colsXCols.ptr() != rowsXRows.ptr()){
-        this->eigenL(0, delta.x, hand2[0]);
-        event.hold(hand2[0]);
-    }
+
+    this->eigenL(0, delta, hand2[0]);
+    event.hold(hand2[0]);
 }
 
 template<typename T>
@@ -172,19 +195,16 @@ EigenDecompSolver3d<T>::EigenDecompSolver3d(
     EigenDecompSolver<T>({colsXCols, rowsXRows, depthsXDepths}, maxDimX3, sizeOfB) {
 
 
-    this->eigenL(0, delta.x, hand3[1]);
+    this->eigenL(0, delta, hand3[1]);
     event[0].record(hand3[1]);
 
-    if (rowsXRows.ptr() != colsXCols.ptr()) {
-        this->eigenL(1, delta.y, hand3[2]);
-        event[1].record(hand3[2]);
-        event[1].hold(hand3[0]);
-    }
+    this->eigenL(1, delta, hand3[2]);
+    event[1].record(hand3[2]);
+    event[1].hold(hand3[0]);
 
-    if (depthsXDepths.ptr() != colsXCols.ptr() && depthsXDepths.ptr() != rowsXRows.ptr()) {
-        this->eigenL(2, delta.z, hand3[0]);
-        event[0].hold(hand3[0]);
-    }
+    this->eigenL(2, delta, hand3[0]);
+    event[0].hold(hand3[0]);
+
 
 }
 

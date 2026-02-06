@@ -11,6 +11,8 @@ class Real3d {
 
     double& operator[](size_t i);
 
+    double operator[](size_t i) const;
+
     static const Real3d ZERO;
 
     [[nodiscard]] double normInf(const Real3d& other) const;

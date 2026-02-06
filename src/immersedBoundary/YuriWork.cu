@@ -17,6 +17,8 @@
 #include <string>
 #include <cstdint>
 
+
+//TODO: ensure all cuda operations that use 0 to clear the space also clear nans.
 class LoadBHost {
 public:
     std::vector<int32_t> bRows, bCols;
