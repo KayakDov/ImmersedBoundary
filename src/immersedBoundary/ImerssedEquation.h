@@ -66,9 +66,6 @@ public:
         + dim.rows * dim.layers
         + dim.cols * dim.rows * (dim.layers > 1), hand5[0]);
 
-    std::shared_ptr<SimpleArray<Real>> f = std::make_shared<SimpleArray<Real>>(lagrangeVecs.col(static_cast<size_t>(LagrangeInd::f)));//TODO:these should probably be deleted and the primes should be resolved with passing indecies to setRHS.
-    std::shared_ptr<SimpleArray<Real>> p = std::make_shared<SimpleArray<Real>>(gridVecs.col(static_cast<size_t>(GridInd::p)));
-
     //CSR, maps from Eularian where p lives space to Lagrangian space where f lives (f rows, p cols)
     std::unique_ptr<SparseMat<Real, Int>> B = std::make_unique<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
     //CSC, maps from Lagrangian space to the discretized vector field space R^3 -> R^3 (3p + rows, f cols)
@@ -119,9 +116,10 @@ private:
      * @param offsetsB if csc == true, then this is the column offsets, otherwise the row offsets.
      * @param indsB  if csc == true then this should be row indices, otherwise the column indices.
      * @param valuesB The non zero values in B.
+     * @param prime
      * @return The solution, best to write this data to somewhere else as it will be overwritten when the method runs again.
      */
-    SimpleArray<Real> solve(size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB);
+    SimpleArray<Real> solve(size_t nnzB, Int *offsetsB, Int *indsB, Real *valuesB, bool prime);
 
 public:
     void multSparse(const std::unique_ptr<SparseMat<Real, Int>> &mat, const SimpleArray<Real> &vec, SimpleArray<Real> &result, const
@@ -155,7 +153,7 @@ public:
      * Generates the RHS value from the base data.
      * @return The right hand side of the equation.
      */
-    void setRHS();
+    void setRHS(bool prime);
 
     SimpleArray<Real> solve();
 

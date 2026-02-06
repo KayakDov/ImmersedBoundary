@@ -153,13 +153,16 @@ SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
 }
 
 template<typename Real, typename Int>//TODO: rewrite this method so that it takes indices for p and F, and remove p and f as pointers all together.
-void ImmersedEq<Real, Int>::setRHS() {
+void ImmersedEq<Real, Int>::setRHS(bool prime) {
+
+    auto p = gridVec(prime ? GridInd::RHSPPrime : GridInd::p);
+    auto f = lagrangeVec(prime? LagrangeInd::RHSFPrime : LagrangeInd::f);
 
     auto pSize = gridVec(GridInd::RHS);
 
-    pSize.set(*p, hand5[0]);
+    pSize.set(p, hand5[0]);
 
-    multSparse(B, *f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
+    multSparse(B, f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
     //p <- BT*f+p
 
     eds->solve(RHS, pSize, hand5[0]);
@@ -301,13 +304,8 @@ void ImmersedEq<Real, Int>::solve(
     events11[1].record(hand5[1]);
     events11[1].hold(hand5[0]);
 
-    p = std::make_shared<SimpleArray<Real>>(gridVec(GridInd::RHSPPrime));
-    f = std::make_shared<SimpleArray<Real>>(lagrangeVec(LagrangeInd::RHSFPrime));
-
-    solve(resultP, nnzB, rowOffsetsB, colIndsB, valuesB);
-
-    p = std::make_shared<SimpleArray<Real>>(gridVec(GridInd::p));
-    f = std::make_shared<SimpleArray<Real>>(lagrangeVec(LagrangeInd::f));//2 (B p' - RHSf')
+    auto resultDevice = solve(nnzB, rowOffsetsB, colIndsB, valuesB, true);
+    resultDevice.get(resultP, hand5[0]);
 
     auto fResultDevice = lagrangeVec(LagrangeInd::fPrime);
     multSparse(B, gridVec(GridInd::pPrime), fResultDevice, Singleton<Real>::TWO, Singleton<Real>::ZERO, false);
@@ -323,12 +321,13 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
     size_t nnzB,
     Int *offsetsB,
     Int *indsB,
-    Real *valuesB
+    Real *valuesB,
+    bool prime
 ) {
 
     setSparse(B, nnzB, offsetsB, indsB, valuesB, hand5[0]);
 
-    setRHS();
+    setRHS(prime);
 
     return solve();
 }
@@ -358,7 +357,7 @@ void ImmersedEq<Real, Int>::solve(
     Real *valuesB
 ) {
 
-    auto resultDevice = solve(nnzB, offsetsB, indsB, valuesB);
+    auto resultDevice = solve(nnzB, offsetsB, indsB, valuesB, false);
     resultDevice.get(result, hand5[0]);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
