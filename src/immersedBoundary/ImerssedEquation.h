@@ -98,7 +98,7 @@ private:
     Real tolerance;
     size_t maxIterations;
     Event lhsTimes;
-    SimpleArray<Real> RHSSpace = SimpleArray<Real>::create(dim.size(), hand5[0]);
+    SimpleArray<Real> RHS = SimpleArray<Real>::create(dim.size(), hand5[0]);
     std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(dim, gridVec(GridInd::EDS), &hand5[0], delta, events11);
 
 
@@ -153,10 +153,9 @@ public:
 
     /**
      * Generates the RHS value from the base data.
-     * @param reset Check to false if this method was already called with the current base data.
      * @return The right hand side of the equation.
      */
-    SimpleArray<Real> RHS(bool reset = true);
+    void setRHS();
 
     SimpleArray<Real> solve();
 

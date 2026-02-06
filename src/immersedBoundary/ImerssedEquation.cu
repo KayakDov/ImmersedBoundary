@@ -153,20 +153,17 @@ SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
 }
 
 template<typename Real, typename Int>//TODO: rewrite this method so that it takes indices for p and F, and remove p and f as pointers all together.
-SimpleArray<Real> ImmersedEq<Real, Int>::RHS(const bool reset) {
+void ImmersedEq<Real, Int>::setRHS() {
 
-    if (reset) {
+    auto pSize = gridVec(GridInd::RHS);
 
-        auto pSize = gridVec(GridInd::RHS);
+    pSize.set(*p, hand5[0]);
 
-        pSize.set(*p, hand5[0]);
+    multSparse(B, *f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
+    //p <- BT*f+p
 
-        multSparse(B, *f, pSize, Singleton<Real>::TWO, Singleton<Real>::ONE, true);
-        //p <- BT*f+p
+    eds->solve(RHS, pSize, hand5[0]);
 
-        eds->solve(RHSSpace, pSize, hand5[0]);
-    }
-    return RHSSpace;
 }
 
 /**
@@ -331,7 +328,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve(
 
     setSparse(B, nnzB, offsetsB, indsB, valuesB, hand5[0]);
 
-    RHS(true);
+    setRHS();
 
     return solve();
 }
@@ -342,7 +339,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve() {
     //TODO: should the initial guess be random, or the RHS of the equation?
 
     auto result = gridVec(GridInd::Result);
-    result.set(RHSSpace, hand5[0]);
+    result.set(RHS, hand5[0]);
     // baseData.result.fillRandom(&hand5[0]);
 
     ImmersedEqSolver<Real, Int> solver(*this, allocatedRHSHeightX7, allocated9, events11, tolerance, maxIterations);
@@ -374,7 +371,7 @@ ImmersedEqSolver<Real, Int>::ImmersedEqSolver(//TODO: build this into EmerssedEq
     Real tolerance,
     size_t maxIterations
 )
-    : BiCGSTAB<Real>(imEq.RHS(false), imEq.hand5.get(), events11, &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
+    : BiCGSTAB<Real>(imEq.RHS, imEq.hand5.get(), events11, &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
       imEq(imEq) {
 }
 
