@@ -3,73 +3,52 @@ program test_immersed_eq
     use fortranbindings_mod
     implicit none
 
+    integer(C_SIZE_T), parameter :: height = 3, width = 2, depth = 2
+    integer(C_SIZE_T), parameter :: total_size = height * width * depth
+    real(C_DOUBLE) :: p(total_size), f(2), result(total_size)
 
-    ! Parameters matching your C++ test
-    integer(C_SIZE_T), parameter :: height = 3
-    integer(C_SIZE_T), parameter :: width  = 2
-    integer(C_SIZE_T), parameter :: depth  = 2
-    integer(C_SIZE_T), parameter :: total_size = height * width * depth ! 12
+    integer(C_SIZE_T), parameter :: nnzB = 1
+    integer(C_INT32_T)           :: rowOffsetsB(total_size + 1)
+    integer(C_INT32_T)           :: colIndsB(nnzB)
+    real(C_DOUBLE)               :: valuesB(nnzB)
+    integer(C_SIZE_T)            :: i
 
-    ! Data arrays
-    real(C_DOUBLE) :: p(total_size)
-    real(C_DOUBLE) :: f(2)
-    real(C_DOUBLE) :: result(total_size)
-
-    ! Sparse Matrix data (CSR format)
-    integer(C_SIZE_T), parameter :: nnz = 1
-    integer(C_INT32_T) :: rowPointers(nnz)
-    integer(C_INT32_T) :: colOffsets(total_size + 1)
-    real(C_DOUBLE)     :: values(nnz)
-
-    integer(C_SIZE_T) :: i
-
-    ! 1. Initialize data matching your C++ vectors
+    ! 1. Data Setup
     f = [1.0_C_DOUBLE, 2.0_C_DOUBLE]
-
-    ! p = {-2, 0, ..., 0, 2}
     p = 0.0_C_DOUBLE
     p(1) = -2.0_C_DOUBLE
     p(total_size) = 2.0_C_DOUBLE
 
-    ! 2. Initialize Sparse Matrix (matching C++ logic)
-    ! Note: We use 0 and 1 explicitly because the C++ solver expects 0-based indices
-    values(1) = 1.0_C_DOUBLE
-    rowPointers(1) = 0
-
-    colOffsets(1) = 0
+    ! 2. Sparse Matrix B (CSR)
+    valuesB(1) = 1.0_C_DOUBLE
+    colIndsB(1) = 0
+    rowOffsetsB(1) = 0
     do i = 2, total_size + 1
-        colOffsets(i) = 1
+        rowOffsetsB(i) = 1
     end do
 
-    ! 3. Call the Generated Wrapper
-    ! Using the generic name for init
+    ! 3. Call Initialization
     print *, "Initializing Immersed Equation..."
     call init_immersed_eq_d_i32( &
             height, width, depth, &
-            nnz, &
+            nnzB, &
             p, f, &
-            1.0_C_DOUBLE, 1.0_C_DOUBLE, 1.0_C_DOUBLE, &
-            1e-6_C_DOUBLE, &
-            3_C_SIZE_T &
+            1.0_C_DOUBLE, 1.0_C_DOUBLE, 1.0_C_DOUBLE, & ! dx, dy, dz
+            1.0_C_DOUBLE, &                             ! dt
+            1.0e-6_C_DOUBLE, &                          ! tolerance (fixed typo)
+            3_C_SIZE_T &                                ! maxIter
             )
 
     ! 4. Solve
-    ! Using the specific name as we removed generic for solve
     print *, "Solving..."
-    call solve_immersed_eq_d_i32( &
-            result, &
-            nnz, &
-            rowPointers, &
-            colOffsets, &
-            values, &
-            .true. &               ! multiStream
-            )
+    call solve_immersed_eq_d_i32(result, nnzB, rowOffsetsB, colIndsB, valuesB)
 
-    ! 5. Print Results
+    ! 5. Results
     print *, "Result:"
-    do i = 1, total_size
-        write(*, '(F6.2, " ")', advance='no') result(i)
-    end do
-    print *
+    print '(12F6.2)', result
+
+    ! 6. The "Magic" Fix: Cleanup
+    print *, "Finalizing..."
+    call finalize_immersed_eq_d_i32()
 
 end program test_immersed_eq

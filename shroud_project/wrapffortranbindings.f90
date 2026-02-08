@@ -227,6 +227,26 @@ module fortranbindings_mod
             real(C_FLOAT), intent(IN) :: UGamma(*)
             real(C_FLOAT), intent(IN) :: uStar(*)
         end subroutine solve_immersed_eq_primes_s_i64
+
+        subroutine finalize_immersed_eq_d_i32() &
+                bind(C, name="FOR_finalizeImmersedEq_d_i32")
+            implicit none
+        end subroutine finalize_immersed_eq_d_i32
+
+        subroutine finalize_immersed_eq_s_i32() &
+                bind(C, name="FOR_finalizeImmersedEq_s_i32")
+            implicit none
+        end subroutine finalize_immersed_eq_s_i32
+
+        subroutine finalize_immersed_eq_d_i64() &
+                bind(C, name="FOR_finalizeImmersedEq_d_i64")
+            implicit none
+        end subroutine finalize_immersed_eq_d_i64
+
+        subroutine finalize_immersed_eq_s_i64() &
+                bind(C, name="FOR_finalizeImmersedEq_s_i64")
+            implicit none
+        end subroutine finalize_immersed_eq_s_i64
     end interface
 
     ! splicer begin additional_declarations

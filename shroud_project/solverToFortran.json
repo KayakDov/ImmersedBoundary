@@ -11625,7 +11625,7 @@
                     ],
                     "typemap_name": "void"
                 },
-                "decl": "void solveImmersedEqPrimes_s_i64(\n    float* resultPPrime +intent(out) +rank(1),\n    float* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int64_t *rowOffsetsB +intent(in) +rank(1),\n    int64_t *colIndsB +intent(in) +rank(1),\n    float *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int64_t *colOffsetsR +intent(in) +rank(1),\n    int64_t *rowIndsR +intent(in) +rank(1),\n    float *valuesR +intent(in) +rank(1),\n    float *UGamma +intent(in) +rank(1),\n    float* uStar +intent(in) +rank(1)\n)",
+                "decl": "void solveImmersedEqPrimes_s_i64(\n    float* resultPPrime +intent(out) +rank(1),\n    float* resultFPrime +intent(out) +rank(1),\n    size_t nnzB,\n    int64_t *rowOffsetsB +intent(in) +rank(1),\n    int64_t *colIndsB +intent(in) +rank(1),\n    float *valuesB +intent(in) +rank(1),\n    size_t nnzR,\n    int64_t *colOffsetsR +intent(in) +rank(1),\n    int64_t *rowIndsR +intent(in) +rank(1),\n    float *valuesR +intent(in) +rank(1),\n    float *UGamma +intent(in) +rank(1),\n    float* uStar +intent(in) +rank(1)\n)\n",
                 "declgen": "void solveImmersedEqPrimes_s_i64(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1))",
                 "linenumber": 163,
                 "name": "solveImmersedEqPrimes_s_i64",
@@ -12691,6 +12691,358 @@
                         "uStar"
                     ],
                     "function_name": "solveImmersedEqPrimes_s_i64"
+                }
+            },
+            {
+                "<FUNCTION>": "finalizeImmersedEq_d_i32  12 ****************************************",
+                "ast": {
+                    "declarator": {
+                        "name": "finalizeImmersedEq_d_i32",
+                        "params": [],
+                        "typemap_name": "void"
+                    },
+                    "specifier": [
+                        "void"
+                    ],
+                    "typemap_name": "void"
+                },
+                "decl": "void finalizeImmersedEq_d_i32()",
+                "declgen": "void finalizeImmersedEq_d_i32(void)",
+                "linenumber": 182,
+                "name": "finalizeImmersedEq_d_i32",
+                "options": {},
+                "wrap": {
+                    "c": true,
+                    "fortran": true
+                },
+                "zz_bind": {
+                    "c": {
+                        "+result": {
+                            "fmtdict": {
+                                "C_call_function": "finalizeImmersedEq_d_i32(\t)",
+                                "C_name": "FOR_finalizeImmersedEq_d_i32",
+                                "C_prototype": "void",
+                                "C_return_type": "void",
+                                "i_name_function": "c_finalize_immersed_eq_d_i32",
+                                "stmt_name": "c_subroutine",
+                                "typemap_name": "void"
+                            },
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            },
+                            "stmt": "c_subroutine"
+                        }
+                    },
+                    "f": {
+                        "+result": {
+                            "fmtdict": {
+                                "C_call_function": "finalizeImmersedEq_d_i32(\t)",
+                                "C_name": "FOR_finalizeImmersedEq_d_i32",
+                                "C_prototype": "void",
+                                "C_return_type": "void",
+                                "F_arguments": "",
+                                "F_subprogram": "subroutine",
+                                "f_call_function": "c_finalize_immersed_eq_d_i32",
+                                "i_arguments": "",
+                                "i_name_function": "finalize_immersed_eq_d_i32",
+                                "i_subprogram": "subroutine",
+                                "stmt_name": "f_subroutine",
+                                "typemap_name": "void"
+                            },
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            },
+                            "stmt": "f_subroutine"
+                        }
+                    },
+                    "share": {
+                        "+result": {
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            }
+                        }
+                    }
+                },
+                "zz_fmtdict": {
+                    "C_name_api": "finalizeImmersedEq_d_i32",
+                    "F_name_api": "finalize_immersed_eq_d_i32",
+                    "F_name_function": "finalize_immersed_eq_d_i32",
+                    "F_name_generic": "finalize_immersed_eq_d_i32",
+                    "F_name_impl": "finalize_immersed_eq_d_i32",
+                    "c_arglist": [
+                        "c_var"
+                    ],
+                    "f_arglist": [
+                        "f_var"
+                    ],
+                    "function_name": "finalizeImmersedEq_d_i32"
+                }
+            },
+            {
+                "<FUNCTION>": "finalizeImmersedEq_s_i32  13 ****************************************",
+                "ast": {
+                    "declarator": {
+                        "name": "finalizeImmersedEq_s_i32",
+                        "params": [],
+                        "typemap_name": "void"
+                    },
+                    "specifier": [
+                        "void"
+                    ],
+                    "typemap_name": "void"
+                },
+                "decl": "void finalizeImmersedEq_s_i32()",
+                "declgen": "void finalizeImmersedEq_s_i32(void)",
+                "linenumber": 184,
+                "name": "finalizeImmersedEq_s_i32",
+                "options": {},
+                "wrap": {
+                    "c": true,
+                    "fortran": true
+                },
+                "zz_bind": {
+                    "c": {
+                        "+result": {
+                            "fmtdict": {
+                                "C_call_function": "finalizeImmersedEq_s_i32(\t)",
+                                "C_name": "FOR_finalizeImmersedEq_s_i32",
+                                "C_prototype": "void",
+                                "C_return_type": "void",
+                                "i_name_function": "c_finalize_immersed_eq_s_i32",
+                                "stmt_name": "c_subroutine",
+                                "typemap_name": "void"
+                            },
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            },
+                            "stmt": "c_subroutine"
+                        }
+                    },
+                    "f": {
+                        "+result": {
+                            "fmtdict": {
+                                "C_call_function": "finalizeImmersedEq_s_i32(\t)",
+                                "C_name": "FOR_finalizeImmersedEq_s_i32",
+                                "C_prototype": "void",
+                                "C_return_type": "void",
+                                "F_arguments": "",
+                                "F_subprogram": "subroutine",
+                                "f_call_function": "c_finalize_immersed_eq_s_i32",
+                                "i_arguments": "",
+                                "i_name_function": "finalize_immersed_eq_s_i32",
+                                "i_subprogram": "subroutine",
+                                "stmt_name": "f_subroutine",
+                                "typemap_name": "void"
+                            },
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            },
+                            "stmt": "f_subroutine"
+                        }
+                    },
+                    "share": {
+                        "+result": {
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            }
+                        }
+                    }
+                },
+                "zz_fmtdict": {
+                    "C_name_api": "finalizeImmersedEq_s_i32",
+                    "F_name_api": "finalize_immersed_eq_s_i32",
+                    "F_name_function": "finalize_immersed_eq_s_i32",
+                    "F_name_generic": "finalize_immersed_eq_s_i32",
+                    "F_name_impl": "finalize_immersed_eq_s_i32",
+                    "c_arglist": [
+                        "c_var"
+                    ],
+                    "f_arglist": [
+                        "f_var"
+                    ],
+                    "function_name": "finalizeImmersedEq_s_i32"
+                }
+            },
+            {
+                "<FUNCTION>": "finalizeImmersedEq_d_i64  14 ****************************************",
+                "ast": {
+                    "declarator": {
+                        "name": "finalizeImmersedEq_d_i64",
+                        "params": [],
+                        "typemap_name": "void"
+                    },
+                    "specifier": [
+                        "void"
+                    ],
+                    "typemap_name": "void"
+                },
+                "decl": "void finalizeImmersedEq_d_i64()",
+                "declgen": "void finalizeImmersedEq_d_i64(void)",
+                "linenumber": 186,
+                "name": "finalizeImmersedEq_d_i64",
+                "options": {},
+                "wrap": {
+                    "c": true,
+                    "fortran": true
+                },
+                "zz_bind": {
+                    "c": {
+                        "+result": {
+                            "fmtdict": {
+                                "C_call_function": "finalizeImmersedEq_d_i64(\t)",
+                                "C_name": "FOR_finalizeImmersedEq_d_i64",
+                                "C_prototype": "void",
+                                "C_return_type": "void",
+                                "i_name_function": "c_finalize_immersed_eq_d_i64",
+                                "stmt_name": "c_subroutine",
+                                "typemap_name": "void"
+                            },
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            },
+                            "stmt": "c_subroutine"
+                        }
+                    },
+                    "f": {
+                        "+result": {
+                            "fmtdict": {
+                                "C_call_function": "finalizeImmersedEq_d_i64(\t)",
+                                "C_name": "FOR_finalizeImmersedEq_d_i64",
+                                "C_prototype": "void",
+                                "C_return_type": "void",
+                                "F_arguments": "",
+                                "F_subprogram": "subroutine",
+                                "f_call_function": "c_finalize_immersed_eq_d_i64",
+                                "i_arguments": "",
+                                "i_name_function": "finalize_immersed_eq_d_i64",
+                                "i_subprogram": "subroutine",
+                                "stmt_name": "f_subroutine",
+                                "typemap_name": "void"
+                            },
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            },
+                            "stmt": "f_subroutine"
+                        }
+                    },
+                    "share": {
+                        "+result": {
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            }
+                        }
+                    }
+                },
+                "zz_fmtdict": {
+                    "C_name_api": "finalizeImmersedEq_d_i64",
+                    "F_name_api": "finalize_immersed_eq_d_i64",
+                    "F_name_function": "finalize_immersed_eq_d_i64",
+                    "F_name_generic": "finalize_immersed_eq_d_i64",
+                    "F_name_impl": "finalize_immersed_eq_d_i64",
+                    "c_arglist": [
+                        "c_var"
+                    ],
+                    "f_arglist": [
+                        "f_var"
+                    ],
+                    "function_name": "finalizeImmersedEq_d_i64"
+                }
+            },
+            {
+                "<FUNCTION>": "finalizeImmersedEq_s_i64  15 ****************************************",
+                "ast": {
+                    "declarator": {
+                        "name": "finalizeImmersedEq_s_i64",
+                        "params": [],
+                        "typemap_name": "void"
+                    },
+                    "specifier": [
+                        "void"
+                    ],
+                    "typemap_name": "void"
+                },
+                "decl": "void finalizeImmersedEq_s_i64()",
+                "declgen": "void finalizeImmersedEq_s_i64(void)",
+                "linenumber": 188,
+                "name": "finalizeImmersedEq_s_i64",
+                "options": {},
+                "wrap": {
+                    "c": true,
+                    "fortran": true
+                },
+                "zz_bind": {
+                    "c": {
+                        "+result": {
+                            "fmtdict": {
+                                "C_call_function": "finalizeImmersedEq_s_i64(\t)",
+                                "C_name": "FOR_finalizeImmersedEq_s_i64",
+                                "C_prototype": "void",
+                                "C_return_type": "void",
+                                "i_name_function": "c_finalize_immersed_eq_s_i64",
+                                "stmt_name": "c_subroutine",
+                                "typemap_name": "void"
+                            },
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            },
+                            "stmt": "c_subroutine"
+                        }
+                    },
+                    "f": {
+                        "+result": {
+                            "fmtdict": {
+                                "C_call_function": "finalizeImmersedEq_s_i64(\t)",
+                                "C_name": "FOR_finalizeImmersedEq_s_i64",
+                                "C_prototype": "void",
+                                "C_return_type": "void",
+                                "F_arguments": "",
+                                "F_subprogram": "subroutine",
+                                "f_call_function": "c_finalize_immersed_eq_s_i64",
+                                "i_arguments": "",
+                                "i_name_function": "finalize_immersed_eq_s_i64",
+                                "i_subprogram": "subroutine",
+                                "stmt_name": "f_subroutine",
+                                "typemap_name": "void"
+                            },
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            },
+                            "stmt": "f_subroutine"
+                        }
+                    },
+                    "share": {
+                        "+result": {
+                            "meta": {
+                                "abstract": "void",
+                                "intent": "subroutine"
+                            }
+                        }
+                    }
+                },
+                "zz_fmtdict": {
+                    "C_name_api": "finalizeImmersedEq_s_i64",
+                    "F_name_api": "finalize_immersed_eq_s_i64",
+                    "F_name_function": "finalize_immersed_eq_s_i64",
+                    "F_name_generic": "finalize_immersed_eq_s_i64",
+                    "F_name_impl": "finalize_immersed_eq_s_i64",
+                    "c_arglist": [
+                        "c_var"
+                    ],
+                    "f_arglist": [
+                        "f_var"
+                    ],
+                    "function_name": "finalizeImmersedEq_s_i64"
                 }
             }
         ],

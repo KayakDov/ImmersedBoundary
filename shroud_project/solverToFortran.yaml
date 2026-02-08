@@ -175,3 +175,15 @@ declarations:
           float *UGamma +intent(in) +rank(1),
           float* uStar +intent(in) +rank(1)
       )
+
+# ==========================================
+# Clean up
+# ==========================================
+  - decl: void finalizeImmersedEq_d_i32()
+    fortran_name: finalize_immersed_eq_d_i32
+  - decl: void finalizeImmersedEq_s_i32()
+    fortran_name: finalize_immersed_eq_s_i32
+  - decl: void finalizeImmersedEq_d_i64()
+    fortran_name: finalize_immersed_eq_d_i64
+  - decl: void finalizeImmersedEq_s_i64()
+    fortran_name: finalize_immersed_eq_s_i64

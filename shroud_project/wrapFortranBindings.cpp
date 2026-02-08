@@ -144,4 +144,32 @@ void FOR_solveImmersedEqPrimes_s_i64(float *resultPPrime,
     // splicer end function.solveImmersedEqPrimes_s_i64
 }
 
+void FOR_finalizeImmersedEq_d_i32(void)
+{
+    // splicer begin function.finalizeImmersedEq_d_i32
+    finalizeImmersedEq_d_i32();
+    // splicer end function.finalizeImmersedEq_d_i32
+}
+
+void FOR_finalizeImmersedEq_s_i32(void)
+{
+    // splicer begin function.finalizeImmersedEq_s_i32
+    finalizeImmersedEq_s_i32();
+    // splicer end function.finalizeImmersedEq_s_i32
+}
+
+void FOR_finalizeImmersedEq_d_i64(void)
+{
+    // splicer begin function.finalizeImmersedEq_d_i64
+    finalizeImmersedEq_d_i64();
+    // splicer end function.finalizeImmersedEq_d_i64
+}
+
+void FOR_finalizeImmersedEq_s_i64(void)
+{
+    // splicer begin function.finalizeImmersedEq_s_i64
+    finalizeImmersedEq_s_i64();
+    // splicer end function.finalizeImmersedEq_s_i64
+}
+
 }  // extern "C"

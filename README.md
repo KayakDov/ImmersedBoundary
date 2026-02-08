@@ -67,8 +67,41 @@ You must use "iso_c_binding" types to ensure Fortran memory matches the GPU:
 * integer(C_INT32_T) -> 4-byte integer
 
 ---
+### 4. Resource Management (Crucial)
+The solver uses a persistent state on the GPU. Failing to release this state before the Fortran program terminates will result in a `SIGABRT` or a CUDA driver error.
 
-## 4. Argument Reference
+* **The Rule:** Always call the `finalize` routine corresponding to your data type before the end of your program.
+
+| Routine                         | Purpose                   |
+|:--------------------------------|:--------------------------|
+| `finalize_immersed_eq_*()` | Cleans up.  No arguments. |
+
+
+---
+
+### 5. Code Example
+```fortran
+program test_solver
+    use iso_c_binding
+    use fortranbindings_mod
+    implicit none
+
+    ! ... (setup code) ...
+    
+    ! 1. Initialize 
+    call init_immersed_eq_d_i32(...)
+
+    ! 2. Solve Loop
+    do i = 1, 100
+        call solve_immersed_eq_d_i32(...)
+    end do
+
+    ! 3. Finalize - Do not skip this!
+    print *, "Cleaning up GPU resources..."
+    call finalize_immersed_eq_d_i32()
+end program test_solver
+```
+## 6. Argument Reference
 
 ### Initialization Routine (`initImmersedEq_*`)
 This routine allocates GPU memory and pre-computes the Eigen Decomposition.
@@ -128,7 +161,7 @@ This routine executes the coupled solver, returning results for both the grid do
 >
 > **Optimization (Reusing B and R):** If any of the arrays in B or R have not changed, pass `C_NULL_PTR` for `offsetsB`, `indsB`, or `valuesB` to skip redundant GPU memory transfers.
 
-## 5. Compiling & Linking
+## 7. Compiling & Linking
 
 To create your executable, you must link the C++ library and the CUDA runtimes:
 

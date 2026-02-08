@@ -84,6 +84,14 @@ void FOR_solveImmersedEqPrimes_s_i64(float *resultPPrime,
     int64_t *colOffsetsR, int64_t *rowIndsR, float *valuesR,
     float *UGamma, float *uStar);
 
+void FOR_finalizeImmersedEq_d_i32(void);
+
+void FOR_finalizeImmersedEq_s_i32(void);
+
+void FOR_finalizeImmersedEq_d_i64(void);
+
+void FOR_finalizeImmersedEq_s_i64(void);
+
 #ifdef __cplusplus
 }
 #endif

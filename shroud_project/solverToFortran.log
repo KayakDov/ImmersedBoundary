@@ -25,6 +25,14 @@ C c void solveImmersedEqPrimes_d_i64(double *resultPPrime +intent(out)+rank(1), 
 C f void solveImmersedEqPrimes_d_i64(double *resultPPrime +intent(out)+rank(1), double *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), double *valuesR +intent(in)+rank(1), double *UGamma +intent(in)+rank(1), double *uStar +intent(in)+rank(1))
 C c void solveImmersedEqPrimes_s_i64(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1))
 C f void solveImmersedEqPrimes_s_i64(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1))
+C c void finalizeImmersedEq_d_i32(void)
+C f void finalizeImmersedEq_d_i32(void)
+C c void finalizeImmersedEq_s_i32(void)
+C f void finalizeImmersedEq_s_i32(void)
+C c void finalizeImmersedEq_d_i64(void)
+C f void finalizeImmersedEq_d_i64(void)
+C c void finalizeImmersedEq_s_i64(void)
+C f void finalizeImmersedEq_s_i64(void)
 Close wrapFortranBindings.h
 Close wrapFortranBindings.cpp
 library Fortran wrappers
@@ -41,6 +49,10 @@ Fortran void solveImmersedEqPrimes_d_i32(double *resultPPrime +intent(out)+rank(
 Fortran void solveImmersedEqPrimes_s_i32(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int32_t *colOffsetsR +intent(in)+rank(1), int32_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1))
 Fortran void solveImmersedEqPrimes_d_i64(double *resultPPrime +intent(out)+rank(1), double *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), double *valuesR +intent(in)+rank(1), double *UGamma +intent(in)+rank(1), double *uStar +intent(in)+rank(1))
 Fortran void solveImmersedEqPrimes_s_i64(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1))
+Fortran void finalizeImmersedEq_d_i32(void)
+Fortran void finalizeImmersedEq_s_i32(void)
+Fortran void finalizeImmersedEq_d_i64(void)
+Fortran void finalizeImmersedEq_s_i64(void)
 C-interface f void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double dt, double tolerance, size_t maxBCGIterations)
 C-interface f void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double dt, double tolerance, size_t maxBCGIterations)
 C-interface f void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double dt, double tolerance, size_t maxBCGIterations)
@@ -53,6 +65,10 @@ C-interface f void solveImmersedEqPrimes_d_i32(double *resultPPrime +intent(out)
 C-interface f void solveImmersedEqPrimes_s_i32(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int32_t *rowOffsetsB +intent(in)+rank(1), int32_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int32_t *colOffsetsR +intent(in)+rank(1), int32_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1))
 C-interface f void solveImmersedEqPrimes_d_i64(double *resultPPrime +intent(out)+rank(1), double *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), double *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), double *valuesR +intent(in)+rank(1), double *UGamma +intent(in)+rank(1), double *uStar +intent(in)+rank(1))
 C-interface f void solveImmersedEqPrimes_s_i64(float *resultPPrime +intent(out)+rank(1), float *resultFPrime +intent(out)+rank(1), size_t nnzB, int64_t *rowOffsetsB +intent(in)+rank(1), int64_t *colIndsB +intent(in)+rank(1), float *valuesB +intent(in)+rank(1), size_t nnzR, int64_t *colOffsetsR +intent(in)+rank(1), int64_t *rowIndsR +intent(in)+rank(1), float *valuesR +intent(in)+rank(1), float *UGamma +intent(in)+rank(1), float *uStar +intent(in)+rank(1))
+C-interface f void finalizeImmersedEq_d_i32(void)
+C-interface f void finalizeImmersedEq_s_i32(void)
+C-interface f void finalizeImmersedEq_d_i64(void)
+C-interface f void finalizeImmersedEq_s_i64(void)
 Close wrapffortranbindings.f
 Close utilFortranBindings.cpp
 Close typesFortranBindings.h
