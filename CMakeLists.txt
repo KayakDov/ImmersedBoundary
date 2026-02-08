@@ -48,6 +48,8 @@ set(SHROUD_CPP
         src/deviceArrays/headers/sparse/SparseCSR.h
         src/deviceArrays/defFiles/SparseCOO.cpp
         src/deviceArrays/headers/sparse/SparseCOO.h
+        src/solvers/Thomas.cu
+        src/solvers/Thomas.cuh
 )
 
 # =========================

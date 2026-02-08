@@ -3,7 +3,7 @@ program test_immersed_eq
     use fortranbindings_mod
     implicit none
 
-    integer(C_SIZE_T), parameter :: height = 3, width = 2, depth = 2
+    integer(C_SIZE_T), parameter :: height = 3, width = 2, depth = 1
     integer(C_SIZE_T), parameter :: total_size = height * width * depth
     real(C_DOUBLE) :: p(total_size), f(2), result(total_size)
 
@@ -16,8 +16,8 @@ program test_immersed_eq
     ! 1. Data Setup
     f = [1.0_C_DOUBLE, 2.0_C_DOUBLE]
     p = 0.0_C_DOUBLE
-    p(1) = -2.0_C_DOUBLE
-    p(total_size) = 2.0_C_DOUBLE
+    p(1) = 2.0_C_DOUBLE
+    p(total_size) = -2.0_C_DOUBLE
 
     ! 2. Sparse Matrix B (CSR)
     valuesB(1) = 1.0_C_DOUBLE
@@ -48,7 +48,7 @@ program test_immersed_eq
     print '(12F6.2)', result
 
     ! 6. The "Magic" Fix: Cleanup
-    print *, "Finalizing..."
+    print *, "Finalizing"
     call finalize_immersed_eq_d_i32()
 
 end program test_immersed_eq

@@ -7,10 +7,10 @@
 
 
 template<typename Real, typename Int>
-void ImmersedEq<Real, Int>::checkNNZB(size_t nnzB) const {
-    if (nnzB > maxSparseVals.size()) {
+void ImmersedEq<Real, Int>::checkNNZ(size_t nnz) const {
+    if (nnz > maxSparseVals.size()) {
         throw std::invalid_argument(
-            "ImmersedEq::setSparse - NNZ Overflow: Requested nnzB (" + std::to_string(nnzB) +
+            "ImmersedEq::setSparse - NNZ Overflow: Requested nnzB (" + std::to_string(nnz) +
             ") exceeds maxB capacity (" + std::to_string(maxSparseVals.size()) + ")."
         );
     }
@@ -40,7 +40,7 @@ void ImmersedEq<Real, Int>::setSparse(
     Real *vals,
     Handle& hand
 ) {
-    checkNNZB(nnz);
+    checkNNZ(nnz);
     sparse = sparse->createWithPointer(
             maxSparseVals.subArray(0, nnz),
             maxSparseOffsets,

@@ -86,13 +86,14 @@ std::ostream& GpuOut<T>::write(std::ostream& os) const {
         cudaStreamSynchronize(current_stream);
 
         if (this->isText) {
+            os << "[";
             for (size_t j = 0; j < inner_dim; ++j) {
                 os << host_buffer[j];
                 if (j < inner_dim - 1) {
                     os << ", ";
                 }
             }
-            os << "\n";
+            os << "]\n";
         } else {
             os.write(reinterpret_cast<const char*>(host_buffer.data()), inner_dim * sizeof(T));
         }
