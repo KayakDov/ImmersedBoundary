@@ -17,6 +17,8 @@
 #include <string>
 #include <cstdint>
 
+#include "solvers/Thomas.cuh"
+
 
 //TODO: ensure all cuda operations that use 0 to clear the space also clear nans.
 class LoadBHost {
@@ -247,7 +249,9 @@ void testPrimes() {
 
 int main(int argc, char *argv[]) {
 
-    testPrimes<double, int32_t>();
+    // testPrimes<double, int32_t>();
 
-    loadYuriData<double>();
+    // loadYuriData<double>();
+
+    std::cout << Thomas<double>::test(5, 3) << std::endl;
 }
