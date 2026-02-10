@@ -159,6 +159,13 @@ public:
     void mult(const Vec<T>& other, Singleton<T> &result, Handle* handle = nullptr) const;
 
     /**
+     * Computes the Euclidean norm.
+     * @param result The result is placed here.
+     * @param hand The handle.
+     */
+    void norm(Singleton<T> result, Handle& hand) const;
+
+    /**
      * @brief Operator overload for multiplication with a matrix.
      * 
      * @param other Matrix to multiply with.
@@ -289,6 +296,8 @@ public:
      */
     template<class Int>
     void permute(Vec<Int> permutation, Vec<T> dst, Handle &hand);
+
+
 
 };
 

@@ -8,18 +8,19 @@
 
 
 template<typename Real>
-Thomas<Real>::Thomas(Mat<Real> &heightX2TimesNumSys) : cPrime(heightX2TimesNumSys.subMat(
-                                                           0,
-                                                           0,
-                                                           heightX2TimesNumSys._rows,
-                                                           heightX2TimesNumSys._cols / 2
-                                                       )),
-                                                       dPrime(heightX2TimesNumSys.subMat(
-                                                           0,
-                                                           heightX2TimesNumSys._cols / 2,
-                                                           heightX2TimesNumSys._rows,
-                                                           heightX2TimesNumSys._cols / 2
-                                                       )) {
+Thomas<Real>::Thomas(Mat<Real> heightX2TimesNumSys) :
+    cPrime(heightX2TimesNumSys.subMat(
+        0,
+        0,
+        heightX2TimesNumSys._rows,
+        heightX2TimesNumSys._cols / 2
+    )),
+    dPrime(heightX2TimesNumSys.subMat(
+        0,
+        heightX2TimesNumSys._cols / 2,
+        heightX2TimesNumSys._rows,
+        heightX2TimesNumSys._cols / 2
+    )) {
 }
 
 template<typename Real>
@@ -65,7 +66,10 @@ __global__ void solveThomasKernel(const DeviceData3d<Real> triDiags, DeviceData2
     }
 }
 
-
+/**
+ * @brief Specialized kernel for 2D Laplacian systems oriented along rows (transposed).
+ * Diagonal coefficients are hardcoded to 4 (primary) and -1 (off-diagonals).
+ */
 template<typename Real>
 __global__ void solveThomas2dLaplacianKernelTranspose(DeviceData2d<Real> x, const DeviceData2d<Real> b,
                                                       DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
@@ -88,6 +92,10 @@ __global__ void solveThomas2dLaplacianKernelTranspose(DeviceData2d<Real> x, cons
     }
 }
 
+/**
+ * @brief Specialized kernel for 2D Laplacian systems oriented along columns.
+ * Diagonal coefficients are hardcoded to 4 (primary) and -1 (off-diagonals).
+ */
 template<typename Real>
 __global__ void solveThomas2dLaplacianKernel(DeviceData2d<Real> x, const DeviceData2d<Real> b,
                                              DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
@@ -110,6 +118,10 @@ __global__ void solveThomas2dLaplacianKernel(DeviceData2d<Real> x, const DeviceD
     }
 }
 
+/**
+ * @brief Specialized kernel for 3D Laplacian systems oriented along rows (transposed).
+ * Diagonal coefficients are hardcoded to 6 (primary) and -1 (off-diagonals).
+ */
 template<typename Real>
 __global__ void solveThomas3dLaplacianKernelTranspose(DeviceData2d<Real> x, const DeviceData2d<Real> b,
                                                       DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
@@ -132,6 +144,10 @@ __global__ void solveThomas3dLaplacianKernelTranspose(DeviceData2d<Real> x, cons
     }
 }
 
+/**
+ * @brief Specialized kernel for 3D Laplacian systems oriented along the depth (Z-axis).
+ * Uses a 2D grid where each thread processes a vertical column of the tensor.
+ */
 template<typename Real>
 __global__ void solveThomas3dLaplacianKernel(DeviceData2d<Real> x, const DeviceData2d<Real> b,
                                              DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
@@ -155,61 +171,89 @@ __global__ void solveThomas3dLaplacianKernel(DeviceData2d<Real> x, const DeviceD
 }
 
 template<typename Real>
-__global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, const DeviceData3d<Real> b,
+__global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceData3d<Real> b,
                                                    DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
-    GridInd2d system;
+    GridInd3d system(idy(), idx(), 0);
     if (system.row >= x.rows || system.col >= x.cols) return;
-
+//__device__  DeviceData1d(size_t size, DeviceData3d<T> &src, GridInd3d &ind0, size_t dRow, size_t dCol, size_t dLayer);
     DeviceData1d<Real> depthX(x.layers, x, system, 0, 0, 1);
     DeviceData1d<Real> depthB(b.layers, b, system, 0, 0, 1);
 
     Real rhs = depthB[0];
     Real denom;
-    superPrime(0, system) = -1.0 / 6;
-    bPrime(0, system) = rhs / 6;
-    for (size_t layer = 1; layer < x.layers; layer++) {
-        rhs = depthB(layer);
-        denom = 1 / (6 + superPrime(layer - 1, system));
 
-        superPrime(layer, system) = -denom;
-        bPrime(layer, system) = (rhs + bPrime(layer - 1, system)) * denom;
+    size_t sysFlatInd = system.col * x.rows +system.row;
+
+    superPrime(0, sysFlatInd) = -1.0 / 6;
+    bPrime(0, sysFlatInd) = rhs / 6;
+    for (size_t layer = 1; layer < x.layers; layer++) {
+        rhs = depthB[layer];
+        denom = 1 / (6 + superPrime(layer - 1, sysFlatInd));
+
+        superPrime(layer, sysFlatInd) = -denom;
+        bPrime(layer, sysFlatInd) = (rhs + bPrime(layer - 1, sysFlatInd)) * denom;
     }
     size_t n = x.layers - 1;
-    depthX(n) = bPrime(n, system);
+    depthX[n] = bPrime(n, sysFlatInd);
     for (int32_t layer = n - 1; layer >= 0; --layer)
-        depthX(layer) = bPrime(layer, system) - superPrime(layer, system) * depthX(layer + 1);
+        depthX[layer] = bPrime(layer, sysFlatInd) - superPrime(layer, sysFlatInd) * depthX[layer + 1];
 }
 
 template<typename Real>
-void Thomas<Real>::solve(const Tensor<Real> &triDiags, Mat<Real> &result, const Mat<Real> &b, Handle &hand) {
+void Thomas<Real>::solve(const Tensor<Real> &triDiags, Mat<Real> &result, Mat<Real> &b, Handle &hand) {
     KernelPrep kp(triDiags._layers);
-    solveThomasKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(triDiags.toKernel3d(), result.toKernel2d(),
-                                                                     b.toKernel2d(), cPrime.toKernel2d(),
-                                                                     dPrime.toKernel2d());
+    solveThomasKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+        triDiags.toKernel3d(),
+        result.toKernel2d(),
+        b.toKernel2d(),
+        cPrime.toKernel2d(),
+        dPrime.toKernel2d()
+    );
 }
 
 template<typename Real>
-void Thomas<Real>::solveLaplacian(Mat<Real> &result, const Mat<Real> &b, bool is3d, Handle &hand) {
+void Thomas<Real>::solveLaplacian(Mat<Real> &result, Mat<Real> &b, bool is3d, Handle &hand) {
     KernelPrep kp(result._cols);
     if (is3d) solveThomas3dLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        result.toKernel2d(), b.toKernel2d(), cPrime.toKernel2d(), dPrime.toKernel2d());
+        result.toKernel2d(),
+        b.toKernel2d(),
+        cPrime.toKernel2d(),
+        dPrime.toKernel2d()
+    );
     else solveThomas2dLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        result.toKernel2d(), b.toKernel2d(), cPrime.toKernel2d(), dPrime.toKernel2d());
+        result.toKernel2d(),
+        b.toKernel2d(),
+        cPrime.toKernel2d(),
+        dPrime.toKernel2d()
+    );
 }
 
 template<typename Real>
-void Thomas<Real>::solveLaplacianTranspose(Mat<Real> &result, const Mat<Real> &b, bool is3d, Handle &hand) {
-    KernelPrep kp(result._cols);
-    if (is3d) solveThomas3dLaplacianKernelTranposeKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        result.toKernel2d(), b.toKernel2d(), cPrime.toKernel2d(), dPrime.toKernel2d());
+void Thomas<Real>::solveLaplacianTranspose(Mat<Real> &result, Mat<Real> &b, bool is3d, Handle &hand) {
+    KernelPrep kp(result._rows);
+    if (is3d) solveThomas3dLaplacianKernelTranspose<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+        result.toKernel2d(),
+        b.toKernel2d(),
+        cPrime.toKernel2d(),
+        dPrime.toKernel2d()
+    );
     else solveThomas2dLaplacianKernelTranspose<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        result.toKernel2d(), b.toKernel2d(), cPrime.toKernel2d(), dPrime.toKernel2d());
+        result.toKernel2d(),
+        b.toKernel2d(),
+        cPrime.toKernel2d(),
+        dPrime.toKernel2d()
+    );
 }
 
 template<typename Real>
-void Thomas<Real>::solveLaplacianDepths(Tensor<Real> &result, const Tensor<Real> &b, Handle &hand) {
-    KernelPrep kp(result._cols);
-    solveThomas3dLaplacianDepthsKernelKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(result.toKernel3d(), b.toKernel3d(), cPrime.toKernel2d(), dPrime.toKernel2d());
+void Thomas<Real>::solveLaplacianDepths(Tensor<Real> &result, Tensor<Real> &b, Handle &hand) {
+    KernelPrep kp(result.layerSize());
+    solveThomas3dLaplacianDepthsKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+        result.toKernel3d(),
+        b.toKernel3d(),
+        cPrime.toKernel2d(),
+        dPrime.toKernel2d()
+    );
 
 }
 

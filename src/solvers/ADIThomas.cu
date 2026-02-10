@@ -38,12 +38,13 @@ __global__ void setDepthRKernel(DeviceData3d<Real> r, DeviceData3d<Real> x, Devi
 
 }
 
-template<typename Real>//TODO: implement for 2d
-__global__ void residualNorm3dBlockKernel(DeviceData3d<Real> x, DeviceData3d<Real> b, Real* blockSums) {
-    extern __shared__ Real s[];
-    Real& sum = s[threadIdx.x];
-    sum = 0;
+template<typename Real>
+__global__ void residual3dKernel(
+    DeviceData3d<Real> x,
+    DeviceData3d<Real> b,
+    DeviceData3d<Real> residual
 
+) {
     if (GridInd3d ind; ind < x) {
 
         Real Lx =
@@ -55,44 +56,60 @@ __global__ void residualNorm3dBlockKernel(DeviceData3d<Real> x, DeviceData3d<Rea
             - (ind.layer < x.layers - 1) * x(ind, 0,  0,  1)
             - (ind.layer > 0)            * x(ind, 0,  0, -1);
 
-        Real r = b[ind] - Lx;
-        sum = r * r;
+        residual[ind] = b[ind] - Lx;
     }
+}
 
-    __syncthreads();
-
-    for (int stride = blockDim.x / 2; stride > 0; stride >>= 1) {
-        if (threadIdx.x < stride)
-            sum += s[threadIdx.x + stride];
-        __syncthreads();
-    }
-
-    if (threadIdx.x == 0)
-        blockSums[blockIdx.x] = sum;
+template<typename Real>
+ADIThomas<Real>::ADIThomas(const GridDim &dim, size_t max_iterations, const Real &tolerance) :
+    dim(dim),
+    maxIterations(max_iterations),
+    tolerance(tolerance),
+    bNorm(Singleton<Real>::create()),
+    rNorm(Singleton<Real>::create()),
+    thomasSratch(Mat<Real>::create(dim.maxDim(), 2 * std::max(std::max(dim.rows * dim.cols, dim.rows * dim.layers),dim.layers*dim.cols))),
+    thomasCols(thomasSratch.subMat(0,0,dim.rows, 2 * dim.cols * dim.layers)),
+    thomasRows(thomasSratch.subMat(0,0,dim.cols, 2 * dim.rows * dim.layers)),
+    thomasDepths(thomasSratch.subMat(0,0,dim.layers, 2 * dim.rows * dim.cols))
+{
 }
 
 template<typename Real>
 void ADIThomas<Real>::solve(SimpleArray<Real>& x, const SimpleArray<Real>& b, Handle &hand) {
-    auto xTensor = x.tensor(dim.rows, dim.cols);
 
+    auto xTensor = x.tensor(dim.rows, dim.cols);
     auto bTensor = b.tensor(dim.rows, dim.cols);
-    auto bMat = b.matrix(dim.rows);
     auto rTensor = r.tensor(dim.rows, dim.cols);
+
 
     KernelPrep kp = rTensor.kernelPrep();
 
+    b.norm(bNorm, hand);
+
+    double bNormHost = bNorm.get(hand);
+
+    if (bNormHost < tolerance) {
+        x.fill(0, hand);
+        return;
+    }
 
     for (size_t i = 0; i < maxIterations; ++i) {
-        setRowRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(r, xTensor, bTensor);
-        thomas.solveLaplacian(x.matrix(dim.rows * dim.layers), b, dim.numDims() == 3, hand);
-        setColRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(r, xTensor, bTensor);
-        thomas.solveLaplacianTranspose(x.matrix(dim.rows), b, dim.numDims() == 3, hand);
+        setRowRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
+        thomasCols.solveLaplacian(x.matrix(dim.rows * dim.layers), r.matrix(dim.rows * dim.layers), dim.numDims() == 3, hand);
+
+        setColRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
+        thomasRows.solveLaplacianTranspose(x.matrix(dim.rows), r.matrix(dim.rows), dim.numDims() == 3, hand);
+
         if (dim.numDims() == 3) {
-            setDepthRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(r, xTensor, bTensor);
-            thomas.solveLaplacianDepths(xTensor, bTensor, hand);
+            setDepthRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
+            thomasDepths.solveLaplacianDepths(xTensor, rTensor, hand);
         }
 
-        residualNorm3dBlockKernel<<<>>>(x.tokernel3d(), b.tokernel3d(), residual.data(), hand);
-        if (r.get() < tolerance)
+        residual3dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(xTensor.toKernel3d(), bTensor.toKernel3d(), r.toKernle3d());
+
+        r.norm(rNorm, hand);
+
+
+        if (rNorm.get(hand)/bNormHost < tolerance) break;
     }
 }

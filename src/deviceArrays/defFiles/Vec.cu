@@ -62,6 +62,15 @@ void Vec<T>::mult(
     else static_assert(!std::is_same_v<T, float> && !std::is_same_v<T, double>, "Vec::add unsupported type.");
 }
 
+template<typename T>
+void Vec<T>::norm(Singleton<T> result, Handle &hand) const {
+    if constexpr (std::is_same_v<T, float>)
+        cublasSnrm2(hand, this->_cols, this->toKernel1d(), this->_ld,  result.toKernel1d());
+    else if constexpr (std::is_same_v<T, double>)
+        cublasDnrm2(hand, this->_cols, this->toKernel1d(), this->_ld, result.toKernel1d());
+    else static_assert(!std::is_same_v<T, float> && !std::is_same_v<T, double>, "Vec::add unsupported type.");
+}
+
 
 template<typename T>
 Vec<T> Vec<T>::operator*(const Mat<T> &other) const {

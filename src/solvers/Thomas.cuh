@@ -22,7 +22,7 @@ public:
      * @param heightX2TimesNumSys A matrix providing the temporary storage for the
      * forward sweep. Dimensions must be [SystemSize x (2 * NumSystems)].
      */
-    explicit Thomas(Mat<Real> &heightX2TimesNumSys);
+    explicit Thomas(Mat<Real> heightX2TimesNumSys);
 
     /**
      * @brief Initializes the solver and the necessary scratch space.
@@ -39,15 +39,35 @@ public:
      * @param b        [in] 2D Matrix [SystemSize x NumSystems] containing the Right-Hand Side.
      * @param hand     CUDA Handle for stream-ordered execution.
      */
-    void solve(const Tensor<Real>& triDiags, Mat<Real>& result, const Mat<Real>& b, Handle &hand);
+    void solve(const Tensor<Real>& triDiags, Mat<Real>& result, Mat<Real>& b, Handle &hand);
 
-    void solve2DLaplacian(Mat<Real> &result, const Mat<Real> &b, Handle &hand);
+    /**
+     * @brief Solves a batch of Laplacian systems along the columns of a 2D matrix.
+     * * Uses optimized constant coefficients for the Laplacian operator.
+     * @param result [out] Matrix to store solution.
+     * @param b      [in] Right-hand side matrix.
+     * @param is3d   If true, uses 3D Laplacian coefficients (1/6), else 2D (1/4).
+     * @param hand   CUDA Handle for execution. //TODO: check that default values of 4 (6) and -1 are correct everywhere, including for points that are at the edge of the grid.
+     */
+    void solveLaplacian(Mat<Real> &result, Mat<Real> &b, bool is3d, Handle &hand);
 
-    void solveLaplacian(Mat<Real> &result, const Mat<Real> &b, bool is3d, Handle &hand);
+    /**
+     * @brief Solves a batch of Laplacian systems along the rows of a 2D matrix (transposed orientation).
+     * * @param result [out] Matrix to store solution.
+     * @param b      [in] Right-hand side matrix.
+     * @param is3d   If true, uses 3D Laplacian coefficients, else 2D.
+     * @param hand   CUDA Handle for execution.
+     */
+    void solveLaplacianTranspose(Mat<Real> &result, Mat<Real> &b, bool is3d, Handle &hand);
 
-    void solveLaplacianTranspose(Mat<Real> &result, const Mat<Real> &b, bool is3d, Handle &hand);
-
-    void solveLaplacianDepths(Tensor<Real> &result, const Tensor<Real> &b, Handle &hand);
+    /**
+     * @brief Solves a batch of Laplacian systems along the Z-axis (depths) of a 3D Tensor.
+     * * Each (x, y) coordinate is treated as an independent tridiagonal system.
+     * @param result [out] 3D Tensor to store solution.
+     * @param b      [in] 3D Tensor Right-hand side.
+     * @param hand   CUDA Handle for execution.
+     */
+    void solveLaplacianDepths(Tensor<Real> &result, Tensor<Real> &b, Handle &hand);
 
     /**
      * @brief Performs a numerical validation of the Thomas solver.
