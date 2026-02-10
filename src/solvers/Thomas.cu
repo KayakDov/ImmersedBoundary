@@ -128,11 +128,11 @@ __global__ void solveThomas3dLaplacianKernelTranspose(DeviceData2d<Real> x, cons
     if (size_t system = idx(); system < x.rows) {
         Real rhs = b(system, 0);
         Real denom;
-        superPrime(0, system) = -1.0 / 6;
-        bPrime(0, system) = rhs / 6;
+        superPrime(0, system) = -1.0 / 2;
+        bPrime(0, system) = rhs / 2;
         for (size_t col = 1; col < x.cols; col++) {
             rhs = b(system, col);
-            denom = 1 / (6 + superPrime(col - 1, system));
+            denom = 1 / (2 + superPrime(col - 1, system));
 
             superPrime(col, system) = -denom;
             bPrime(col, system) = (rhs + bPrime(col - 1, system)) * denom;
@@ -154,11 +154,11 @@ __global__ void solveThomas3dLaplacianKernel(DeviceData2d<Real> x, const DeviceD
     if (size_t system = idx(); system < x.cols) {
         Real rhs = b(0, system);
         Real denom;
-        superPrime(0, system) = -1.0 / 6;
-        bPrime(0, system) = rhs / 6;
+        superPrime(0, system) = -1.0 / 2;
+        bPrime(0, system) = rhs / 2;
         for (size_t row = 1; row < x.rows; row++) {
             rhs = b(row, system);
-            denom = 1 / (6 + superPrime(row - 1, system));
+            denom = 1 / (2 + superPrime(row - 1, system));
 
             superPrime(row, system) = -denom;
             bPrime(row, system) = (rhs + bPrime(row - 1, system)) * denom;
@@ -184,11 +184,11 @@ __global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceD
 
     size_t sysFlatInd = system.col * x.rows +system.row;
 
-    superPrime(0, sysFlatInd) = -1.0 / 6;
-    bPrime(0, sysFlatInd) = rhs / 6;
+    superPrime(0, sysFlatInd) = -1.0 / 2;
+    bPrime(0, sysFlatInd) = rhs / 2;
     for (size_t layer = 1; layer < x.layers; layer++) {
         rhs = depthB[layer];
-        denom = 1 / (6 + superPrime(layer - 1, sysFlatInd));
+        denom = 1 / (2 + superPrime(layer - 1, sysFlatInd));
 
         superPrime(layer, sysFlatInd) = -denom;
         bPrime(layer, sysFlatInd) = (rhs + bPrime(layer - 1, sysFlatInd)) * denom;

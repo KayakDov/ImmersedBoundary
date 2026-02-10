@@ -4,6 +4,7 @@
 
 #include "ADIThomas.cuh"
 
+//TODO: add in delta x, y, and z
 //TODO:implement these methods for 2d.
 template<typename Real>//TODO: combine this into single kernel with Thomas solver
 __global__ void setRowRKernel(DeviceData3d<Real> r, DeviceData3d<Real> x, DeviceData3d<Real> b) {
@@ -94,10 +95,10 @@ void ADIThomas<Real>::solve(SimpleArray<Real>& x, const SimpleArray<Real>& b, Ha
     }
 
     for (size_t i = 0; i < maxIterations; ++i) {
-        setRowRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
+        setColRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
         thomasCols.solveLaplacian(x.matrix(dim.rows * dim.layers), r.matrix(dim.rows * dim.layers), dim.numDims() == 3, hand);
 
-        setColRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
+        setRowRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
         thomasRows.solveLaplacianTranspose(x.matrix(dim.rows), r.matrix(dim.rows), dim.numDims() == 3, hand);
 
         if (dim.numDims() == 3) {
@@ -105,7 +106,11 @@ void ADIThomas<Real>::solve(SimpleArray<Real>& x, const SimpleArray<Real>& b, Ha
             thomasDepths.solveLaplacianDepths(xTensor, rTensor, hand);
         }
 
-        residual3dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(xTensor.toKernel3d(), bTensor.toKernel3d(), r.toKernle3d());
+        residual3dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+            xTensor.toKernel3d(),
+            bTensor.toKernel3d(),
+            rTensor.toKernle3d()
+        );
 
         r.norm(rNorm, hand);
 
