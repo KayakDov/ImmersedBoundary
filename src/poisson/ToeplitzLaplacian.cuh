@@ -6,6 +6,7 @@
 #include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "math/Real3d.h"
 #include "SimpleArray.h"
+#include "SquareMat.h"
 
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;
@@ -47,6 +48,21 @@ public:
      * @return
      */
     BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices, const Real3d& delta = Real3d(1, 1, 1));
+
+    /**
+     * Allocates memory for, and creates, a laplacian.
+     * @param dim The dimensions of the laplacian's grid.
+     * @param hand
+     * @return A new Laplacian.
+     */
+    static BandedMat<T> L(const GridDim &dim, Handle &hand);
+
+    /**
+     * Prints a laplacian.
+     * @param dim
+     * @param hand
+     */
+    static void printL(const GridDim &dim, Handle &hand);
 };
 
 #endif //CUDABANDED_POISSONLHS_H

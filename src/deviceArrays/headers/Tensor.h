@@ -160,8 +160,6 @@ public:
 
     KernelPrep kernelPrep() const;
 
-    KernelPrep kernelPrep();
-
     /**
      *
      * @return The size of this entire tensor.

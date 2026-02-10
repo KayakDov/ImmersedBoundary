@@ -17,6 +17,7 @@
 #include <string>
 #include <cstdint>
 
+#include "solvers/ADIThomas.cuh"
 #include "solvers/Thomas.cuh"
 
 
@@ -52,15 +53,6 @@ public:
         return bVals.size();
     }
 };
-
-template<typename Real>
-BandedMat<Real> L(const GridDim &dim, Handle &hand) {
-    size_t numInds = 7;
-    auto spaceForA = Mat<Real>::create(dim.size(), numInds);
-    auto inds = SimpleArray<int32_t>::create(numInds, hand);
-    auto A = ToeplitzLaplacian<Real>(dim).setL(hand, spaceForA, inds, Real3d(1, 1, 1));
-    return A;
-}
 
 class LoadRHSHost {
 public:
@@ -112,7 +104,7 @@ void loadYuriData() {
     std::vector<int32_t> bRowOffsets(csrB.offsets.size());
     csrB.offsets.get(bRowOffsets.data(), hand);
 
-    auto A = L<Real>(dim, hand);
+    auto A = ToeplitzLaplacian<Real>::L(dim, hand);
 
     LoadRHSHost rhs;
 
@@ -142,15 +134,6 @@ void loadYuriData() {
         std::cout << "Saved results to result.dat" << std::endl;
     }
 
-}
-
-template<typename Real>
-void printL(const GridDim &dim, Handle &hand) {
-
-    auto aDense = SquareMat<Real>::create(dim.size());
-    auto A = L<Real>(dim, hand);
-    A.getDense(aDense, &hand);
-    std::cout << "L = \n" << GpuOut<Real>(aDense, hand) << std::endl;
 }
 
 template<typename Real, typename Int>
@@ -253,5 +236,5 @@ int main(int argc, char *argv[]) {
 
     // loadYuriData<double>();
 
-    std::cout << Thomas<double>::test(5, 3) << std::endl;
+    ADIThomas<double>::test();
 }

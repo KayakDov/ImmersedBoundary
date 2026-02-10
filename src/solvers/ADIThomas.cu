@@ -4,6 +4,11 @@
 
 #include "ADIThomas.cuh"
 
+#include <vector>
+
+#include "ToeplitzLaplacian.cuh"
+#include "Support/Streamable.h"
+
 //TODO: add in delta x, y, and z
 //TODO:implement these methods for 2d.
 template<typename Real>//TODO: combine this into single kernel with Thomas solver
@@ -62,16 +67,17 @@ __global__ void residual3dKernel(
 }
 
 template<typename Real>
-ADIThomas<Real>::ADIThomas(const GridDim &dim, size_t max_iterations, const Real &tolerance) :
+ADIThomas<Real>::ADIThomas(const GridDim &dim, size_t max_iterations, const Real &tolerance, SimpleArray<Real> dimSize, Handle& hand) :
     dim(dim),
     maxIterations(max_iterations),
     tolerance(tolerance),
-    bNorm(Singleton<Real>::create()),
-    rNorm(Singleton<Real>::create()),
+    bNorm(Singleton<Real>::create(hand)),
+    rNorm(Singleton<Real>::create(hand)),
     thomasSratch(Mat<Real>::create(dim.maxDim(), 2 * std::max(std::max(dim.rows * dim.cols, dim.rows * dim.layers),dim.layers*dim.cols))),
     thomasCols(thomasSratch.subMat(0,0,dim.rows, 2 * dim.cols * dim.layers)),
     thomasRows(thomasSratch.subMat(0,0,dim.cols, 2 * dim.rows * dim.layers)),
-    thomasDepths(thomasSratch.subMat(0,0,dim.layers, 2 * dim.rows * dim.cols))
+    thomasDepths(thomasSratch.subMat(0,0,dim.layers, 2 * dim.rows * dim.cols)),
+    r(dimSize)
 {
 }
 
@@ -83,7 +89,7 @@ void ADIThomas<Real>::solve(SimpleArray<Real>& x, const SimpleArray<Real>& b, Ha
     auto rTensor = r.tensor(dim.rows, dim.cols);
 
 
-    KernelPrep kp = rTensor.kernelPrep();
+    const KernelPrep kp = rTensor.kernelPrep();
 
     b.norm(bNorm, hand);
 
@@ -95,21 +101,26 @@ void ADIThomas<Real>::solve(SimpleArray<Real>& x, const SimpleArray<Real>& b, Ha
     }
 
     for (size_t i = 0; i < maxIterations; ++i) {
-        setColRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
-        thomasCols.solveLaplacian(x.matrix(dim.rows * dim.layers), r.matrix(dim.rows * dim.layers), dim.numDims() == 3, hand);
+        setColRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor.toKernel3d(), xTensor.toKernel3d(), bTensor.toKernel3d());
+        auto rMat = r.matrix(dim.rows);
+        auto xMat = x.matrix(dim.rows);
+        thomasCols.solveLaplacian(xMat, rMat, dim.numDims() == 3, hand);
 
-        setRowRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
-        thomasRows.solveLaplacianTranspose(x.matrix(dim.rows), r.matrix(dim.rows), dim.numDims() == 3, hand);
+        setRowRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor.toKernel3d(), xTensor.toKernel3d(), bTensor.toKernel3d());
+
+        auto rMatT = r.matrix(dim.rows * dim.layers);
+        auto xMatT = x.matrix(dim.rows * dim.layers);
+        thomasRows.solveLaplacianTranspose(xMatT, rMatT, dim.numDims() == 3, hand);
 
         if (dim.numDims() == 3) {
-            setDepthRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor, xTensor, bTensor);
+            setDepthRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor.toKernel3d(), xTensor.toKernel3d(), bTensor.toKernel3d());
             thomasDepths.solveLaplacianDepths(xTensor, rTensor, hand);
         }
 
         residual3dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
             xTensor.toKernel3d(),
             bTensor.toKernel3d(),
-            rTensor.toKernle3d()
+            rTensor.toKernel3d()
         );
 
         r.norm(rNorm, hand);
@@ -118,3 +129,28 @@ void ADIThomas<Real>::solve(SimpleArray<Real>& x, const SimpleArray<Real>& b, Ha
         if (rNorm.get(hand)/bNormHost < tolerance) break;
     }
 }
+
+template<typename Real>
+void ADIThomas<Real>::test() {
+    GridDim dim(3, 2, 2);
+
+    Handle hand;
+    auto x = SimpleArray<Real>::create(dim.size(), hand);
+    auto b = SimpleArray<Real>::create(dim.size(), hand);
+    auto scratch = SimpleArray<Real>::create(dim.size(), hand);
+    std::vector<Real> bHost = {1,2,3,4,5,6,7,8,9,10,11,12};
+    b.set(bHost.data(), hand);
+
+    ADIThomas adiThomas(dim, 100, 1e-5, scratch, hand);
+    adiThomas.solve(x, b, hand);
+
+    ToeplitzLaplacian<Real>::printL(dim, hand);
+
+    std::cout << "x = " << GpuOut<Real>(x, hand) << std::endl;
+    std::cout << "b = " << GpuOut<Real>(b, hand) << std::endl;
+
+}
+
+
+template class ADIThomas<double>;
+template class ADIThomas<float>;

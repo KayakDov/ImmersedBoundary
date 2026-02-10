@@ -3,6 +3,7 @@
 //
 
 #include "ToeplitzLaplacian.cuh"
+#include "deviceArrays/headers/Support/Streamable.h"
 
 
 /**
@@ -180,6 +181,26 @@ BandedMat<T> ToeplitzLaplacian<T>::setL(cudaStream_t stream, Mat<T> &preAlocated
     loadMapRowToDiag(preAlocatedForIndices, stream);
 
     return BandedMat<T>(preAlocatedForA, preAlocatedForIndices);
+}
+
+
+template<typename T>
+BandedMat<T> ToeplitzLaplacian<T>::L(const GridDim &dim, Handle &hand) {
+    size_t numInds = 7;
+    auto spaceForA = Mat<T>::create(dim.size(), numInds);
+    auto inds = SimpleArray<int32_t>::create(numInds, hand);
+    auto A = ToeplitzLaplacian<T>(dim).setL(hand, spaceForA, inds, Real3d(1, 1, 1));
+    return A;
+}
+
+
+template<typename T>
+void ToeplitzLaplacian<T>::printL(const GridDim &dim, Handle &hand) {
+
+    auto aDense = SquareMat<T>::create(dim.size());
+    auto A = L(dim, hand);
+    A.getDense(aDense, &hand);
+    std::cout << "L = \n" << GpuOut<T>(aDense, hand) << std::endl;
 }
 
 template class ToeplitzLaplacian<float>;
