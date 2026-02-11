@@ -95,20 +95,33 @@ void ADIThomas<Real>::solve(SimpleArray<Real>& x, const SimpleArray<Real>& b, Ha
     }
     size_t i = 0;
     for (; i < maxIterations; ++i) {
+
+        // std::cout << "x at start = \n" << GpuOut<Real>(xTensor, hand) << std::endl;
+
         setColRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor.toKernel3d(), xTensor.toKernel3d(), bTensor.toKernel3d());
+        // std::cout << "r = \n" << GpuOut<Real>(rTensor, hand) << std::endl;
+
         auto rMat = r.matrix(dim.rows);
         auto xMat = x.matrix(dim.rows);
         thomasCols.solveLaplacian(xMat, rMat, dim.numDims() == 3, hand);
 
+        // std::cout << "x1 = \n" << GpuOut<Real>(xTensor, hand) << std::endl;
+
         setRowRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor.toKernel3d(), xTensor.toKernel3d(), bTensor.toKernel3d());
+        // std::cout << "r1 = \n" << GpuOut<Real>(rTensor, hand) << std::endl;
 
         auto rMatT = r.matrix(dim.rows * dim.layers);
         auto xMatT = x.matrix(dim.rows * dim.layers);
         thomasRows.solveLaplacianTranspose(xMatT, rMatT, dim.numDims() == 3, hand);
+        // std::cout << "x2 = \n" << GpuOut<Real>(xTensor, hand) << std::endl;
 
         if (dim.numDims() == 3) {
             setDepthRKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rTensor.toKernel3d(), xTensor.toKernel3d(), bTensor.toKernel3d());
+            // std::cout << "r2 = \n" << GpuOut<Real>(rTensor, hand) << std::endl;
+            // std::cout << "r tensor = \n" << GpuOut<Real>(rTensor, hand) << std::endl;
+            // std::cout << "x tensor = \n" << GpuOut<Real>(xTensor, hand) << std::endl;
             thomasDepths.solveLaplacianDepths(xTensor, rTensor, hand);
+            // std::cout << "x3 = \n" << GpuOut<Real>(xTensor, hand) << std::endl;
         }
 
         residual3dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
@@ -119,8 +132,9 @@ void ADIThomas<Real>::solve(SimpleArray<Real>& x, const SimpleArray<Real>& b, Ha
 
         r.norm(rNorm, hand);
 
+        // std::cout << GpuOut<Real>(r, hand) << std::endl;
 
-        if (rNorm.get(hand)/bNormHost < tolerance) break;
+        if (rNorm.get(hand)/*/bNormHost*/ < tolerance) break;
     }
     if (i == maxIterations) std::cout << "ADIThomas reached it's maximum number of iterations: " << maxIterations << std::endl;
 }
@@ -136,7 +150,7 @@ void ADIThomas<Real>::test() {
     std::vector<Real> bHost = {1,2,3,4,5,6,7,8,9,10,11,12};
     b.set(bHost.data(), hand);
 
-    ADIThomas adiThomas(dim, 100000, 1e-4, scratch, hand);
+    ADIThomas adiThomas(dim, 10000, 1e-5, scratch, hand);
     adiThomas.solve(x, b, hand);
 
     ToeplitzLaplacian<Real>::printL(dim, hand);

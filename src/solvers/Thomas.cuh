@@ -13,8 +13,8 @@
 template <typename Real>
 class Thomas {
 
-    Mat<Real> cPrime;  ///< GPU workspace for modified super-diagonal coefficients.
-    Mat<Real> dPrime;  ///< GPU workspace for modified RHS coefficients.
+    Mat<Real> superPrime;  ///< GPU workspace for modified super-diagonal coefficients.
+    Mat<Real> rhsPrime;  ///< GPU workspace for modified RHS coefficients.
 public:
 
     /**
