@@ -18,12 +18,12 @@ template <typename T> class DeviceData3d;
 
 template<typename T>
 class DeviceData1d {
-    friend Vec<T>;
-protected:
+
+public:
 
     __host__ __device__  DeviceData1d(const size_t cols, const size_t ld, T* data): cols(cols), ld(ld), data(data) {}
 
-public:
+
     const size_t cols, ld;
     /**
      * The raw pointer to the data array, which **must** point to allocated
@@ -69,9 +69,7 @@ public:
  */
 template <typename T>
 class DeviceData2d: public DeviceData1d<T>{  //TODO: get 1d and 3d versions to be used.
-    friend Mat<T>;
-    friend GpuArray<T>;
-protected:
+public:
 
     /**
      * @brief Constructor for initializing the DeviceData structure.
@@ -82,7 +80,7 @@ protected:
      */
     __host__ __device__ DeviceData2d(size_t rows, size_t cols, size_t ld, T *data) : DeviceData1d<T>(cols, ld, data), rows(rows) {
     }
-public:
+
     /** The number of logical rows in the matrix. */
     const size_t rows;
 
@@ -149,20 +147,38 @@ public:
 
     /**
      * @brief Computes the row index of a 3d point from a 1D flat index.
-     * @param idx The logical 1D index (0 to rows*cols - 1).
+     * @param flatIndex The logical 1D index (0 to rows*cols - 1).
      * @return The row index.
      */
-    __device__ size_t row(size_t idx) const{
-        return idx % rows;
+    __device__ size_t rowIndex(size_t flatIndex) const{
+        return flatIndex % rows;
     }
 
     /**
      * @brief Computes the column index of a 2d point from a flat 1D index.
-     * @param idx The logical 1D index (0 to rows*cols - 1).
+     * @param flatIndex The logical 1D index (0 to rows*cols - 1).
      * @return The column index.
      */
-    __device__ size_t col(size_t idx) const{
-        return idx / rows;
+    __device__ size_t colIndex(size_t flatIndex) const{
+        return flatIndex / rows;
+    }
+
+    /**
+     * returns a drow from this matrix.
+     * @param rowInd The index of the row.
+     * @return A row from this matrix.
+     */
+    __device__ DeviceData1d<T> row(size_t rowInd) const{
+        return DeviceData1d<T>(this->cols, this->ld, this->data + rowInd);
+    }
+
+    /**
+     * returns a column from this matrix.
+     * @param colInd The index of the column.
+     * @return A column from this matrix.
+     */
+    __device__ DeviceData1d<T> col(size_t colInd) const{
+        return DeviceData1d<T>(this->rows, 1, this->data + this->ld * colInd);
     }
 
     __device__ const T& operator[](const GridInd2d& ind) const{
@@ -183,11 +199,10 @@ public:
 
 template <typename T>
 class DeviceData3d: public DeviceData2d<T> {
-    friend Tensor<T>;
-private:
+public:
     __device__ __host__ DeviceData3d(size_t rows, size_t cols, size_t layers, size_t ld, T *data): DeviceData2d<T>(rows, cols, ld, data), layers(layers) {
     }
-public:
+
     using DeviceData2d<T>::operator();
     using DeviceData2d<T>::flat;
 

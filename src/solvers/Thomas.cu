@@ -1,7 +1,3 @@
-//
-// Created by usr on 2/8/26.
-//
-
 #include "Thomas.cuh"
 
 #include <vector>
@@ -66,56 +62,25 @@ __global__ void solveThomasKernel(const DeviceData3d<Real> triDiags, DeviceData2
     }
 }
 
-/**
- * @brief Specialized kernel for 2D Laplacian systems oriented along rows (transposed).
- * Diagonal coefficients are hardcoded to 4 (primary) and -1 (off-diagonals).
- */
+////////////////////////////////////////// 3d laplace solvers //////////////////////////////////////////////////////////////////////////////
 template<typename Real>
-__global__ void solveThomas2dLaplacianKernelTranspose(DeviceData2d<Real> x, const DeviceData2d<Real> b,
-                                                      DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
-    if (size_t system = idx(); system < x.rows) {
-        Real rhs = b(system, 0);
-        Real denom;
-        superPrime(0, system) = -0.25;
-        bPrime(0, system) = rhs / 4;
-        for (size_t col = 1; col < x.cols; col++) {
-            rhs = b(system, col);
-            denom = 1 / (4 + superPrime(col - 1, system));
+__device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, DeviceData2d<Real>& superPrimeMat, DeviceData2d<Real>& rhsPrimeMat) {
+    size_t sys = idx();
+    auto rhsPrime = rhsPrimeMat.col(sys);
+    auto superPrime = superPrimeMat.col(sys);
+    const Real diagonal = -6;
 
-            superPrime(col, system) = -denom;
-            bPrime(col, system) = (rhs + bPrime(col - 1, system)) * denom;
-        }
-        size_t n = x.cols - 1;
-        x(system, n) = bPrime(n, system);
-        for (int32_t col = n - 1; col >= 0; --col)
-            x(system, col) = bPrime(col, system) - superPrime(col, system) * x(system, col + 1);
+    superPrime[0] = 1.0 / diagonal;
+    rhsPrime[0] = rhs[0] / diagonal;
+    for (size_t i = 1; i < x.cols; i++) {
+        Real denom = 1 / (diagonal - superPrime[i - 1]);
+        superPrime[i] = denom;
+        rhsPrime[i] = (rhs[i] - rhsPrime[i - 1]) * denom;
     }
-}
-
-/**
- * @brief Specialized kernel for 2D Laplacian systems oriented along columns.
- * Diagonal coefficients are hardcoded to 4 (primary) and -1 (off-diagonals).
- */
-template<typename Real>
-__global__ void solveThomas2dLaplacianKernel(DeviceData2d<Real> x, const DeviceData2d<Real> b,
-                                             DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
-    if (size_t system = idx(); system < x.cols) {
-        Real rhs = b(0, system);
-        Real denom;
-        superPrime(0, system) = -0.25;
-        bPrime(0, system) = rhs / 4;
-        for (size_t row = 1; row < x.rows; row++) {
-            rhs = b(row, system);
-            denom = 1 / (4 + superPrime(row - 1, system));
-
-            superPrime(row, system) = -denom;
-            bPrime(row, system) = (rhs + bPrime(row - 1, system)) * denom;
-        }
-        size_t n = x.rows - 1;
-        x(n, system) = bPrime(n, system);
-        for (int32_t row = n - 1; row >= 0; --row)
-            x(row, system) = bPrime(row, system) - superPrime(row, system) * x(row + 1, system);
-    }
+    size_t n = x.cols - 1;
+    x[n] = rhsPrime[n];
+    for (int32_t col = n - 1; col >= 0; --col)
+        x[col] = rhsPrime[col] - superPrime[col] * x[col + 1];
 }
 
 /**
@@ -123,25 +88,9 @@ __global__ void solveThomas2dLaplacianKernel(DeviceData2d<Real> x, const DeviceD
  * Diagonal coefficients are hardcoded to 6 (primary) and -1 (off-diagonals).
  */
 template<typename Real>
-__global__ void solveThomas3dLaplacianKernelTranspose(DeviceData2d<Real> x, const DeviceData2d<Real> b,
-                                                      DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
-    if (size_t system = idx(); system < x.rows) {
-        Real rhs = b(system, 0);
-        Real denom;
-        superPrime(0, system) = -1.0 / 2;
-        bPrime(0, system) = rhs / 2;
-        for (size_t col = 1; col < x.cols; col++) {
-            rhs = b(system, col);
-            denom = 1 / (2 + superPrime(col - 1, system));
-
-            superPrime(col, system) = -denom;
-            bPrime(col, system) = (rhs + bPrime(col - 1, system)) * denom;
-        }
-        size_t n = x.cols - 1;
-        x(system, n) = bPrime(n, system);
-        for (int32_t col = n - 1; col >= 0; --col)
-            x(system, col) = bPrime(col, system) - superPrime(col, system) * x(system, col + 1);
-    }
+__global__ void solveThomas3dLaplacianKernelTranspose(DeviceData2d<Real> x, const DeviceData2d<Real> b, DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
+    if (size_t system = idx(); system < x.rows)
+        solveThomas3dLap(b.row(system), x.row(system), superPrime, bPrime);
 }
 
 /**
@@ -149,56 +98,21 @@ __global__ void solveThomas3dLaplacianKernelTranspose(DeviceData2d<Real> x, cons
  * Uses a 2D grid where each thread processes a vertical column of the tensor.
  */
 template<typename Real>
-__global__ void solveThomas3dLaplacianKernel(DeviceData2d<Real> x, const DeviceData2d<Real> b,
-                                             DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
-    if (size_t system = idx(); system < x.cols) {
-        Real rhs = b(0, system);
-        Real denom;
-        superPrime(0, system) = -1.0 / 2;
-        bPrime(0, system) = rhs / 2;
-        for (size_t row = 1; row < x.rows; row++) {
-            rhs = b(row, system);
-            denom = 1 / (2 + superPrime(row - 1, system));
-
-            superPrime(row, system) = -denom;
-            bPrime(row, system) = (rhs + bPrime(row - 1, system)) * denom;
-        }
-        size_t n = x.rows - 1;
-        x(n, system) = bPrime(n, system);
-        for (int32_t row = n - 1; row >= 0; --row)
-            x(row, system) = bPrime(row, system) - superPrime(row, system) * x(row + 1, system);
-    }
+__global__ void solveThomas3dLaplacianKernel(DeviceData2d<Real> x, const DeviceData2d<Real> b, DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
+    if (size_t system = idx(); system < x.cols)
+        solveThomas3dLap(b.col(system), x.col(system), superPrime, bPrime);
 }
 
 template<typename Real>
-__global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceData3d<Real> b,
-                                                   DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
+__global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceData3d<Real> b, DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
     GridInd3d system(idy(), idx(), 0);
     if (system.row >= x.rows || system.col >= x.cols) return;
-//__device__  DeviceData1d(size_t size, DeviceData3d<T> &src, GridInd3d &ind0, size_t dRow, size_t dCol, size_t dLayer);
     DeviceData1d<Real> depthX(x.layers, x, system, 0, 0, 1);
     DeviceData1d<Real> depthB(b.layers, b, system, 0, 0, 1);
-
-    Real rhs = depthB[0];
-    Real denom;
-
-    size_t sysFlatInd = system.col * x.rows +system.row;
-
-    superPrime(0, sysFlatInd) = -1.0 / 2;
-    bPrime(0, sysFlatInd) = rhs / 2;
-    for (size_t layer = 1; layer < x.layers; layer++) {
-        rhs = depthB[layer];
-        denom = 1 / (2 + superPrime(layer - 1, sysFlatInd));
-
-        superPrime(layer, sysFlatInd) = -denom;
-        bPrime(layer, sysFlatInd) = (rhs + bPrime(layer - 1, sysFlatInd)) * denom;
-    }
-    size_t n = x.layers - 1;
-    depthX[n] = bPrime(n, sysFlatInd);
-    for (int32_t layer = n - 1; layer >= 0; --layer)
-        depthX[layer] = bPrime(layer, sysFlatInd) - superPrime(layer, sysFlatInd) * depthX[layer + 1];
+    solveThomas3dLap(depthB, depthX, superPrime, bPrime);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename Real>
 void Thomas<Real>::solve(const Tensor<Real> &triDiags, Mat<Real> &result, Mat<Real> &b, Handle &hand) {
     KernelPrep kp(triDiags._layers);
@@ -343,6 +257,60 @@ bool Thomas<Real>::test(size_t systemSize, size_t numSystems) {
     return maxError < Real(1e-5);
 }
 
+
+
+//////////////////////////////////////////////////////2d solvers need to be worked on ////////////////////////////////////
+/**
+ * @brief Specialized kernel for 2D Laplacian systems oriented along rows (transposed).
+ * Diagonal coefficients are hardcoded to 4 (primary) and -1 (off-diagonals).
+ */
+template<typename Real>
+__global__ void solveThomas2dLaplacianKernelTranspose(DeviceData2d<Real> x, const DeviceData2d<Real> b,
+                                                      DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
+    if (size_t system = idx(); system < x.rows) {
+        Real rhs = b(system, 0);
+        Real denom;
+        superPrime(0, system) = -0.25;
+        bPrime(0, system) = rhs / 4;
+        for (size_t col = 1; col < x.cols; col++) {
+            rhs = b(system, col);
+            denom = 1 / (4 + superPrime(col - 1, system));
+
+            superPrime(col, system) = -denom;
+            bPrime(col, system) = (rhs + bPrime(col - 1, system)) * denom;
+        }
+        size_t n = x.cols - 1;
+        x(system, n) = bPrime(n, system);
+        for (int32_t col = n - 1; col >= 0; --col)
+            x(system, col) = bPrime(col, system) - superPrime(col, system) * x(system, col + 1);
+    }
+}
+
+/**
+ * @brief Specialized kernel for 2D Laplacian systems oriented along columns.
+ * Diagonal coefficients are hardcoded to 4 (primary) and -1 (off-diagonals).
+ */
+template<typename Real>
+__global__ void solveThomas2dLaplacianKernel(DeviceData2d<Real> x, const DeviceData2d<Real> b,
+                                             DeviceData2d<Real> superPrime, DeviceData2d<Real> bPrime) {
+    if (size_t system = idx(); system < x.cols) {
+        Real rhs = b(0, system);
+        Real denom;
+        superPrime(0, system) = -0.25;
+        bPrime(0, system) = rhs / 4;
+        for (size_t row = 1; row < x.rows; row++) {
+            rhs = b(row, system);
+            denom = 1 / (4 + superPrime(row - 1, system));
+
+            superPrime(row, system) = -denom;
+            bPrime(row, system) = (rhs + bPrime(row - 1, system)) * denom;
+        }
+        size_t n = x.rows - 1;
+        x(n, system) = bPrime(n, system);
+        for (int32_t row = n - 1; row >= 0; --row)
+            x(row, system) = bPrime(row, system) - superPrime(row, system) * x(row + 1, system);
+    }
+}
 
 template class Thomas<double>;
 template class Thomas<float>;
