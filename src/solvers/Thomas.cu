@@ -68,7 +68,7 @@ __device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, D
 
     auto rhsPrime = rhsPrimeMat.col(sys);
     auto superPrime = superPrimeMat.col(sys);
-    const Real diagonal = -6;
+    const Real diagonal = -4;
 
     superPrime[0] = 1.0 / diagonal;
     rhsPrime[0] = rhs[0] / diagonal;
@@ -169,7 +169,6 @@ void Thomas<Real>::solveLaplacianDepths(Tensor<Real> &result, Tensor<Real> &b, H
         superPrime.toKernel2d(),
         rhsPrime.toKernel2d()
     );
-
 }
 
 

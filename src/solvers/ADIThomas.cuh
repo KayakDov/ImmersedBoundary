@@ -44,14 +44,14 @@ class ADIThomas {
     Real tolerance;
 
     /** @brief Residual array \f$r = b - A x\f$. */
-    SimpleArray<Real> r;
+    SimpleArray<Real> rhs, xThirdStep;
     /**
      * @brief Scratch workspace used by Thomas solvers.
      *
      * This buffer is reused across row, column, and depth solves
      * to avoid repeated allocations.
      */
-    Mat<Real> thomasSratch;
+    Mat<Real> thomasSratchMaxDim;
     /** @brief Thomas solvers tridiagonal systems. */
     Thomas<Real> thomasRows, thomasCols, thomasDepths;
 
@@ -65,11 +65,11 @@ public:
      *
      * @param dim Grid dimensions describing the structured domain.
      * @param max_iterations Maximum number of ADI iterations.
-     * @param dimSize an array used for scratch work.  This array should have the same number of elements as b.
+     * @param dimSizeX2 a matrix used for scratch work.  This matrix should have the same number of rows as b and two columns.
      * @param tolerance Relative convergence tolerance on
      *        \f$\|r\|_2 / \|b\|_2\f$.
      */
-    ADIThomas(const GridDim &dim, size_t max_iterations, const Real &tolerance, SimpleArray<Real> dimSize, Handle &hand);
+    ADIThomas(const GridDim &dim, size_t max_iterations, const Real &tolerance, Mat<Real> dimSizeX2, Handle &hand);
     /**
      * @brief Solves the system $Ax = b$ using the ADI iterative process.
      * * The iteration continues until the $L_2$ norm of the residual $r = b - Lx$

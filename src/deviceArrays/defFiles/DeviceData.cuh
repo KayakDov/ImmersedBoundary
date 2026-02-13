@@ -230,8 +230,12 @@ public:
         return this->operator()(layer * this -> rows +  row, col);
     }
 
-    __device__ T& operator()(const GridInd3d& ind0, const size_t dRow, const size_t dCol, const size_t dLayer) {
+    __device__ const T& operator()(const GridInd3d& ind0, size_t dRow, size_t dCol, size_t dLayer) const {
         return this->operator()(ind0.row + dRow, ind0.col + dCol, ind0.layer + dLayer);
+    }
+
+    __device__ T& operator()(const GridInd3d& ind0, size_t dRow, size_t dCol, size_t dLayer) {
+        return const_cast<T&>(static_cast<const DeviceData3d&>(*this)(ind0, dRow, dCol, dLayer));
     }
 
     __device__ size_t flat(size_t row, size_t col, size_t layer) {
