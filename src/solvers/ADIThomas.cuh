@@ -70,6 +70,9 @@ public:
      *        \f$\|r\|_2 / \|b\|_2\f$.
      */
     ADIThomas(const GridDim &dim, size_t max_iterations, const Real &tolerance, Mat<Real> dimSizeX2, Handle &hand);
+
+    void solveType1(SimpleArray<Real> &x, const SimpleArray<Real> &b, Handle &hand);
+
     /**
      * @brief Solves the system $Ax = b$ using the ADI iterative process.
      * * The iteration continues until the $L_2$ norm of the residual $r = b - Lx$
@@ -78,9 +81,11 @@ public:
      * @param b [in] Source term array.
      * @param hand CUDA Handle for stream management.
      */
-    void solve(SimpleArray<Real> &x, const SimpleArray<Real> &b, Handle &hand);
+    void solveType2(SimpleArray<Real> &x, const SimpleArray<Real> &b, Handle &hand);
 
-    static void test();
+    static void test1();
+
+    static void test2();
 };
 
 

@@ -166,7 +166,7 @@ class EigenDecompSolver3d: public EigenDecompSolver<T> {
      * @param u  Output solution in eigen-space.
      * @param hand CUDA cuBLAS/cusolver handle.
      */
-    void setUTilde(const Tensor<T> &f, Tensor<T> &u, Handle &hand) const;
+    virtual void setUTilde(const Tensor<T> &f, Tensor<T> &u, Handle &hand) const;
 
     /**
      * @brief Multiply using E_i or E_iᵀ batched across layers.
@@ -192,7 +192,7 @@ class EigenDecompSolver3d: public EigenDecompSolver<T> {
     void multEY(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const;
 
     /** @brief Apply E_z or E_zᵀ across all x-y slices. */
-    void multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const;
+    virtual void multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const;
 
     /**
      * @brief Apply full transform:
@@ -229,6 +229,16 @@ public:
 
 };
 
+template<typename T>
+class EigenDecompSolver3dThomas<T> : public EigenDecompSolver3d<T> {
 
+    //TODO: eVals matrix should two cols.  There should only be two eVecs matrices.
+
+    Tensor<T> workSpaceSuperPrime, workSpaceRHSPrime;
+    double deltaZ;
+
+    void multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE)  const override;
+    void setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handle &hand) const override;
+};
 
 #endif // EIGENDECOMPSOLVER_H

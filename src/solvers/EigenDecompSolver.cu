@@ -2,12 +2,47 @@
 
 #include "Event.h"
 
-template<typename T>
-__device__ constexpr T PI = static_cast<T>(3.14159265358979323846);
+
 
 // ============================================================================
 //                                    Kernels
 // ============================================================================
+
+template<typename T>
+__device__ constexpr T PI = static_cast<T>(3.14159265358979323846);
+
+template<typename Real>
+__device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, DeviceData1d<Real>& superPrime, DeviceData1d<Real>& rhsPrime, Real diagonal, Real secondaryDiag) {
+
+    superPrime[0] = secondaryDiag / diagonal;
+    rhsPrime[0] = rhs[0] / diagonal;
+    for (size_t i = 1; i < x.cols; i++) {
+        Real denom = 1 / (diagonal - secondaryDiag * superPrime[i - 1]);
+        superPrime[i] = secondaryDiag * denom;
+        rhsPrime[i] = (rhs[i] - secondaryDiag * rhsPrime[i - 1]) * denom;
+    }
+    size_t n = x.cols - 1;
+    x[n] = rhsPrime[n];
+    for (int32_t col = n - 1; col >= 0; --col)
+        x[col] = rhsPrime[col] - superPrime[col] * x[col + 1];
+}
+template<typename Real>
+__global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceData3d<Real> b, DeviceData2d<Real> eVals, DeviceData3d<Real> superPrime, DeviceData3d<Real> bPrime, Real deltaZSquaredInv) {
+    GridInd3d system(idy(), idx(), 0);
+    if (system.row >= x.rows || system.col >= x.cols) return;
+    DeviceData1d<Real> depthX(x.layers, x, system, 0, 0, 1);
+    DeviceData1d<Real> depthB(b.layers, b, system, 0, 0, 1);
+    DeviceData1d<Real> depthSuperPrime(superPrime.layers, superPrime, system, 0, 0, 1);
+    DeviceData1d<Real> depthRHSPrime(bPrime.layers, bPrime, system, 0, 0, 1);
+    solveThomas3dLap(
+        depthB,
+        depthX,
+        depthSuperPrime,
+        depthRHSPrime,
+        -2*deltaZSquaredInv + eVals(system.row, 0) + eVals(system.col, 1),
+        deltaZSquaredInv
+    );
+}
 
 template<typename T>
 __global__ void eigenMatLKernel(DeviceData2d<T> eVecs) {
@@ -45,6 +80,7 @@ __global__ void setUTildeKernel2d(DeviceData2d<T> uTilde,
 // ============================================================================
 //                         EigenDecompSolver<T> Methods
 // ============================================================================
+
 
 template<typename T>
 void EigenDecompSolver<T>::eigenVecsL(size_t i, cudaStream_t stream) {
@@ -107,13 +143,14 @@ void EigenDecompSolver2d<T>::setUTilde(const Mat<T> &f, Mat<T> &u, Handle &hand)
 
 template<typename T>
 void EigenDecompSolver3d<T>::multE(size_t i,
-                                   bool transposeEigen,
-                                   bool transpose,
-                                   const Mat<T> &a1,
-                                   Mat<T> &dst1,
-                                   size_t stride,
-                                   Handle &hand,
-                                   size_t batchCount) const {
+    bool transposeEigen,
+    bool transpose,
+    const Mat<T> &a1,
+    Mat<T> &dst1,
+    size_t stride,
+    Handle &hand,
+    size_t batchCount
+) const {
     Mat<T>::batchMult(
         transpose ? a1 : this->eVecs[i], transpose ? stride : 0,
         transpose ? this->eVecs[i] : a1, transpose ? 0 : stride,
@@ -218,6 +255,23 @@ void EigenDecompSolver3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, H
     this->setUTilde(xT, bWorkSpaceT, hand);
 
     this->multiplyEF(hand, bWorkSpaceT, xT, false);
+}
+
+template<typename T>
+void EigenDecompSolver3dThomas<T>::multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const {
+}
+
+template<typename T>
+void EigenDecompSolver3dThomas<T>::setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handle &hand) const {
+    KernelPrep kpVec(this->dim.cols, this->dim.rows);
+    solveThomas3dLaplacianDepthsKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, hand>>>(
+        dst.toKernel3d(),
+        src.toKernel3d(),
+        this->eVals.toKernel2d(),
+        workSpaceSuperPrime.toKernel3d(),
+        workSpaceRHSPrime.toKernel3d(),
+        1/deltaZ/deltaZ
+      );
 }
 
 template<typename T>

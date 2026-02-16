@@ -68,7 +68,7 @@ __device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, D
 
     auto rhsPrime = rhsPrimeMat.col(sys);
     auto superPrime = superPrimeMat.col(sys);
-    const Real diagonal = -4;
+    const Real diagonal = -4;// -6 for algo 1, -4 for algo 2;
 
     superPrime[0] = 1.0 / diagonal;
     rhsPrime[0] = rhs[0] / diagonal;

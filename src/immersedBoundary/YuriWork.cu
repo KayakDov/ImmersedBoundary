@@ -236,5 +236,5 @@ int main(int argc, char *argv[]) {
 
     // loadYuriData<double>();
 
-    ADIThomas<double>::test();
+    ADIThomas<double>::test2();
 }
