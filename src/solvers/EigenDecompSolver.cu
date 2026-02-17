@@ -27,7 +27,7 @@ __device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, D
         x[col] = rhsPrime[col] - superPrime[col] * x[col + 1];
 }
 template<typename Real>
-__global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceData3d<Real> b, DeviceData2d<Real> eVals, DeviceData3d<Real> superPrime, DeviceData3d<Real> bPrime, Real deltaZSquaredInv) {
+__global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceData3d<Real> b, DeviceData1d<Real> eValsX, DeviceData1d<Real> eValsY, DeviceData3d<Real> superPrime, DeviceData3d<Real> bPrime, Real deltaZSquaredInv) {
     GridInd3d system(idy(), idx(), 0);
     if (system.row >= x.rows || system.col >= x.cols) return;
     DeviceData1d<Real> depthX(x.layers, x, system, 0, 0, 1);
@@ -39,7 +39,7 @@ __global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceD
         depthX,
         depthSuperPrime,
         depthRHSPrime,
-        -2*deltaZSquaredInv + eVals(system.row, 0) + eVals(system.col, 1),
+        -2*deltaZSquaredInv + eValsX[system.row] + eValsY[system.col],
         deltaZSquaredInv
     );
 }
@@ -63,18 +63,21 @@ __global__ void eigenValLKernel(DeviceData1d<T> eVals, T delta) {
 
 template<typename T>
 __global__ void setUTildeKernel3d(DeviceData3d<T> uTilde,
-                                  const DeviceData2d<T> eVals,
+                                  const DeviceData1d<T> eValsX,
+                                  const DeviceData1d<T> eValsY,
+                                  const DeviceData1d<T> eValsZ,
                                   const DeviceData3d<T> fTilde) {
     if (GridInd3d ind; ind < uTilde)
-        uTilde[ind] = fTilde[ind] / (eVals(ind.col, 0) + eVals(ind.row, 1) + eVals(ind.layer, 2));
+        uTilde[ind] = fTilde[ind] / (eValsX(ind.col) + eValsY(ind.row) + eValsZ(ind.layer));
 }
 
 template<typename T>
 __global__ void setUTildeKernel2d(DeviceData2d<T> uTilde,
-                                  const DeviceData2d<T> eVals,
+                                  const DeviceData1d<T> eValsX,
+                                  const DeviceData1d<T> eValsY,
                                   const DeviceData2d<T> fTilde) {
     if (GridInd2d ind; ind < uTilde)
-        uTilde[ind] = fTilde[ind] / (eVals(ind.col, 0) + eVals(ind.row, 1));
+        uTilde[ind] = fTilde[ind] / (eValsX(ind.col) + eValsY(ind.row));
 }
 
 // ============================================================================
@@ -91,10 +94,10 @@ void EigenDecompSolver<T>::eigenVecsL(size_t i, cudaStream_t stream) {
 
 template<typename T>
 void EigenDecompSolver<T>::eigenValsL(size_t i, const double delta, cudaStream_t stream) {
-    size_t n = eVecs[i]._cols;
-    KernelPrep kpVal(n);
+
+    KernelPrep kpVal = eVals[i].kernelPrep();
     eigenValLKernel<T><<<kpVal.numBlocks, kpVal.threadsPerBlock, 0, stream>>>(
-        eVals.col(i).subVec(0, n, 1).toKernel1d(),
+        eVals[i].toKernel1d(),
         delta
     );
 }
@@ -102,21 +105,23 @@ void EigenDecompSolver<T>::eigenValsL(size_t i, const double delta, cudaStream_t
 template<typename T>
 void EigenDecompSolver<T>::eigenL(size_t i, const Real3d delta, cudaStream_t stream) {
 
-    int32_t sameAs = -1;
+    int32_t samePtrAs = -1, sameDimAs = -1;
 
-    for (size_t j = 0; j < i; j++) if (eVecs[i].ptr() == eVecs[j].ptr()) {
-            sameAs = j;
-            break;
+    for (size_t j = 0; j < i; j++) {
+        if (eVecs[i].ptr() == eVecs[j].ptr()) samePtrAs = j;
+        if (dim[i] == dim[j]) sameDimAs = j;
+    }
+
+    if (samePtrAs < 0) {
+        if (sameDimAs < 0) {
+            eigenVecsL(i, stream);
+            eigenValsL(i, delta[i], stream);
         }
-
-    if (sameAs < 0) {
-        eigenVecsL(i, stream);
-        eigenValsL(i, delta[i], stream);
-    } else if (delta[i] == delta[sameAs]) eVals.col(i).set(eVals.col(sameAs), stream);
-    else  {
-        auto scale = sizeOfB.get(i);
-        scale.set(delta[sameAs] * delta[sameAs] / delta[i] / delta[i], stream);
-        this->eVals.col(i).add(eVals.col(sameAs), scale, Singleton<T>::ZERO, stream);
+        else {
+            auto scale = sizeOfB.get(i);
+            scale.set(delta[sameDimAs] * delta[sameDimAs] / delta[i] / delta[i], stream);
+            this->eVals[i].add(eVals[sameDimAs], scale, Singleton<T>::ZERO, stream);
+        }
     }
 }
 
@@ -127,7 +132,9 @@ void EigenDecompSolver3d<T>::setUTilde(const Tensor<T> &f,
     KernelPrep kp = f.kernelPrep();
     setUTildeKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         u.toKernel3d(),
-        this->eVals.toKernel2d(),
+        this->eVals[0].toKernel1d(),
+        this->eVals[1].toKernel1d(),
+        this->eVals[2].toKernel1d(),
         f.toKernel3d());
 }
 
@@ -136,7 +143,8 @@ void EigenDecompSolver2d<T>::setUTilde(const Mat<T> &f, Mat<T> &u, Handle &hand)
     KernelPrep kp = f.kernelPrep();
     setUTildeKernel2d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         u.toKernel2d(),
-        this->eVals.toKernel2d(),
+        this->eVals[0].toKernel1d(),
+        this->eVals[1].toKernel1d(),
         f.toKernel2d());
 }
 
@@ -198,17 +206,54 @@ void EigenDecompSolver3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, Tens
 }
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(std::vector<SquareMat<T> > eMats, Mat<T> &maxDimX2Or3, SimpleArray<T> &sizeOfB) :
-    dim(eMats[1]._rows, eMats[0]._cols,
-    maxDimX2Or3._cols == 3 ? eMats[2]._rows : 1),
-    eVecs(eMats),
-    eVals(maxDimX2Or3),
-    sizeOfB(sizeOfB) {
+void EigenDecompSolver<T>::appendMatAndVec(Mat<T>& src) {
+    eVals.emplace_back(src.col(src._cols - 1));
+    eVecs.emplace_back(src.sqSubMat(0, 0, src._rows));
 }
 
 template<typename T>
-EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2, SimpleArray<T> &sizeOfB, Handle* hand2, const Real2d delta, Event& event) :
-EigenDecompSolver<T>({colsXCols, rowsXRows}, maxDimX2, sizeOfB) {
+EigenDecompSolver<T>::EigenDecompSolver(std::vector<Mat<T> > eMatsAndVecs, SimpleArray<T> &sizeOfB) :
+    dim(
+        eMatsAndVecs[1]._rows,
+        eMatsAndVecs[0]._cols,
+        eMatsAndVecs.size() == 3 ? eMatsAndVecs[2]._rows : 1
+    ),
+    sizeOfB(sizeOfB) {
+
+    eVals.reserve(eMatsAndVecs.size());
+    eVecs.reserve(eMatsAndVecs.size());
+
+    appendMatAndVec(eMatsAndVecs[0]);
+
+    if (eMatsAndVecs[0].ptr() == eMatsAndVecs[1].ptr()) appendMatAndVec(eMatsAndVecs[0]);
+    else appendMatAndVec(eMatsAndVecs[1]);
+
+    if (eMatsAndVecs.size() == 3) {
+        if (eMatsAndVecs[0].ptr() == eMatsAndVecs[2].ptr()) appendMatAndVec(eMatsAndVecs[0]);
+        else if (eMatsAndVecs[1].ptr() == eMatsAndVecs[2].ptr()) appendMatAndVec(eMatsAndVecs[1]);
+        else appendMatAndVec(eMatsAndVecs[2]);
+    }
+}
+template<typename T>
+EigenDecompSolver<T>::EigenDecompSolver(const GridDim& dim, Real3d delta, Handle& hand):
+    dim(dim),
+    sizeOfB(SimpleArray<T>::create(dim.size()), hand)
+{
+    auto xMat = Mat<T>::create(dim.cols, dim.cols + 1);
+    appendMatAndVec(xMat);
+
+    auto yMat = dim.rows == dim.cols && delta.x == delta.y ? xMat : Mat<T>::create(dim.rows, dim.rows + 1);
+    appendMatAndVec(yMat);
+
+    if (dim.numDims() == 3) {
+        auto zMat = dim.rows == dim.layers && delta.y == delta.z ? yMat : (dim.cols == dim.layers && delta.x == delta.z ? xMat : Mat<T>::create(dim.layers, dim.layers + 1));
+        appendMatAndVec(zMat);
+    }
+
+}
+
+template<typename T>
+void EigenDecompSolver2d<T>::setEigens(Handle* hand2, const Real2d delta, Event& event){
     this->eigenL(1, delta, hand2[1]);
     event.record(hand2[1]);
 
@@ -217,33 +262,52 @@ EigenDecompSolver<T>({colsXCols, rowsXRows}, maxDimX2, sizeOfB) {
 }
 
 template<typename T>
+EigenDecompSolver2d<T>::EigenDecompSolver2d(SquareMat<T> &rowsXRowsP1, SquareMat<T> &colsXColsP1, SimpleArray<T> &sizeOfB, Handle* hand2, const Real2d delta, Event& event) :
+EigenDecompSolver<T>({colsXColsP1, rowsXRowsP1}, sizeOfB) {
+    setEigens(hand2, delta, event);
+}
+template<typename T>
+EigenDecompSolver2d<T>::EigenDecompSolver2d(GridDim dim, Handle* hand2, const Real2d delta, Event& event) :
+EigenDecompSolver<T>(dim, delta, hand2[0]) {
+    setEigens(hand2, delta, event);
+}
+
+template<typename T>
+void EigenDecompSolver3d<T>::setEigens(Handle* hand3, Real3d delta, Event* event3) {
+    this->eigenL(0, delta, hand3[1]);
+    event3[0].record(hand3[1]);
+
+    this->eigenL(1, delta, hand3[2]);
+    event3[1].record(hand3[2]);
+    event3[1].hold(hand3[0]);
+
+    this->eigenL(2, delta, hand3[0]);
+    event3[0].hold(hand3[0]);
+}
+
+template<typename T>
 EigenDecompSolver3d<T>::EigenDecompSolver3d(
-    SquareMat<T> &rowsXRows,
-    SquareMat<T> &colsXCols,
-    SquareMat<T> &depthsXDepths,
-    Mat<T> &maxDimX3,
+    Mat<T> &rowsXRowsP1,
+    Mat<T> &colsXColsP1,
+    Mat<T> &depthsXDepthsP1,
     SimpleArray<T> &sizeOfB,
     Handle* hand3,
     Real3d delta,
     Event* event
-) :
-    EigenDecompSolver<T>({colsXCols, rowsXRows, depthsXDepths}, maxDimX3, sizeOfB) {
-
-
-    this->eigenL(0, delta, hand3[1]);
-    event[0].record(hand3[1]);
-
-    this->eigenL(1, delta, hand3[2]);
-    event[1].record(hand3[2]);
-    event[1].hold(hand3[0]);
-
-    this->eigenL(2, delta, hand3[0]);
-    event[0].hold(hand3[0]);
-
-
+) : EigenDecompSolver<T>({colsXColsP1, rowsXRowsP1, depthsXDepthsP1}, sizeOfB) {
+    setEigens(hand3, delta, event);
 }
 
-//TODO: make sure this class is efficiently reuing memory if rowsXrows = colsXcols or the like.
+template<typename T>
+EigenDecompSolver3d<T>::EigenDecompSolver3d(
+    GridDim dim,
+    Handle* hand3,
+    Real3d delta,
+    Event* event
+) : EigenDecompSolver<T>(dim, delta, hand3[0]) {
+    setEigens(hand3, delta, event);
+}
+
 template<typename T>
 void EigenDecompSolver3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
     const auto bT = b.tensor(this->dim.rows, this->dim.layers);
@@ -267,12 +331,14 @@ void EigenDecompSolver3dThomas<T>::setUTilde(const Tensor<T> &src, Tensor<T> &ds
     solveThomas3dLaplacianDepthsKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, hand>>>(
         dst.toKernel3d(),
         src.toKernel3d(),
-        this->eVals.toKernel2d(),
+        this->eVals[0].toKernel1d(),
+        this->eVals[1].toKernel1d(),
         workSpaceSuperPrime.toKernel3d(),
         workSpaceRHSPrime.toKernel3d(),
         1/deltaZ/deltaZ
       );
 }
+
 
 template<typename T>
 void EigenDecompSolver2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {

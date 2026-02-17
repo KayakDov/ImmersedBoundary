@@ -67,7 +67,8 @@ protected:
      * Column 1: eigenvalues of L_y
      * Column 2: eigenvalues of L_z
      */
-    Mat<T> eVals;
+    std::vector<Vec<T>> eVals;
+
 
     /**
      * A workspace the size of b = L_cols.  You may store b itself here, but it will be overwritten.
@@ -86,6 +87,14 @@ protected:
      */
     void eigenL(size_t i, Real3d delta, cudaStream_t stream);
 
+    /**
+     * takes in the a matrix.  Its last column will become space for an eigen vector and the first n X n columns
+     * will store an eigen vector matrix.
+     * @param src An n X n+1 matrix where n is height, width, or depth.
+     */
+    void appendMatAndVec(Mat<T> &src);
+
+
 
 public:
     virtual ~EigenDecompSolver() = default;
@@ -98,12 +107,21 @@ public:
      *
      * A must be the standard second-difference (Toeplitz) discrete Laplacian on a uniform grid with homogeneous Dirichlet boundary conditions.
      *
-     * @param eMats n X n matrices where n = rows, cols, and layers. Or n = rows and cols for 2d.
-     * @param maxDimX2Or3 A workspace the maximal dimension size of the grid X the number of dimensions of the grid.
      * These matrices will be overwritten.
-     * @param sizeOfB An array the size of b that will be overwritten.  You may use b for this.
+     * @param eMatsAndVecs Should have a number of elements equal to the number of dimensions.  If two dimensions are
+     * equal in length, be sure that the matrices passed point to the same gpu memmory.  Each matrix passed should
+     * be n X n+1 where n = x (cols), y (rows), and z (layers) if applicable in that order.
+     * @param sizeOfB An array the size of b = xLength * yLength * zLength that will be overwritten.  You may use b for this.
      */
-    EigenDecompSolver(std::vector<SquareMat<T>> eMats, Mat<T> &maxDimX2Or3, SimpleArray<T>& sizeOfB);
+    EigenDecompSolver(std::vector<Mat<T>> eMatsAndVecs, SimpleArray<T> &sizeOfB);
+
+    /**
+     * Created an eigen decomposition solver where all memory is owned by this object.
+     * @param dim The dimensions of grid.
+     * @param delta The distance between fgrid points.
+     * @param hand The handle.
+     */
+    EigenDecompSolver(const GridDim &dim, Real3d delta, Handle &hand);
 
     /**
      * Solves for A x = b
@@ -116,6 +134,7 @@ public:
      * @param hand
      */
     virtual void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const = 0;
+
 
 
     /**
@@ -136,21 +155,40 @@ private:
      * @param hand CUDA cuBLAS/cusolver handle.
      */
     void setUTilde(const Mat<T> &f, Mat<T> &u, Handle &hand) const;
+
+    /**
+     * Sets the eigen values.
+     * @param hand2 Contexts for mutli threeading.
+     * @param delta The distance between the gris points.
+     * @param event An event to control stream flow.
+     */
+    void setEigens(Handle *hand2, Real2d delta, Event &event);
+
 public:
     /**
      * @brief Creates an eigen decomposition solver for a 2D staggered MAC grid.
      * * This solver uses discrete sine/cosine transforms to invert the Laplacian.
-     * * @param rowsXRows Matrix workspace for row-wise operations. Dimensions: [rows x rows].
-     * @param colsXCols Matrix workspace for column-wise operations. Dimensions: [cols x cols].
+     * * @param rowsXRowsP1 Matrix workspace for row-wise operations. Dimensions: [rows x rows + 1].
+     * @param colsXColsP1 Matrix workspace for column-wise operations. Dimensions: [cols x cols + 1].
      * @note Optimization: If the grid is square (rows == cols), pass the same matrix
      * reference used for rowsXRows to reduce memory footprint.
-     * @param maxDimX2 Workspace matrix. Dimensions: [max(rows, cols) x 2].
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
      * @param hand2 Pointer to an array of at least two Handles for stream management.
      * @param delta The grid spacing (dx, dy).
      * @param event Event object used to synchronize and control multistreaming execution.
      */
-    EigenDecompSolver2d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, Mat<T> &maxDimX2, SimpleArray<T> &sizeOfB, Handle *hand2, Real2d delta, Event &event);
+    EigenDecompSolver2d(SquareMat<T> &rowsXRowsP1, SquareMat<T> &colsXColsP1, SimpleArray<T> &sizeOfB, Handle *hand2,
+                        Real2d delta, Event &event);
+
+    /**
+     * Creates a solver that owns its own memory.
+     * @param dim The dimensions of the grid.
+     * @param hand2 2 contexts.
+     * @param delta The distance between grid points.
+     * @param event
+     */
+    EigenDecompSolver2d(GridDim dim, Handle *hand2, Real2d delta, Event &event);
+
 
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
 };
@@ -207,23 +245,33 @@ class EigenDecompSolver3d: public EigenDecompSolver<T> {
      */
     void multiplyEF(Handle &hand, const Tensor<T> &src, Tensor<T> &dst, bool transposeE) const;
 
+    /**
+     * Sets the eigen vectors and values.
+     * @param hand3 Handles used to make the settings.
+     * @param delta The distance between the grid points.
+     * @param event3 3 Events to control the stream flow.
+     */
+    void setEigens(Handle *hand3, Real3d delta, Event *event3);
 public:
+
+
     /**
      * @brief Creates an eigen decomposition solver for a 3D staggered MAC grid.
-     * * @param rowsXRows Matrix workspace for X-direction operations. Dimensions: [rows x rows].
-     * @param colsXCols Matrix workspace for Y-direction operations. Dimensions: [cols x cols].
+     * * @param rowsXRowsP1 Matrix workspace for X-direction operations. Dimensions: [rows x (rows + 1)].
+     * @param colsXColsP1 Matrix workspace for Y-direction operations. Dimensions: [cols x (cols + 1)].
      * @note Optimization: If rows == cols, pass the same matrix as rowsXRows.
-     * @param depthsXDepths Matrix workspace for Z-direction operations. Dimensions: [layers x layers].
+     * @param depthsXDepthsP1 Matrix workspace for Z-direction operations. Dimensions: [layers x (layers + 1)].
      * @note Optimization: If layers == rows or layers == cols, you may pass the corresponding
      * matrix used for those dimensions.
-     * @param maxDimX3 Workspace matrix. Dimensions: [max(rows, cols, layers) x 3].
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
      * @param hand3 Pointer to an array of at least three Handles for concurrent 3D stream processing.
      * @param delta The grid spacing (dx, dy, dz).
      * @param event Pointer to an Event object or array used for multistream synchronization.
      */
-    EigenDecompSolver3d(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3,
-                        SimpleArray<T> &sizeOfB, Handle *hand3, Real3d delta, Event *event);
+    EigenDecompSolver3d(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, SimpleArray<T> &sizeOfB,
+                        Handle *hand3, Real3d delta, Event *event);
+
+    EigenDecompSolver3d(GridDim dim, Handle *hand3, Real3d delta, Event *event);
 
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
 
@@ -239,6 +287,9 @@ class EigenDecompSolver3dThomas<T> : public EigenDecompSolver3d<T> {
 
     void multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE)  const override;
     void setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handle &hand) const override;
+
+public:
+EigenDecompSolver3dThomas(SquareMat<T> &rowsXRows, SquareMat<T> &colsXCols, SquareMat<T> &depthsXDepths, Mat<T> &maxDimX3, SimpleArray<T> &sizeOfB, Handle *hand3, const Real3d &delta, Event *event, double delta_z);
 };
 
 #endif // EIGENDECOMPSOLVER_H

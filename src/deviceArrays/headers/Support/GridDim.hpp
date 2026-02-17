@@ -87,7 +87,7 @@ public:
         return layer * rows + col * rows * layers + row;
     }
 
-    __device__ [[nodiscard]] inline GridInd3d operator[](size_t idx) const{
+    __device__ [[nodiscard]] inline GridInd3d operator()(size_t idx) const{
         return {idx % rows, (idx / rows) % cols, idx/(layerSize)};
     }
 
@@ -98,6 +98,20 @@ public:
      */
     __device__ [[nodiscard]] size_t inline operator[](const GridInd3d& ind) const{
         return this->operator()(ind.row, ind.col, ind.layer);
+    }
+
+    /**
+     * 0 returns x, 1 returns y, and 2 returns z
+     * @param dimInd The dimension for which the length is desired.
+     * @return The length of the selected dimension.
+     */
+    __host__ [[nodiscard]] inline size_t operator[](size_t dimInd) const {
+        switch (dimInd) {
+            case 0: return cols;
+            case 1: return rows;
+            case 2: return layers;
+            default: throw std::invalid_argument("This operator is meant to give the size of the desired dimension of this grid.  For mapping a flat index to grid3d point, use ().");
+        }
     }
 
 
