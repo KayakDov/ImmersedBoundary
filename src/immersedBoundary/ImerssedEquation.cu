@@ -1,9 +1,12 @@
 #include "ImerssedEquation.h"
 
 #include "../deviceArrays/headers/Support/Streamable.h"
-#include "solvers/EigenDecompSolver.h"
+#include "../solvers/EigenDecomp/EigenDecompSolver.h"
 #include "solvers/Event.h"
 #include <span>
+
+#include "solvers/EigenDecomp/EigenDecomp2d.h"
+#include "solvers/EigenDecomp/EigenDecomp3d.cuh"
 
 
 template<typename Real, typename Int>
@@ -67,16 +70,9 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(
     Real3d delta,
     Event* event
 ) {
-    auto maxDimX2Or3 = Mat<Real>::create(dim.maxDim(), dim.numDims());
-    auto rowsXrows = SquareMat<Real>::create(dim.rows);
-    auto colsXcols = dim.cols != dim.rows ? SquareMat<Real>::create(dim.cols) : rowsXrows;
 
-    if (dim.numDims() == 3) {
-        auto layersXLayers = dim.layers == dim.rows ?  rowsXrows :
-            (dim.layers == dim.cols ? colsXcols : SquareMat<Real>::create(dim.layers));
-        return std::make_shared<EigenDecompSolver3d<Real>>(rowsXrows, colsXcols, layersXLayers, maxDimX2Or3, sizeOfP, hand, delta, event);
-    }
-    return std::make_shared<EigenDecompSolver2d<Real>>(rowsXrows, colsXcols, maxDimX2Or3, sizeOfP, hand, Real2d(delta.x, delta.y), event[0]);
+    if (dim.numDims() == 3) return  std::make_shared<EigenDecomp3d<Real>>(dim, hand, delta, event);
+    return  std::make_shared<EigenDecomp2d<Real>>(dim, hand, Real2d(delta.x, delta.y), event[0]);
 
 }
 

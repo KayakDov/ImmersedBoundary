@@ -13,7 +13,7 @@
 #include "sparse/SparseCSR.h"
 #include "../deviceArrays/headers/sparse/SparseCSC.cuh"
 #include "solvers/BiCGSTAB.cuh"
-#include "solvers/EigenDecompSolver.h"
+#include "../solvers/EigenDecomp/EigenDecompSolver.h"
 
 template <typename Real, typename Int> class ImmersedEq;
 

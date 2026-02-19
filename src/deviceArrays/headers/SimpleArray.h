@@ -56,10 +56,10 @@ public:
      * This method may create a window to chnage a const object, so be sure to set recipiant of this to const. TODO: set this to pass a type of const pointer, but be prepared for a const cascade.
      *
      * @param layers The number of layers in the tensor.
-     * @param height The length of each column.
+     * @param rows The length of each column.
      * @return a tensor that is a window into this data.
      */
-    Tensor<T> tensor(size_t height, size_t layers) const;
+    Tensor<T> tensor(size_t rows, size_t layers) const;
 
     /**
      * The data in this vector reorganized as a matrix.

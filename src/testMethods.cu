@@ -1,10 +1,12 @@
 
 #include <chrono>
 #include "poisson/CubeBoundary.h"
-#include "solvers/EigenDecompSolver.h"
+#include "solvers/EigenDecomp/EigenDecompSolver.h"
 // #include "FortranBindings.hpp"
 #include "ToeplitzLaplacian.cuh"
 #include "wrapFortranBindings.h"
+#include "solvers/EigenDecomp/EigenDecomp2d.h"
+#include "solvers/EigenDecomp/EigenDecomp3d.cuh"
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 template<typename T>
@@ -32,7 +34,7 @@ void benchMarkEigenDecompSolver(size_t height, size_t width, size_t depth, std::
 
     TimePoint start = std::chrono::steady_clock::now();
     PoissonRHS<double> poisson(boundary, f, hand3[0]);
-    EigenDecompSolver3d<double> fdm(x, f, eX, eY, eZ, vals, hand3);
+    EigenDecomp3d<double> fdm(x, f, eX, eY, eZ, vals, hand3);
     fdm.solve(x, f, hand3[0]);
     cudaDeviceSynchronize();
     TimePoint end = std::chrono::steady_clock::now();
@@ -87,7 +89,7 @@ void testEigenDecompNoPoisson() {
     cudaDeviceSynchronize();
     std::array<Handle, 2/*3*/> hand3{};
 
-    EigenDecompSolver2d<T> eds(rowsMat, colsMat/*, layersMat*/, valsMat, hand3);
+    EigenDecomp2d<T> eds(rowsMat, colsMat/*, layersMat*/, valsMat, hand3);
 
     eds.solve(x, b, hand3[0]);
 

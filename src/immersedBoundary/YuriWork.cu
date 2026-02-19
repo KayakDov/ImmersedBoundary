@@ -8,7 +8,7 @@
 #include "FortranBindings.hpp"
 #include "../deviceArrays/headers/sparse/SparseCOO.h"
 #include "ToeplitzLaplacian.cuh"
-#include "../solvers/EigenDecompSolver.h"
+#include "../solvers/EigenDecomp/EigenDecompSolver.h"
 #include "solvers/BiCGSTAB.cuh"
 
 #include <iostream>

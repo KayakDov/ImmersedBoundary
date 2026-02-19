@@ -82,10 +82,10 @@ SimpleArray<T> Tensor<T>::col(size_t col, size_t layer) {
 }
 
 template<typename T>
-Tensor<T> SimpleArray<T>::tensor(size_t height, size_t layers) const{
-    const size_t ld = height * layers;
-    const size_t rows = this->size()/ld;
-    return Tensor<T>(height, rows, layers, ld, this->_ptr);
+Tensor<T> SimpleArray<T>::tensor(size_t rows, size_t layers) const{
+    const size_t ld = rows * layers;
+    const size_t cols = this->size()/ld;
+    return Tensor<T>(rows, cols, layers, ld, this->_ptr);
 }
 
 template<typename T>

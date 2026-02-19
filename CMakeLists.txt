@@ -36,6 +36,7 @@ file(GLOB_RECURSE ALL_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
+
 list(FILTER ALL_SRC EXCLUDE REGEX ".*/main\\.cu$")
 
 set(SHROUD_CPP
@@ -52,6 +53,13 @@ set(SHROUD_CPP
         src/solvers/Thomas.cuh
         src/solvers/ADIThomas.cu
         src/solvers/ADIThomas.cuh
+        src/solvers/EigenDecomp/EigenDecomp2d.cu
+        src/solvers/EigenDecomp/EigenDecomp2d.h
+        src/solvers/EigenDecomp/EigenDecomp3d.cu
+        src/solvers/EigenDecomp/EigenDecomp3d.cuh
+        src/solvers/EigenDecomp/EigenDecompThomas.cu
+        src/solvers/EigenDecomp/EigenDecompThomas.cuh
+        Tests/test.cpp
 )
 
 # =========================
@@ -88,16 +96,28 @@ target_link_libraries(CudaBandedLib
 # =========================
 # Executable
 # =========================
-add_executable(testMethods
-        ${ALL_SRC}
-        shroud_project/wrapFortranBindings.cpp
+# =========================
+# Unit Test Executable
+# =========================
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/heads/main.zip
 )
+# For Windows compatibility
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
-set_target_properties(testMethods PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
-)
+enable_testing()
 
-target_link_libraries(testMethods
+add_executable(run_unit_tests Tests/test.cpp)
+
+target_link_libraries(run_unit_tests
         PRIVATE
         CudaBandedLib
+        GTest::gtest_main
+        GTest::gtest
 )
+
+include(GoogleTest)
+gtest_discover_tests(run_unit_tests)
