@@ -230,11 +230,11 @@ void testPrimes() {
 
 }
 
-int main(int argc, char *argv[]) {
+// int main(int argc, char *argv[]) {
 
     // testPrimes<double, int32_t>();
 
     // loadYuriData<double>();
 
-    ADIThomas<double>::test2();
-}
+    // ADIThomas<double>::test2();
+// }

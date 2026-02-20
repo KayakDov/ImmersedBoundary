@@ -59,13 +59,12 @@ set(SHROUD_CPP
         src/solvers/EigenDecomp/EigenDecomp3d.cuh
         src/solvers/EigenDecomp/EigenDecompThomas.cu
         src/solvers/EigenDecomp/EigenDecompThomas.cuh
-        Tests/test.cpp
 )
 
 # =========================
 # Library
 # =========================
-add_library(CudaBandedLib STATIC
+add_library(CudaBandedLib OBJECT
         ${ALL_SRC}
         ${SHROUD_CPP}
         ${FORTRAN_WRAPPER}
@@ -108,16 +107,57 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# ... (FetchContent and MakeAvailable) ...
+
+# =========================
+# Unit Test Executable
+# =========================
 enable_testing()
 
-add_executable(run_unit_tests Tests/test.cpp)
+# =========================
+# Unit Test Executable
+# =========================
+enable_testing()
 
-target_link_libraries(run_unit_tests
-        PRIVATE
-        CudaBandedLib
-        GTest::gtest_main
-        GTest::gtest
+# 1. Prepare Sources - Ensure NO other 'main' functions exist in this list
+file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp")
+
+# We use the source lists directly to ensure GTest macros are compiled into the binary
+add_executable(run_unit_tests
+        ${TEST_SOURCES}
+        ${ALL_SRC}
+        ${SHROUD_CPP}
 )
 
+# 2. Setup CUDA properties
+set_target_properties(run_unit_tests PROPERTIES
+        CUDA_RESOLVE_DEVICE_SYMBOLS ON
+        CUDA_RUNTIME_LIBRARY Shared
+)
+
+#3
+target_link_libraries(run_unit_tests
+        PRIVATE
+        GTest::gtest        # Use 'gtest' instead of 'gtest_main' since we wrote our own main
+        CUDA::cublas
+        CUDA::cusolver
+        CUDA::cusparse
+        CUDA::cuda_driver
+)
+
+# 4. Comprehensive Include Paths
+# This ensures every subdirectory is visible to the compiler
+target_include_directories(run_unit_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/deviceArrays/headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/deviceArrays/headers/sparse
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/solvers/BiCGSTAB
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/solvers/EigenDecomp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/immersedBoundary
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/poisson
+        ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project
+)
+
+# 5. Discovery
 include(GoogleTest)
 gtest_discover_tests(run_unit_tests)
