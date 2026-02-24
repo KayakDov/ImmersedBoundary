@@ -17,7 +17,7 @@
  *
  * Provides bounds checking and flat indexing suitable for linear memory access.
  */
-class DenseInd : public GridInd2d{
+class DenseInd : public GridInd2d{//TODO: Is this class used?  If not, delete it!
 public:
     const int32_t d;    ///< Diagonal index for the current banded row. 0 = main diagonal, >0 = upper, <0 = lower
 
@@ -32,8 +32,9 @@ public:
      */
     __device__ DenseInd(const GridInd2d bandedInd, const int32_t* indices):
         GridInd2d(
-            static_cast<int32_t>(indices[bandedInd.col] > 0 ? bandedInd.row : bandedInd.row - indices[bandedInd.col]),
-            static_cast<int32_t>(indices[bandedInd.col] > 0 ? bandedInd.row + indices[bandedInd.col] : bandedInd.row)),
+            indices[bandedInd.col] > 0 ? bandedInd.row : bandedInd.row - indices[bandedInd.col],
+            indices[bandedInd.col] > 0 ? bandedInd.row + indices[bandedInd.col] : bandedInd.row
+        ),
         d(indices[bandedInd.col])
     {}
 

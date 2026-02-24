@@ -26,26 +26,24 @@ class EigenDecomp3d: public EigenDecompSolver<T> {
      *
      * @param i Which eigenbasis to use (0=x,1=y,2=z).
      * @param transposeEigen Use E_iᵀ instead of E_i.
-     * @param transpose Swap roles of left/right inputs in cuBLAS.  Set to true if the verctors in a1 need to be
+     * @param transposeOperand Swap roles of left/right inputs in cuBLAS.  Set to true if the verctors in a1 need to be
      * transposed.  Otherwise, set to false.
-     * @param a1 Input matrix batch.
+     * @param operand1 Input matrix batch.
      * @param dst1 Output matrix batch.
      * @param stride Matrix stride.
      * @param hand CUDA handle.
      * @param batchCount Number of batches.
      */
-    void multE(size_t i, bool transposeEigen, bool transpose,
-               const Mat<T> &a1, Mat<T> &dst1, size_t stride,
-               Handle &hand, size_t batchCount) const;
+    void multE(size_t i, bool transposeEigen, bool transposeOperand, const Mat<T> &operand1, Mat<T> &dst1, size_t stride, Handle &hand, size_t batchCount) const;
 
     /** @brief Apply E_x or E_xᵀ across all z-layers. */
-    void multEX(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const;
+    void multEX(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const;
 
     /** @brief Apply E_y or E_yᵀ across all z-layers. */
-    void multEY(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const;
+    void multEY(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const;
 
     /** @brief Apply E_z or E_zᵀ across all x-y slices. */
-    virtual void multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const;
+    virtual void multEZ(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const;
 
     /**
      * @brief Apply full transform:
@@ -82,9 +80,9 @@ public:
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
      * @param hand3 Pointer to an array of at least three Handles for concurrent 3D stream processing.
      * @param delta The grid spacing (dx, dy, dz).
-     * @param event Pointer to an Event object or array used for multistream synchronization.
+     * @param event3 Pointer to 3 events object or array used for multistream synchronization.
      */
-    EigenDecomp3d(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, SimpleArray<T> sizeOfB, Handle *hand3, Real3d delta, Event *event);
+    EigenDecomp3d(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, SimpleArray<T> sizeOfB, Handle *hand3, Real3d delta, Event *event3);
 
     /**
      * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.

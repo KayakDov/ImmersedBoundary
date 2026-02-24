@@ -31,6 +31,14 @@ public:
      * The index of the thread.
      */
     __device__ inline GridInd2d(): GridInd2d(idy(), idx()){}
+
+    /**
+     *
+     * @return The diagonal this index is on.
+     */
+    __device__ int32_t diagonal() {
+        return row - col;
+    }
 };
 
 /**

@@ -55,14 +55,14 @@ public:
      * @param hand
      * @return A new Laplacian.
      */
-    static BandedMat<T> L(const GridDim &dim, Handle &hand);
+    static BandedMat<T> L(const GridDim &dim, Handle &hand, Real3d delta = Real3d(1, 1, 1));
 
     /**
      * Prints a laplacian.
      * @param dim
      * @param hand
      */
-    static void printL(const GridDim &dim, Handle &hand);
+    static void printL(const GridDim &dim, Handle &hand, Real3d delta = Real3d(1, 1, 1));
 };
 
 #endif //CUDABANDED_POISSONLHS_H

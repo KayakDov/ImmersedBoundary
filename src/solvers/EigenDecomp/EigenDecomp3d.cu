@@ -5,10 +5,10 @@
 
 template<typename T>
 __global__ void setUTildeKernel3d(DeviceData3d<T> uTilde,
-                                  const DeviceData1d<T> eValsX,
-                                  const DeviceData1d<T> eValsY,
-                                  const DeviceData1d<T> eValsZ,
-                                  const DeviceData3d<T> fTilde) {
+      const DeviceData1d<T> eValsX,
+      const DeviceData1d<T> eValsY,
+      const DeviceData1d<T> eValsZ,
+      const DeviceData3d<T> fTilde) {
     if (GridInd3d ind; ind < uTilde)
         uTilde[ind] = fTilde[ind] / (eValsX[ind.col] + eValsY[ind.row] + eValsZ[ind.layer]);
 }
@@ -25,37 +25,54 @@ void EigenDecomp3d<T>::setUTilde(const Tensor<T> &f, Tensor<T> &u, Handle &hand)
 }
 
 template<typename T>
-void EigenDecomp3d<T>::multE(size_t i,
-                                   bool transposeEigen,
-                                   bool transpose,
-                                   const Mat<T> &a1,
-                                   Mat<T> &dst1,
-                                   size_t stride,
-                                   Handle &hand,
-                                   size_t batchCount
+void EigenDecomp3d<T>::multE(
+    size_t i,
+    bool transposeEigen,
+    bool transposeOperand,
+    const Mat<T> &operand1,
+    Mat<T> &dst1,
+    size_t stride,
+    Handle &hand,
+    size_t batchCount
 ) const {
-    Mat<T>::batchMult(
-        transpose ? a1 : this->eVecs[i], transpose ? stride : 0,
-        transpose ? this->eVecs[i] : a1, transpose ? 0 : stride,
-        dst1, stride,
-        transpose ? false : transposeEigen,
-        transpose ? transposeEigen : false,
-        hand, batchCount
-    );
+
+    auto eigenMat = this->eVecs[i];
+
+    const Mat<T> *a, *b;
+    size_t aStride, bStride;
+    bool transposeA, transposeB;
+
+    if (transposeOperand) {
+        a = &operand1;
+        aStride = stride;
+        b = &eigenMat;
+        bStride = 0;
+        transposeA = false;
+        transposeB = transposeEigen;
+    }else {
+        a = &eigenMat;
+        aStride = 0;
+        b = &operand1;
+        bStride = stride;
+        transposeA = transposeEigen;
+        transposeB = false;
+    }
+
+    Mat<T>::batchMult( *a, aStride, *b, bStride, dst1, stride, transposeA, transposeB, hand, batchCount);
 }
 
 template<typename T>
-void EigenDecomp3d<T>::multEX(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const {
-    multE(0, transposeE, true, src, dst, src._rows, hand, this->dim.layers);
+void EigenDecomp3d<T>::multEX(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const {
+    multE(0, transposeE, true, src1, dst1, src1._rows, hand, this->dim.layers);
 }
 template<typename T>
-void EigenDecomp3d<T>::multEY(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const {
-    multE(1, transposeE, false, src, dst, src._rows, hand, this->dim.layers);
+void EigenDecomp3d<T>::multEY(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const {
+    multE(1, transposeE, false, src1, dst1, src1._rows, hand, this->dim.layers);
 }
 
 template<typename T>
-void EigenDecomp3d<T>::multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const {
-    multE(2, transposeE, true, src, dst, this->dim.layers * this->dim.rows, hand, this->dim.cols);
+void EigenDecomp3d<T>::multEZ(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const {
+    multE(2, transposeE, true, src1, dst1, this->dim.layers * this->dim.rows, hand, this->dim.cols);
 }
 
 template<typename T>
@@ -100,9 +117,9 @@ EigenDecomp3d<T>::EigenDecomp3d(
     SimpleArray<T> sizeOfB,
     Handle* hand3,
     Real3d delta,
-    Event* event
+    Event* event3
 ) : EigenDecompSolver<T>({colsXColsP1, rowsXRowsP1, depthsXDepthsP1}, sizeOfB) {
-    setEigens(hand3, delta, event);
+    setEigens(hand3, delta, event3);
 }
 
 template<typename T>
@@ -133,8 +150,6 @@ void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle 
 
     this->multiplyEF(hand, bWorkSpaceT, xT, false);
 }
-
-
 
 template class EigenDecomp3d<double>;
 template class EigenDecomp3d<float>;

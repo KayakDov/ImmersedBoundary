@@ -130,16 +130,17 @@ __global__ void setAKernel3d(DeviceData2d<T> a,
 }
 
 template<typename T>
-ToeplitzLaplacian<T>::ToeplitzLaplacian(GridDim dim) : dim(dim),
-                                                       adjInds{
-                                                           AdjacencyInd(0, 0),
-                                                           AdjacencyInd(1, -1),
-                                                           AdjacencyInd(2, 1),
-                                                           AdjacencyInd(3, -dim.rows * dim.layers),
-                                                           AdjacencyInd(4, dim.rows * dim.layers),
-                                                           AdjacencyInd(5, -dim.rows),
-                                                           AdjacencyInd(6, dim.rows)
-                                                       } {
+ToeplitzLaplacian<T>::ToeplitzLaplacian(GridDim dim) :
+    dim(dim),
+    adjInds{
+        AdjacencyInd(0, 0),
+        AdjacencyInd(1, -1),
+        AdjacencyInd(2, 1),
+        AdjacencyInd(3, -dim.rows * dim.layers),
+        AdjacencyInd(4, dim.rows * dim.layers),
+        AdjacencyInd(5, -dim.rows),
+        AdjacencyInd(6, dim.rows)
+    } {
 }
 
 template<typename T>
@@ -185,20 +186,20 @@ BandedMat<T> ToeplitzLaplacian<T>::setL(cudaStream_t stream, Mat<T> &preAlocated
 
 
 template<typename T>
-BandedMat<T> ToeplitzLaplacian<T>::L(const GridDim &dim, Handle &hand) {
+BandedMat<T> ToeplitzLaplacian<T>::L(const GridDim &dim, Handle &hand, Real3d delta) {
     size_t numInds = 7;
     auto spaceForA = Mat<T>::create(dim.size(), numInds);
     auto inds = SimpleArray<int32_t>::create(numInds, hand);
-    auto A = ToeplitzLaplacian<T>(dim).setL(hand, spaceForA, inds, Real3d(1, 1, 1));
+    auto A = ToeplitzLaplacian<T>(dim).setL(hand, spaceForA, inds, delta);
     return A;
 }
 
 
 template<typename T>
-void ToeplitzLaplacian<T>::printL(const GridDim &dim, Handle &hand) {
+void ToeplitzLaplacian<T>::printL(const GridDim &dim, Handle &hand, Real3d delta) {
 
     auto aDense = SquareMat<T>::create(dim.size());
-    auto A = L(dim, hand);
+    auto A = L(dim, hand, delta);
     A.getDense(aDense, &hand);
     std::cout << "L = \n" << GpuOut<T>(aDense, hand) << std::endl;
 }

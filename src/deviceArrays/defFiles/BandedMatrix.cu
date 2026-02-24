@@ -7,6 +7,27 @@
 #include "../headers/Vec.h"
 
 /**
+ * Checks if the index is in bounds.
+ * @param minInclusive
+ * @param maxExclusive
+ * @param index
+ * @return true if the index is in bounds, false otherwise.
+ */
+__device__ bool inBounds(int32_t minInclusive, int32_t maxExclusive, int32_t index) {
+    return minInclusive <= index && index < maxExclusive;
+}
+
+/**
+ * Sums all the elements in the block into this value.
+ * @tparam T
+ * @param val
+ */
+template<typename T>
+__device__ void sumBlock(T& val) {
+    for (int offset = 16; offset > 0; offset >>= 1) val += __shfl_down_sync(0xFFFFFFFF, val, offset);
+}
+
+/**
  * Kernel for sparse diagonal matrix-vector multiplication.
  *
  * When calling this kernel, <<<numberOfBlocks, threadsPerBlock, sharedMemorySize, stream>>>,
@@ -15,16 +36,11 @@
  * Shared memory size should be sizeof(T) * 32.
  *
  * @param banded Packed diagonals of the matrix.  Trailing values are not read.  Each row is a diagonal, and the matrix is stored in column-major order.  There may be no more than 32 rows.
- * @param heightDense Number of rows in the greater matrix, not the packed matrix.  This is also the number of columns in the greater matrix and the number of rows in x.
- * @param ld Leading dimension of the packed diagonals.
  * @param diags Indices of the diagonals.  Negative indices indicate sub-diagonals.
  * Positive indices indicate super-diagonals.
  * For example, diags = {-1, 0, 1} means the first diagonal is the sub-diagonal, the second is the main diagonal, and the third is the super-diagonal.
- * @param numDiags Number of nonzero diagonals.  This number must be less than or equal to 32.
  * @param x Input vector.
- * @param strideX Stride for the input vector x.
  * @param result Output vector.
- * @param strideR Stride for the output vector result.
  * @param alpha Scalar multiplier for the matrix-vector product.
  * @param beta Scalar multiplier for the existing values in the result vector.
  */
@@ -39,22 +55,22 @@ __global__ void multVecKernel(
     const T *alpha,
     const T *beta
 ) {
-    const size_t rowX = blockIdx.x;
+    const size_t rowResult = blockIdx.x;
     const size_t bandedCol = threadIdx.x;
 
-    const bool isValid = rowX < x.cols && bandedCol < banded.cols;
+    const bool isValid = rowResult < x.cols && bandedCol < banded.cols;
     T val;
     if (isValid) {
-        //TODO: this condition can be removed by requiring input matrices have exactly 32 rows, with extra rows having all 0's.  This may give a small speed boost.
         const int32_t d = diags[bandedCol];
-        int32_t bandedRow = rowX;
-        if (d < 0) bandedRow += d;
-        val = 0 <= bandedRow && bandedRow < banded.rows - abs(d) ? banded(bandedRow, bandedCol) * x[rowX + d] : 0;
+        int32_t bandedRow = rowResult, xRow;
+        bandedRow += (d < 0) * d;
+        xRow = rowResult + d;
+        val = inBounds(0, banded.rows - abs(d), bandedRow) && inBounds(0, x.cols, xRow) ? banded(bandedRow, bandedCol) * x[xRow]:0;
     } else val = 0;
 
-    for (int offset = 16; offset > 0; offset >>= 1) val += __shfl_down_sync(0xFFFFFFFF, val, offset);
+    sumBlock(val);
 
-    if (isValid && bandedCol == 0) result[rowX] = *alpha * val + *beta * result[rowX];
+    if (isValid && bandedCol == 0) result[rowResult] = *alpha * val + *beta * result[rowResult];
 }
 
 /**
@@ -104,9 +120,14 @@ __global__ void mapToDenseKernel(
     const DeviceData2d<T> banded, //num diagonals is width, length should be dense.width
     const int32_t *__restrict__ indices
 ) {
-    if (const GridInd2d bandedInd; bandedInd < banded)
-        if (const DenseInd denseInd(bandedInd, indices); !denseInd.outOfBounds(denseSquare.rows))
-            denseSquare(denseInd.row, denseInd.col) = banded[bandedInd];
+    GridInd2d sparseInd;
+    if (sparseInd >= banded) return;
+    int32_t diag = indices[sparseInd.col];
+    GridInd2d denseInd(
+    sparseInd.row - (diag < 0 ? diag : 0),
+    sparseInd.row + (diag > 0 ? diag : 0)
+    );
+    denseSquare[denseInd] = banded[sparseInd];
 }
 
 template<typename T>
@@ -115,7 +136,7 @@ void BandedMat<T>::getDense(SquareMat<T> dense, Handle *handle) const {
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
-    const KernelPrep kp = dense.kernelPrep();
+    const KernelPrep kp = this->kernelPrep();
 
     mapToDenseKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, *h>>>(
         dense.toKernel2d(),

@@ -63,15 +63,15 @@ void EigenDecompSolver<T>::eigenL(size_t i, const Real3d delta, cudaStream_t str
     }
 
     if (samePtrAs < 0) {
-        if (sameDimAs < 0) {
+        // if (sameDimAs < 0) {
             eigenVecsL(i, stream);
             eigenValsL(i, delta[i], stream);
-        }
-        else {
-            auto scale = sizeOfB.get(i);
-            scale.set(delta[sameDimAs] * delta[sameDimAs] / delta[i] / delta[i], stream);
-            this->eVals[i].add(eVals[sameDimAs], scale, Singleton<T>::ZERO, stream);
-        }
+        // }//TODO: find a way to restore this without creating a race condition, or remove code for sameAs.
+        // else {//this creates a race condition
+        //     auto scale = sizeOfB.get(i);
+        //     scale.set(delta[sameDimAs] * delta[sameDimAs] / delta[i] / delta[i], stream);
+        //     this->eVals[i].add(eVals[sameDimAs], scale, Singleton<T>::ZERO, stream);
+        // }
     }
 }
 
@@ -85,7 +85,7 @@ template<typename T>
 EigenDecompSolver<T>::EigenDecompSolver(std::vector<Mat<T> > eMatsAndVecs, SimpleArray<T> &sizeOfB) :
     dim(
         eMatsAndVecs[1]._rows,
-        eMatsAndVecs[0]._cols,
+        eMatsAndVecs[0]._rows,
         eMatsAndVecs.size() == 3 ? eMatsAndVecs[2]._rows : 1
     ),
     sizeOfB(sizeOfB) {
@@ -142,4 +142,3 @@ SquareMat<T> EigenDecompSolver<T>::inverseL(Handle &hand) const {
 template class EigenDecompSolver<double>;
 template class EigenDecompSolver<float>;
 
-;

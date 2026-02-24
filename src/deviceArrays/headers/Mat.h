@@ -251,7 +251,61 @@ public:
      */
     Tensor<T> tensor(size_t layers);
 
-
+    /**
+     * @brief Performs a strided batched matrix–matrix multiplication on the GPU using cuBLAS.
+     *
+     * Computes, for each batch index i = 0, ..., batchCount-1:
+     *
+     *      C_i = alpha * op(A_i) * op(B_i) + beta * C_i
+     *
+     * where:
+     *   - op(A_i) = A_i            if transposeA == false
+     *               A_i^T          if transposeA == true
+     *   - op(B_i) = B_i            if transposeB == false
+     *               B_i^T          if transposeB == true
+     *
+     * The matrices are assumed to be stored in column-major layout (cuBLAS convention).
+     * Each successive matrix in the batch is separated in memory by the provided stride.
+     *
+     * This method dispatches to:
+     *   - cublasSgemmStridedBatched  if T = float
+     *   - cublasDgemmStridedBatched  if T = double
+     *
+     * @tparam T Scalar type. Must be float or double.
+     *
+     * @param a1         Matrix A containing the first matrix in the batch.
+     * @param strideA    Distance (in elements, not bytes) between successive A matrices.
+     * @param b1         Matrix B containing the first matrix in the batch.
+     * @param strideB    Distance (in elements) between successive B matrices.
+     * @param c1         Matrix C containing the first output matrix in the batch.
+     * @param strideC    Distance (in elements) between successive C matrices.
+     * @param transposeA If true, op(A) = A^T; otherwise op(A) = A.
+     * @param transposeB If true, op(B) = B^T; otherwise op(B) = B.
+     * @param hand       cuBLAS handle wrapper used for dispatch.
+     * @param batchCount Number of matrices in the batch.
+     * @param alpha      Scalar multiplier applied to A*B.
+     * @param beta       Scalar multiplier applied to C.
+     *
+     * @pre
+     *  - All matrices must reside in device memory.
+     *  - Leading dimensions (_ld) of a1, b1, and c1 must satisfy cuBLAS requirements.
+     *  - Dimensions must satisfy:
+     *        op(A): m × k
+     *        op(B): k × n
+     *        C:     m × n
+     *
+     *    where:
+     *        m = (transposeA ? a1._cols : a1._rows)
+     *        n = (transposeB ? b1._rows : b1._cols)
+     *        k = (transposeA ? a1._rows : a1._cols)
+     *
+     * @throws std::invalid_argument if T is not float or double.
+     *
+     * @note
+     *  - Uses column-major ordering (cuBLAS default).
+     *  - Strides are expressed in number of elements, not bytes.
+     *  - This is more efficient than launching batchCount individual GEMM calls.
+     */
     static void batchMult(const Mat &a1, size_t strideA, const Mat &b1,
                           size_t strideB, Mat &c1, size_t strideC,
                           bool transposeA, bool transposeB,

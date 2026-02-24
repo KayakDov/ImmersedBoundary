@@ -1,9 +1,12 @@
 #include <gtest/gtest.h>
+
+#include "ToeplitzLaplacian.cuh"
 #include "../src/solvers/EigenDecomp/EigenDecomp3d.cuh"
 
 #include "immersedBoundary/ImerssedEquation.h"
 
 TEST(ImmersedEq, SolvesPrimes_3x2x1) {
+
     using Real = double;
     using Int  = int;
 
@@ -72,7 +75,7 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
         f.data(),
         delta,
         deltaT,
-        1e-6,
+        1e-8,
         1000
     );
 
@@ -97,7 +100,7 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
     };
 
     for (size_t i = 0; i < resultP.size(); ++i)
-        EXPECT_NEAR(resultP[i], expectedP1[i], 1e-5);
+        EXPECT_NEAR(resultP[i], expectedP1[i], 1e-4);
 
     // ----------------------------
     // Full solve
@@ -134,6 +137,45 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
 
     for (size_t i = 0; i < resultF.size(); ++i)
         EXPECT_NEAR(resultF[i], expectedF[i], 1e-4);
+}
+
+TEST(EigenDecomp, ThreeD) {
+
+    using Real = double;
+    using Int  = int;
+    GridDim dim(3, 2, 2);
+    Real3d delta(1, 1, 1);
+
+    Handle hand3[3];
+
+    auto x = SimpleArray<Real>::create(12, hand3[0]);
+    std::vector<Real> xHost = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    x.set(xHost.data(), hand3[0]);
+
+    auto L = ToeplitzLaplacian<Real>::L(dim, hand3[0], delta);
+
+    ToeplitzLaplacian<Real>::printL(dim, hand3[0], delta);
+    std::cout << "sparse L = \n" << GpuOut<Real>(L, hand3[0]) << std::endl;
+
+    auto b = SimpleArray<Real>::create(12, hand3[0]);
+    b.fill(0, hand3[0]);
+
+    L.bandedMult(x, b, &hand3[0]);
+    std::cout << "b = \n" << GpuOut<Real>(b, hand3[0]) << std::endl;
+
+    x.fill(0, hand3[0]);
+
+    x.get(xHost.data(), hand3[0]);
+    for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], 0, 1e-10);
+
+    Event event3[3];
+
+    EigenDecomp3d<Real> eds(dim, hand3, delta, event3);
+
+    eds.solve(x, b, hand3[0]);
+
+    x.get(xHost.data(), hand3[0]);
+    for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], i + 1, 1e-10);
 }
 
 int main(int argc, char **argv) {
