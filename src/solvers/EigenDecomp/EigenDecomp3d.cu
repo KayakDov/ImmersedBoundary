@@ -77,6 +77,9 @@ void EigenDecomp3d<T>::multEZ(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bo
 
 template<typename T>
 void EigenDecomp3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, Tensor<T> &dst, bool transposeE) const {
+
+
+
     const auto xF = src.layerRowCol(0);
     auto dx1 = dst.layerRowCol(0);
     auto yF = dst.layerRowCol(0);

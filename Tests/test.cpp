@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "EigenDecompThomas.cuh"
 #include "ToeplitzLaplacian.cuh"
 #include "../src/solvers/EigenDecomp/EigenDecomp3d.cuh"
 
@@ -174,6 +175,18 @@ TEST(EigenDecomp, ThreeD) {
 
     x.get(xHost.data(), hand3[0]);
     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], i + 1, 1e-10);
+
+    x.fill(0, hand3[0]);
+    x.get(xHost.data(), hand3[0]);
+    for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], 0, 1e-10);
+
+    EigenDecompThomas<Real> edt(dim, hand3, delta, event3);
+
+    edt.solve(x, b, hand3[0]);
+
+    x.get(xHost.data(), hand3[0]);
+    for (size_t i = 0; i < xHost.size(); ++i)
+        EXPECT_NEAR(xHost[i], i + 1, 1e-10);
 }
 
 TEST(BCGDenseTest, ConvergenceValidation) {

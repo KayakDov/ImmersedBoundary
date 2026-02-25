@@ -32,6 +32,26 @@ __device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, D
     x[n] = rhsPrime[n];
     for (int32_t col = n - 1; col >= 0; --col)
         x[col] = rhsPrime[col] - superPrime[col] * x[col + 1];
+
+    printf(
+        "\n[Thomas Debug]\n"
+        "diag=%.8e  secDiag=%.8e\n"
+        "rhs[0]=%.8e  rhs[1]=%.8e\n"
+        "superPrime[0]=%.8e  superPrime[1]=%.8e\n"
+        "rhsPrime[0]=%.8e  rhsPrime[1]=%.8e\n"
+        "x[0]=%.8e  x[1]=%.8e\n\n",
+        (double)diagonal,
+        (double)secondaryDiag,
+        (double)rhs[0],
+        (double)rhs[1],
+        (double)superPrime[0],
+        (double)superPrime[1],
+        (double)rhsPrime[0],
+        (double)rhsPrime[1],
+        (double)x[0],
+        (double)x[1]
+    );
+
 }
 
 /**
@@ -52,7 +72,15 @@ __device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, D
  * @param deltaZSquaredInv The precomputed value of \f$ 1/\Delta z^2 \f$.
  */
 template<typename Real>
-__global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceData3d<Real> b, DeviceData1d<Real> eValsX, DeviceData1d<Real> eValsY, DeviceData3d<Real> superPrime, DeviceData3d<Real> bPrime, Real deltaZSquaredInv) {
+__global__ void solveThomas3dLaplacianDepthsKernel(
+    DeviceData3d<Real> x,
+    DeviceData3d<Real> b,
+    DeviceData1d<Real> eValsX,
+    DeviceData1d<Real> eValsY,
+    DeviceData3d<Real> superPrime,
+    DeviceData3d<Real> bPrime,
+    Real deltaZSquaredInv
+) {
     GridInd3d system(idy(), idx(), 0);
     if (system.row >= x.rows || system.col >= x.cols) return;
     DeviceData1d<Real> depthX(x.layers, x, system, 0, 0, 1);
@@ -64,7 +92,7 @@ __global__ void solveThomas3dLaplacianDepthsKernel(DeviceData3d<Real> x, DeviceD
         depthX,
         depthSuperPrime,
         depthRHSPrime,
-        -2*deltaZSquaredInv + eValsX[system.row] + eValsY[system.col],
+        -2*deltaZSquaredInv - abs(eValsX[system.col]) - abs(eValsY[system.row]),
         deltaZSquaredInv
     );
 }
