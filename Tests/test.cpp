@@ -5,6 +5,8 @@
 
 #include "immersedBoundary/ImerssedEquation.h"
 
+//TODO: test against NaN values that should be overwritten by 0 multiplicaiton!
+
 TEST(ImmersedEq, SolvesPrimes_3x2x1) {
 
     using Real = double;
@@ -154,14 +156,10 @@ TEST(EigenDecomp, ThreeD) {
 
     auto L = ToeplitzLaplacian<Real>::L(dim, hand3[0], delta);
 
-    ToeplitzLaplacian<Real>::printL(dim, hand3[0], delta);
-    std::cout << "sparse L = \n" << GpuOut<Real>(L, hand3[0]) << std::endl;
-
     auto b = SimpleArray<Real>::create(12, hand3[0]);
     b.fill(0, hand3[0]);
 
     L.bandedMult(x, b, &hand3[0]);
-    std::cout << "b = \n" << GpuOut<Real>(b, hand3[0]) << std::endl;
 
     x.fill(0, hand3[0]);
 
@@ -176,6 +174,45 @@ TEST(EigenDecomp, ThreeD) {
 
     x.get(xHost.data(), hand3[0]);
     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], i + 1, 1e-10);
+}
+
+TEST(BCGDenseTest, ConvergenceValidation) {
+    using Real = double;
+
+    Handle hand4[4]{};
+    Event events11[11];
+    size_t n = 6;
+    Real tolerance = 1.0e-6;
+    size_t maxIterations = 100;
+
+    auto A = SquareMat<Real>::create(n);
+    std::vector<Real> hostA = {
+         0.410352, -0.186335, -0.0563147, -0.172257, -0.0993789, -0.0389234,
+        -0.186335,  0.354037, -0.186335, -0.0993789, -0.21118,  -0.0993789,
+         0.0,       0.0,       1.0,        0.0,       0.0,       0.0,
+         0.0,       0.0,       0.0,        1.0,       0.0,       0.0,
+         0.0,       0.0,       0.0,        0.0,       1.0,       0.0,
+         0.0,       0.0,       0.0,        0.0,       0.0,       1.0
+    };
+    A.set(hostA.data(), hand4[0]);
+
+    auto b = SimpleArray<Real>::create(n, hand4[0]);
+    std::vector<Real> hostB = {-1.51304, -1.56522, -0.313043, -0.486957, -0.434783, 0.313043};
+    b.set(hostB.data(), hand4[0]);
+
+    auto result = SimpleArray<Real>::create(n, hand4[0]);
+    auto bHeightX7 = Mat<Real>::create(n, 7);
+    auto aX9 = SimpleArray<Real>::create(9, hand4[0]);
+
+    BCGDense<Real>::solve(hand4, A, result, b, events11, &bHeightX7, &aX9, tolerance, maxIterations);
+
+    std::vector<Real> actual(n);
+    result.get(actual.data(), hand4[0]);
+
+    std::vector<Real> expected = {-7.48312639568, -8.35954534961, -2.29212890075, -2.60674032488, -2.94381665669, -0.80898814329};
+
+    for (size_t i = 0; i < n; ++i)
+        EXPECT_NEAR(actual[i], expected[i], 1e-5) << "Mismatch at solution vector index " << i;
 }
 
 int main(int argc, char **argv) {

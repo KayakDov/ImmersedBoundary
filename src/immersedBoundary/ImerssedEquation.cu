@@ -21,17 +21,21 @@ void ImmersedEq<Real, Int>::checkNNZ(size_t nnz) const {
 
 
 template<typename Real, typename Int>
-SolverLauncher<Real, Int>::SolverLauncher(const Real &tolerance, size_t max_iterations, const Mat<Real>& gridVecs, Handle& hand):
+SolverLauncher<Real, Int>::SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real>& gridVecs, Handle* hand2, const Event& event):
     tolerance(tolerance),
     maxIterations(max_iterations),
-    allocated9(Vec<Real>::create(9, hand)),
+    allocated9(Vec<Real>::create(9, hand2[0])),
     allocatedRHSHeightX7(gridVecs.subMat(0, static_cast<size_t>(GridInd::Count), gridVecs._rows, 7)) {
+    allocated9.fill(0, hand2[0]);
+    allocatedRHSHeightX7.fill(0, hand2[1]);
+    event.record(hand2[1]);
+    event.hold(hand2[0]);
 }
 
 template<typename Real, typename Int>
 void SolverLauncher<Real, Int>::launch(ImmersedEq<Real, Int> &imEq, Event *events11, SimpleArray<Real>& result) {
     ImmersedEqSolver<Real, Int> solver(imEq, allocatedRHSHeightX7, allocated9, events11, tolerance, maxIterations);
-    solver.solveUnconditionedMultiStream(result);
+    solver.solveUnpreconditioned(result);
 }
 
 template<typename Real, typename Int>
@@ -92,13 +96,13 @@ ImmersedEq<Real, Int>::ImmersedEq(
     SimpleArray<Int> maxSparseOffsets,
     const GridDim &dim,
     const Real3d &delta,
-    Singleton<Real> dT, double tolerance, size_t maxBCGIterations):
+    Singleton<Real> dT, Real tolerance, size_t maxBCGIterations):
     dim(dim),
     maxSparseInds(maxSparseInds),
     maxSparseOffsets(maxSparseOffsets),
     delta(delta),
     dT(dT),
-    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5[0]){
+    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events11[0]){
 }
 
 template<typename Real, typename Int>
@@ -109,7 +113,7 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim,
     Real *f,
     const Real3d &delta,
     double dT,
-    double tolerance,
+    Real tolerance,
     size_t maxBCGIterations
 ) :
     maxSparseInds(SimpleArray<Int>::create(nnzMax, hand5[0])),
@@ -117,7 +121,7 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim,
     dim(dim),
     delta(delta),
     dT(Singleton<Real>::create(3/(2 * dT), hand5[0])),
-    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5[0]){
+    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events11[0]){
 
     // Vec<Real> allocated9 = ;
     // Event lhsTimes;
@@ -130,10 +134,10 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim,
 }
 
 template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
-void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const {
+void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) {
 
     if (preMultResult.data() == Singleton<Real>::ZERO.data()) result.fill(0, hand5[4]);
-    else result.mult(preMultResult, &hand5[4]);
+    else result.mult(preMultResult, hand5 + 4);
     lhsTimes.record(hand5[4]);
 
     auto Bx = lagrangeVec(LagrangeInd::LHS_Bx);
@@ -144,11 +148,11 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
     multSparse(B, Bx, BTBx, Singleton<Real>::TWO, Singleton<Real>::ZERO, true);// p <- B^T * (B * x)
     eds->solve(invLBTBx, BTBx, hand5[0]); // workspace2 <- L^-1 * B^T * (B * x)
 
-    invLBTBx.add(x, &Singleton<Real>::ONE, &hand5[0]);
+    invLBTBx.add(x, &Singleton<Real>::ONE, hand5);
     auto& invLxBTBxPlusX = invLBTBx;
 
     lhsTimes.hold(hand5[0]);
-    result.add(invLxBTBxPlusX, &multLinearOperationOutput, &hand5[0]); //result <- result + preMultResult * x * preMultX
+    result.add(invLxBTBxPlusX, &multLinearOperationOutput, hand5); //result <- result + preMultResult * x * preMultX
 }
 
 
@@ -385,9 +389,16 @@ ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
     Event* events11,
     Real tolerance,
     size_t maxIterations
-)
-    : BiCGSTAB<Real>(imEq.gridVec(GridInd::RHS), imEq.hand5.get(), events11, &allocatedRHSHeightX7, &allocated9, tolerance, maxIterations),
-      imEq(imEq) {
+):
+    BiCGSTAB<Real>(imEq.gridVec(GridInd::RHS),
+        imEq.hand5,
+        events11,
+        &allocatedRHSHeightX7,
+        &allocated9,
+        tolerance,
+        maxIterations
+    ),
+    imEq(imEq) {
 }
 
 template<typename Real, typename Int>

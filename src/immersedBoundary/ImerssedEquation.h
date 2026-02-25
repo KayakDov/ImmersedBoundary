@@ -94,10 +94,9 @@ public:
      * @param max_iterations  The maximum number of BCG iterations before aborting.
      * @param gridVecs Buffer space for all vectors of length gridSize.  The last 7 of these will be used for
      * scratch space.
-     * @param hand The context.
+     * @param hand2 The context.
      */
-    SolverLauncher(const Real &tolerance, size_t max_iterations, const Mat<Real> &gridVecs, Handle &hand);
-
+        SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real> &gridVecs, Handle *hand2, const Event &event);
     /**
      * @brief Executes the solver logic.
      * @param imEq The system definitions.
@@ -116,7 +115,7 @@ template <typename Real, typename Int> class ImmersedEqSolver;
 template <typename Real, typename Int>
 class ImmersedEq {
 
-    std::shared_ptr<Handle[]> hand5{new Handle[5]}; ///< Array of 5 CUDA Handles for multi-streaming.
+    mutable Handle hand5[5]{}; ///< Array of 5 CUDA Handles for multi-streaming.
     mutable std::unique_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr; ///< A buffer space for sparse vector multiplication.  The space grows as needed.
     Event events11[11]{}; ///< CUDA events for fine-grained synchronization.
 
@@ -209,7 +208,8 @@ class ImmersedEq {
      * @param multLinearOperationOutput Scaling for the addition.
      * @param preMultResult Initial scaling factor for x.  Use Singleton<T>::ZERO to turn NaNs into 0's.  Use another 0 value to preserve NaNs.
      */
-    void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) const;
+    void LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult);
+
 
     /**
      * @brief solves the equation and returns a simple arra with the solution.
@@ -235,19 +235,9 @@ class ImmersedEq {
     void multSparse(const std::unique_ptr<SparseMat<Real, Int>> &mat, const SimpleArray<Real> &vec, SimpleArray<Real> &result, const
                     Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
 
-    /**
-     *
-     * @param maxSparseInds An array for allocation of sparse indices.  It should be as large as the most sparse indices
-     * that will be used for B or R.
-     * @param maxSparseOffsets Same as maxSparseInds, but for offsets.
-     * @param dim The dimensions of the underlying grid.
-     * @param delta The distance between grid points.
-     * @param dT The time step.
-     * @param tolerance A number close to 0.
-     * @param maxBCGIterations The maxium numver of iterations that BCG will do before quiting.
-     */
-    ImmersedEq(SimpleArray<Int> maxSparseInds, SimpleArray<Int> maxSparseOffsets, const GridDim &dim, const Real3d &delta, Singleton<Real> dT, double tolerance, size_t maxBCGIterations);
-
+    ImmersedEq(SimpleArray<Int> maxSparseInds, SimpleArray<Int> maxSparseOffsets, const GridDim &dim,
+               const Real3d &delta,
+               Singleton<Real> dT, Real tolerance, size_t maxBCGIterations);
 
     /**
      * @brief Debug method to materialize the full LHS matrix.
@@ -290,7 +280,7 @@ public:
         Real *f,
         const Real3d &delta,
         double dT,
-        double tolerance,
+        Real tolerance,
         size_t maxBCGIterations
     );
 

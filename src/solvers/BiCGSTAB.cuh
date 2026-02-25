@@ -124,9 +124,7 @@ public:
      * unpreconditioned BiCGSTAB algorithm.
      * @param x The result will be placed here.  This may be the same as the b vector if you'd like to overwrite it.
      */
-    void solveUnpreconditioned(Vec<T>& x);
-
-    void solveUnconditionedMultiStream(Vec<T> &initGuess);
+    void solveUnpreconditioned(Vec<T> &initGuess);
 };
 
 template<typename T>

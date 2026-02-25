@@ -83,9 +83,16 @@ BiCGSTAB<T>::BiCGSTAB(
     a9(allocated9 ? *allocated9 : Vec<T>::create(9, hand4[0])),
     rho(a9.get(0)), alpha(a9.get(1)), omega(a9.get(2)), rho_new(a9.get(3)), beta(a9.get(4)),
     temp{{a9.get(5), a9.get(6), a9.get(7), a9.get(8)}},
-    maxIterations(maxIterations) {
-    static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>,
-                  "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
+    maxIterations(maxIterations)
+{
+    static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
+    if (!allocatedBHeightX7) bHeightX7.fill(0, hand4[0]);
+    if (!allocated9) {
+        a9.fill(0, hand4[1]);
+        record(1, {events11[0]});
+        hold(0, {events11[0]});
+    }
+
 }
 
 template<typename T>
@@ -105,60 +112,6 @@ void BiCGSTAB<T>::preamble(Vec<T>& x) {
 
 template<typename T>
 void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
-    synch();
-    TimePoint start = std::chrono::steady_clock::now();
-
-    auto& x = initGuess;
-    preamble(x);
-
-    size_t iteration = 0;
-    for (; iteration < maxIterations; iteration++) {
-        mult(p, v); // v = A * p
-
-        r_tilde.mult(v, alpha, hand4);
-        alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, hand4[0]); //alpha = rho / (r_tilde * v)
-
-        set(h, x);
-        h.add(p, &alpha, hand4); // h = x + alpha * p
-
-        s.setDifference(r, v, Singleton<T>::ONE, alpha, hand4); // s = r - alpha * v
-
-        if (isSmall(s, temp[2])) {
-            set(x, h);
-            break;
-        }
-
-        mult(s, t); // t = A * s
-
-        t.mult(s, temp[3], hand4);
-        t.mult(t, omega, hand4);
-        omega.EBEPow(temp[3], Singleton<T>::MINUS_ONE, hand4[0]); //omega = t * s / t * t;
-
-        x.setSum(h, s, Singleton<T>::ONE, omega, hand4); // x = h + omega * s
-
-        r.setDifference(s, t, Singleton<T>::ONE, omega, hand4); // r = s - omega * t
-
-        if (isSmall(r, temp[2])) break;
-
-        r_tilde.mult(r, rho_new, hand4);
-        beta.setProductOfQuotients(rho_new, rho, alpha, omega, hand4[0]); // beta = (rho_new / rho) * (alpha / omega);
-
-        set(rho, rho_new);
-        pUpdate(); // p = p - beta * omega * v
-    }
-    if (iteration >= maxIterations)
-        std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
-
-    synch();
-
-    const TimePoint end = std::chrono::steady_clock::now();
-    const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
-    // std::cout<< "BiCGSTAB #iterations = " << iteration << std::endl;
-    // std::cout << time << ", ";
-}
-
-template<typename T>
-void BiCGSTAB<T>::solveUnconditionedMultiStream(Vec<T>& initGuess) {
     synch();
     TimePoint start = std::chrono::steady_clock::now();
 
@@ -315,35 +268,6 @@ void BCGDense<T>::solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, co
     BCGDense<T> solver(hand4, A, b, events11, bHeightX7, allocated9, tolerance, maxIterations);
     solver.solveUnpreconditioned(result);
 }
-
-template<typename T>
-void BCGDense<T>::test() {
-    Handle hand4[4]{};
-    size_t n = 6;
-    auto A = SquareMat<T>::create(n);
-    std::vector<T>  hostA = {0.410352, -0.186335, -0.0563147, -0.172257, -0.0993789, -0.0389234,
-                            -0.186335, 0.354037, -0.186335, -0.0993789, -0.21118, -0.0993789,
-                            0, 0, 1, 0, 0, 0,
-                            0, 0, 0, 1, 0, 0,
-                            0, 0, 0, 0, 1, 0,
-                            0, 0, 0, 0, 0, 1};
-    A.set(hostA.data(), hand4[0]);
-    auto b = SimpleArray<T>::create(n, hand4[0]);
-    std::vector<T>  hostB = {-1.51304, -1.56522, -0.313043, -0.486957, -0.434783, 0.313043};
-    b.set(hostB.data(), hand4[0]);
-    auto result = SimpleArray<T>::create(n, hand4[0]);
-    auto bHeightX7 = Mat<T>::create(n, 7);
-    auto aX9 = SimpleArray<T>::create(9, hand4[0]);
-    T tolerance = 1.0e-6;
-    size_t maxIterations = 100;
-    Event events11[11];
-    solve(hand4, A, result, b, events11, &bHeightX7, &aX9, tolerance, maxIterations);
-    std::cout << "result = " << GpuOut<T>(result, hand4[0]) << std::endl;
-
-    std:: cout << "expected: -7.48312639568, -8.35954534961, -2.29212890075, -2.60674032488, -2.94381665669, -0.80898814329" << std::endl;
-
-}
-
 
 template class BiCGSTAB<double>;
 template class BiCGSTAB<float>;
