@@ -10,7 +10,7 @@
 
 template<typename T>
 class EigenDecomp3d: public EigenDecompSolver<T> {
-
+protected:
 
     /**
      * @brief Compute ũ = f̃ / (λ_x + λ_y + λ_z).
@@ -37,13 +37,13 @@ class EigenDecomp3d: public EigenDecompSolver<T> {
     void multE(size_t i, bool transposeEigen, bool transposeOperand, const Mat<T> &operand1, Mat<T> &dst1, size_t stride, Handle &hand, size_t batchCount) const;
 
     /** @brief Apply E_x or E_xᵀ across all z-layers. */
-    void multEX(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const;
+    void multEX(const Mat<T> &src1, Mat<T> dst1, Handle &hand, bool transposeE) const;
 
     /** @brief Apply E_y or E_yᵀ across all z-layers. */
-    void multEY(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const;
+    void multEY(const Mat<T> &src1, Mat<T> dst1, Handle &hand, bool transposeE) const;
 
     /** @brief Apply E_z or E_zᵀ across all x-y slices. */
-    virtual void multEZ(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const;
+    void multEZ(const Mat<T> &src1, Mat<T> dst1, Handle &hand, bool transposeE) const;
 
     /**
      * @brief Apply full transform:
@@ -56,7 +56,7 @@ class EigenDecomp3d: public EigenDecompSolver<T> {
      * @param dst Output 3D tensor.
      * @param transposeE Whether to apply Eᵀ instead of E.
      */
-    void multiplyEF(Handle &hand, const Tensor<T> &src, Tensor<T> &dst, bool transposeE) const;
+    virtual void multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T> &dst, bool transposeE) const;
 
     /**
      * Sets the eigen vectors and values.

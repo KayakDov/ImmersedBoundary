@@ -151,6 +151,8 @@ TEST(EigenDecomp, ThreeD) {
 
     Handle hand3[3];
 
+    //ToeplitzLaplacian<Real>::printL(dim, hand3[0], delta);
+
     auto x = SimpleArray<Real>::create(12, hand3[0]);
     std::vector<Real> xHost = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     x.set(xHost.data(), hand3[0]);
@@ -176,6 +178,7 @@ TEST(EigenDecomp, ThreeD) {
     x.get(xHost.data(), hand3[0]);
     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], i + 1, 1e-10);
 
+    L.bandedMult(x, b, &hand3[0]);
     x.fill(0, hand3[0]);
     x.get(xHost.data(), hand3[0]);
     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], 0, 1e-10);

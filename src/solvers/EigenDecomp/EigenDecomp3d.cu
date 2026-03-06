@@ -62,41 +62,25 @@ void EigenDecomp3d<T>::multE(
 }
 
 template<typename T>
-void EigenDecomp3d<T>::multEX(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const {
+void EigenDecomp3d<T>::multEX(const Mat<T> &src1, Mat<T> dst1, Handle &hand, bool transposeE) const {
     multE(0, transposeE, true, src1, dst1, src1._rows, hand, this->dim.layers);
 }
 template<typename T>
-void EigenDecomp3d<T>::multEY(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const {
+void EigenDecomp3d<T>::multEY(const Mat<T> &src1, Mat<T> dst1, Handle &hand, bool transposeE) const {
     multE(1, transposeE, false, src1, dst1, src1._rows, hand, this->dim.layers);
 }
 
 template<typename T>
-void EigenDecomp3d<T>::multEZ(const Mat<T> &src1, Mat<T> &dst1, Handle &hand, bool transposeE) const {
+void EigenDecomp3d<T>::multEZ(const Mat<T> &src1, Mat<T> dst1, Handle &hand, bool transposeE) const {
     multE(2, transposeE, true, src1, dst1, this->dim.layers * this->dim.rows, hand, this->dim.cols);
 }
 
 template<typename T>
-void EigenDecomp3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, Tensor<T> &dst, bool transposeE) const {
+void EigenDecomp3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T>& dst, bool transposeE) const {
 
-
-
-    const auto xF = src.layerRowCol(0);
-    auto dx1 = dst.layerRowCol(0);
-    auto yF = dst.layerRowCol(0);
-    auto sizeOfBT = this->sizeOfB.tensor(this->dim.rows, this->dim.layers);
-    auto dyF = sizeOfBT.layerRowCol(0);
-    auto zS = sizeOfBT.layerColDepth(0);
-    auto dzS = dst.layerColDepth(0);
-
-    if (transposeE) {
-        multEX(xF, dx1, hand, transposeE);
-        multEY(yF, dyF, hand, transposeE);
-        multEZ(zS, dzS, hand, transposeE);
-    } else {
-        multEZ(zS, dzS, hand, transposeE);
-        multEY(yF, dyF, hand, transposeE);
-        multEX(xF, dx1, hand, transposeE);
-    }
+    multEY( src.layerRowCol(0), dst.layerRowCol(0), hand, transposeE);
+    multEZ(dst.layerColDepth(0),  src.layerColDepth(0), hand, transposeE);//TODO: modify this so that src is not changed.  Can be done by passing another temp variable, if that variable is the same as rhs, then rhs will be overwritten, if it's different, tahn rhs will not be overwritten.  If this is done, then it may be possible the remove sizeOfB as a field.
+    multEX(src.layerRowCol(0), dst.layerRowCol(0), hand, transposeE);
 }
 
 template<typename T>
@@ -143,15 +127,15 @@ EigenDecomp3d<T>::EigenDecomp3d(const GridDim &dim, Handle *hand3, const Real3d 
 
 template<typename T>
 void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
-    const auto bT = b.tensor(this->dim.rows, this->dim.layers);
-    auto bWorkSpaceT = this->sizeOfB.tensor(this->dim.rows, this->dim.layers);
+    auto bT = b.tensor(this->dim.rows, this->dim.layers);
+    auto temp = this->sizeOfB.tensor(this->dim.rows, this->dim.layers);
     auto xT = x.tensor(this->dim.rows, this->dim.layers);
 
     this->multiplyEF(hand, bT, xT, true);
 
-    this->setUTilde(xT, bWorkSpaceT, hand);
+    this->setUTilde(xT, temp, hand);
 
-    this->multiplyEF(hand, bWorkSpaceT, xT, false);
+    this->multiplyEF(hand, temp, xT, false);
 }
 
 template class EigenDecomp3d<double>;

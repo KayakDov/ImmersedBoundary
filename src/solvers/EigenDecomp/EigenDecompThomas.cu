@@ -30,28 +30,8 @@ __device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, D
     }
     size_t n = x.cols - 1;
     x[n] = rhsPrime[n];
-    for (int32_t col = n - 1; col >= 0; --col)
-        x[col] = rhsPrime[col] - superPrime[col] * x[col + 1];
-
-    printf(
-        "\n[Thomas Debug]\n"
-        "diag=%.8e  secDiag=%.8e\n"
-        "rhs[0]=%.8e  rhs[1]=%.8e\n"
-        "superPrime[0]=%.8e  superPrime[1]=%.8e\n"
-        "rhsPrime[0]=%.8e  rhsPrime[1]=%.8e\n"
-        "x[0]=%.8e  x[1]=%.8e\n\n",
-        (double)diagonal,
-        (double)secondaryDiag,
-        (double)rhs[0],
-        (double)rhs[1],
-        (double)superPrime[0],
-        (double)superPrime[1],
-        (double)rhsPrime[0],
-        (double)rhsPrime[1],
-        (double)x[0],
-        (double)x[1]
-    );
-
+    for (int32_t i = n - 1; i >= 0; --i)
+        x[i] = rhsPrime[i] - superPrime[i] * x[i + 1];
 }
 
 /**
@@ -69,55 +49,57 @@ __device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, D
  * @param eValsY Vector containing the eigenvalues of the Y-direction Laplacian.
  * @param superPrime 3D workspace tensor for modified super-diagonals.
  * @param bPrime 3D workspace tensor for modified intermediate RHS.
- * @param deltaZSquaredInv The precomputed value of \f$ 1/\Delta z^2 \f$.
+ * @param deltaSquaredInv The precomputed value of \f$ 1/\Delta z^2 \f$.
  */
 template<typename Real>
-__global__ void solveThomas3dLaplacianDepthsKernel(
+__global__ void solveThomas3dLaplacianKernel(
     DeviceData3d<Real> x,
     DeviceData3d<Real> b,
-    DeviceData1d<Real> eValsX,
     DeviceData1d<Real> eValsY,
+    DeviceData1d<Real> eValsZ,
     DeviceData3d<Real> superPrime,
     DeviceData3d<Real> bPrime,
-    Real deltaZSquaredInv
-) {
-    GridInd3d system(idy(), idx(), 0);
-    if (system.row >= x.rows || system.col >= x.cols) return;
-    DeviceData1d<Real> depthX(x.layers, x, system, 0, 0, 1);
-    DeviceData1d<Real> depthB(b.layers, b, system, 0, 0, 1);
-    DeviceData1d<Real> depthSuperPrime(superPrime.layers, superPrime, system, 0, 0, 1);
-    DeviceData1d<Real> depthRHSPrime(bPrime.layers, bPrime, system, 0, 0, 1);
+    Real deltaSquaredInv
+) {//width is layers and height is rows
+    GridInd3d system(idy(), 0, idx());
+    if (system.row >= x.rows || system.layer >= x.layers) return;
+    DeviceData1d<Real> colX(x.cols, x, system, 0, 1, 0);//TODO: remove all the extra variables for speed improvement.
+    DeviceData1d<Real> colB(b.cols, b, system, 0, 1, 0);
+    DeviceData1d<Real> colSuperPrime(superPrime.cols, superPrime, system, 0, 1, 0);
+    DeviceData1d<Real> colRHSPrime(bPrime.cols, bPrime, system, 0, 1, 0);
     solveThomas3dLap(
-        depthB,
-        depthX,
-        depthSuperPrime,
-        depthRHSPrime,
-        -2*deltaZSquaredInv - abs(eValsX[system.col]) - abs(eValsY[system.row]),
-        deltaZSquaredInv
+        colB,
+        colX,
+        colSuperPrime,
+        colRHSPrime,
+        (-2*deltaSquaredInv + eValsY[system.row] + eValsZ[system.layer]),
+        deltaSquaredInv
     );
 }
 
 
 template<typename T>
-void EigenDecompThomas<T>::multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE) const {
+void EigenDecompThomas<T>::multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T> &dst, bool transposeE) const {
+
+    this->multEY(src.layerRowCol(0), this->workSpaceRHSPrime.layerRowCol(0), hand, transposeE);
+
+    this->multEZ(this->workSpaceRHSPrime.layerColDepth(0),  dst.layerColDepth(0), hand, transposeE);
 }
 
 template<typename T>
 void EigenDecompThomas<T>::setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handle &hand) const {
-    KernelPrep kpVec(this->dim.cols, this->dim.rows);
-    solveThomas3dLaplacianDepthsKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, hand>>>(
+    KernelPrep kpVec( this->dim.layers, this->dim.rows);
+    solveThomas3dLaplacianKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, hand>>>(
         dst.toKernel3d(),
         src.toKernel3d(),
-        this->eVals[0].toKernel1d(),
         this->eVals[1].toKernel1d(),
+        this->eVals[2].toKernel1d(),
         workSpaceSuperPrime.toKernel3d(),
         workSpaceRHSPrime.toKernel3d(),
-        1/deltaZ/deltaZ
+        1/deltaX/deltaX
     );
 }
 
-
-//Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, SimpleArray<T> &sizeOfB, Handle *hand3, Real3d delta, Event *event
 template<typename T>
 EigenDecompThomas<T>::EigenDecompThomas(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, Mat<T> &sizeOfBX3, Handle *hand3, const Real3d& delta, Event *event):
     EigenDecomp3d<T>(
@@ -131,7 +113,7 @@ EigenDecompThomas<T>::EigenDecompThomas(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1
     ),
     workSpaceSuperPrime(sizeOfBX3.col(1).tensor(rowsXRowsP1._rows, depthsXDepthsP1._rows)),
     workSpaceRHSPrime(sizeOfBX3.col(2).tensor(rowsXRowsP1._rows, depthsXDepthsP1._rows)),
-    deltaZ(delta.z)
+    deltaX(delta.x)
 {
 }
 
@@ -140,7 +122,7 @@ EigenDecompThomas<T>::EigenDecompThomas(const GridDim& dim, Handle *hand3, const
     EigenDecomp3d<T>(dim, hand3, delta, sizeOfBX3.col(0), event),
     workSpaceSuperPrime(sizeOfBX3.col(1).tensor(dim.rows, dim.layers)),
     workSpaceRHSPrime(sizeOfBX3.col(2).tensor(dim.rows, dim.layers)),
-    deltaZ(delta.z)
+    deltaX(delta.x)
 {}
 
 template<typename T>

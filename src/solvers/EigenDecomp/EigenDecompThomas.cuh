@@ -29,14 +29,9 @@ class EigenDecompThomas : public EigenDecomp3d<T> {
     Tensor<T> workSpaceRHSPrime;
 
     /** @brief Grid spacing in the Z-direction, used to build the tridiagonal coefficients. */
-    double deltaZ;
+    double deltaX;
 
-    /**
-     * @brief Overridden to be a no-op (or specialized) since Z-direction is handled by Thomas solve.
-     * @note In this hybrid model, the E_z transform is replaced by the tridiagonal solve in setUTilde.
-     */
-    void multEZ(const Mat<T> &src, Mat<T> &dst, Handle &hand, bool transposeE)  const override;
-
+    void multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T> &dst, bool transposeE) const override;
     /**
      * @brief Solves the tridiagonal systems in the eigen-space.
      * * Applies the Thomas algorithm across the "depths" of the tensor. For each (i, j)

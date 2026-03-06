@@ -50,8 +50,8 @@ void EigenDecomp2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle 
     auto soBM = this->sizeOfB.matrix(this->dim.rows);
     auto xM = x.matrix(this->dim.rows);
 
-    bM.mult(this->eVecs[0], &xM, &hand, false, false);
     this->eVecs[1].mult(xM, &soBM, &hand, true, false);
+    bM.mult(this->eVecs[0], &xM, &hand, false, false);
 
     setUTilde(soBM, xM, hand);
 
