@@ -35,20 +35,21 @@ void SparseMat<Real, Int>::mult(const SimpleArray<Real>& vec, SimpleArray<Real>&
 }
 
 template<typename Real, typename Int>
-void SparseMat<Real, Int>::getDense(Mat<Real>& dest, Handle& h) const {
+void SparseMat<Real, Int>::getDense(Mat<Real>& dense, Handle& h) const {
+    dense.fill(0, h);
     size_t bytesRequired = 0;
     cudaDataType valueType = cuValueType<Real>();
 
     // 1. Get buffer size required for conversion
     CHECK_SPARSE_ERROR(cusparseSparseToDense_bufferSize(
-        h, descriptor.get(), dest.getDescr(),
+        h, descriptor.get(), dense.getDescr(),
         CUSPARSE_SPARSETODENSE_ALG_DEFAULT, &bytesRequired));
 
     auto workSpace = SimpleArray<Real>::create((bytesRequired + sizeof(Real) - 1) / sizeof(Real), h);
 
     // 2. Execute conversion
     CHECK_SPARSE_ERROR(cusparseSparseToDense(
-        h, descriptor.get(), dest.getDescr(),
+        h, descriptor.get(), dense.getDescr(),
         CUSPARSE_SPARSETODENSE_ALG_DEFAULT, workSpace.data()));
 }
 

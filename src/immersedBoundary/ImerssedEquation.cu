@@ -123,12 +123,6 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim,
     dT(Singleton<Real>::create(3/(2 * dT), hand5[0])),
     solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events11[0]){
 
-    // Vec<Real> allocated9 = ;
-    // Event lhsTimes;
-    // SimpleArray<Real> RHS = SimpleArray<Real>::create(dim.size(), hand5[0]);
-    // Mat<Real> allocatedRHSHeightX7 = ;
-
-
     this->lagrangeVec(LagrangeInd::f).set(f, hand5[0]);
     this->gridVec(GridInd::p).set(p, hand5[0]);
 }
@@ -185,7 +179,6 @@ void ImmersedEq<Real, Int>::setRHS(bool prime) {
 
     auto RHS = gridVec(GridInd::RHS);
     eds->solve(RHS, BTF, hand5[0]);
-
 }
 
 /**
@@ -328,8 +321,6 @@ void ImmersedEq<Real, Int>::solve(
 
     auto fResultDevice = lagrangeVec(LagrangeInd::fPrime);
     multSparse(B, gridVec(GridInd::pPrime), fResultDevice, Singleton<Real>::TWO, Singleton<Real>::ZERO, false);
-
-    std::cout << "solve, fResultDevice " << GpuOut<Real>(fResultDevice, hand5[0]) << std::endl;
 
     fResultDevice.add(lagrangeVec(LagrangeInd::RHSFPrime), &Singleton<Real>::MINUS_TWO, &hand5[0]);
     fResultDevice.get(resultF, hand5[0]);

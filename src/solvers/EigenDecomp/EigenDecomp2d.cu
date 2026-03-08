@@ -3,23 +3,23 @@
 #include "EigenDecomp2d.h"
 
 template<typename T>
-__global__ void setUTildeKernel2d(DeviceData2d<T> uTilde,
+__global__ void eValsLInvMultKernel(DeviceData2d<T> dst,
                                   const DeviceData1d<T> eValsX,
                                   const DeviceData1d<T> eValsY,
-                                  const DeviceData2d<T> fTilde) {
-    if (GridInd2d ind; ind < uTilde)
-        uTilde[ind] = fTilde[ind] / (eValsX[ind.col] + eValsY[ind.row]);
+                                  const DeviceData2d<T> src) {
+    if (GridInd2d ind; ind < dst)
+        dst[ind] = src[ind] / (eValsX[ind.col] + eValsY[ind.row]);
 }
 
 
 template<typename T>
-void EigenDecomp2d<T>::setUTilde(const Mat<T> &f, Mat<T> &u, Handle &hand) const {
-    KernelPrep kp = f.kernelPrep();
-    setUTildeKernel2d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        u.toKernel2d(),
+void EigenDecomp2d<T>::eValsLInvMult(const Mat<T> &src, Mat<T> &dst, Handle &hand) const {
+    KernelPrep kp = src.kernelPrep();
+    eValsLInvMultKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+        dst.toKernel2d(),
         this->eVals[0].toKernel1d(),
         this->eVals[1].toKernel1d(),
-        f.toKernel2d());
+        src.toKernel2d());
 }
 
 template<typename T>
@@ -47,16 +47,16 @@ template<typename T>
 void EigenDecomp2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
     const auto bM = b.matrix(this->dim.rows);
-    auto soBM = this->sizeOfB.matrix(this->dim.rows);
+    auto temp = this->sizeOfB.matrix(this->dim.rows);
     auto xM = x.matrix(this->dim.rows);
 
-    this->eVecs[1].mult(xM, &soBM, &hand, true, false);
-    bM.mult(this->eVecs[0], &xM, &hand, false, false);
+    this->eVecs[1].mult(bM, &xM, &hand, true, false);
+    xM.mult(this->eVecs[0], &temp, &hand, false, false);
 
-    setUTilde(soBM, xM, hand);
+    eValsLInvMult(temp, xM, hand);
 
-    this->eVecs[1].mult(xM, &soBM, &hand, false, false);
-    soBM.mult(this->eVecs[0], &xM, &hand, false, true);
+    this->eVecs[1].mult(xM, &temp, &hand, false, false);
+    temp.mult(this->eVecs[0], &xM, &hand, false, true);
 }
 
 template class EigenDecomp2d<double>;
