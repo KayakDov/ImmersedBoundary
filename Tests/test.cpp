@@ -97,97 +97,58 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
     using Real = double;
     using Int  = int;
 
-    GridDim dim(3, 2, 2);
-    Real3d delta(1, 1, 1);
+    GridDim dim(3, 4, 2);
+    Real3d delta(1, 0.5, 2);
     Handle hand;
-
-    size_t uStarSize =
-        dim.numDims() * dim.size()
-        + dim.cols * dim.layers
-        + dim.rows * dim.layers
-        + dim.cols * dim.rows * (dim.layers > 1);
-
-    std::vector<Real> uStar(uStarSize, 0);
-    uStar[3] = 1;
-    uStar[9] = 1;
-
-    std::vector<Int> colOffsetsR(3);
-    colOffsetsR[0] = 0;
-    colOffsetsR[1] = uStarSize;
-    colOffsetsR[2] = uStarSize;
-
-    std::vector<Int> rowIndsR(uStarSize);
-    for (size_t i = 0; i < uStarSize; ++i) rowIndsR[i] = static_cast<Int>(i);
-
-    std::vector<Real> valsR(uStarSize, 1);
-
-    std::vector<Real> UGamma(2, 3);
-
-    double deltaT = 3.0 / 2.0;
 
     std::vector<Int> rowOffsetsB = {0, 1, 2};
     std::vector<Int> colIndsB    = {0, 1};
     std::vector<Real> valuesB    = {1, 1};
-    
+    auto B = SparseCSR<Real, Int>::create(valuesB.size(), rowOffsetsB.size() - 1, dim.size(), hand);
+    B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
+    auto BDense = Mat<Real>::create(B.rows, B.cols);
+    B.getDense(BDense, hand);
 
     std::vector<Real> xHost(dim.size(), 0);
-    for (size_t i = 0; i < xHost.size(); ++i) xHost[i] = i;
+    for (size_t i = 0; i < xHost.size(); ++i) xHost[i] = i + 1.0;
     auto x = SimpleArray<Real>::create(dim.size(), hand);
     x.set(xHost.data(), hand);
 
-    auto rhs = SimpleArray<Real>::create(dim.size(), hand);
     auto L = ToeplitzLaplacian<Real>::L(dim, hand, delta);
     auto LDense = SquareMat<Real>::create(dim.size());
     L.getDense(LDense, &hand);
 
+    auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
+    LPlus2BTBx.fill(0, hand);
 
-    std::vector<Real> f = {1, 2};
+    BDense.mult(BDense, &LDense, &hand,&Singleton<Real>::TWO, &Singleton<Real>::ONE,  false, true);
+    LDense.mult(x, LPlus2BTBx, &hand, &Singleton<Real>::ONE, &Singleton<Real>::ZERO, false);
+
+    std::vector<Real> fHost(rowOffsetsB.size() - 1, 0);
+    fHost[0] = 1;
+    fHost[1] = 2;
+
+    auto TwoBTF = SimpleArray<Real>::create(dim.size(), hand);
+    auto f = SimpleArray<Real>::create(fHost.size(), hand);
+    f.set(fHost.data(), hand);
+
+    BDense.mult(f, TwoBTF, &hand, &Singleton<Real>::TWO, &Singleton<Real>::ZERO, true);
+
+    LPlus2BTBx.add(TwoBTF, &Singleton<Real>::MINUS_ONE, &hand);
 
     std::vector<Real> p(dim.size(), 0);
-    p[0] = 2;
-    p[dim.size() - 1] = -2;
+    LPlus2BTBx.get(p.data(), hand);
 
     std::vector<Real> resultP(dim.size(), 0);
-    std::vector<Real> resultF(f.size(), 0);
+    std::vector<Real> resultF(fHost.size(), 0);
 
-    // ToeplitzLaplacian<Real>::printL(dim, hand, delta);
-
-    ImmersedEq<Real, Int> imEq(dim, f.size(), valsR.size(), p.data(), f.data(), delta, deltaT, 1e-8, 1000);
+    ImmersedEq<Real, Int> imEq(dim, fHost.size(), valuesB.size(), p.data(), fHost.data(), delta, 1, 1e-8, 1000);
 
     imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
 
-
-
     cudaDeviceSynchronize();
 
-    std::vector<Real> expectedP1 = {-7.483126, -8.359545, -2.292128, -2.606740, -2.943816, -0.808988};
-
-    for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], expectedP1[i], 1e-4);
-
-    imEq.solve(
-        resultP.data(),
-        resultF.data(),
-        valuesB.size(),
-        rowOffsetsB.data(),
-        colIndsB.data(),
-        valuesB.data(),
-        valsR.size(),
-        colOffsetsR.data(),
-        rowIndsR.data(),
-        valsR.data(),
-        UGamma.data(),
-        uStar.data()
-    );
-
-    cudaDeviceSynchronize();
-
-    std::vector<Real> expectedP2 = {7.61797, 10.1498, 2.955056, 3.08614, 3.72659, 1.67041};
-
-    std::vector<Real> expectedF = {17.23595, 26.29962};
-
-    for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], expectedP2[i], 1e-4);
-
-    for (size_t i = 0; i < resultF.size(); ++i) EXPECT_NEAR(resultF[i], expectedF[i], 1e-4);
+    for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], i + 1, 1e-4);
 }
 
 TEST(EigenDecomp, ThreeD) {

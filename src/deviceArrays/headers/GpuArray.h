@@ -171,7 +171,7 @@ protected:
      * in the provided result GpuArray. The operation is performed using GPU-accelerated libraries.
      *
      * @param other The GpuArray instance to multiply with the current GpuArray.
-     * @param result A pointer to the GpuArray where the result of the multiplication will be stored.
+     * @param result A pointer to the GpuArray where the result of the multiplication will be added to and stored.
      * @param handle A handle to manage GPU computation contexts. If null, a new handle will be created.
      * @param alpha A pointer to a Singleton object representing the scaling factor for the matrix product.
      * @param beta A pointer to a Singleton object representing the scaling factor for the result matrix.

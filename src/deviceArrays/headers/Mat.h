@@ -132,7 +132,7 @@ public:
     /**
      * @brief Multiply this matrix with another matrix (result in new matrix or optional output).
      * @param other Matrix to multiply with.
-     * @param result Optional pre-allocated matrix to store the result.
+     * @param result Optional pre-allocated matrix to add to and store the result.
      * @param handle Optional Handle object for GPU streams.
      * @param alpha Optional scalar multiplier for this matrix.
      * @param beta Optional scalar multiplier for the result matrix.
