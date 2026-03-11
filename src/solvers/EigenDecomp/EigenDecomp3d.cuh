@@ -5,7 +5,6 @@
 #ifndef CUDABANDED_EIGENDECOMP3D_CUH
 #define CUDABANDED_EIGENDECOMP3D_CUH
 #include "EigenDecompSolver.h"
-#include "Tensor.h"
 
 
 template<typename T>
@@ -62,9 +61,9 @@ protected:
      * Sets the eigen vectors and values.
      * @param hand3 Handles used to make the settings.
      * @param delta The distance between the grid points.
-     * @param event3 3 Events to control the stream flow.
+     * @param event2 3 Events to control the stream flow.
      */
-    void setEigens(Handle *hand3, Real3d delta, Event *event3);
+    void setEigens(Handle *hand3, Real3d delta, Event *event2);
 
 public:
 
@@ -80,18 +79,18 @@ public:
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
      * @param hand3 Pointer to an array of at least three Handles for concurrent 3D stream processing.
      * @param delta The grid spacing (dx, dy, dz).
-     * @param event3 Pointer to 3 events object or array used for multistream synchronization.
+     * @param event2 Pointer to 3 events object or array used for multistream synchronization.
      */
-    EigenDecomp3d(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, SimpleArray<T> sizeOfB, Handle *hand3, Real3d delta, Event *event3);
+    EigenDecomp3d(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, SimpleArray<T> sizeOfB, Handle *hand3, Real3d delta, Event *event2);
 
     /**
      * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.
      * @param dim The dimensions of the solver.
      * @param hand3 3 contexts for parallel streaming.
      * @param delta The distance between grid points.
-     * @param event an event for controlling stream dependency.
+     * @param event2 an event for controlling stream dependency.
      */
-    EigenDecomp3d(const GridDim& dim, Handle *hand3, const Real3d& delta, Event *event);
+    EigenDecomp3d(const GridDim& dim, Handle *hand3, const Real3d& delta, Event *event2);
 
     /**
      * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.
@@ -99,9 +98,9 @@ public:
      * @param hand3 3 contexts for parallel streaming.
      * @param delta The distance between grid points.
      * @param sizeOfB A scratch space the size of the RHS.  This will be overwritten.
-     * @param event an event for controlling stream dependency.
+     * @param event2 an event for controlling stream dependency.
      */
-    EigenDecomp3d(const GridDim& dim, Handle *hand3, const Real3d& delta, SimpleArray<T> sizeOfB, Event *event);
+    EigenDecomp3d(const GridDim& dim, Handle *hand3, const Real3d& delta, SimpleArray<T> sizeOfB, Event *event2);
 
     /**
      * Solves the system.

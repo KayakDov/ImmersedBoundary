@@ -251,20 +251,24 @@ TEST(BCGDenseTest, ConvergenceValidation) {
 
     auto A = SquareMat<Real>::create(n);
     std::vector<Real> hostA = {
-         0.410352, -0.186335, -0.0563147, -0.172257, -0.0993789, -0.0389234,
-        -0.186335,  0.354037, -0.186335, -0.0993789, -0.21118,  -0.0993789,
-         0.0,       0.0,       1.0,        0.0,       0.0,       0.0,
-         0.0,       0.0,       0.0,        1.0,       0.0,       0.0,
-         0.0,       0.0,       0.0,        0.0,       1.0,       0.0,
-         0.0,       0.0,       0.0,        0.0,       0.0,       1.0
+         1, 2, 3, 4, 5, 6,
+         6, 5, 4, 3, 2, 1,
+         2, 4, 2, 6, 2, 7,
+         0, 1, 1, 0, 2, 3,
+         4, 5, 6, 7, 8, -3,
+         -2, -1, 5, -2, -4, 6
     };
     A.set(hostA.data(), hand4[0]);
 
-    auto b = SimpleArray<Real>::create(n, hand4[0]);
-    std::vector<Real> hostB = {-1.51304, -1.56522, -0.313043, -0.486957, -0.434783, 0.313043};
-    b.set(hostB.data(), hand4[0]);
-
     auto result = SimpleArray<Real>::create(n, hand4[0]);
+    std::vector<Real> resultHost = {1, -1, 2, -2, 3, -3};
+    result.set(resultHost.data(), hand4[0]);
+
+    auto b = SimpleArray<Real>::create(n, hand4[0]);
+    b.fill(0, hand4[0]);
+    A.mult(result, b, hand4, &Singleton<Real>::ONE, &Singleton<Real>::ZERO, false);
+    result.fill(0, hand4[0]);
+
     auto bHeightX7 = Mat<Real>::create(n, 7);
     auto aX9 = SimpleArray<Real>::create(9, hand4[0]);
 
@@ -273,10 +277,8 @@ TEST(BCGDenseTest, ConvergenceValidation) {
     std::vector<Real> actual(n);
     result.get(actual.data(), hand4[0]);
 
-    std::vector<Real> expected = {-7.48312639568, -8.35954534961, -2.29212890075, -2.60674032488, -2.94381665669, -0.80898814329};
-
     for (size_t i = 0; i < n; ++i)
-        EXPECT_NEAR(actual[i], expected[i], 1e-5) << "Mismatch at solution vector index " << i;
+        EXPECT_NEAR(actual[i], resultHost[i], 1e-5) << "Mismatch at solution vector index " << i;
 }
 
 int main(int argc, char **argv) {

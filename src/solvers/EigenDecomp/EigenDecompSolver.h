@@ -50,7 +50,6 @@
 template<typename T>
 class EigenDecompSolver {
 protected:
-    GridDim dim;
     /**
      * @brief Eigenvector matrices for the three 1-D Laplacians.
      *
@@ -97,6 +96,11 @@ protected:
 
 
 public:
+    /**
+     * The dimensions of the grid.
+     */
+    const GridDim dim;
+
     virtual ~EigenDecompSolver() = default;
 
     /**

@@ -1,0 +1,189 @@
+library: FortranBindings
+cxx_header: "FortranBindingsImEq.hpp"
+
+declarations:
+  # ==========================================
+  # Initialization: initImmersedEq 
+  # ==========================================
+  - decl: |
+      void initImmersedEq_d_i32(          
+          size_t gridHeight, 
+          size_t gridWidth, 
+          size_t gridDepth,
+          size_t fSize +implied(size(f)), 
+          size_t nnzMaxB,
+          double* p +intent(in) +rank(1),          
+          double* f +intent(in) +rank(1),
+          double deltaX,
+          double deltaY,
+          double deltaZ,
+          double dt,
+          double tolerance, 
+          size_t maxBCGIterations
+      )
+    
+  - decl: |
+      void initImmersedEq_s_i32(
+          size_t gridHeight, 
+          size_t gridWidth, 
+          size_t gridDepth,
+          size_t fSize +implied(size(f)), 
+          size_t nnzMaxB,          
+          float* p +intent(in) +rank(1),          
+          float* f +intent(in) +rank(1),          
+          double deltaX, 
+          double deltaY, 
+          double deltaZ,
+          double dt,          
+          double tolerance, 
+          size_t maxBCGIterations
+      )
+    
+  - decl: |
+      void initImmersedEq_d_i64(          
+          size_t gridHeight, 
+          size_t gridWidth, 
+          size_t gridDepth,          
+          size_t fSize +implied(size(f)), 
+          size_t nnzMaxB,          
+          double* p +intent(in) +rank(1),          
+          double* f +intent(in) +rank(1),          
+          double deltaX, 
+          double deltaY, 
+          double deltaZ,
+          double dt,          
+          double tolerance, 
+          size_t maxBCGIterations
+      )
+    
+  - decl: |
+      void initImmersedEq_s_i64(
+          size_t gridHeight, 
+          size_t gridWidth, 
+          size_t gridDepth,          
+          size_t fSize +implied(size(f)), 
+          size_t nnzMaxB,          
+          float* p +intent(in) +rank(1),
+          float* f +intent(in) +rank(1),
+          double deltaX, 
+          double deltaY, 
+          double deltaZ,
+          double dt,          
+          double tolerance, 
+          size_t maxBCGIterations
+      )
+    
+  # ==========================================
+  # Solver: solveImmersedEq 
+  # ==========================================
+  - decl: |
+      void solveImmersedEq_d_i32(
+          double* result +intent(out) +rank(1),
+          size_t nnzB,          
+          int32_t* rowOffsetsB +intent(in) +rank(1),          
+          int32_t* colIndsB +intent(in) +rank(1),          
+          double* valuesB +intent(in) +rank(1)
+      )
+
+  - decl: |
+      void solveImmersedEq_s_i32(
+          float* result +intent(out) +rank(1),
+          size_t nnzB,          
+          int32_t* rowOffsetsB +intent(in) +rank(1),          
+          int32_t* colIndsB +intent(in) +rank(1),          
+          float* valuesB +intent(in) +rank(1)
+      )
+
+  - decl: |
+      void solveImmersedEq_d_i64(
+          double* result +intent(out) +rank(1),
+          size_t nnzB,          
+          int64_t* rowOffsetsB +intent(in) +rank(1),          
+          int64_t* colIndsB +intent(in) +rank(1),          
+          double* valuesB +intent(in) +rank(1)
+      )
+
+  - decl: |
+      void solveImmersedEq_s_i64(
+          float* result +intent(out) +rank(1),
+          size_t nnzB,          
+          int64_t* rowOffsetsB +intent(in) +rank(1),          
+          int64_t* colIndsB +intent(in) +rank(1),          
+          float* valuesB +intent(in) +rank(1)
+      )
+        
+    # ==========================================
+    # Solver: primes 
+    # ==========================================
+  - decl: |
+      void solveImmersedEqPrimes_d_i32(
+          double* resultPPrime +intent(out) +rank(1),
+          double* resultFPrime +intent(out) +rank(1),
+          size_t nnzB,
+          int32_t *rowOffsetsB +intent(in) +rank(1),
+          int32_t *colIndsB +intent(in) +rank(1),
+          double *valuesB +intent(in) +rank(1),
+          size_t nnzR,
+          int32_t *colOffsetsR +intent(in) +rank(1),
+          int32_t *rowIndsR +intent(in) +rank(1),
+          double *valuesR +intent(in) +rank(1),
+          double *UGamma +intent(in) +rank(1),
+          double* uStar +intent(in) +rank(1)
+      )
+  - decl: |
+      void solveImmersedEqPrimes_s_i32(
+          float* resultPPrime +intent(out) +rank(1),
+          float* resultFPrime +intent(out) +rank(1),
+          size_t nnzB,
+          int32_t *rowOffsetsB +intent(in) +rank(1),
+          int32_t *colIndsB +intent(in) +rank(1),
+          float *valuesB +intent(in) +rank(1),
+          size_t nnzR,
+          int32_t *colOffsetsR +intent(in) +rank(1),
+          int32_t *rowIndsR +intent(in) +rank(1),
+          float *valuesR +intent(in) +rank(1),
+          float *UGamma +intent(in) +rank(1),
+          float* uStar +intent(in) +rank(1)
+      )
+  - decl: |
+      void solveImmersedEqPrimes_d_i64(
+          double* resultPPrime +intent(out) +rank(1),
+          double* resultFPrime +intent(out) +rank(1),
+          size_t nnzB,
+          int64_t *rowOffsetsB +intent(in) +rank(1),
+          int64_t *colIndsB +intent(in) +rank(1),
+          double *valuesB +intent(in) +rank(1),
+          size_t nnzR,
+          int64_t *colOffsetsR +intent(in) +rank(1),
+          int64_t *rowIndsR +intent(in) +rank(1),
+          double *valuesR +intent(in) +rank(1),
+          double *UGamma +intent(in) +rank(1),
+          double* uStar +intent(in) +rank(1)
+      )
+  - decl: |
+      void solveImmersedEqPrimes_s_i64(
+          float* resultPPrime +intent(out) +rank(1),
+          float* resultFPrime +intent(out) +rank(1),
+          size_t nnzB,
+          int64_t *rowOffsetsB +intent(in) +rank(1),
+          int64_t *colIndsB +intent(in) +rank(1),
+          float *valuesB +intent(in) +rank(1),
+          size_t nnzR,
+          int64_t *colOffsetsR +intent(in) +rank(1),
+          int64_t *rowIndsR +intent(in) +rank(1),
+          float *valuesR +intent(in) +rank(1),
+          float *UGamma +intent(in) +rank(1),
+          float* uStar +intent(in) +rank(1)
+      )
+
+# ==========================================
+# Clean up
+# ==========================================
+  - decl: void finalizeImmersedEq_d_i32()
+    fortran_name: finalize_immersed_eq_d_i32
+  - decl: void finalizeImmersedEq_s_i32()
+    fortran_name: finalize_immersed_eq_s_i32
+  - decl: void finalizeImmersedEq_d_i64()
+    fortran_name: finalize_immersed_eq_d_i64
+  - decl: void finalizeImmersedEq_s_i64()
+    fortran_name: finalize_immersed_eq_s_i64

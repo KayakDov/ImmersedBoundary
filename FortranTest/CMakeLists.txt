@@ -1,39 +1,42 @@
 cmake_minimum_required(VERSION 3.18)
-
-# 1. Let CMake find gfortran/g++ automatically
 project(FortranCudaProject LANGUAGES Fortran CXX)
 
-# Where Fortran modules go
-set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
+# -----------------------------
+# Paths
+# -----------------------------
+set(BASE_LIB_DIR "/home/usr/Documents/TelAvivU/cmake-build-debug")
+set(CUDA_LIB "${BASE_LIB_DIR}/libCudaBandedLib.a")
+set(FORTRAN_MODULE_DIR "${BASE_LIB_DIR}/modules")
 
-# Paths to Shroud wrapper + static C++ library
-set(SHROUD_WRAPF "${CMAKE_SOURCE_DIR}/../shroud_project/wrapffortranbindings.f90")
-set(CUDA_LIB "${CMAKE_SOURCE_DIR}/../cmake-build-debug/libCudaBandedLib.a")
+# CUDA install
+set(CUDA_ROOT "/usr/local/cuda")
+set(CUDA_LIB_DIR "${CUDA_ROOT}/lib64")
+set(CUDA_INCLUDE_DIR "${CUDA_ROOT}/include")
 
-# Find the standard CUDA Toolkit (nvcc)
-find_package(CUDAToolkit REQUIRED)
+# -----------------------------
+# Sources and modules
+# -----------------------------
+set(FORTRAN_SOURCES main.f90)
+set(CMAKE_Fortran_MODULE_DIRECTORY ${FORTRAN_MODULE_DIR})
 
-# Build the Fortran executable
-add_executable(fortran_app
-        main.f90
-        ${SHROUD_WRAPF}
-)
+add_executable(fortran_app ${FORTRAN_SOURCES})
 
-# Standard Include directories
 target_include_directories(fortran_app PRIVATE
-        ${CMAKE_Fortran_MODULE_DIRECTORY}
-        ${CUDAToolkit_INCLUDE_DIRS}
+        ${FORTRAN_MODULE_DIR}
+        ${CUDA_INCLUDE_DIR}        # CUDA headers
 )
 
-# Use gfortran as linker
-set_target_properties(fortran_app PROPERTIES LINKER_LANGUAGE Fortran)
-
-# Link C++ library and CUDA runtimes
+# -----------------------------
+# Link libraries
+# -----------------------------
 target_link_libraries(fortran_app PRIVATE
-        ${CUDA_LIB}
-        CUDA::cudart
-        CUDA::cublas
-        CUDA::cusolver
-        CUDA::cusparse
-        stdc++               # CRITICAL: Links the C++ standard library
+        ${CUDA_LIB}                # your static CUDA library
+        stdc++                     # C++ standard library
+        ${CUDA_LIB_DIR}/libcudart.so
+        ${CUDA_LIB_DIR}/libcusolver.so
+        ${CUDA_LIB_DIR}/libcublas.so
+        ${CUDA_LIB_DIR}/libcusparse.so
 )
+
+# Ensure C++ linker is used for CUDA objects
+set_target_properties(fortran_app PROPERTIES LINKER_LANGUAGE CXX)

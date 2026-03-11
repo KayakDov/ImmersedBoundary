@@ -84,16 +84,16 @@ void EigenDecomp3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, const Tens
 }
 
 template<typename T>
-void EigenDecomp3d<T>::setEigens(Handle* hand3, Real3d delta, Event* event3) {
+void EigenDecomp3d<T>::setEigens(Handle* hand3, Real3d delta, Event* event2) {
     this->eigenL(0, delta, hand3[1]);
-    event3[0].record(hand3[1]);
+    event2[0].record(hand3[1]);
 
     this->eigenL(1, delta, hand3[2]);
-    event3[1].record(hand3[2]);
-    event3[1].hold(hand3[0]);
+    event2[1].record(hand3[2]);
+    event2[1].hold(hand3[0]);
 
     this->eigenL(2, delta, hand3[0]);
-    event3[0].hold(hand3[0]);
+    event2[0].hold(hand3[0]);
 }
 
 template<typename T>
@@ -104,9 +104,9 @@ EigenDecomp3d<T>::EigenDecomp3d(
     SimpleArray<T> sizeOfB,
     Handle* hand3,
     Real3d delta,
-    Event* event3
+    Event* event2
 ) : EigenDecompSolver<T>({colsXColsP1, rowsXRowsP1, depthsXDepthsP1}, sizeOfB) {
-    setEigens(hand3, delta, event3);
+    setEigens(hand3, delta, event2);
 }
 
 template<typename T>
@@ -114,15 +114,15 @@ EigenDecomp3d<T>::EigenDecomp3d(
     const GridDim& dim,
     Handle* hand3,
     const Real3d& delta,
-    Event* event
+    Event* event2
 ) : EigenDecompSolver<T>(dim, delta, hand3[0]) {
-    setEigens(hand3, delta, event);
+    setEigens(hand3, delta, event2);
 }
 
 template<typename T>
-EigenDecomp3d<T>::EigenDecomp3d(const GridDim &dim, Handle *hand3, const Real3d &delta, SimpleArray<T> sizeOfB, Event *event):
+EigenDecomp3d<T>::EigenDecomp3d(const GridDim &dim, Handle *hand3, const Real3d &delta, SimpleArray<T> sizeOfB, Event *event2):
     EigenDecompSolver<T>(dim, delta, sizeOfB){
-    setEigens(hand3, delta, event);
+    setEigens(hand3, delta, event2);
 }
 
 template<typename T>

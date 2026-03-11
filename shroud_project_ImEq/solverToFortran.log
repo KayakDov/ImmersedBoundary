@@ -1,7 +1,6 @@
 Read yaml solverToFortran.yaml
 library C wrappers
-namespace EigenBCGSolver
-namespace ImEq
+namespace FortranBindings
 C c void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double dt, double tolerance, size_t maxBCGIterations)
 C f void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double dt, double tolerance, size_t maxBCGIterations)
 C c void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double dt, double tolerance, size_t maxBCGIterations)
@@ -34,26 +33,10 @@ C c void finalizeImmersedEq_d_i64(void)
 C f void finalizeImmersedEq_d_i64(void)
 C c void finalizeImmersedEq_s_i64(void)
 C f void finalizeImmersedEq_s_i64(void)
-Close wrapEigenBCGSolver_ImEq.h
-Close wrapEigenBCGSolver_ImEq.cpp
-namespace eigen
-C c void initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas)
-C f void initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas)
-C c void initEigenDecomp_s(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas)
-C f void initEigenDecomp_s(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas)
-C c void solveEigenDecomp_d(double *x +intent(out)+rank(1), double *b +intent(in)+rank(1))
-C f void solveEigenDecomp_d(double *x +intent(out)+rank(1), double *b +intent(in)+rank(1))
-C c void solveEigenDecomp_s(float *x +intent(out)+rank(1), float *b +intent(in)+rank(1))
-C f void solveEigenDecomp_s(float *x +intent(out)+rank(1), float *b +intent(in)+rank(1))
-C c void finalizeEigenDecomp_d(void)
-C f void finalizeEigenDecomp_d(void)
-C c void finalizeEigenDecomp_s(void)
-C f void finalizeEigenDecomp_s(void)
-Close wrapEigenBCGSolver_eigen.h
-Close wrapEigenBCGSolver_eigen.cpp
+Close wrapFortranBindings.h
+Close wrapFortranBindings.cpp
 library Fortran wrappers
-namespace EigenBCGSolver
-namespace ImEq
+namespace FortranBindings
 Fortran void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double dt, double tolerance, size_t maxBCGIterations)
 Fortran void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double dt, double tolerance, size_t maxBCGIterations)
 Fortran void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double deltaX, double deltaY, double deltaZ, double dt, double tolerance, size_t maxBCGIterations)
@@ -86,21 +69,6 @@ C-interface f void finalizeImmersedEq_d_i32(void)
 C-interface f void finalizeImmersedEq_s_i32(void)
 C-interface f void finalizeImmersedEq_d_i64(void)
 C-interface f void finalizeImmersedEq_s_i64(void)
-Close wrapfEigenBCGSolver_ImEq.f
-namespace eigen
-Fortran void initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas)
-Fortran void initEigenDecomp_s(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas)
-Fortran void solveEigenDecomp_d(double *x +intent(out)+rank(1), double *b +intent(in)+rank(1))
-Fortran void solveEigenDecomp_s(float *x +intent(out)+rank(1), float *b +intent(in)+rank(1))
-Fortran void finalizeEigenDecomp_d(void)
-Fortran void finalizeEigenDecomp_s(void)
-C-interface f void initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas)
-C-interface f void initEigenDecomp_s(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas)
-C-interface f void solveEigenDecomp_d(double *x +intent(out)+rank(1), double *b +intent(in)+rank(1))
-C-interface f void solveEigenDecomp_s(float *x +intent(out)+rank(1), float *b +intent(in)+rank(1))
-C-interface f void finalizeEigenDecomp_d(void)
-C-interface f void finalizeEigenDecomp_s(void)
-Close wrapfEigenBCGSolver_eigen.f
-Close wrapfeigenbcgsolver.f
-Close utilEigenBCGSolver.cpp
-Close typesEigenBCGSolver.h
+Close wrapffortranbindings.f
+Close utilFortranBindings.cpp
+Close typesFortranBindings.h

@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.18)
+cmake_policy(SET CMP0135 NEW)
 
 # 1. ARCHITECTURE: Set this BEFORE project() to ensure it applies to all tests
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES all-major) # Better than 'all' for faster compile times
 endif()
+
 # Project
 project(CudaBanded LANGUAGES CXX CUDA Fortran)
 
@@ -20,12 +22,20 @@ set(CMAKE_Fortran_STANDARD 2008)
 set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 
 # =========================
-# CUDA configuration
+# Dependencies
 # =========================
-
-
 # Find CUDA toolkit (portable)
 find_package(CUDAToolkit REQUIRED)
+
+# Fetch GoogleTest
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/heads/main.zip
+)
+# For Windows compatibility
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
 # =========================
 # Source collection
@@ -36,52 +46,48 @@ file(GLOB_RECURSE ALL_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
-
 list(FILTER ALL_SRC EXCLUDE REGEX ".*/main\\.cu$")
 
 set(SHROUD_CPP
-        shroud_project/wrapFortranBindings.cpp
-        shroud_project/utilFortranBindings.cpp
-        shroud_project/wrapffortranbindings.f90
-        src/deviceArrays/headers/sparse/SparseMat.h
-        src/deviceArrays/defFiles/SparseMat.cu
-        src/deviceArrays/defFiles/SparseCSR.cpp
-        src/deviceArrays/headers/sparse/SparseCSR.h
-        src/deviceArrays/defFiles/SparseCOO.cpp
-        src/deviceArrays/headers/sparse/SparseCOO.h
-        src/solvers/Thomas.cu
-        src/solvers/Thomas.cuh
-        src/solvers/ADIThomas.cu
-        src/solvers/ADIThomas.cuh
-        src/solvers/EigenDecomp/EigenDecomp2d.cu
-        src/solvers/EigenDecomp/EigenDecomp2d.h
-        src/solvers/EigenDecomp/EigenDecomp3d.cu
-        src/solvers/EigenDecomp/EigenDecomp3d.cuh
-        src/solvers/EigenDecomp/EigenDecompThomas.cu
-        src/solvers/EigenDecomp/EigenDecompThomas.cuh
+        "${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/wrapEigenBCGSolver_ImEq.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/wrapEigenBCGSolver_eigen.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/utilEigenBCGSolver.cpp"
+)
+
+set(SHROUD_F90
+        "${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/wrapfEigenBCGSolver_eigen.f90"
+        "${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/wrapfEigenBCGSolver_ImEq.f90"
+        "${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/wrapfeigenbcgsolver.f90"
 )
 
 # =========================
-# Library
+# Library Target
 # =========================
-add_library(CudaBandedLib OBJECT
+add_library(CudaBandedLib STATIC
         ${ALL_SRC}
         ${SHROUD_CPP}
-        ${FORTRAN_WRAPPER}
+        ${SHROUD_F90}
         src/immersedBoundary/IBDataFactory.hpp
+        src/solvers/EigenDecomp/EigenDecompForFortran.cpp
+        src/solvers/EigenDecomp/EigenDecompForFortran.h
 )
 
 set_target_properties(CudaBandedLib PROPERTIES
         Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
+        POSITION_INDEPENDENT_CODE ON
 )
 
 target_include_directories(CudaBandedLib
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/deviceArrays/headers
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/solvers/BiCGSTAB
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/deviceArrays/headers/sparse
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/solvers
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/solvers/EigenDecomp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/immersedBoundary
         ${CMAKE_CURRENT_SOURCE_DIR}/src/poisson
         ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project
+        ${CUDAToolkit_INCLUDE_DIRS}
 )
 
 target_link_libraries(CudaBandedLib
@@ -93,71 +99,50 @@ target_link_libraries(CudaBandedLib
 )
 
 # =========================
-# Executable
-# =========================
-# =========================
-# Unit Test Executable
-# =========================
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/refs/heads/main.zip
-)
-# For Windows compatibility
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
-# ... (FetchContent and MakeAvailable) ...
-
-# =========================
 # Unit Test Executable
 # =========================
 enable_testing()
-
-# =========================
-# Unit Test Executable
-# =========================
-enable_testing()
-
-# 1. Prepare Sources - Ensure NO other 'main' functions exist in this list
-file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp")
 
 # We use the source lists directly to ensure GTest macros are compiled into the binary
-add_executable(run_unit_tests
-        ${TEST_SOURCES}
-        ${ALL_SRC}
-        ${SHROUD_CPP}
-)
+file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp")
 
-# 2. Setup CUDA properties
+add_executable(run_unit_tests ${TEST_SOURCES})
+
 set_target_properties(run_unit_tests PROPERTIES
         CUDA_RESOLVE_DEVICE_SYMBOLS ON
         CUDA_RUNTIME_LIBRARY Shared
 )
 
-#3
+# Link the core library and GoogleTest to the executable
 target_link_libraries(run_unit_tests
         PRIVATE
-        GTest::gtest        # Use 'gtest' instead of 'gtest_main' since we wrote our own main
-        CUDA::cublas
-        CUDA::cusolver
-        CUDA::cusparse
-        CUDA::cuda_driver
+        CudaBandedLib
+        GTest::gtest
+        GTest::gtest_main
 )
 
-# 4. Comprehensive Include Paths
-# This ensures every subdirectory is visible to the compiler
-target_include_directories(run_unit_tests PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/deviceArrays/headers
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/deviceArrays/headers/sparse
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/solvers/BiCGSTAB
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/solvers/EigenDecomp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/immersedBoundary
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/poisson
-        ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project
-)
-
-# 5. Discovery
+# Discovery
 include(GoogleTest)
 gtest_discover_tests(run_unit_tests)
+
+# =========================
+# Install the library and Fortran modules for exFternal projects
+# =========================
+
+# Set a standard install directory for libraries and modules
+set(INSTALL_LIB_DIR lib)
+set(INSTALL_MOD_DIR include/fortran_modules)
+
+# Install the static library
+install(TARGETS CudaBandedLib
+        ARCHIVE DESTINATION ${INSTALL_LIB_DIR}       # for STATIC libraries
+        LIBRARY DESTINATION ${INSTALL_LIB_DIR}       # for shared, if ever
+        RUNTIME DESTINATION bin                      # executables
+)
+
+# Install Fortran modules
+# CMAKE_Fortran_MODULE_DIRECTORY must match where the .mod files were generated
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
+        DESTINATION ${INSTALL_MOD_DIR}
+        FILES_MATCHING PATTERN "*.mod"
+)

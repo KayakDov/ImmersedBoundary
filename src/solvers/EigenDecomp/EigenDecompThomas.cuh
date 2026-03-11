@@ -47,7 +47,7 @@ class EigenDecompThomas : public EigenDecomp3d<T> {
     /**
      * @brief Internal constructor for resource delegation.
      */
-    EigenDecompThomas(const GridDim &dim, Handle *hand3, const Real3d &delta, Mat<T> sizeOfBX3, Event *event);
+    EigenDecompThomas(const GridDim &dim, Handle *hand3, const Real3d &delta, Mat<T> sizeOfBX3, Event *event2);
 
 
 public:
@@ -68,9 +68,9 @@ public:
      * * @param dim Grid dimensions.
      * @param hand3 Pointer to array of Handles.
      * @param delta Grid spacing.
-     * @param event Event for stream synchronization.
+     * @param event2 Event for stream synchronization.
      */
-    EigenDecompThomas(const GridDim &dim, Handle *hand3, const Real3d &delta, Event *event);
+    EigenDecompThomas(const GridDim &dim, Handle *hand3, const Real3d &delta, Event *event2);
 
 };
 

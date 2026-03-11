@@ -2,6 +2,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+
+#include "EigenDecomp2d.h"
+#include "EigenDecomp3d.cuh"
+#include "EigenDecompForFortran.h"
+#include "EigenDecompThomas.cuh"
 #include "immersedBoundary/ImerssedEquation.h"
 
 /**
@@ -12,182 +17,149 @@
  * i32 = int32_t, i64 = int64_t
  */
 
-// Global instances for each type combination
-template<typename Real, typename Int>
-std::unique_ptr<ImmersedEq<Real, Int> > eq = nullptr;
+namespace ImEq {
 
-template<typename Real, typename Int>
-void initImmersedEq(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMax, Real *p, Real *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
-    eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(
-        GridDim(gridHeight, gridWidth, gridDepth),
-        forceSize,
-        nnzMax,
-        p,
-        f,
-        Real3d(dx, dy, dz),
-        dt,
-        tol,
-        iter
-    );
-}
+    template<typename Real, typename Int>
+    std::unique_ptr<ImmersedEq<Real, Int> > eq = nullptr;
 
-template<typename Real, typename Int>
-void solveImmersedEq(Real *result, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valB) {
-    if (!eq<Real, Int>) throw std::runtime_error(
-        "The solver is not initialized.  Be sure you're using consistent types.");
-    eq<Real, Int>->solve(result, nnzB, rowOffsetsB, colIndsB, valB);
-}
-
-template<typename Real, typename Int>
-void finalizeImmersedEq() {
-    if (eq<Real, Int>) {
-        eq<Real, Int>.reset(); // Explicitly destroy the solver object
+    template<typename Real, typename Int>
+    void initImmersedEq(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMax, Real *p, Real *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+        eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(GridDim(gridHeight, gridWidth, gridDepth), forceSize, nnzMax, p, f, Real3d(dx, dy, dz), dt, tol, iter
+       );
     }
-}
 
-template<typename Real, typename Int>
-void solveImmersedEq(
-    Real* resultPPrime,
-    Real* resultFPrime,
-    size_t nnzB,
-    Int *rowOffsetsB,
-    Int *colIndsB,
-    Real *valuesB,
-    size_t nnzR,
-    Int *colOffsetsR,
-    Int *rowIndsR,
-    Real *valuesR,
-    Real *UGamma,
-    Real* uStar
-) {
-    if (!eq<Real, Int>) throw std::runtime_error(
-        "The solver is not initialized.  Be sure you're using consistent types.");
-    eq<Real, Int>->solve(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB,nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
-}
+    template<typename Real, typename Int>
+    void solveImmersedEq(Real *result, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valB) {
+        if (!eq<Real, Int>) throw std::runtime_error("The solver is not initialized.  Be sure you're using consistent types.");
+        eq<Real, Int>->solve(result, nnzB, rowOffsetsB, colIndsB, valB);
+    }
 
-// void ImmersedEq<Real, Int>::solve(
+    template<typename Real, typename Int>
+    void solveImmersedEq(Real* resultPPrime, Real* resultFPrime, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR, Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real* uStar) {
+        if (!eq<Real, Int>) throw std::runtime_error("The solver is not initialized.  Be sure you're using consistent types.");
+        eq<Real, Int>->solve(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB,nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
+    }
 
+    template<typename Real, typename Int>
+    void finalizeImmersedEq() {
+        if (eq<Real, Int>) {
+            eq<Real, Int>.reset(); // Explicitly destroy the solver object
+        }
+    }
 
-
-
-// --- Initialization Functions ---
-extern "C" {
-    inline void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+    extern "C" {
+        inline void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
             initImmersedEq<double, int32_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
         }
 
-    inline void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+        inline void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
             initImmersedEq<float, int32_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
         }
 
-    inline void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+        inline void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
             initImmersedEq<double, int64_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
         }
 
-    inline void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
+        inline void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
             initImmersedEq<float, int64_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
         }
 
-        // --- Solve Functions ---
-
-    inline void solveImmersedEq_d_i32(double *result, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, double *val, bool multi = true) {
+        inline void solveImmersedEq_d_i32(double *result, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, double *val, bool multi = true) {
             solveImmersedEq<double, int32_t>(result, nnzB, rowOffsetsB, colIndsB, val);
         }
 
-    inline void solveImmersedEq_s_i32(float *result, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, float *val, bool multi = true) {
+        inline void solveImmersedEq_s_i32(float *result, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, float *val, bool multi = true) {
             solveImmersedEq<float, int32_t>(result, nnzB, rowOffsetsB, colIndsB, val);
         }
 
-    inline void solveImmersedEq_d_i64(double *result, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, double *val, bool multi = true) {
+        inline void solveImmersedEq_d_i64(double *result, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, double *val, bool multi = true) {
             solveImmersedEq<double, int64_t>(result, nnzB, rowOffsetsB, colIndsB, val);
         }
 
-    inline void solveImmersedEq_s_i64(float *result, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, float *val, bool multi = true) {
+        inline void solveImmersedEq_s_i64(float *result, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, float *val, bool multi = true) {
             solveImmersedEq<float, int64_t>(result, nnzB, rowOffsetsB, colIndsB, val);
         }
 
-        //-----------prime functions -------------
-    inline void solveImmersedEqPrimes_d_i32(
-        double* resultPPrime,
-        double* resultFPrime,
-        size_t nnzB,
-        int32_t *rowOffsetsB,
-        int32_t *colIndsB,
-        double *valuesB,
-        size_t nnzR,
-        int32_t *colOffsetsR,
-        int32_t *rowIndsR,
-        double *valuesR,
-        double *UGamma,
-        double* uStar
-    ) {
-        solveImmersedEq<double, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
+        inline void solveImmersedEqPrimes_d_i32(double* resultPPrime, double* resultFPrime, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, double *valuesB, size_t nnzR, int32_t *colOffsetsR, int32_t *rowIndsR, double *valuesR, double *UGamma, double* uStar) {
+            solveImmersedEq<double, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
+        }
+
+        inline void solveImmersedEqPrimes_s_i32(float* resultPPrime, float* resultFPrime, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, float *valuesB, size_t nnzR, int32_t *colOffsetsR, int32_t *rowIndsR, float *valuesR, float *UGamma, float* uStar) {
+            solveImmersedEq<float, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
+        }
+
+        inline void solveImmersedEqPrimes_d_i64(double* resultPPrime, double* resultFPrime, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, double *valuesB, size_t nnzR, int64_t *colOffsetsR, int64_t *rowIndsR, double *valuesR, double *UGamma, double* uStar) {
+            solveImmersedEq<double, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
+        }
+
+        inline void solveImmersedEqPrimes_s_i64(float* resultPPrime, float* resultFPrime, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, float *valuesB, size_t nnzR, int64_t *colOffsetsR, int64_t *rowIndsR, float *valuesR, float *UGamma, float* uStar) {
+            solveImmersedEq<float, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
+        }
+
+        inline void finalizeImmersedEq_d_i32() {
+            finalizeImmersedEq<double, int32_t>();
+        }
+
+        inline void finalizeImmersedEq_s_i32() {
+            finalizeImmersedEq<float, int32_t>();
+        }
+
+        inline void finalizeImmersedEq_d_i64() {
+            finalizeImmersedEq<double, int64_t>();
+        }
+
+        inline void finalizeImmersedEq_s_i64() {
+            finalizeImmersedEq<float, int64_t>();
+        }
+    }
+}
+
+namespace eigen {
+    template<typename Real>
+std::unique_ptr<EigenDecompForFortran<Real>> eds = nullptr;
+
+    template<typename Real>
+    void initEigenDecompSolver(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas) {
+        auto xb = Mat<Real>::create(rows * cols * layers, 2);
+        eds<Real> = std::make_unique<EigenDecompForFortran<Real>>(rows, cols, layers, dx, dy, dz, thomas, xb.col(0), xb.col(1));
     }
 
-    inline void solveImmersedEqPrimes_s_i32(
-       float* resultPPrime,
-       float* resultFPrime,
-       size_t nnzB,
-       int32_t *rowOffsetsB,
-       int32_t *colIndsB,
-       float *valuesB,
-       size_t nnzR,
-       int32_t *colOffsetsR,
-       int32_t *rowIndsR,
-       float *valuesR,
-       float *UGamma,
-       float* uStar
-       ) {
-        solveImmersedEq<float, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
+    template<typename Real>
+    void runDecompSolver(Real* xHost, Real* bHost) {
+        if (!eds<Real>) throw std::runtime_error(
+            "The solver is not initialized.  Be sure you're using consistent types.");
+        eds<Real>->solve(xHost, bHost);
     }
 
-    inline void solveImmersedEqPrimes_d_i64(
-        double* resultPPrime,
-        double* resultFPrime,
-        size_t nnzB,
-        int64_t *rowOffsetsB,
-        int64_t *colIndsB,
-        double *valuesB,
-        size_t nnzR,
-        int64_t *colOffsetsR,
-        int64_t *rowIndsR,
-        double *valuesR,
-        double *UGamma,
-        double* uStar
-    ) {
-        solveImmersedEq<double, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
+    template<typename Real>
+    void finalizeEigenDecomp() {
+        if (eds<Real>) eds<Real>.reset();
     }
 
-    inline void solveImmersedEqPrimes_s_i64(
-        float* resultPPrime,
-        float* resultFPrime,
-        size_t nnzB,
-        int64_t *rowOffsetsB,
-        int64_t *colIndsB,
-        float *valuesB,
-        size_t nnzR,
-        int64_t *colOffsetsR,
-        int64_t *rowIndsR,
-        float *valuesR,
-        float *UGamma,
-        float* uStar
-    ) {
-        solveImmersedEq<float, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
-    }
+    // --- Initialization Functions ---
+    extern "C" {
+        inline void initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas) {
+            initEigenDecompSolver<double>(rows, cols, layers, dx, dy, dz, thomas);
+        }
 
-    inline void finalizeImmersedEq_d_i32() {
-        finalizeImmersedEq<double, int32_t>();
-    }
+        inline void initEigenDecomp_s(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas) {
+            initEigenDecompSolver<float>(rows, cols, layers, dx, dy, dz, thomas);
+        }
 
-    inline void finalizeImmersedEq_s_i32() {
-        finalizeImmersedEq<float, int32_t>();
-    }
+        inline void solveEigenDecomp_d(double *x, double* b) {
+            runDecompSolver(x, b);
+        }
 
-    inline void finalizeImmersedEq_d_i64() {
-        finalizeImmersedEq<double, int64_t>();
-    }
+        inline void solveEigenDecomp_s(float *x, float* b) {
+            runDecompSolver(x, b);
+        }
 
-    inline void finalizeImmersedEq_s_i64() {
-        finalizeImmersedEq<float, int64_t>();
+        inline void finalizeEigenDecomp_d() {
+            finalizeEigenDecomp<double>();
+        }
+
+        inline void finalizeEigenDecomp_s() {
+            finalizeEigenDecomp<float>();
+        }
     }
 }

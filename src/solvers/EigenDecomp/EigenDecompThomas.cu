@@ -118,16 +118,16 @@ EigenDecompThomas<T>::EigenDecompThomas(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1
 }
 
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const GridDim& dim, Handle *hand3, const Real3d& delta, Mat<T> sizeOfBX3, Event *event):
-    EigenDecomp3d<T>(dim, hand3, delta, sizeOfBX3.col(0), event),
+EigenDecompThomas<T>::EigenDecompThomas(const GridDim& dim, Handle *hand3, const Real3d& delta, Mat<T> sizeOfBX3, Event *event2):
+    EigenDecomp3d<T>(dim, hand3, delta, sizeOfBX3.col(0), event2),
     workSpaceSuperPrime(sizeOfBX3.col(1).tensor(dim.rows, dim.layers)),
     workSpaceRHSPrime(sizeOfBX3.col(2).tensor(dim.rows, dim.layers)),
     deltaX(delta.x)
 {}
 
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const GridDim& dim, Handle *hand3, const Real3d& delta, Event *event):
-    EigenDecompThomas(dim, hand3, delta, Mat<T>::create(dim.size(), 3), event) {
+EigenDecompThomas<T>::EigenDecompThomas(const GridDim& dim, Handle *hand3, const Real3d& delta, Event *event2):
+    EigenDecompThomas(dim, hand3, delta, Mat<T>::create(dim.size(), 3), event2) {
 }
 
 template class EigenDecompThomas<double>;

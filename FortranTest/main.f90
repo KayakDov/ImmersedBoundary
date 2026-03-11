@@ -1,54 +1,63 @@
-program test_immersed_eq
+program fortran_app
     use iso_c_binding
-    use fortranbindings_mod
+    use eigenbcgsolver_imeq_mod
     implicit none
 
-    integer(C_SIZE_T), parameter :: height = 3, width = 2, depth = 1
-    integer(C_SIZE_T), parameter :: total_size = height * width * depth
-    real(C_DOUBLE) :: p(total_size), f(2), result(total_size)
+    ! Dimensions
+    integer(C_SIZE_T) :: gridHeight, gridWidth, gridDepth
+    real(C_DOUBLE) :: deltaX, deltaY, deltaZ, dt, tolerance
+    integer(C_SIZE_T) :: maxBCGIterations
 
-    integer(C_SIZE_T), parameter :: nnzB = 1
-    integer(C_INT32_T)           :: rowOffsetsB(total_size + 1)
-    integer(C_INT32_T)           :: colIndsB(nnzB)
-    real(C_DOUBLE)               :: valuesB(nnzB)
-    integer(C_SIZE_T)            :: i
+    ! Field arrays
+    real(C_DOUBLE), allocatable :: p(:), f(:)
 
-    ! 1. Data Setup
-    f = [1.0_C_DOUBLE, 2.0_C_DOUBLE]
+    ! CSR sparse matrix arrays for solver
+    integer(C_SIZE_T) :: nnzB
+    integer(C_INT32_T), allocatable :: rowOffsetsB(:), colIndsB(:)
+    real(C_DOUBLE), allocatable :: valuesB(:)
+
+    ! Example: initialize problem sizes
+    gridHeight = 10_C_SIZE_T
+    gridWidth  = 10_C_SIZE_T
+    gridDepth  = 10_C_SIZE_T
+    deltaX = 0.1_C_DOUBLE
+    deltaY = 0.1_C_DOUBLE
+    deltaZ = 0.1_C_DOUBLE
+    dt     = 0.01_C_DOUBLE
+    tolerance = 1.0e-6_C_DOUBLE
+    maxBCGIterations = 100_C_SIZE_T
+
+    ! Allocate fields
+    allocate(p(gridHeight*gridWidth*gridDepth))
+    allocate(f(gridHeight*gridWidth*gridDepth))
+
+    ! Fill p and f with initial data
     p = 0.0_C_DOUBLE
-    p(1) = 2.0_C_DOUBLE
-    p(total_size) = -2.0_C_DOUBLE
+    f = 1.0_C_DOUBLE
 
-    ! 2. Sparse Matrix B (CSR)
-    valuesB(1) = 1.0_C_DOUBLE
-    colIndsB(1) = 0
-    rowOffsetsB(1) = 0
-    do i = 2, total_size + 1
-        rowOffsetsB(i) = 1
-    end do
+    ! Initialize the immersed equation solver
+    call init_immersed_eq_d_i32(gridHeight, gridWidth, gridDepth, &
+            gridHeight*gridWidth*gridDepth*5_C_SIZE_T, p, f, &
+            deltaX, deltaY, deltaZ, dt, tolerance, maxBCGIterations)
 
-    ! 3. Call Initialization
-    print *, "Initializing Immersed Equation..."
-    call init_immersed_eq_d_i32( &
-            height, width, depth, &
-            nnzB, &
-            p, f, &
-            1.0_C_DOUBLE, 1.0_C_DOUBLE, 1.0_C_DOUBLE, & ! dx, dy, dz
-            1.0_C_DOUBLE, &                             ! dt
-            1.0e-6_C_DOUBLE, &                          ! tolerance (fixed typo)
-            3_C_SIZE_T &                                ! maxIter
-            )
+    ! --- Prepare dummy CSR matrix (replace with your real data) ---
+    nnzB = 0_C_SIZE_T
+    allocate(rowOffsetsB(1))
+    allocate(colIndsB(1))
+    allocate(valuesB(1))
+    ! TODO: fill nnzB, rowOffsetsB, colIndsB, valuesB with your sparse matrix
 
-    ! 4. Solve
-    print *, "Solving..."
-    call solve_immersed_eq_d_i32(result, nnzB, rowOffsetsB, colIndsB, valuesB)
+    ! Solve the immersed equation
+    call solve_immersed_eq_d_i32(p, nnzB, rowOffsetsB, colIndsB, valuesB)
 
-    ! 5. Results
-    print *, "Result:"
-    print '(12F6.2)', result
-
-    ! 6. The "Magic" Fix: Cleanup
-    print *, "Finalizing"
+    ! Finalize solver
     call finalize_immersed_eq_d_i32()
 
-end program test_immersed_eq
+    ! Print first few values of solution
+    print *, "First 10 entries of solution p:"
+    print *, p(1:min(10,size(p)))
+
+    ! Deallocate arrays
+    deallocate(p, f, rowOffsetsB, colIndsB, valuesB)
+
+end program fortran_app
