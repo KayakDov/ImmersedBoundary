@@ -1,63 +1,78 @@
-program fortran_app
+program test_cudabanded_suite
     use iso_c_binding
     use eigenbcgsolver_imeq_mod
+    use eigenbcgsolver_eigen_mod
     implicit none
 
-    ! Dimensions
-    integer(C_SIZE_T) :: gridHeight, gridWidth, gridDepth
-    real(C_DOUBLE) :: deltaX, deltaY, deltaZ, dt, tolerance
-    integer(C_SIZE_T) :: maxBCGIterations
+    ! Common parameters
+    real(C_DOUBLE) :: dx, dy, dz
+    integer(C_SIZE_T) :: rows, cols, layers, n_cells
+    integer(C_SIZE_T) :: i
 
-    ! Field arrays
-    real(C_DOUBLE), allocatable :: p(:), f(:)
-
-    ! CSR sparse matrix arrays for solver
-    integer(C_SIZE_T) :: nnzB
+    ! Immersed Eq specific
+    real(C_DOUBLE), allocatable :: p_im(:), f_constraints(:), rhs_b(:)
     integer(C_INT32_T), allocatable :: rowOffsetsB(:), colIndsB(:)
     real(C_DOUBLE), allocatable :: valuesB(:)
+    integer(C_SIZE_T) :: nnzB, nConstraints
 
-    ! Example: initialize problem sizes
-    gridHeight = 10_C_SIZE_T
-    gridWidth  = 10_C_SIZE_T
-    gridDepth  = 10_C_SIZE_T
-    deltaX = 0.1_C_DOUBLE
-    deltaY = 0.1_C_DOUBLE
-    deltaZ = 0.1_C_DOUBLE
-    dt     = 0.01_C_DOUBLE
-    tolerance = 1.0e-6_C_DOUBLE
-    maxBCGIterations = 100_C_SIZE_T
+    ! EigenDecomp specific
+    real(C_DOUBLE), allocatable :: x_eig(:), b_eig(:)
+    logical :: use_thomas
 
-    ! Allocate fields
-    allocate(p(gridHeight*gridWidth*gridDepth))
-    allocate(f(gridHeight*gridWidth*gridDepth))
+    ! Initialize grid dimensions
+    rows = 3_C_SIZE_T
+    cols = 4_C_SIZE_T
+    layers = 2_C_SIZE_T
+    n_cells = rows * cols * layers
+    dx = 1.0_C_DOUBLE
+    dy = 0.5_C_DOUBLE
+    dz = 2.0_C_DOUBLE
 
-    ! Fill p and f with initial data
-    p = 0.0_C_DOUBLE
-    f = 1.0_C_DOUBLE
+    print *, "==========================================="
+    print *, "STARTING TEST 1: IMMERSED BOUNDARY SOLVER"
+    print *, "==========================================="
 
-    ! Initialize the immersed equation solver
-    call init_immersed_eq_d_i32(gridHeight, gridWidth, gridDepth, &
-            gridHeight*gridWidth*gridDepth*5_C_SIZE_T, p, f, &
-            deltaX, deltaY, deltaZ, dt, tolerance, maxBCGIterations)
+    nConstraints = 2_C_SIZE_T
+    nnzB = 2_C_SIZE_T
+    allocate(rowOffsetsB(nConstraints + 1), colIndsB(nnzB), valuesB(nnzB))
+    allocate(f_constraints(nConstraints), p_im(n_cells), rhs_b(n_cells))
 
-    ! --- Prepare dummy CSR matrix (replace with your real data) ---
-    nnzB = 0_C_SIZE_T
-    allocate(rowOffsetsB(1))
-    allocate(colIndsB(1))
-    allocate(valuesB(1))
-    ! TODO: fill nnzB, rowOffsetsB, colIndsB, valuesB with your sparse matrix
+    rowOffsetsB = [0_C_INT32_T, 1_C_INT32_T, 2_C_INT32_T]
+    colIndsB    = [0_C_INT32_T, 1_C_INT32_T]
+    valuesB     = [1.0_C_DOUBLE, 1.0_C_DOUBLE]
+    f_constraints = [1.0_C_DOUBLE, 2.0_C_DOUBLE]
+    rhs_b = 0.0_C_DOUBLE
+    rhs_b(1) = 10.0_C_DOUBLE ! Sample RHS value
+    p_im = 0.0_C_DOUBLE
 
-    ! Solve the immersed equation
-    call solve_immersed_eq_d_i32(p, nnzB, rowOffsetsB, colIndsB, valuesB)
+    call init_immersed_eq_d_i32(rows, cols, layers, nnzB, rhs_b, f_constraints, &
+            dx, dy, dz, 1.0_C_DOUBLE, 1.0e-8_C_DOUBLE, 1000_C_SIZE_T)
 
-    ! Finalize solver
+    call solve_immersed_eq_d_i32(p_im, nnzB, rowOffsetsB, colIndsB, valuesB)
+
+    print *, "Immersed Eq Result (first 3):", p_im(1:3)
     call finalize_immersed_eq_d_i32()
+    deallocate(rowOffsetsB, colIndsB, valuesB, f_constraints, p_im, rhs_b)
 
-    ! Print first few values of solution
-    print *, "First 10 entries of solution p:"
-    print *, p(1:min(10,size(p)))
+    print *, ""
+    print *, "==========================================="
+    print *, "STARTING TEST 2: THOMAS EIGEN DECOMPOSITION"
+    print *, "==========================================="
 
-    ! Deallocate arrays
-    deallocate(p, f, rowOffsetsB, colIndsB, valuesB)
+    allocate(x_eig(n_cells), b_eig(n_cells))
+    b_eig = 1.0_C_DOUBLE ! Simple test: Solve Lap(x) = 1
+    x_eig = 0.0_C_DOUBLE
+    use_thomas = .true.
 
-end program fortran_app
+    call init_eigen_decomp_d(rows, cols, layers, dx, dy, dz, use_thomas)
+    call solve_eigen_decomp_d(x_eig, b_eig)
+
+    print *, "Eigen Decomp Result (first 3):", x_eig(1:3)
+    call finalize_eigen_decomp_d()
+    deallocate(x_eig, b_eig)
+
+    print *, "==========================================="
+    print *, "ALL TESTS COMPLETED"
+    print *, "==========================================="
+
+end program test_cudabanded_suite
