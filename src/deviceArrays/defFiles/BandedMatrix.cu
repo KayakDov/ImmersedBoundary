@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "BiCGSTAB.cuh"
 #include "../headers/sparse/BandedMat.h"
 #include "../headers/KernelSupport.cuh"
 #include "../headers/Singleton.h"
@@ -116,26 +117,26 @@ void BandedMat<T>::bandedMult(
 
 template<typename T>
 __global__ void mapToDenseKernel(
-    DeviceData2d<T> denseSquare,
-    const DeviceData2d<T> banded, //num diagonals is width, length should be dense.width
+    DeviceData2d<T> denseSquareDst,
+    const DeviceData2d<T> bandedSrc, //num diagonals is width, length should be dense.width
     const int32_t *__restrict__ indices
 ) {
     GridInd2d sparseInd;
-    if (sparseInd >= banded) return;
+    if (sparseInd >= bandedSrc) return;
     int32_t diag = indices[sparseInd.col];
     GridInd2d denseInd(
-    sparseInd.row - (diag < 0 ? diag : 0),
-    sparseInd.row + (diag > 0 ? diag : 0)
+        sparseInd.row - (diag < 0 ? diag : 0),
+        sparseInd.row + (diag > 0 ? diag : 0)
     );
-    denseSquare[denseInd] = banded[sparseInd];
+    if (denseInd < denseSquareDst) denseSquareDst[denseInd] = bandedSrc[sparseInd];
 }
 
 template<typename T>
-void BandedMat<T>::getDense(SquareMat<T> dense, Handle *handle) const {
+void BandedMat<T>::getDense(SquareMat<T> dense, Handle *hand) const {
     //TODO: have a default nullptr dense value and return Square Mat
     std::unique_ptr<Handle> temp_hand_ptr;
-    Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-
+    Handle *h = Handle::_get_or_create_handle(hand, temp_hand_ptr);
+    dense.fill(0, *hand);
     const KernelPrep kp = this->kernelPrep();
 
     mapToDenseKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, *h>>>(

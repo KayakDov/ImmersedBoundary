@@ -119,9 +119,9 @@ public:
     /**
      * Creates a matrix with lots of 0s stored off the diagonals of ineterst.
      * @param dense Where the matrix with all the zeroes is stored.  It should be _rows x _rows.
-     * @param handle
+     * @param hand
      */
-    void getDense(SquareMat<T> dense, Handle *handle = nullptr) const;
+    void getDense(SquareMat<T> dense, Handle *hand = nullptr) const;
 };
 
 

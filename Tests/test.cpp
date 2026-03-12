@@ -97,7 +97,7 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
     using Real = double;
     using Int  = int;
 
-    GridDim dim(3, 4, 2);
+    GridDim dim(5, 4, 3);
     Real3d delta(1, 0.5, 2);
     Handle hand;
 
@@ -115,6 +115,7 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
     x.set(xHost.data(), hand);
 
     auto L = ToeplitzLaplacian<Real>::L(dim, hand, delta);
+
     auto LDense = SquareMat<Real>::create(dim.size());
     L.getDense(LDense, &hand);
 
