@@ -1,10 +1,12 @@
 #ifndef BICGSTAB_SINGLETON_H
 #define BICGSTAB_SINGLETON_H
 
-#include "Vec.h"
+#include "SimpleArray.h"
 
 template<typename T> class Mat;
 template<typename T> class Tensor;
+template<typename T> class Consts;
+
 /**
  * @brief Represents a single-element vector on the GPU.
  * 
@@ -24,16 +26,20 @@ private:
     explicit Singleton(std::shared_ptr<T> ptr);
 
     // Grant access to Vec/Mat/Tensor getters that return a Singleton<T>
-    friend /*Singleton<T> */Vec<T>;//::get(size_t i);
-    friend /*Singleton<T>*/ Mat<T>;//::get(size_t row, size_t col);
-    friend /*Singleton<T>*/ Tensor<T>;//::get(size_t row, size_t col, size_t layer);
+    friend Vec<T>;
+    friend Mat<T>;
+    friend Tensor<T>;
 
+    static Consts<T> initConsts;
 public:
     /// Predefined constants for convenience
-    static const Singleton<T> ONE;       ///< Singleton containing 1
-    static const Singleton<T> ZERO;      ///< Singleton containing 0
-    static const Singleton<T> TWO;
-    static const Singleton<T> MINUS_ONE; ///< Singleton containing -1
+
+
+    const static Singleton<T>& ZERO;
+    const static Singleton<T>& ONE;
+    const static Singleton<T>& TWO;
+    const static Singleton<T>& MINUS_ONE;
+
 
     using Vec<T>::get;  ///< Inherit Vec<T>::get methods
     using Vec<T>::set;  ///< Inherit Vec<T>::set methods
@@ -113,6 +119,23 @@ public:
     static const Singleton<T>* _get_or_create_target(T defaultVal, Handle& hand, const Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique);
 
     static const Singleton<T> MINUS_TWO;
+};
+
+template <typename T>
+class Consts {
+
+    /**
+     * Holds the Singleton constants.
+     */
+    SimpleArray<T> base;
+
+public:
+    const Singleton<T> ONE;       ///< Singleton containing 1
+    const Singleton<T> ZERO;      ///< Singleton containing 0
+    const Singleton<T> TWO;
+    const Singleton<T> MINUS_ONE; ///< Singleton containing -1
+
+    Consts(Handle hand = Handle());
 };
 
 #endif //BICGSTAB_SINGLETON_H

@@ -30,6 +30,7 @@ protected:
 
 public:
     using GpuArray<T>::col;
+    using Vec<T>::get;
 
     SimpleArray(size_t size, std::shared_ptr<T> ptr, bool initDescr = false);
 

@@ -1,5 +1,7 @@
 #include "../headers/Singleton.h"
 
+#include <vector>
+
 
 template<typename T>
 Singleton<T>::Singleton(std::shared_ptr<T> ptr):Vec<T>(static_cast<size_t>(1), ptr, static_cast<size_t>(1)) {}
@@ -73,21 +75,29 @@ const Singleton<T>* Singleton<T>::_get_or_create_target(T defaultVal, Handle& ha
     }
 }
 
+template<typename T> Consts<T>* Singleton<T>::initConsts;
+template<typename T> const Singleton<T>& Singleton<T>::ZERO = Singleton<T>::initConsts->ZERO;
+template<typename T> const Singleton<T>& Singleton<T>::ONE = Singleton<T>::initConsts->ONE;
+template<typename T> const Singleton<T>& Singleton<T>::TWO = Singleton<T>::initConsts->TWO;
+template<typename T> const Singleton<T>& Singleton<T>::MINUS_ONE = Singleton<T>::initConsts->MINUS_ONE;
 
-template <typename T>
-const Singleton<T> Singleton<T>::ONE = Singleton<T>::create(static_cast<T>(1));
 
-template <typename T>
-const Singleton<T> Singleton<T>::TWO = Singleton<T>::create(static_cast<T>(2));
-
-template <typename T>
-const Singleton<T> Singleton<T>::ZERO = Singleton<T>::create(static_cast<T>(0));
-
-template <typename T>
-const Singleton<T> Singleton<T>::MINUS_ONE = Singleton<T>::create(static_cast<T>(-1));
-
-template <typename T>
-const Singleton<T> Singleton<T>::MINUS_TWO = Singleton<T>::create(static_cast<T>(-2));
+template<typename T>
+Consts<T>::Consts(Handle hand):
+    base(SimpleArray<T>::create(4, hand)),
+    ZERO(base.get(0)),
+    ONE(base.get(1)),
+    MINUS_ONE(base.get(2)),
+    TWO(base.get(3))
+{
+    std::vector<T> hostConsts = {
+        static_cast<T>(0),
+        static_cast<T>(1),
+        static_cast<T>(-1),
+        static_cast<T>(2)
+    };
+    base.set(hostConsts.data(), hand);
+}
 
 
 template class Singleton<int32_t>;
@@ -96,5 +106,11 @@ template class Singleton<float>;
 template class Singleton<double>;
 template class Singleton<unsigned char>;
 template class Singleton<uint32_t>;
-template class Singleton<int64_t>;
+
+template class Consts<int32_t>;
+template class Consts<size_t>;
+template class Consts<float>;
+template class Consts<double>;
+template class Consts<unsigned char>;
+template class Consts<uint32_t>;
 

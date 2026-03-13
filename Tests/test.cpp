@@ -97,7 +97,7 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
     using Real = double;
     using Int  = int;
 
-    GridDim dim(6, 4, 3);
+    GridDim dim(30, 20, 10);
     Real3d delta(1, 0.5, 2);
     Handle hand;
 
@@ -121,7 +121,7 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
 
     auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
     LPlus2BTBx.fill(0, hand);
-    
+
     BDense.mult(BDense, &LDense, &hand,&Singleton<Real>::TWO, &Singleton<Real>::ONE,  true, false);
     LDense.mult(x, LPlus2BTBx, &hand, &Singleton<Real>::ONE, &Singleton<Real>::ZERO, false);
 
