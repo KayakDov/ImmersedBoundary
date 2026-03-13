@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "../headers/Support/GridDim.hpp"
+#include "deviceArrays/headers/Support/Streamable.h"
 
 template <typename T>
 Mat<T> Mat<T>::mult(
@@ -28,7 +29,7 @@ Mat<T> Mat<T>::mult(
     const Singleton<T>* a = Singleton<T>::_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptrSing);
     std::unique_ptr<Singleton<T>> temp_b_ptrSing2;
     const Singleton<T>* b = Singleton<T>::_get_or_create_target(static_cast<T>(0), *h, beta, temp_b_ptrSing2);
-    
+
     GpuArray<T>::mult(other, resPtr, h, a, b, transposeA, transposeB);
     
     return *resPtr;

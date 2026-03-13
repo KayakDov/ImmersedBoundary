@@ -97,7 +97,7 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
     using Real = double;
     using Int  = int;
 
-    GridDim dim(5, 4, 3);
+    GridDim dim(6, 4, 3);
     Real3d delta(1, 0.5, 2);
     Handle hand;
 
@@ -121,18 +121,17 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
 
     auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
     LPlus2BTBx.fill(0, hand);
-
-    BDense.mult(BDense, &LDense, &hand,&Singleton<Real>::TWO, &Singleton<Real>::ONE,  false, true);
+    
+    BDense.mult(BDense, &LDense, &hand,&Singleton<Real>::TWO, &Singleton<Real>::ONE,  true, false);
     LDense.mult(x, LPlus2BTBx, &hand, &Singleton<Real>::ONE, &Singleton<Real>::ZERO, false);
 
     std::vector<Real> fHost(rowOffsetsB.size() - 1, 0);
     fHost[0] = 1;
     fHost[1] = 2;
-
-    auto TwoBTF = SimpleArray<Real>::create(dim.size(), hand);
     auto f = SimpleArray<Real>::create(fHost.size(), hand);
     f.set(fHost.data(), hand);
 
+    auto TwoBTF = SimpleArray<Real>::create(dim.size(), hand);
     BDense.mult(f, TwoBTF, &hand, &Singleton<Real>::TWO, &Singleton<Real>::ZERO, true);
 
     LPlus2BTBx.add(TwoBTF, &Singleton<Real>::MINUS_ONE, &hand);

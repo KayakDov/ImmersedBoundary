@@ -12,6 +12,8 @@
 #include <cuda_runtime_api.h>
 #include <fstream>
 
+#include "Support/Streamable.h"
+
 
 template<typename T>
 GpuArray<T>::GpuArray(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr):_rows(rows), _cols(cols), _ld(ld), _ptr(_ptr) {
@@ -76,10 +78,12 @@ void GpuArray<T>::mult(
     cublasOperation_t transA = transposeA ? CUBLAS_OP_T : CUBLAS_OP_N,
             transB = transposeB ? CUBLAS_OP_T : CUBLAS_OP_N;
 
+    size_t opACols = transposeA? this->_rows : this->_cols;
+
     if constexpr (std::is_same_v<T, float>)
         CHECK_CUBLAS_ERROR(cublasSgemm(*h,
         transA, transB,
-        this->_rows, other._cols, this->_cols,
+        result->_rows, result->_cols, opACols,
         a->toKernel1d(),
         this->data(), this->_ld,
         other.data(), other._ld,
@@ -88,7 +92,7 @@ void GpuArray<T>::mult(
     else if constexpr (std::is_same_v<T, double>)
         CHECK_CUBLAS_ERROR(cublasDgemm(*h,
         transA, transB,
-        this->_rows, other._cols, this->_cols,
+        result->_rows, result->_cols, opACols,
         a->toKernel1d(),
         this->data(), this->_ld, other.data(), other._ld,
         b->data(), result->data(), result->_ld));
