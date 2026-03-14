@@ -38,7 +38,7 @@ void Singleton<T>::set(const T val, cudaStream_t stream){
 template <typename T>
 __global__ void setProductOfQuotientsKernel(T* result, const T* numA, const T* denA, const T* numB, const T* denB) {
     if (blockIdx.x * blockDim.x + threadIdx.x == 0)
-        *result = *numA * *numB/(*denA * *denB);
+        *result = (*numA / *denA) * (*numB / *denB);
 }
 
 
@@ -75,30 +75,39 @@ const Singleton<T>* Singleton<T>::_get_or_create_target(T defaultVal, Handle& ha
     }
 }
 
-template<typename T> Consts<T>* Singleton<T>::initConsts;
-template<typename T> const Singleton<T>& Singleton<T>::ZERO = Singleton<T>::initConsts->ZERO;
-template<typename T> const Singleton<T>& Singleton<T>::ONE = Singleton<T>::initConsts->ONE;
-template<typename T> const Singleton<T>& Singleton<T>::TWO = Singleton<T>::initConsts->TWO;
-template<typename T> const Singleton<T>& Singleton<T>::MINUS_ONE = Singleton<T>::initConsts->MINUS_ONE;
-
+template<typename T>
+const Singleton<T> & GPUConst<T>::get(int32_t i) {
+    switch (i) {
+        case 0: return universal.ZERO;
+        case 1: return universal.ONE;
+        case 2: return universal.TWO;
+        case -1: return universal.MINUS_ONE;
+        case -2: return universal.MINUS_TWO;
+        default: throw std::out_of_range("");
+    }
+}
 
 template<typename T>
-Consts<T>::Consts(Handle hand):
-    base(SimpleArray<T>::create(4, hand)),
+GPUConst<T>::GPUConst(Handle hand):
+    base(SimpleArray<T>::create(5, hand)),
     ZERO(base.get(0)),
     ONE(base.get(1)),
     MINUS_ONE(base.get(2)),
-    TWO(base.get(3))
+    TWO(base.get(3)),
+    MINUS_TWO(base.get(4))
 {
     std::vector<T> hostConsts = {
         static_cast<T>(0),
         static_cast<T>(1),
         static_cast<T>(-1),
-        static_cast<T>(2)
+        static_cast<T>(2),
+        static_cast<T>(-2)
     };
     base.set(hostConsts.data(), hand);
 }
 
+template <typename T>
+const GPUConst<T> GPUConst<T>::universal = GPUConst<T>();
 
 template class Singleton<int32_t>;
 template class Singleton<size_t>;
@@ -106,11 +115,13 @@ template class Singleton<float>;
 template class Singleton<double>;
 template class Singleton<unsigned char>;
 template class Singleton<uint32_t>;
+template class Singleton<long>;
 
-template class Consts<int32_t>;
-template class Consts<size_t>;
-template class Consts<float>;
-template class Consts<double>;
-template class Consts<unsigned char>;
-template class Consts<uint32_t>;
+template class GPUConst<int32_t>;
+template class GPUConst<size_t>;
+template class GPUConst<float>;
+template class GPUConst<double>;
+template class GPUConst<unsigned char>;
+template class GPUConst<uint32_t>;
+template class GPUConst<long>;
 

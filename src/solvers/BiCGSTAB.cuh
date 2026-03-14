@@ -101,7 +101,7 @@ protected:
      * @param multProduct
      * @param premultResult
      */
-    virtual void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct = Singleton<T>::ONE, Singleton<T> premultResult = Singleton<T>::ZERO) const = 0;
+    virtual void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct = GPUConst<T>::get(1), Singleton<T> premultResult = GPUConst<T>::get(0)) const = 0;
 public:
     constexpr static size_t numStreams = 4;
     virtual ~BiCGSTAB() = default;

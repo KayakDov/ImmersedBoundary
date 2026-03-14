@@ -310,7 +310,7 @@ public:
                           size_t strideB, Mat &c1, size_t strideC,
                           bool transposeA, bool transposeB,
                           Handle &hand, size_t batchCount,
-                          const Singleton<T> &alpha = Singleton<T>::ONE, const Singleton<T> &beta = Singleton<T>::ZERO);
+                          const Singleton<T> &alpha, const Singleton<T> &beta);
 
     /**
      * @brief Retrieves a pointer to the underlying GPU memory data.

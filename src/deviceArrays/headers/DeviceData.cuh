@@ -5,7 +5,8 @@
 #ifndef BICGSTAB_DEVICEDATA_CUH
 #define BICGSTAB_DEVICEDATA_CUH
 
-#include "deviceArrays/headers/KernelSupport.cuh"
+#include "KernelSupport.cuh"
+#include "deviceArrays/headers/Support/GridDim.hpp"
 
 class DenseInd;
 class GridInd2d;
@@ -91,7 +92,7 @@ public:
      * @param col The column index (0 to cols-1).
      * @return The 1D index into the data array.
      */
-    __device__ size_t flat(size_t row, size_t col) const {
+    __device__ [[nodiscard]] size_t flat(const size_t row, const size_t col) const {
         return col * this->ld + row;
     }
 
@@ -226,7 +227,7 @@ public:
         return this->operator()(layer * this -> rows +  row, col);
     }
 
-    __device__ const T operator()(const size_t row, const size_t col, const size_t layer) const {
+    __device__ const T& operator()(const size_t row, const size_t col, const size_t layer) const {
         return this->operator()(layer * this -> rows +  row, col);
     }
 
@@ -234,7 +235,7 @@ public:
         return this->operator()(ind0.row + dRow, ind0.col + dCol, ind0.layer + dLayer);
     }
 
-    __device__ T& operator()(const GridInd3d& ind0, size_t dRow, size_t dCol, size_t dLayer) {
+    __device__ T& operator()(const GridInd3d& ind0, int32_t dRow, int32_t dCol, int32_t dLayer) {
         return const_cast<T&>(static_cast<const DeviceData3d&>(*this)(ind0, dRow, dCol, dLayer));
     }
 
@@ -248,7 +249,7 @@ public:
 
 
 template<typename T>
-DeviceData1d<T>::DeviceData1d(size_t size, DeviceData3d<T> &src, GridInd3d &ind0, size_t dRow, size_t dCol, size_t dLayer):
+__device__ DeviceData1d<T>::DeviceData1d(size_t size, DeviceData3d<T> &src, GridInd3d &ind0, size_t dRow, size_t dCol, size_t dLayer):
     DeviceData1d<T>(size, src.flat(dRow, dCol, dLayer), src.data + src.flat(ind0)){
 }
 

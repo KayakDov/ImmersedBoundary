@@ -58,7 +58,7 @@ void EigenDecomp3d<T>::multE(
         transposeB = false;
     }
 
-    Mat<T>::batchMult( *a, aStride, *b, bStride, dst1, stride, transposeA, transposeB, hand, batchCount);
+    Mat<T>::batchMult( *a, aStride, *b, bStride, dst1, stride, transposeA, transposeB, hand, batchCount, GPUConst<T>::get(1), GPUConst<T>::get(0));
 }
 
 template<typename T>

@@ -10,7 +10,7 @@
 #ifndef BICGSTAB_VEC_H
 #define BICGSTAB_VEC_H
 #include "GpuArray.h"
-#include "../defFiles/DeviceData.cuh"
+#include "DeviceData.cuh"
 #include  "Tensor.h"
 
 

@@ -112,7 +112,7 @@ public:
     * @return Result vector on device memory.
     */
     void bandedMult(const Vec<T> &other, Vec<T> &result, Handle *handle, const
-                    Singleton<T> alpha = Singleton<T>::ONE, const Singleton<T> beta = Singleton<T>::ZERO, bool
+                    Singleton<T> alpha = GPUConst<T>::get(1), const Singleton<T> beta = GPUConst<T>::get(0), bool
                     transpose = false) const;
 
 

@@ -100,7 +100,7 @@ void BandedMat<T>::bandedMult(
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
-    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(Singleton<int32_t>::MINUS_ONE, h);
+    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUConst<int32_t>::get(-1), h);
 
     multVecKernel<<<this->_rows, this->_cols, 0, *h>>>(
         this->toKernel2d(),
@@ -112,7 +112,7 @@ void BandedMat<T>::bandedMult(
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());
-    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(Singleton<int32_t>::MINUS_ONE, h);
+    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUConst<int32_t>::get(-1), h);
 }
 
 template<typename T>

@@ -248,7 +248,7 @@ void Vec<T>::subtract(const Vec<T> &x, const Singleton<T> *alpha, Singleton<T> b
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
-    buffer.set(Singleton<T>::MINUS_ONE, *h);
+    buffer.set(static_cast<T>(-1), *h);
     buffer.mult(*alpha, h);
     this->add(x, &buffer, h);
 }
@@ -331,7 +331,7 @@ void Vec<T>::EBEPow(const Singleton<T> &t, const Singleton<T> &n, cudaStream_t s
 
     KernelPrep kp = this->kernelPrep();
 
-    if (n.data() == Singleton<T>::MINUS_ONE.data())
+    if (n.data() == GPUConst<T>::get(-1).data())
         EBEInvertKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel1d(), t.data());
     else EBEPowKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
             this->toKernel1d(),

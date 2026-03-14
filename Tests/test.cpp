@@ -122,8 +122,8 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
     auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
     LPlus2BTBx.fill(0, hand);
 
-    BDense.mult(BDense, &LDense, &hand,&Singleton<Real>::TWO, &Singleton<Real>::ONE,  true, false);
-    LDense.mult(x, LPlus2BTBx, &hand, &Singleton<Real>::ONE, &Singleton<Real>::ZERO, false);
+    BDense.mult(BDense, &LDense, &hand,&GPUConst<Real>::get(2), &GPUConst<Real>::get(1),  true, false);
+    LDense.mult(x, LPlus2BTBx, &hand, &GPUConst<Real>::get(1), &GPUConst<Real>::get(0), false);
 
     std::vector<Real> fHost(rowOffsetsB.size() - 1, 0);
     fHost[0] = 1;
@@ -132,9 +132,9 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
     f.set(fHost.data(), hand);
 
     auto TwoBTF = SimpleArray<Real>::create(dim.size(), hand);
-    BDense.mult(f, TwoBTF, &hand, &Singleton<Real>::TWO, &Singleton<Real>::ZERO, true);
+    BDense.mult(f, TwoBTF, &hand, &GPUConst<Real>::get(2), &GPUConst<Real>::get(0), true);
 
-    LPlus2BTBx.add(TwoBTF, &Singleton<Real>::MINUS_ONE, &hand);
+    LPlus2BTBx.add(TwoBTF, &GPUConst<Real>::get(-1), &hand);
 
     std::vector<Real> p(dim.size(), 0);
     LPlus2BTBx.get(p.data(), hand);
@@ -266,7 +266,7 @@ TEST(BCGDenseTest, ConvergenceValidation) {
 
     auto b = SimpleArray<Real>::create(n, hand4[0]);
     b.fill(0, hand4[0]);
-    A.mult(result, b, hand4, &Singleton<Real>::ONE, &Singleton<Real>::ZERO, false);
+    A.mult(result, b, hand4, &GPUConst<Real>::get(1), &GPUConst<Real>::get(0), false);
     result.fill(0, hand4[0]);
 
     auto bHeightX7 = Mat<Real>::create(n, 7);

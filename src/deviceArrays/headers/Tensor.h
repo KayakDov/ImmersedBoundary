@@ -13,7 +13,7 @@
 #ifndef BICGSTAB_TENSOR_H
 #define BICGSTAB_TENSOR_H
 
-#include "../defFiles/DeviceData.cuh"
+#include "DeviceData.cuh"
 #include "Mat.h"
 
 

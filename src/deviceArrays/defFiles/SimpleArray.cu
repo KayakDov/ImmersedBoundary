@@ -118,3 +118,4 @@ template class SimpleArray<int64_t>;
 template class SimpleArray<size_t>;
 template class SimpleArray<double>;
 template class SimpleArray<float>;
+template class SimpleArray<unsigned char>;

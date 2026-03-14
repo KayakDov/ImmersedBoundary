@@ -5,7 +5,6 @@
 
 template<typename T> class Mat;
 template<typename T> class Tensor;
-template<typename T> class Consts;
 
 /**
  * @brief Represents a single-element vector on the GPU.
@@ -30,16 +29,8 @@ private:
     friend Mat<T>;
     friend Tensor<T>;
 
-    static Consts<T> initConsts;
 public:
     /// Predefined constants for convenience
-
-
-    const static Singleton<T>& ZERO;
-    const static Singleton<T>& ONE;
-    const static Singleton<T>& TWO;
-    const static Singleton<T>& MINUS_ONE;
-
 
     using Vec<T>::get;  ///< Inherit Vec<T>::get methods
     using Vec<T>::set;  ///< Inherit Vec<T>::set methods
@@ -122,20 +113,25 @@ public:
 };
 
 template <typename T>
-class Consts {
+class GPUConst {
 
+    static const GPUConst<T> universal;
     /**
      * Holds the Singleton constants.
      */
     SimpleArray<T> base;
-
+    GPUConst(Handle hand = Handle());
 public:
+
+    static const Singleton<T>& get(int32_t i);
+
     const Singleton<T> ONE;       ///< Singleton containing 1
     const Singleton<T> ZERO;      ///< Singleton containing 0
     const Singleton<T> TWO;
     const Singleton<T> MINUS_ONE; ///< Singleton containing -1
-
-    Consts(Handle hand = Handle());
+    const Singleton<T> MINUS_TWO;
 };
+
+
 
 #endif //BICGSTAB_SINGLETON_H
