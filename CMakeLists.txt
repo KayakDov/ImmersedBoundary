@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 cmake_policy(SET CMP0135 NEW)
 
+add_compile_options(-fno-omit-frame-pointer)
+
 # 1. ARCHITECTURE: Set this BEFORE project() to ensure it applies to all tests
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES all-major) # Better than 'all' for faster compile times

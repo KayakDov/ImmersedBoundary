@@ -231,7 +231,7 @@ public:
         return this->operator()(layer * this -> rows +  row, col);
     }
 
-    __device__ const T& operator()(const GridInd3d& ind0, size_t dRow, size_t dCol, size_t dLayer) const {
+    __device__ const T& operator()(const GridInd3d& ind0, int32_t dRow, int32_t dCol, int32_t dLayer) const {
         return this->operator()(ind0.row + dRow, ind0.col + dCol, ind0.layer + dLayer);
     }
 

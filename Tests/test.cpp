@@ -97,58 +97,60 @@ TEST(ImmersedEq, SolvesPrimes_Generic) {
     using Real = double;
     using Int  = int;
 
-    GridDim dim(30, 20, 10);
-    Real3d delta(1, 0.5, 2);
-    Handle hand;
+    for (size_t i = 0; i < 100; i++) {
+        GridDim dim(30, 20, 25);
+        Real3d delta(1, 0.5, 2);
+        Handle hand;
 
-    std::vector<Int> rowOffsetsB = {0, 1, 2};
-    std::vector<Int> colIndsB    = {0, 1};
-    std::vector<Real> valuesB    = {1, 1};
-    auto B = SparseCSR<Real, Int>::create(valuesB.size(), rowOffsetsB.size() - 1, dim.size(), hand);
-    B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
-    auto BDense = Mat<Real>::create(B.rows, B.cols);
-    B.getDense(BDense, hand);
+        std::vector<Int> rowOffsetsB = {0, 1, 2};
+        std::vector<Int> colIndsB    = {0, 1};
+        std::vector<Real> valuesB    = {1, 1};
+        auto B = SparseCSR<Real, Int>::create(valuesB.size(), rowOffsetsB.size() - 1, dim.size(), hand);
+        B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
+        auto BDense = Mat<Real>::create(B.rows, B.cols);
+        B.getDense(BDense, hand);
 
-    std::vector<Real> xHost(dim.size(), 0);
-    for (size_t i = 0; i < xHost.size(); ++i) xHost[i] = i + 1.0;
-    auto x = SimpleArray<Real>::create(dim.size(), hand);
-    x.set(xHost.data(), hand);
+        std::vector<Real> xHost(dim.size(), 0);
+        for (size_t i = 0; i < xHost.size(); ++i) xHost[i] = i + 1.0;
+        auto x = SimpleArray<Real>::create(dim.size(), hand);
+        x.set(xHost.data(), hand);
 
-    auto L = ToeplitzLaplacian<Real>::L(dim, hand, delta);
+        auto L = ToeplitzLaplacian<Real>::L(dim, hand, delta);
 
-    auto LDense = SquareMat<Real>::create(dim.size());
-    L.getDense(LDense, &hand);
+        auto LDense = SquareMat<Real>::create(dim.size());
+        L.getDense(LDense, &hand);
 
-    auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
-    LPlus2BTBx.fill(0, hand);
+        auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
+        LPlus2BTBx.fill(0, hand);
 
-    BDense.mult(BDense, &LDense, &hand,&GPUConst<Real>::get(2), &GPUConst<Real>::get(1),  true, false);
-    LDense.mult(x, LPlus2BTBx, &hand, &GPUConst<Real>::get(1), &GPUConst<Real>::get(0), false);
+        BDense.mult(BDense, &LDense, &hand,&GPUConst<Real>::get(2), &GPUConst<Real>::get(1),  true, false);
+        LDense.mult(x, LPlus2BTBx, &hand, &GPUConst<Real>::get(1), &GPUConst<Real>::get(0), false);
 
-    std::vector<Real> fHost(rowOffsetsB.size() - 1, 0);
-    fHost[0] = 1;
-    fHost[1] = 2;
-    auto f = SimpleArray<Real>::create(fHost.size(), hand);
-    f.set(fHost.data(), hand);
+        std::vector<Real> fHost(rowOffsetsB.size() - 1, 0);
+        fHost[0] = 1;
+        fHost[1] = 2;
+        auto f = SimpleArray<Real>::create(fHost.size(), hand);
+        f.set(fHost.data(), hand);
 
-    auto TwoBTF = SimpleArray<Real>::create(dim.size(), hand);
-    BDense.mult(f, TwoBTF, &hand, &GPUConst<Real>::get(2), &GPUConst<Real>::get(0), true);
+        auto TwoBTF = SimpleArray<Real>::create(dim.size(), hand);
+        BDense.mult(f, TwoBTF, &hand, &GPUConst<Real>::get(2), &GPUConst<Real>::get(0), true);
 
-    LPlus2BTBx.add(TwoBTF, &GPUConst<Real>::get(-1), &hand);
+        LPlus2BTBx.add(TwoBTF, &GPUConst<Real>::get(-1), &hand);
 
-    std::vector<Real> p(dim.size(), 0);
-    LPlus2BTBx.get(p.data(), hand);
+        std::vector<Real> p(dim.size(), 0);
+        LPlus2BTBx.get(p.data(), hand);
 
-    std::vector<Real> resultP(dim.size(), 0);
-    std::vector<Real> resultF(fHost.size(), 0);
+        std::vector<Real> resultP(dim.size(), 0);
+        std::vector<Real> resultF(fHost.size(), 0);
 
-    ImmersedEq<Real, Int> imEq(dim, fHost.size(), valuesB.size(), p.data(), fHost.data(), delta, 1, 1e-8, 1000);
+        ImmersedEq<Real, Int> imEq(dim, fHost.size(), valuesB.size(), p.data(), fHost.data(), delta, 1, 1e-8, 1000);
 
-    imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
+        imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
 
-    cudaDeviceSynchronize();
+        cudaDeviceSynchronize();
 
-    for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], i + 1, 1e-4);
+        for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], i + 1, 1e-4);
+    }
 }
 
 TEST(EigenDecomp, ThreeD) {
