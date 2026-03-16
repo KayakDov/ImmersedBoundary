@@ -28,7 +28,6 @@ enum class GridInd : size_t {
     EDS         = 3,  ///< Eigen-Decomposition Solver scratch space
     LHS_invLBTBx= 4,  ///< LHS intermediate: $L^{-1} B^T B x$
     RHS         = 4,  ///< Global Right-Hand Side vector (aliases LHS_invLBTBx)
-    RHS_BTF     = 5,  ///< Scaled transpose boundary force: $B^T f$
     LHS_BTBx    = 5,  ///< LHS intermediate: $B^T B x$ (aliases RHS_BTF)
     Count       = 6   ///< Number of standard grid indices
 };

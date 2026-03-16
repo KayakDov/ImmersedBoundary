@@ -116,8 +116,8 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim,
     Real tolerance,
     size_t maxBCGIterations
 ) :
-    maxSparseInds(SimpleArray<Int>::create(nnzMax, hand5[0])),
-    maxSparseOffsets(SimpleArray<Int>::create(fSize + 1, hand5[0])),
+    maxSparseInds(SimpleArray<Int>::create(nnzMax + fSize + 1, hand5[0]).subArray(0, nnzMax)),
+    maxSparseOffsets(maxSparseInds.subArray(nnzMax, fSize + 1)),
     dim(dim),
     delta(delta),
     dT(Singleton<Real>::create(3/(2 * dT), hand5[0])),
@@ -149,8 +149,6 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
     result.add(invLxBTBxPlusX, &multLinearOperationOutput, hand5); //result <- result + preMultResult * x * preMultX
 }
 
-
-
 template<typename Real, typename Int>
 SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
     auto id = SquareMat<Real>::create(dim.size());
@@ -164,21 +162,17 @@ SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
     return result;
 }
 
-template<typename Real, typename Int>//TODO: rewrite this method so that it takes indices for p and F, and remove p and f as pointers all together.
+template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::setRHS(bool prime) {
 
     auto p = gridVec(prime ? GridInd::RHSPPrime : GridInd::p);
     auto f = lagrangeVec(prime? LagrangeInd::RHSFPrime : LagrangeInd::f);
 
-    auto BTF = gridVec(GridInd::RHS_BTF);
-
-    BTF.set(p, hand5[0]);
-
-    multSparse(B, f, BTF, GPUConst<Real>::get(2), GPUConst<Real>::get(1), true);
+    multSparse(B, f, p, GPUConst<Real>::get(2), GPUConst<Real>::get(1), true);
     //p <- BT*f+p
 
     auto RHS = gridVec(GridInd::RHS);
-    eds->solve(RHS, BTF, hand5[0]);
+    eds->solve(RHS, p, hand5[0]);
 }
 
 /**
