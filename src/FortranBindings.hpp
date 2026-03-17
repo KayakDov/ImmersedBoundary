@@ -17,6 +17,9 @@
  * i32 = int32_t, i64 = int64_t
  */
 
+//TODO: export a synchronization method into the wrappe and remove synchronization from methods to give caller control over synchronization.
+//TODO: All of these methods currently
+
 namespace ImEq {
 
     template<typename Real, typename Int>
@@ -32,19 +35,19 @@ namespace ImEq {
     void solveImmersedEq(Real *result, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valB) {
         if (!eq<Real, Int>) throw std::runtime_error("The solver is not initialized.  Be sure you're using consistent types.");
         eq<Real, Int>->solve(result, nnzB, rowOffsetsB, colIndsB, valB);
+        cudaDeviceSynchronize();
     }
 
     template<typename Real, typename Int>
     void solveImmersedEq(Real* resultPPrime, Real* resultFPrime, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR, Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real* uStar) {
         if (!eq<Real, Int>) throw std::runtime_error("The solver is not initialized.  Be sure you're using consistent types.");
         eq<Real, Int>->solve(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB,nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
+        cudaDeviceSynchronize();
     }
 
     template<typename Real, typename Int>
     void finalizeImmersedEq() {
-        if (eq<Real, Int>) {
-            eq<Real, Int>.reset(); // Explicitly destroy the solver object
-        }
+        if (eq<Real, Int>) eq<Real, Int>.reset();
     }
 
     extern "C" {
@@ -115,8 +118,9 @@ namespace ImEq {
 }
 
 namespace eigen {
+
     template<typename Real>
-std::unique_ptr<EigenDecompForFortran<Real>> eds = nullptr;
+    std::unique_ptr<EigenDecompForFortran<Real>> eds = nullptr;
 
     template<typename Real>
     void initEigenDecompSolver(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas) {
@@ -129,6 +133,7 @@ std::unique_ptr<EigenDecompForFortran<Real>> eds = nullptr;
         if (!eds<Real>) throw std::runtime_error(
             "The solver is not initialized.  Be sure you're using consistent types.");
         eds<Real>->solve(xHost, bHost);
+        cudaDeviceSynchronize();
     }
 
     template<typename Real>

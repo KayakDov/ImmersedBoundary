@@ -59,8 +59,6 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
 
     imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
 
-
-
     cudaDeviceSynchronize();
 
     std::vector<Real> expectedP1 = {-7.483126, -8.359545, -2.292128, -2.606740, -2.943816, -0.808988};
@@ -177,6 +175,8 @@ TEST(EigenDecomp, ThreeD) {
     x.fill(0, hand3[0]);
 
     x.get(xHost.data(), hand3[0]);
+
+    cudaDeviceSynchronize();
     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], 0, 1e-10);
 
     Event event3[3];
@@ -186,11 +186,15 @@ TEST(EigenDecomp, ThreeD) {
     eds.solve(x, b, hand3[0]);
 
     x.get(xHost.data(), hand3[0]);
+
+    cudaDeviceSynchronize();
     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], i + 1, 1e-10);
 
     L.bandedMult(x, b, &hand3[0]);
     x.fill(0, hand3[0]);
     x.get(xHost.data(), hand3[0]);
+
+    cudaDeviceSynchronize();
     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], 0, 1e-10);
 
     EigenDecompThomas<Real> edt(dim, hand3, delta, event3);
@@ -198,6 +202,8 @@ TEST(EigenDecomp, ThreeD) {
     edt.solve(x, b, hand3[0]);
 
     x.get(xHost.data(), hand3[0]);
+
+    cudaDeviceSynchronize();
     for (size_t i = 0; i < xHost.size(); ++i)
         EXPECT_NEAR(xHost[i], i + 1, 1e-10);
 }
@@ -278,6 +284,7 @@ TEST(BCGDenseTest, ConvergenceValidation) {
     std::vector<Real> actual(n);
     result.get(actual.data(), hand4[0]);
 
+    cudaDeviceSynchronize();
     for (size_t i = 0; i < n; ++i)
         EXPECT_NEAR(actual[i], resultHost[i], 1e-5) << "Mismatch at solution vector index " << i;
 }
