@@ -95,7 +95,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     using Real = double;
     using Int  = int;
 
-    GridDim dim(3, 3, 2);
+    GridDim dim(25, 30, 20);
     Real3d delta(1, 0.5, 2);
     Handle hand;
 
@@ -251,9 +251,9 @@ TEST(BCGDenseTest, ConvergenceValidation) {
     using Real = double;
 
     Handle hand4[4]{};
-    Event events11[11];
+    Event events12[12];
     size_t n = 6;
-    Real tolerance = 1.0e-6;
+    Real tolerance = 1e-6;
     size_t maxIterations = 100;
 
     auto A = SquareMat<Real>::create(n);
@@ -279,9 +279,9 @@ TEST(BCGDenseTest, ConvergenceValidation) {
     auto bHeightX7 = Mat<Real>::create(n, 7);
     auto aX9 = SimpleArray<Real>::create(9, hand4[0]);
 
-    BCGDense<Real>::solve(hand4, A, result, b, events11, &bHeightX7, &aX9, tolerance, maxIterations);
+    BCGDense<Real>::solve(hand4, A, result, b, events12, &bHeightX7, &aX9, tolerance, maxIterations);
 
-    std::vector<Real> actual(n);
+    std::vector<Real> actual(n, 0);
     result.get(actual.data(), hand4[0]);
 
     cudaDeviceSynchronize();

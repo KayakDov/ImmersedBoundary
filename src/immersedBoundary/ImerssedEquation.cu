@@ -102,7 +102,7 @@ ImmersedEq<Real, Int>::ImmersedEq(
     maxSparseOffsets(maxSparseOffsets),
     delta(delta),
     dT(dT),
-    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events11[0]){
+    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events12[0]){
 }
 
 template<typename Real, typename Int>
@@ -121,7 +121,7 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim,
     dim(dim),
     delta(delta),
     dT(Singleton<Real>::create(3/(2 * dT), hand5[0])),
-    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events11[0]){
+    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events12[0]){
 
     this->lagrangeVec(LagrangeInd::f).set(f, hand5[0]);
     this->gridVec(GridInd::p).set(p, hand5[0]);
@@ -303,12 +303,12 @@ void ImmersedEq<Real, Int>::solve(
     velocities.set(uStar, hand5[0]);
     setRHSPPrime(hand5[0]);
 
-    events11[0].record(hand5[0]);
-    events11[0].hold(hand5[1]);
+    events12[0].record(hand5[0]);
+    events12[0].hold(hand5[1]);
     lagrangeVec(LagrangeInd::UGamma).set(UGamma, hand5[1]);
     setRHSFPrime(hand5[1]);
-    events11[1].record(hand5[1]);
-    events11[1].hold(hand5[0]);
+    events12[1].record(hand5[1]);
+    events12[1].hold(hand5[0]);
 
     auto resultDevice = solve(nnzB, rowOffsetsB, colIndsB, valuesB, true);
     resultDevice.get(resultP, hand5[0]);
@@ -347,7 +347,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve() {
     // baseData.result.fillRandom(&hand5[0]);
 
 
-    solverLauncher.launch(*this, events11, result);
+    solverLauncher.launch(*this, events12, result);
 
     return result;
 }

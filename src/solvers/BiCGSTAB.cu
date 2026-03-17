@@ -69,14 +69,14 @@ template<typename T>
 BiCGSTAB<T>::BiCGSTAB(
     const Vec<T> &b,
     Handle* hand4,
-    Event* events11,
+    Event* events12,
     Mat<T> *allocatedBHeightX7,
     Vec<T> *allocated9,
     const T tolerance,
     const size_t maxIterations
 ) : hand4(hand4),
     tolerance(tolerance),
-    alphaRAW(events11[0]), sRAW(events11[1]), hRAW(events11[2]), omegaRAW(events11[3]), rRAW(events11[4]), xRAW(events11[5]), rWAR(events11[6]), tRAW(events11[7]), tsRAW(events11[8]), betaRAW(events11[9]), rhoRAW(events11[10]),
+    alphaRAW(events12[0]), sWAR(events12[1]), hRAW(events12[2]), omegaRAW(events12[3]), rRAW(events12[4]), xRAW(events12[5]), rWAR(events12[6]), tRAW(events12[7]), tsRAW(events12[8]), betaRAW(events12[9]), rhoRAW(events12[10]), sRAW(events12[11]),
     b(b),
     bHeightX7(allocatedBHeightX7 ? *allocatedBHeightX7 : Mat<T>::create(b.size(), 7)),
     r(bHeightX7.col(0)), r_tilde(bHeightX7.col(1)), p(bHeightX7.col(2)), v(bHeightX7.col(3)), s(bHeightX7.col(4)), t(bHeightX7.col(5)), h(bHeightX7.col(6)),
@@ -89,15 +89,15 @@ BiCGSTAB<T>::BiCGSTAB(
     if (!allocatedBHeightX7) bHeightX7.fill(0, hand4[0]);
     if (!allocated9) {
         a9.fill(0, hand4[1]);
-        record(1, {events11[0]});
-        hold(0, {events11[0]});
+        record(1, {events12[0]});
+        hold(0, {events12[0]});
     }
 
 }
 
 template<typename T>
 void BiCGSTAB<T>::preamble(Vec<T>& x) {
-    record(0, {rWAR, xRAW, rhoRAW});//TODO: multithread the preamble.
+    record(0, {rWAR, sRAW, xRAW, rhoRAW});//TODO: multithread the preamble.
 
     set(r, b, 0);
 
@@ -133,15 +133,17 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
         h.add(p, &alpha, hand4 + 1); // h = x + alpha * p
         record(1, {hRAW});
 
-
+        hold(0, {xRAW, sRAW});
         s.setDifference(r, v, GPUConst<T>::get(1), alpha, hand4); // s = r - alpha * v
-        record(0, {sRAW});
+        record(0, {sWAR});
 
-        hold(2, {sRAW});
+        hold(2, {sWAR});
         if (isSmall(s, temp[2], 2)) {
             set(x, h, 1);
             break;
         }
+        record(0, {sRAW});
+
 
         mult(s, t); // t = A * s
         record(0, {tRAW});
@@ -156,6 +158,7 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
 
         hold(1, {omegaRAW});
         x.setSum(h, s, GPUConst<T>::get(1), omega, hand4 + 1); // x = h + omega * s
+        record(1, {xRAW});
 
         hold(0, {rWAR});
         r.setDifference(s, t, GPUConst<T>::get(1), omega, hand4); // r = s - omega * t
@@ -179,7 +182,7 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
     if (i >= maxIterations)
         std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
 
-    synch();
+    synchAll();
 
     const TimePoint end = std::chrono::steady_clock::now();
     const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
@@ -270,85 +273,3 @@ template class BCGBanded<float>;
 
 template class BCGDense<double>;
 template class BCGDense<float>;
-
-
-
-//multi streamed version.
-
-
-//
-//
-// synchAll();
-//     record(0, {xRAW});
-//     TimePoint start = std::chrono::steady_clock::now();
-//
-//     auto& x = initGuess;
-//     preamble(x);
-//
-//     size_t numIterations = 0;
-//     for (; numIterations < maxIterations; numIterations++) {
-//         mult(p, v); // v = A * p
-//
-//         r_tilde.mult(v, alpha, hand4);
-//         alpha.EBEPow(rho, Singleton<T>::MINUS_ONE, hand4[0]); //alpha = rho / (r_tilde * v)
-//         record(0, {alphaRAW});
-//
-//
-//         wait(1, {alphaRAW});
-//
-//         set(h, x, 1);
-//
-//         h.add(p, &alpha, hand4 + 1); // h = x + alpha * p
-//         record(1, {hRAW});
-//
-//         wait(0, {xRAW});
-//         s.setDifference(r, v, Singleton<T>::ONE, alpha, hand4); // s = r - alpha * v
-//         record(0, {sRAW});
-//
-//         wait(2, {sRAW});
-//         if (isSmall(s, temp[2], 2)) {
-//             wait(2, {hRAW});
-//             set(x, h, 2);
-//             break;
-//         }
-//
-//         mult(s, t); // t = A * s
-//
-//         t.mult(s, temp[3], hand4 + 3);
-//         record(3, {prodTSRAW});
-//
-//         t.mult(t, omega, hand4);
-//         wait(0, {prodTSRAW});
-//         omega.EBEPow(temp[3], Singleton<T>::MINUS_ONE, hand4[0]); //omega = t * s / t * t;
-//
-//         record(0, {omegaRAW});
-//
-//         wait(1, {omegaRAW});
-//         x.setSum(h, s, Singleton<T>::ONE, omega, hand4 + 1); // x = h + omega * s
-//         record(1, {xRAW});
-//
-//
-//         r.setDifference(s, t, Singleton<T>::ONE, omega, hand4); // r = s - omega * t
-//         record(0, {rRAW});
-//
-//         wait(2, {xRAW, rRAW});
-//
-//         if (isSmall(r, temp[2], 2)) break;
-//
-//         r_tilde.mult(r, rho_new, hand4);
-//
-//         beta.setProductOfQuotients(rho_new, rho, alpha, omega, hand4[0]); // beta = (rho_new / rho) * (alpha / omega);
-//
-//         set(rho, rho_new, 0);
-//
-//         wait(0, {hRAW});
-//         pUpdate(0); // p = r + beta(p - omega * v)
-//     }
-//
-//     if (numIterations >= maxIterations) std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
-//     synchAll();
-//
-//     const TimePoint end = std::chrono::steady_clock::now();
-//     const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
-//     // std::cout<< "BiCGSTAB #iterations = " << numIterations << std::endl;
-//     // std::cout << time << ", ";

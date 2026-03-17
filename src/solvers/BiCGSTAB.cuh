@@ -38,7 +38,7 @@ protected:
     Handle* hand4;
 private:
     const T tolerance;
-    Event &alphaRAW, &sRAW, &hRAW, &omegaRAW, &rRAW, &xRAW, &rWAR, &tRAW, &tsRAW, &betaRAW, &rhoRAW;
+    Event &alphaRAW, &sWAR, &sRAW, &hRAW, &omegaRAW, &rRAW, &xRAW, &rWAR, &tRAW, &tsRAW, &betaRAW, &rhoRAW;
     const Vec<T> b;
     Mat<T> bHeightX7;
     SimpleArray<T> r, r_tilde, p, v, s, t, h;
@@ -112,7 +112,7 @@ public:
     explicit BiCGSTAB(
         const Vec<T> &b,
         Handle* hand4,
-        Event* events11 = nullptr,
+        Event* events12 = nullptr,
         Mat<T> *allocatedBHeightX7 = nullptr,
         Vec<T> *allocated9 = nullptr,
         T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),

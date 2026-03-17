@@ -116,7 +116,7 @@ class ImmersedEq {
 
     mutable Handle hand5[5]{}; ///< Array of 5 CUDA Handles for multi-streaming.
     mutable std::unique_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr; ///< A buffer space for sparse vector multiplication.  The space grows as needed.
-    Event events11[11]{}; ///< CUDA events for fine-grained synchronization.
+    Event events12[12]{}; ///< CUDA events for fine-grained synchronization.
 
     const GridDim dim; ///< Dimensions of the Eulerian grid.
 
@@ -198,7 +198,7 @@ class ImmersedEq {
     /**
      * used for eigen decomposition.
      */
-    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(dim, gridVec(GridInd::EDS), &hand5[0], delta, events11);
+    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(dim, gridVec(GridInd::EDS), &hand5[0], delta, events12);
 
     /**
      * @brief Computes the Left-Hand Side (LHS) operation: $x = A \cdot b$.
