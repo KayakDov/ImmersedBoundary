@@ -76,7 +76,7 @@ BiCGSTAB<T>::BiCGSTAB(
     const size_t maxIterations
 ) : hand4(hand4),
     tolerance(tolerance),
-    alphaRAW(events12[0]), sWAR(events12[1]), hRAW(events12[2]), omegaRAW(events12[3]), rRAW(events12[4]), xRAW(events12[5]), rWAR(events12[6]), tRAW(events12[7]), tsRAW(events12[8]), betaRAW(events12[9]), rhoRAW(events12[10]), sRAW(events12[11]),
+    alphaRAW(events12[0]), sRAW(events12[1]), pWAR(events12[2]), omegaRAW(events12[3]), rRAW(events12[4]), xRAW(events12[5]), rWAR(events12[6]), tRAW(events12[7]), tsRAW(events12[8]), betaRAW(events12[9]), rhoRAW(events12[10]), sWAR(events12[11]),
     b(b),
     bHeightX7(allocatedBHeightX7 ? *allocatedBHeightX7 : Mat<T>::create(b.size(), 7)),
     r(bHeightX7.col(0)), r_tilde(bHeightX7.col(1)), p(bHeightX7.col(2)), v(bHeightX7.col(3)), s(bHeightX7.col(4)), t(bHeightX7.col(5)), h(bHeightX7.col(6)),
@@ -97,7 +97,7 @@ BiCGSTAB<T>::BiCGSTAB(
 
 template<typename T>
 void BiCGSTAB<T>::preamble(Vec<T>& x) {
-    record(0, {rWAR, sRAW, xRAW, rhoRAW});//TODO: multithread the preamble.
+    record(0, {rWAR, sWAR, xRAW, rhoRAW});//TODO: multithread the preamble.
 
     set(r, b, 0);
 
@@ -131,18 +131,18 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
 
         set(h, x, 1);
         h.add(p, &alpha, hand4 + 1); // h = x + alpha * p
-        record(1, {hRAW});
+        record(1, {pWAR});
 
-        hold(0, {xRAW, sRAW});
+        hold(0, {xRAW, sWAR});
         s.setDifference(r, v, GPUConst<T>::get(1), alpha, hand4); // s = r - alpha * v
-        record(0, {sWAR});
+        record(0, {sRAW});
 
-        hold(2, {sWAR});
+        hold(2, {sRAW});
         if (isSmall(s, temp[2], 2)) {
             set(x, h, 1);
             break;
         }
-        record(0, {sRAW});
+        record(0, {sWAR});
 
 
         mult(s, t); // t = A * s
@@ -176,7 +176,7 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
         set(rho, rho_new, 3);
         record(3, {rhoRAW});
 
-        hold(0, {hRAW});
+        hold(0, {pWAR});
         pUpdate(); // p = p - beta * omega * v
     }
     if (i >= maxIterations)

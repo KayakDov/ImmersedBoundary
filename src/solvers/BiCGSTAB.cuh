@@ -38,7 +38,7 @@ protected:
     Handle* hand4;
 private:
     const T tolerance;
-    Event &alphaRAW, &sWAR, &sRAW, &hRAW, &omegaRAW, &rRAW, &xRAW, &rWAR, &tRAW, &tsRAW, &betaRAW, &rhoRAW;
+    Event &alphaRAW, &sRAW, &sWAR, &pWAR, &omegaRAW, &rRAW, &xRAW, &rWAR, &tRAW, &tsRAW, &betaRAW, &rhoRAW;
     const Vec<T> b;
     Mat<T> bHeightX7;
     SimpleArray<T> r, r_tilde, p, v, s, t, h;
