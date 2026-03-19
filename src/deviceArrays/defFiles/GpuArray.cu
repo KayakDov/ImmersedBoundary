@@ -40,10 +40,15 @@ __global__ void fill2dKernelT(DeviceData2d<T> a, const T val){
 template<typename T>
 void GpuArray<T>::fill(T val, cudaStream_t stream) {
 
-    KernelPrep kp = kernelPrep(true);
+    if (val == static_cast<T>(0) || sizeof(T) == 1)
+        cudaMemset2DAsync(data(), _ld * sizeof(T), val, this->_rows * sizeof(T), this->_cols, stream);
+    else {
+        KernelPrep kp = kernelPrep(_rows > _cols);
 
-    fill2dKernelT<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), val);
-    CHECK_CUDA_ERROR(cudaGetLastError());
+        if (_rows > _cols) fill2dKernelT<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), val);
+        else fill2dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), val);
+        CHECK_CUDA_ERROR(cudaGetLastError());
+    }
 }
 
 template<typename T>

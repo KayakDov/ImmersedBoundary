@@ -193,7 +193,7 @@ __global__ void fill1dKernel(DeviceData1d<T> a, const T val) {
 template<typename T>
 void Vec<T>::fill(T val, cudaStream_t stream) {
     if (this->_ld == 1 && (val == static_cast<T>(0) || sizeof(T) == 1))
-        cudaMemset(this->toKernel1d(), val, size() * sizeof(T));
+        cudaMemsetAsync(this->toKernel1d(), val, size() * sizeof(T), stream);
     else {
         KernelPrep kp = kernelPrep();
         fill1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel1d(), val);
