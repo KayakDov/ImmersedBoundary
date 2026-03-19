@@ -29,7 +29,7 @@ size_t GpuArray<T>::bytes() const {
 
 template <typename T>
 __global__ void fill2dKernel(DeviceData2d<T> a, const T val){
-    if (const GridInd2dT ind; ind < a) a[ind] = val;
+    if (const GridInd2d ind; ind < a) a[ind] = val;
 }
 
 template <typename T>
@@ -42,7 +42,7 @@ void GpuArray<T>::fill(T val, cudaStream_t stream) {
 
     KernelPrep kp = kernelPrep(true);
 
-    fill2dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), val);
+    fill2dKernelT<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), val);
     CHECK_CUDA_ERROR(cudaGetLastError());
 }
 
