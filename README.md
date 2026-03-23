@@ -1,4 +1,4 @@
-# User Guide: Immersed Boundary Method (IBM) CUDA Solver
+# User Guide: Eigen Decomposition and Immersed Boundary Method (IBM) CUDA Solver
 
 This library provides a high-performance solver for the following system:
 
