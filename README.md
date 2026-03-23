@@ -1,10 +1,10 @@
 # User Guide: Eigen Decomposition and Immersed Boundary Method (IBM) CUDA Solver
 
-This library provides a high-performance solver for the following system:
+This library provides solver for the following system:
 
 $$(L + 2 B^T B)x = B^T f + p$$
 
-It uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion ($L^{-1}$) and BiCGSTAB to solve the coupled system. Additionally, the library exposes standalone Direct Eigendecomposition solvers for the discrete Poisson equation.
+For the later, it uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion ($L^{-1}$) and BiCGSTAB to solve the coupled system. Additionally, the library exposes standalone Direct Eigendecomposition solvers for the discrete Poisson equation with an optional Thomas variant.
 
 ---
 
@@ -22,7 +22,7 @@ From the project root directory:
 2. `cmake ..`
 3. `make -j$(nproc)`
 
-> Output: Look for `libCudaBandedLib.a` in the build folder. This is the static library you will link against.
+> Output: Look for `libCudaBandedLib.a` in the build folder. This is the static library you will link against from Fortran.
 
 ---
 
