@@ -17,10 +17,6 @@
 #include <string>
 #include <cstdint>
 
-#include "solvers/ADIThomas.cuh"
-#include "solvers/Thomas.cuh"
-
-
 //TODO: ensure all cuda operations that use 0 to clear the space also clear nans.
 class LoadBHost {
 public:
