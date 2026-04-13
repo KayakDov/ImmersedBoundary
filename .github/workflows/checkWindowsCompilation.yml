@@ -23,8 +23,8 @@ jobs:
     - name: Install Intel oneAPI (Fortran)
       uses: fortran-lang/setup-fortran@v1
       with:
-        compiler: intel-classic # or 'intel' for the newer ifx
-        version: 'latest'
+        compiler: intel-classic
+        version: '2021.12' 
 
     - name: Configure CMake
       # We explicitly tell CMake to use the Intel Fortran compiler
