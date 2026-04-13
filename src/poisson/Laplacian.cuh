@@ -10,7 +10,7 @@
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;
 
-struct AdjacencyInd {//TODO: Account for distance between grid points not equal to 1.
+struct AdjacencyInd {
     /**
      * The column in the banded matrix.
      */
@@ -23,19 +23,47 @@ struct AdjacencyInd {//TODO: Account for distance between grid points not equal 
     }
 };
 
-template<typename T>
-class LaplacianNodeCentered {
-    const std::array<AdjacencyInd, numDiagonals3d> adjInds; //here, up, down, left, right, back, front;
-    const GridDim dim;
+/**
+ * How the adjacent grid cells are stored in the laplacian. *
+ */
+class AdjacencyPatern {
+public:
+
+    AdjacencyInd here, up, down, left, right, front, back;
+    /**
+     *
+     * @param dim The dimensions of the grid.
+     */
+    __host__ __device__ AdjacencyPatern(GridDim dim);
 
     void loadMapRowToDiag(Vec<int32_t> diags, cudaStream_t stream);
+};
+
+
+/**
+ * Types of boundaries.
+ */
+enum class BCType {Neumann, Dirichlet, NA};
+struct BoundaryConfig {
+    BCType left, right, top, bottom, front, back;
+    __host__ __device__ BoundaryConfig(BCType left, BCType right, BCType top, BCType bottom, BCType front = BCType::NA, BCType back = BCType::NA);
+};
+
+
+template<typename T>
+class Laplacian {
+protected:
+    const AdjacencyPatern adjacncies;
+    const GridDim dim;
+    const Real3d delta;
+    const BoundaryConfig config;
 
 public:
     /**
      * Creates the LHS matrix of the linear system used for solving the Poisson equation.
      * @param dim The dimensions of the Poisson grid.
      */
-    LaplacianNodeCentered(GridDim dim);
+    Laplacian(GridDim dim, Real3d delta = Real3d(1.0, 1.0, 1.0));
 
     /**
      * Sets the values into the laplacian
@@ -46,7 +74,23 @@ public:
      * If the grid is 2d there should be 5 values here, if the grid is 3d there should be 7.
      * @return
      */
-    BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices, const Real3d& delta = Real3d(1, 1, 1));
+    virtual BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) = 0;
+
+    /**
+     * Creates a vector that should be added to the rhs when solving L x = rhs, to account for the boundary conditions.
+     * @param stream
+     * @param rhs An empty vector that will be overwritten with the modifications that should be made to the rhs.
+     */
+    virtual void setRHS(cudaStream_t stream, Vec<T> &rhs) const = 0;
+
+};
+
+template<typename T>
+class LaplacianNodeCentered : public Laplacian<T> {
+public:
+    LaplacianNodeCentered(GridDim dim, Real3d delta = Real3d(1.0, 1.0, 1.0));
+    /** @inheritdoc */
+    BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;
 
     /**
      * Allocates memory for, and creates, a laplacian.
@@ -62,6 +106,26 @@ public:
      * @param hand
      */
     static void printL(const GridDim &dim, Handle &hand, Real3d delta = Real3d(1, 1, 1));
+
+    /** @inheritdoc */
+    void setRHS(cudaStream_t stream, Vec<T> &rhs) const override;
+};
+template<typename T>
+class LaplacianStagared : public Laplacian<T> {
+
+public:
+    /**
+     *
+     * @param dim The number of dimensions of the grid.
+     * @param delta The space between nodes of the grid.  Note that only have this space exists between nodes and
+     * boundary conditions.
+     */
+    LaplacianStagared(GridDim dim, Real3d delta = Real3d(1.0, 1.0, 1.0));
+
+    /** @inheritdoc */
+    BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;
+    /** @inheritdoc */
+    void setRHS(cudaStream_t stream, Vec<T> &rhs) const override;
 };
 
 #endif //CUDABANDED_POISSONLHS_H

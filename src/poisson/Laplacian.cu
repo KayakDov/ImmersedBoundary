@@ -2,7 +2,10 @@
 // Created by usr on 12/24/25.
 //
 
-#include "poisson/LaplacianNodeCentered.cuh"
+#include "poisson/Laplacian.cuh"
+
+#include <vector>
+
 #include "deviceArrays/headers/Support/Streamable.h"
 
 /**
@@ -51,7 +54,7 @@ public:
  * @tparam T
  * @param a The A matrix.
  * @param ind The index of the value to be set.
- * @param g The dimesnsions of the grid.
+ * @param dim The dimesnsions of the grid.
  * @param up
  * @param down
  * @param left
@@ -59,17 +62,13 @@ public:
  * @param set0
  */
 template<typename T>
-__device__ void setA2d(DeviceData2d<T> a,
-                       const GridInd3d &ind,
-                       const GridDim &g,
-                       const AdjacencyInd &up, const AdjacencyInd &down,
-                       const AdjacencyInd &left, const AdjacencyInd &right, Set0<T>& set0) {
+__device__ void setA2d(DeviceData2d<T> a, const GridInd3d &ind, const GridDim &dim, const AdjacencyPatern &ap, Set0<T>& set0) {
 
-    if (ind.row == 0) set0(up);
-    else if (ind.row == g.rows - 1) set0(down);
+    if (ind.row == 0) set0(ap.up);
+    else if (ind.row == dim.rows - 1) set0(ap.down);
 
-    if (ind.col == 0) set0(left);
-    else if (ind.col == g.cols - 1) set0(right);
+    if (ind.col == 0) set0(ap.left);
+    else if (ind.col == dim.cols - 1) set0(ap.right);
 }
 
 /**
@@ -84,17 +83,14 @@ __device__ void setA2d(DeviceData2d<T> a,
  *
  */
 template<typename T>
-__global__ void setAKernel2d(DeviceData2d<T> a,
-                             const GridDim g,
-                             const AdjacencyInd here, const AdjacencyInd up, const AdjacencyInd down,
-                             const AdjacencyInd left, const AdjacencyInd right) {
+__global__ void setAKernel2d(DeviceData2d<T> a, const GridDim g, const AdjacencyPatern ap) {
     const GridInd3d ind;
 
     if (ind >= g) return;
     const size_t idGrid = g[ind];
     Set0<T> set0(a, idGrid);
 
-    setA2d(a, ind, g, up, down, left, right, set0);
+    setA2d(a, ind, g, ap, set0);
 }
 
 /**
@@ -109,12 +105,7 @@ __global__ void setAKernel2d(DeviceData2d<T> a,
  *
  */
 template<typename T>
-__global__ void setAKernel3d(DeviceData2d<T> a,
-                             const GridDim g,
-                             const AdjacencyInd here, const AdjacencyInd up, const AdjacencyInd down,
-                             const AdjacencyInd left, const AdjacencyInd right, const AdjacencyInd front,
-                             const AdjacencyInd back
-) {
+__global__ void setAKernel3d(DeviceData2d<T> a, const GridDim g, AdjacencyPatern ap) {
     const GridInd3d ind;
 
     if (ind >= g) return;
@@ -122,31 +113,29 @@ __global__ void setAKernel3d(DeviceData2d<T> a,
     const size_t idGrid = g[ind];
     Set0<T> set0(a, idGrid);
 
-    setA2d(a, ind, g, up, down, left, right, set0);
+    setA2d(a, ind, g, ap, set0);
 
-    if (ind.layer == 0) set0(front);
-    else if (ind.layer == g.layers - 1) set0(back);
+    if (ind.layer == 0) set0(ap.front);
+    else if (ind.layer == g.layers - 1) set0(ap.back);
+}
+
+AdjacencyPatern::AdjacencyPatern(GridDim dim):
+    here(0, 0),
+    up(1, -1),
+    down(2, 1),
+    left(3, -dim.rows * dim.layers),
+    right(4, dim.rows * dim.layers),
+    front (5, -dim.rows),
+    back(6, dim.rows)
+    {
+
 }
 
 template<typename T>
-LaplacianNodeCentered<T>::LaplacianNodeCentered(GridDim dim) :
+Laplacian<T>::Laplacian(GridDim dim, Real3d delta) :
     dim(dim),
-    adjInds{
-        AdjacencyInd(0, 0),
-        AdjacencyInd(1, -1),
-        AdjacencyInd(2, 1),
-        AdjacencyInd(3, -dim.rows * dim.layers),
-        AdjacencyInd(4, dim.rows * dim.layers),
-        AdjacencyInd(5, -dim.rows),
-        AdjacencyInd(6, dim.rows)
-    } {
-}
-
-template<typename T>
-void LaplacianNodeCentered<T>::loadMapRowToDiag(Vec<int32_t> diags, const cudaStream_t stream) {
-    int32_t diagsCpu[numDiagonals3d];
-    for (size_t i = 0; i < numDiagonals3d; i++) diagsCpu[adjInds[i].col] = adjInds[i].diag;
-    diags.set(diagsCpu, stream);
+    delta(delta),
+    adjacncies(dim) {
 }
 
 template <typename T>
@@ -155,30 +144,52 @@ T invSq(T x) {
 }
 
 template<typename T>
-BandedMat<T> LaplacianNodeCentered<T>::setL(cudaStream_t stream, Mat<T> &preAlocatedForA,
-                                        Vec<int32_t> &preAlocatedForIndices, const Real3d& delta) {
+LaplacianNodeCentered<T>::LaplacianNodeCentered(GridDim dim, Real3d delta) : Laplacian<T>(dim, delta) {
+}
 
-    T denDx2 = invSq(delta.x), denDy2 = invSq(delta.y), denDz2 = invSq(delta.z);
+void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> diags, const cudaStream_t stream) {
+    std::vector<int32_t> diagsCpu(diags.size(), 0);
+    diagsCpu[here.col] = here.diag;
+    diagsCpu[up.col] = up.diag;
+    diagsCpu[down.col] = down.diag;
+    diagsCpu[left.col] = left.diag;
+    diagsCpu[right.col] = right.diag;
+    if (diagsCpu.size() > numDiagonals2d) {
+        diagsCpu[front.col] = front.diag;
+        diagsCpu[back.col] = back.diag;
+    }
+    diags.set(diagsCpu.data(), stream);
+}
 
-    preAlocatedForA.col(0).fill(-2*(denDx2 + denDy2 + (dim.layers > 1 ? denDz2 : 0)), stream);
+BoundaryConfig::BoundaryConfig(BCType left, BCType right, BCType top, BCType bottom, BCType front, BCType back):
+    left(left), right(right), top(top), bottom(bottom), front(front), back(back) {
+}
+
+
+template<typename T>
+BandedMat<T> LaplacianNodeCentered<T>::setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) {
+
+    T denDx2 = invSq(this->delta.x), denDy2 = invSq(this->delta.y), denDz2 = invSq(this->delta.z);
+
+    preAlocatedForA.col(0).fill(-2*(denDx2 + denDy2 + (this->dim.layers > 1 ? denDz2 : 0)), stream);
 
     preAlocatedForA.subMat(0,1,preAlocatedForA._rows, 2).fill(denDy2, stream);
     preAlocatedForA.subMat(0,3,preAlocatedForA._rows, 2).fill(denDx2, stream);
     if (this->dim.layers > 1) preAlocatedForA.subMat(0,5,preAlocatedForA._rows, 2).fill(denDz2, stream);
 
-    const KernelPrep kp = dim.kernelPrep();
-    if (dim.layers > 1) setAKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
-        preAlocatedForA.toKernel2d(), dim,
-        adjInds[0], adjInds[1], adjInds[2], adjInds[3], adjInds[4], adjInds[5], adjInds[6]
+    const KernelPrep kp = this->dim.kernelPrep();
+    if (this->dim.layers > 1) setAKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
+        preAlocatedForA.toKernel2d(), this->dim,
+        this->adjacncies
     );
     else setAKernel2d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
-        preAlocatedForA.toKernel2d(), dim,
-        adjInds[0], adjInds[1], adjInds[2], adjInds[3], adjInds[4]
+        preAlocatedForA.toKernel2d(), this->dim,
+        this->adjacncies
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());
 
-    loadMapRowToDiag(preAlocatedForIndices, stream);
+    this->adjacncies.loadMapRowToDiag(preAlocatedForIndices, stream);
 
     return BandedMat<T>(preAlocatedForA, preAlocatedForIndices);
 }
@@ -186,10 +197,10 @@ BandedMat<T> LaplacianNodeCentered<T>::setL(cudaStream_t stream, Mat<T> &preAloc
 
 template<typename T>
 BandedMat<T> LaplacianNodeCentered<T>::L(const GridDim &dim, Handle &hand, Real3d delta) {
-    size_t numInds = 7;
-    auto spaceForA = Mat<T>::create(dim.size(), numInds);
-    auto inds = SimpleArray<int32_t>::create(numInds, hand);
-    auto A = LaplacianNodeCentered<T>(dim).setL(hand, spaceForA, inds, delta);
+
+    auto spaceForA = Mat<T>::create(dim.size(), numDiagonals3d);
+    auto inds = SimpleArray<int32_t>::create(numDiagonals3d, hand);
+    auto A = LaplacianNodeCentered<T>(dim, delta).setL(hand, spaceForA, inds);
     return A;
 }
 
@@ -203,5 +214,19 @@ void LaplacianNodeCentered<T>::printL(const GridDim &dim, Handle &hand, Real3d d
     std::cout << "L = \n" << GpuOut<T>(aDense, hand) << std::endl;
 }
 
+template<typename T>
+LaplacianStagared<T>::LaplacianStagared(GridDim dim, Real3d delta) : Laplacian<T>(dim, delta) {}
+
+template<typename T>
+BandedMat<T> LaplacianStagared<T>::setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) {
+
+}
+
+template class Laplacian<float>;
+template class Laplacian<double>;
+
 template class LaplacianNodeCentered<float>;
 template class LaplacianNodeCentered<double>;
+
+template class LaplacianStagared<float>;
+template class LaplacianStagared<double>;

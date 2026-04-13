@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "EigenDecomp2d.h"
-#include "EigenDecompThomas.cuh"
-#include "ToeplitzLaplacian.cuh"
-#include "../src/solvers/EigenDecomp/EigenDecomp3d.cuh"
+#include "solvers/EigenDecomp/EigenDecomp2d.h"
+#include "solvers/EigenDecomp/EigenDecompThomas.cuh"
+#include "poisson/Laplacian.cuh"
+#include "solvers/EigenDecomp/EigenDecomp3d.cuh"
 
 #include "immersedBoundary/ImerssedEquation.h"
 
@@ -112,7 +112,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     auto x = SimpleArray<Real>::create(dim.size(), hand);
     x.set(xHost.data(), hand);
 
-    auto L = ToeplitzLaplacian<Real>::L(dim, hand, delta);
+    auto L = LaplacianNodeCentered<Real>::L(dim, hand, delta);
 
     auto LDense = SquareMat<Real>::create(dim.size());
     L.getDense(LDense, &hand);
@@ -165,7 +165,7 @@ TEST(EigenDecomp, ThreeD) {
     std::vector<Real> xHost = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     x.set(xHost.data(), hand3[0]);
 
-    auto L = ToeplitzLaplacian<Real>::L(dim, hand3[0], delta);
+    auto L = LaplacianNodeCentered<Real>::L(dim, hand3[0], delta);
 
     auto b = SimpleArray<Real>::create(12, hand3[0]);
     b.fill(0, hand3[0]);
@@ -224,7 +224,7 @@ TEST(EigenDecomp, TwoD) {
     std::vector<Real> xHost = {1, 2, 3, 4, 5, 6};
     x.set(xHost.data(), hand2[0]);
 
-    auto L = ToeplitzLaplacian<Real>::L(dim, hand2[0], delta);
+    auto L = LaplacianNodeCentered<Real>::L(dim, hand2[0], delta);
 
     auto b = SimpleArray<Real>::create(dim.size(), hand2[0]);
     b.fill(0, hand2[0]);

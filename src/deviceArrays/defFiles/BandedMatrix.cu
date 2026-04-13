@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "BiCGSTAB.cuh"
+#include "solvers/BiCGSTAB.cuh"
 #include "../headers/sparse/BandedMat.h"
 #include "../headers/KernelSupport.cuh"
 #include "../headers/Singleton.h"

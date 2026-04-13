@@ -4,7 +4,7 @@
 
 #include "../headers/sparse/SparseCOO.h"
 
-#include "sparse/SparseCSR.h"
+#include "deviceArrays//headers/sparse/SparseCSR.h"
 
 // row pointers is offsets,
 // col pointers is inds

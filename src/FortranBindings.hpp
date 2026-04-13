@@ -3,10 +3,9 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "EigenDecomp2d.h"
-#include "EigenDecomp3d.cuh"
-#include "EigenDecompForFortran.h"
-#include "EigenDecompThomas.cuh"
+
+
+#include "solvers/EigenDecomp/EigenDecompForFortran.h"
 #include "immersedBoundary/ImerssedEquation.h"
 
 /**

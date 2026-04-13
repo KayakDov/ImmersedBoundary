@@ -42,7 +42,6 @@ template<typename T>
 __global__ void eigenMatLKernel(DeviceData2d<T> eVecs, const T den) {
     if (const GridInd2d ind; ind < eVecs)
         eVecs[ind] = std::sqrt(2 * den) * std::sin((ind.col + 1) * (ind.row + 1) * PI<T> * den);
-
 }
 
 /**

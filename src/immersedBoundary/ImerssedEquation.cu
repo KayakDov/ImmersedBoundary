@@ -1,9 +1,7 @@
 #include "ImerssedEquation.h"
 
-#include "../deviceArrays/headers/Support/Streamable.h"
-#include "../solvers/EigenDecomp/EigenDecompSolver.h"
+#include "solvers/EigenDecomp/EigenDecompSolver.h"
 #include "solvers/Event.h"
-#include <span>
 
 #include "solvers/EigenDecomp/EigenDecomp2d.h"
 #include "solvers/EigenDecomp/EigenDecomp3d.cuh"

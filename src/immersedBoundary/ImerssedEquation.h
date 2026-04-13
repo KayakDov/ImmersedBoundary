@@ -10,7 +10,7 @@
 #define CUDABANDED_YURIFILEREADER_H
 #include <fstream>
 
-#include "sparse/SparseCSR.h"
+#include "deviceArrays/headers/sparse/SparseCSR.h"
 #include "../deviceArrays/headers/sparse/SparseCSC.cuh"
 #include "solvers/BiCGSTAB.cuh"
 #include "../solvers/EigenDecomp/EigenDecompSolver.h"

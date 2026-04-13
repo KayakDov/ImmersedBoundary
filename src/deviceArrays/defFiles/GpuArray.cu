@@ -12,7 +12,7 @@
 #include <cuda_runtime_api.h>
 #include <fstream>
 
-#include "Support/Streamable.h"
+#include "deviceArrays//headers/Support/Streamable.h"
 
 
 template<typename T>

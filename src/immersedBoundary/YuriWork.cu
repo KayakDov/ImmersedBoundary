@@ -7,7 +7,7 @@
 
 #include "FortranBindings.hpp"
 #include "../deviceArrays/headers/sparse/SparseCOO.h"
-#include "ToeplitzLaplacian.cuh"
+#include "poisson/Laplacian.cuh"
 #include "../solvers/EigenDecomp/EigenDecompSolver.h"
 #include "solvers/BiCGSTAB.cuh"
 
@@ -100,7 +100,7 @@ void loadYuriData() {
     std::vector<int32_t> bRowOffsets(csrB.offsets.size());
     csrB.offsets.get(bRowOffsets.data(), hand);
 
-    auto A = ToeplitzLaplacian<Real>::L(dim, hand);
+    auto A = Laplacian<Real>::L(dim, hand);
 
     LoadRHSHost rhs;
 

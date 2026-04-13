@@ -2,41 +2,59 @@ cmake_minimum_required(VERSION 3.18)
 project(FortranCudaProject LANGUAGES Fortran CXX)
 
 # -----------------------------
-# Paths
+# 1. Find Dependencies
 # -----------------------------
-set(BASE_LIB_DIR "/home/usr/Documents/TelAvivU/cmake-build-debug")
-set(CUDA_LIB "${BASE_LIB_DIR}/libCudaBandedLib.a")
-set(FORTRAN_MODULE_DIR "${BASE_LIB_DIR}/modules")
-
-# CUDA install
-set(CUDA_ROOT "/usr/local/cuda")
-set(CUDA_LIB_DIR "${CUDA_ROOT}/lib64")
-set(CUDA_INCLUDE_DIR "${CUDA_ROOT}/include")
+find_package(CUDAToolkit REQUIRED)
 
 # -----------------------------
-# Sources and modules
+# 2. Paths & Library Discovery
 # -----------------------------
-set(FORTRAN_SOURCES main.f90)
-set(CMAKE_Fortran_MODULE_DIRECTORY ${FORTRAN_MODULE_DIR})
+# Default to the CLion/Standard build folder, but allow override
+set(DEP_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cmake-build-debug" CACHE PATH "Path to CudaBandedLib")
 
-add_executable(fortran_app ${FORTRAN_SOURCES})
+find_library(CUDA_LIB
+        NAMES CudaBandedLib
+        PATHS ${DEP_LIB_DIR}
+        NO_DEFAULT_PATH
+)
+
+# If the library isn't found, stop early with a helpful message
+if(NOT CUDA_LIB)
+    message(FATAL_ERROR "CudaBandedLib not found! Please set DEP_LIB_DIR to the folder containing the library.")
+endif()
+
+set(FORTRAN_MODULE_DIR "${DEP_LIB_DIR}/modules")
+
+# -----------------------------
+# 3. Sources and Executable
+# -----------------------------
+add_executable(fortran_app main.f90)
 
 target_include_directories(fortran_app PRIVATE
         ${FORTRAN_MODULE_DIR}
-        ${CUDA_INCLUDE_DIR}        # CUDA headers
+        ${CUDAToolkit_INCLUDE_DIRS}
 )
 
 # -----------------------------
-# Link libraries
+# 4. Link libraries
 # -----------------------------
 target_link_libraries(fortran_app PRIVATE
-        ${CUDA_LIB}                # your static CUDA library
-        stdc++                     # C++ standard library
-        ${CUDA_LIB_DIR}/libcudart.so
-        ${CUDA_LIB_DIR}/libcusolver.so
-        ${CUDA_LIB_DIR}/libcublas.so
-        ${CUDA_LIB_DIR}/libcusparse.so
+        ${CUDA_LIB}
+        CUDA::cublas
+        CUDA::cusolver
+        CUDA::cusparse
+        CUDA::cudart
 )
 
-# Ensure C++ linker is used for CUDA objects
-set_target_properties(fortran_app PROPERTIES LINKER_LANGUAGE CXX)
+if(NOT MSVC)
+    target_link_libraries(fortran_app PRIVATE stdc++)
+endif()
+
+# -----------------------------
+# 5. Target Properties
+# -----------------------------
+set_target_properties(fortran_app PROPERTIES
+        LINKER_LANGUAGE CXX
+        # Required if your library has internal device-code dependencies
+        CUDA_RESOLVE_DEVICE_SYMBOLS ON
+)

@@ -40,7 +40,7 @@ For a complete working example of both the Immersed Boundary and the Direct Eige
 ---
 
 ## 3. Direct Eigendecomposition (Standalone)
-For problems requiring a direct solution to $L x = b$, the library provides an optimized Eigendecomposition solver. 
+For problems requiring a direct solution to $L x = b$, the library provides an optimized Eigendecomposition solver.
 
 ### Thomas Optimization
 The solver includes an optimized "Thomas" variant for the 1D tridiagonal sub-problems. This can be toggled via the `thomas` logical flag during initialization.
@@ -63,7 +63,7 @@ You must use `iso_c_binding` types to ensure Fortran memory layout matches the G
 
 ---
 
-## 5. Resource Management 
+## 5. Resource Management
 The solver uses a persistent state on the GPU. Failing to release this state before the Fortran program terminates will result in a `SIGABRT` or a CUDA driver error.
 
 | Routine                         | Purpose                                  |
@@ -98,6 +98,24 @@ Executes the iterative solver for a specific state of CSR matrix $B$ or CSC of $
 | offsetsB    | integer array | Sparse row offsets (MUST BE 0-BASED). |
 | indsB       | integer array | Sparse column indices (MUST BE 0-BASED). |
 | valuesB     | real array | Non-zero values for matrix $B$. |
+
+### Solve Primes Routine (`solve_immersed_eq_primes_*`)
+Executes the iterative solver for the coupled Pressure ($P'$) and Force ($F'$) system.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| resultPPrime | real array | Output: Array overwritten by $P'$. |
+| resultFPrime | real array | Output: Array overwritten by $F'$. |
+| nnzB | integer(C_SIZE_T) | Current non-zero count in matrix $B$. |
+| rowOffsetsB | integer array | Sparse row offsets for $B$ (MUST BE 0-BASED). |
+| colIndsB | integer array | Sparse column indices for $B$ (MUST BE 0-BASED). |
+| valuesB | real array | Non-zero values for matrix $B$. |
+| nnzR | integer(C_SIZE_T) | Current non-zero count in matrix $R$. |
+| colOffsetsR | integer array | Sparse column offsets for $R$ (MUST BE 0-BASED). |
+| rowIndsR | integer array | Sparse row indices for $R$ (MUST BE 0-BASED). |
+| valuesR | real array | Non-zero values for matrix $R$. |
+| UGamma | real array | Immersed boundary velocity vector $\Gamma$. |
+| uStar | real array | Intermediate velocity field $u^*$. |
 
 ---
 
@@ -135,6 +153,9 @@ To create your executable, link the C++ library and the CUDA runtimes:
 * `-lCudaBandedLib`: Your newly built library.
 * `-lstdc++`: Required for C++ compatibility.
 * `-lcudart`: The CUDA Runtime library.
+
+---
+
 ## 9. API Reference: Method & Type Variations
 
 The library uses a consistent naming convention to denote data types:
