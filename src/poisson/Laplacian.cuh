@@ -5,8 +5,7 @@
 
 #include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "math/Real3d.h"
-#include "SimpleArray.h"
-#include "SquareMat.h"
+#include "deviceArrays/headers/SquareMat.h"
 
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;
@@ -25,7 +24,7 @@ struct AdjacencyInd {//TODO: Account for distance between grid points not equal 
 };
 
 template<typename T>
-class ToeplitzLaplacian {
+class LaplacianNodeCentered {
     const std::array<AdjacencyInd, numDiagonals3d> adjInds; //here, up, down, left, right, back, front;
     const GridDim dim;
 
@@ -36,7 +35,7 @@ public:
      * Creates the LHS matrix of the linear system used for solving the Poisson equation.
      * @param dim The dimensions of the Poisson grid.
      */
-    ToeplitzLaplacian(GridDim dim);
+    LaplacianNodeCentered(GridDim dim);
 
     /**
      * Sets the values into the laplacian

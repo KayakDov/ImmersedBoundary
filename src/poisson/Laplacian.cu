@@ -2,9 +2,8 @@
 // Created by usr on 12/24/25.
 //
 
-#include "ToeplitzLaplacian.cuh"
+#include "poisson/LaplacianNodeCentered.cuh"
 #include "deviceArrays/headers/Support/Streamable.h"
-
 
 /**
 * @brief Device-side functor to set off-diagonal entries of the system matrix A to 0 or NAN.
@@ -130,7 +129,7 @@ __global__ void setAKernel3d(DeviceData2d<T> a,
 }
 
 template<typename T>
-ToeplitzLaplacian<T>::ToeplitzLaplacian(GridDim dim) :
+LaplacianNodeCentered<T>::LaplacianNodeCentered(GridDim dim) :
     dim(dim),
     adjInds{
         AdjacencyInd(0, 0),
@@ -144,7 +143,7 @@ ToeplitzLaplacian<T>::ToeplitzLaplacian(GridDim dim) :
 }
 
 template<typename T>
-void ToeplitzLaplacian<T>::loadMapRowToDiag(Vec<int32_t> diags, const cudaStream_t stream) {
+void LaplacianNodeCentered<T>::loadMapRowToDiag(Vec<int32_t> diags, const cudaStream_t stream) {
     int32_t diagsCpu[numDiagonals3d];
     for (size_t i = 0; i < numDiagonals3d; i++) diagsCpu[adjInds[i].col] = adjInds[i].diag;
     diags.set(diagsCpu, stream);
@@ -156,7 +155,7 @@ T invSq(T x) {
 }
 
 template<typename T>
-BandedMat<T> ToeplitzLaplacian<T>::setL(cudaStream_t stream, Mat<T> &preAlocatedForA,
+BandedMat<T> LaplacianNodeCentered<T>::setL(cudaStream_t stream, Mat<T> &preAlocatedForA,
                                         Vec<int32_t> &preAlocatedForIndices, const Real3d& delta) {
 
     T denDx2 = invSq(delta.x), denDy2 = invSq(delta.y), denDz2 = invSq(delta.z);
@@ -186,17 +185,17 @@ BandedMat<T> ToeplitzLaplacian<T>::setL(cudaStream_t stream, Mat<T> &preAlocated
 
 
 template<typename T>
-BandedMat<T> ToeplitzLaplacian<T>::L(const GridDim &dim, Handle &hand, Real3d delta) {
+BandedMat<T> LaplacianNodeCentered<T>::L(const GridDim &dim, Handle &hand, Real3d delta) {
     size_t numInds = 7;
     auto spaceForA = Mat<T>::create(dim.size(), numInds);
     auto inds = SimpleArray<int32_t>::create(numInds, hand);
-    auto A = ToeplitzLaplacian<T>(dim).setL(hand, spaceForA, inds, delta);
+    auto A = LaplacianNodeCentered<T>(dim).setL(hand, spaceForA, inds, delta);
     return A;
 }
 
 
 template<typename T>
-void ToeplitzLaplacian<T>::printL(const GridDim &dim, Handle &hand, Real3d delta) {
+void LaplacianNodeCentered<T>::printL(const GridDim &dim, Handle &hand, Real3d delta) {
 
     auto aDense = SquareMat<T>::create(dim.size());
     auto A = L(dim, hand, delta);
@@ -204,5 +203,5 @@ void ToeplitzLaplacian<T>::printL(const GridDim &dim, Handle &hand, Real3d delta
     std::cout << "L = \n" << GpuOut<T>(aDense, hand) << std::endl;
 }
 
-template class ToeplitzLaplacian<float>;
-template class ToeplitzLaplacian<double>;
+template class LaplacianNodeCentered<float>;
+template class LaplacianNodeCentered<double>;
