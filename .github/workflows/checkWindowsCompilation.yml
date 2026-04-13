@@ -1,0 +1,41 @@
+name: Windows Build Check
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install CUDA Toolkit
+      uses: Jimver/cuda-toolkit@v0.2.11
+      with:
+        cuda: '12.1.0' # Matches your project needs
+        method: 'network'
+
+    - name: Install Intel oneAPI (Fortran)
+      uses: fortran-lang/setup-fortran@v1
+      with:
+        compiler: intel-classic # or 'intel' for the newer ifx
+        version: 'latest'
+
+    - name: Configure CMake
+      # We explicitly tell CMake to use the Intel Fortran compiler
+      run: |
+        cmake -S . -B build -G "Visual Studio 17 2022" `
+          -DCMAKE_Fortran_COMPILER=ifort `
+          -DCMAKE_BUILD_TYPE=Debug
+
+    - name: Build Project
+      run: cmake --build build --config Debug -j 4
+
+    - name: Run Unit Tests
+      working-directory: build
+      run: ctest --output-on-failure -C Debug
