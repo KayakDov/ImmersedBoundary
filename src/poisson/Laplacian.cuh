@@ -6,6 +6,7 @@
 #include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "math/Real3d.h"
 #include "deviceArrays/headers/SquareMat.h"
+#include "poisson/BoundaryCondition.hpp"
 
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;
@@ -36,19 +37,8 @@ public:
      */
     __host__ __device__ AdjacencyPatern(GridDim dim);
 
-    void loadMapRowToDiag(Vec<int32_t> diags, cudaStream_t stream);
+    void loadMapRowToDiag(Vec<int32_t>& diags, cudaStream_t stream) const;
 };
-
-
-/**
- * Types of boundaries.
- */
-enum class BCType {Neumann, Dirichlet, NA};
-struct BoundaryConfig {
-    BCType left, right, top, bottom, front, back;
-    __host__ __device__ BoundaryConfig(BCType left, BCType right, BCType top, BCType bottom, BCType front = BCType::NA, BCType back = BCType::NA);
-};
-
 
 template<typename T>
 class Laplacian {
@@ -56,14 +46,16 @@ protected:
     const AdjacencyPatern adjacncies;
     const GridDim dim;
     const Real3d delta;
-    const BoundaryConfig config;
+    const BoundaryConfig<T> boundary;
 
 public:
     /**
      * Creates the LHS matrix of the linear system used for solving the Poisson equation.
      * @param dim The dimensions of the Poisson grid.
+     * @param delta Distance between gird points.
+     * @param boundary The boundary configuration.
      */
-    Laplacian(GridDim dim, Real3d delta = Real3d(1.0, 1.0, 1.0));
+    Laplacian(const GridDim& dim, const Real3d& delta, const BoundaryConfig<T>& boundary);
 
     /**
      * Sets the values into the laplacian
@@ -88,7 +80,9 @@ public:
 template<typename T>
 class LaplacianNodeCentered : public Laplacian<T> {
 public:
-    LaplacianNodeCentered(GridDim dim, Real3d delta = Real3d(1.0, 1.0, 1.0));
+
+    LaplacianNodeCentered(GridDim dim, Real3d delta, BoundaryConfig<T> boundary);
+
     /** @inheritdoc */
     BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;
 
@@ -98,14 +92,14 @@ public:
      * @param hand
      * @return A new Laplacian.
      */
-    static BandedMat<T> L(const GridDim &dim, Handle &hand, Real3d delta = Real3d(1, 1, 1));
+    static BandedMat<T> L(const GridDim &dim, Handle &hand, const BoundaryConfig<T>& boundary, Real3d delta = Real3d(1, 1, 1));
 
     /**
      * Prints a laplacian.
      * @param dim
      * @param hand
      */
-    static void printL(const GridDim &dim, Handle &hand, Real3d delta = Real3d(1, 1, 1));
+    static void printL(const GridDim &dim, Handle &hand, const BoundaryConfig<T>& bc, Real3d delta = Real3d(1, 1, 1));
 
     /** @inheritdoc */
     void setRHS(cudaStream_t stream, Vec<T> &rhs) const override;
@@ -120,7 +114,7 @@ public:
      * @param delta The space between nodes of the grid.  Note that only have this space exists between nodes and
      * boundary conditions.
      */
-    LaplacianStagared(GridDim dim, Real3d delta = Real3d(1.0, 1.0, 1.0));
+    LaplacianStagared(const GridDim& dim, const BoundaryConfig<T>& boundary, const Real3d& delta);
 
     /** @inheritdoc */
     BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;

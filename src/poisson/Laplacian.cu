@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "deviceArrays/headers/Support/Streamable.h"
+#include "math/Real3dDevice.hpp"
 
 /**
 * @brief Device-side functor to set off-diagonal entries of the system matrix A to 0 or NAN.
@@ -62,7 +63,7 @@ public:
  * @param set0
  */
 template<typename T>
-__device__ void setA2d(DeviceData2d<T> a, const GridInd3d &ind, const GridDim &dim, const AdjacencyPatern &ap, Set0<T>& set0) {
+__device__ void setL2d(DeviceData2d<T> a, const GridInd3d &ind, const GridDim &dim, const AdjacencyPatern &ap, Set0<T>& set0) {
 
     if (ind.row == 0) set0(ap.up);
     else if (ind.row == dim.rows - 1) set0(ap.down);
@@ -90,7 +91,7 @@ __global__ void setAKernel2d(DeviceData2d<T> a, const GridDim g, const Adjacency
     const size_t idGrid = g[ind];
     Set0<T> set0(a, idGrid);
 
-    setA2d(a, ind, g, ap, set0);
+    setL2d(a, ind, g, ap, set0);
 }
 
 /**
@@ -105,18 +106,63 @@ __global__ void setAKernel2d(DeviceData2d<T> a, const GridDim g, const Adjacency
  *
  */
 template<typename T>
-__global__ void setAKernel3d(DeviceData2d<T> a, const GridDim g, AdjacencyPatern ap) {
+__global__ void setAKernel3d(DeviceData2d<T> L, const GridDim g, AdjacencyPatern ap) {
     const GridInd3d ind;
 
     if (ind >= g) return;
 
     const size_t idGrid = g[ind];
-    Set0<T> set0(a, idGrid);
+    Set0<T> set0(L, idGrid);
 
-    setA2d(a, ind, g, ap, set0);
+    setL2d(L, ind, g, ap, set0);
 
     if (ind.layer == 0) set0(ap.front);
     else if (ind.layer == g.layers - 1) set0(ap.back);
+}
+
+
+template<typename T>
+class DimensionSetter {
+    DeviceData2d<T> &L;
+    DeviceData1d<T> &rhs;
+    size_t flat;
+
+public:
+    DimensionSetter(DeviceData2d<T>& L, DeviceData1d<T> & rhs, size_t flat) : L(L), rhs(rhs), flat(flat) {}
+
+    __device__ void laplacianStaggered1d(
+        size_t gridIndex, size_t end,
+        BoundaryCondition<T> left, BoundaryCondition<T> right,
+        size_t diagOffset, double inverseDeltaSq,
+        const size_t primraryDiagColInd, const size_t rightDiagColInd, const size_t leftDiagColInd
+    ) {
+        if (gridIndex == 0) left.set(L, flat, primraryDiagColInd, rightDiagColInd, rhs);
+        else if (gridIndex == end - 1) right.set(L, flat + leftDiagColInd, primraryDiagColInd, leftDiagColInd, rhs);
+        else {
+            L(flat, primraryDiagColInd) -= 2 * inverseDeltaSq;
+            L(flat, rightDiagColInd) = L(flat + leftDiagColInd, leftDiagColInd) = inverseDeltaSq;
+        }
+    }
+};
+
+/**
+ * Should receive an x, y < cols, rows starting position for each line.  depth is the length of the line.
+ * @tparam T
+ * @param startingPositionsXLength
+ * @param beginBC The boundary condition at the beginning.
+ * @param endBC The boundary condiiton at the end.
+ * @param stepSize The step size to move through adjacent squares of the grid.
+ */
+template<typename T>
+__global__ void laplacianStaggered3d(DeviceData2d<T> L, GridDim dim, BoundaryConfig<T> boundary, AdjacencyPatern ap, DeviceData1d<T> rhs, const Real3dDevice<T> invDeltaSq) {
+    GridInd3d gridInd;
+    if (gridInd >= dim) return;
+
+    DimensionSetter<T> ds(L, rhs, dim[gridInd]);
+
+    ds.laplacianStaggered1d(gridInd.row, dim.rows, boundary.top, boundary.bottom, ap.down, invDeltaSq.y);
+    ds.laplacianStaggered1d(gridInd.col, dim.cols, boundary.left, boundary.right, ap.right, invDeltaSq.x);
+    ds.laplacianStaggered1d(gridInd.layer, dim.layers, boundary.front, boundary.back, ap.back, invDeltaSq.z);
 }
 
 AdjacencyPatern::AdjacencyPatern(GridDim dim):
@@ -131,10 +177,12 @@ AdjacencyPatern::AdjacencyPatern(GridDim dim):
 
 }
 
+
 template<typename T>
-Laplacian<T>::Laplacian(GridDim dim, Real3d delta) :
+Laplacian<T>::Laplacian(const GridDim& dim, const Real3d& delta, const BoundaryConfig<T>& boundary) :
     dim(dim),
     delta(delta),
+    boundary(boundary),
     adjacncies(dim) {
 }
 
@@ -144,10 +192,10 @@ T invSq(T x) {
 }
 
 template<typename T>
-LaplacianNodeCentered<T>::LaplacianNodeCentered(GridDim dim, Real3d delta) : Laplacian<T>(dim, delta) {
+LaplacianNodeCentered<T>::LaplacianNodeCentered(GridDim dim, Real3d delta, BoundaryConfig<T> boundary) : Laplacian<T>(dim, delta, boundary) {
 }
 
-void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> diags, const cudaStream_t stream) {
+void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t>& diags, const cudaStream_t stream) const{
     std::vector<int32_t> diagsCpu(diags.size(), 0);
     diagsCpu[here.col] = here.diag;
     diagsCpu[up.col] = up.diag;
@@ -159,10 +207,6 @@ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> diags, const cudaStream_t st
         diagsCpu[back.col] = back.diag;
     }
     diags.set(diagsCpu.data(), stream);
-}
-
-BoundaryConfig::BoundaryConfig(BCType left, BCType right, BCType top, BCType bottom, BCType front, BCType back):
-    left(left), right(right), top(top), bottom(bottom), front(front), back(back) {
 }
 
 
@@ -196,26 +240,28 @@ BandedMat<T> LaplacianNodeCentered<T>::setL(cudaStream_t stream, Mat<T> &preAloc
 
 
 template<typename T>
-BandedMat<T> LaplacianNodeCentered<T>::L(const GridDim &dim, Handle &hand, Real3d delta) {
+BandedMat<T> LaplacianNodeCentered<T>::L(const GridDim &dim, Handle &hand, const BoundaryConfig<T>& boundary, Real3d delta) {
 
     auto spaceForA = Mat<T>::create(dim.size(), numDiagonals3d);
     auto inds = SimpleArray<int32_t>::create(numDiagonals3d, hand);
-    auto A = LaplacianNodeCentered<T>(dim, delta).setL(hand, spaceForA, inds);
+    auto A = LaplacianNodeCentered<T>(dim, delta, boundary).setL(hand, spaceForA, inds);
     return A;
 }
 
 
 template<typename T>
-void LaplacianNodeCentered<T>::printL(const GridDim &dim, Handle &hand, Real3d delta) {
+void LaplacianNodeCentered<T>::printL(const GridDim &dim, Handle &hand, const BoundaryConfig<T>& bc, Real3d delta) {
 
     auto aDense = SquareMat<T>::create(dim.size());
-    auto A = L(dim, hand, delta);
+    auto A = L(dim, hand, bc, delta);
     A.getDense(aDense, &hand);
     std::cout << "L = \n" << GpuOut<T>(aDense, hand) << std::endl;
 }
 
 template<typename T>
-LaplacianStagared<T>::LaplacianStagared(GridDim dim, Real3d delta) : Laplacian<T>(dim, delta) {}
+LaplacianStagared<T>::LaplacianStagared(const GridDim& dim, const BoundaryConfig<T>& boundary, const Real3d& delta) : Laplacian<T>(dim, delta, boundary) {}
+
+
 
 template<typename T>
 BandedMat<T> LaplacianStagared<T>::setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) {

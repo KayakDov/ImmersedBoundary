@@ -28,7 +28,6 @@ class Real2d: public Real3d {
     Real2d(double x, double y);
 };
 
-
 #include <iostream>
 
 inline std::ostream& operator<<(std::ostream& os, const Real3d& v) {
