@@ -133,14 +133,14 @@ public:
     __device__ void laplacianStaggered1d(
         size_t gridIndex, size_t end,
         BoundaryCondition<T> left, BoundaryCondition<T> right,
-        size_t diagOffset, double inverseDeltaSq,
+        size_t diagOffset, T inverseDeltaSq,
         const size_t primraryDiagColInd, const size_t rightDiagColInd, const size_t leftDiagColInd
     ) {
         if (gridIndex == 0) left.set(L, flat, primraryDiagColInd, rightDiagColInd, rhs);
-        else if (gridIndex == end - 1) right.set(L, flat + leftDiagColInd, primraryDiagColInd, leftDiagColInd, rhs);
+        else if (gridIndex == end - 1) right.set(L, flat - diagOffset, primraryDiagColInd, leftDiagColInd, rhs);
         else {
             L(flat, primraryDiagColInd) -= 2 * inverseDeltaSq;
-            L(flat, rightDiagColInd) = L(flat + leftDiagColInd, leftDiagColInd) = inverseDeltaSq;
+            L(flat, rightDiagColInd) = L(flat - diagOffset, leftDiagColInd) = inverseDeltaSq;
         }
     }
 };
@@ -160,9 +160,9 @@ __global__ void laplacianStaggered3d(DeviceData2d<T> L, GridDim dim, BoundaryCon
 
     DimensionSetter<T> ds(L, rhs, dim[gridInd]);
 
-    ds.laplacianStaggered1d(gridInd.row, dim.rows, boundary.top, boundary.bottom, ap.down, invDeltaSq.y);
-    ds.laplacianStaggered1d(gridInd.col, dim.cols, boundary.left, boundary.right, ap.right, invDeltaSq.x);
-    ds.laplacianStaggered1d(gridInd.layer, dim.layers, boundary.front, boundary.back, ap.back, invDeltaSq.z);
+    ds.laplacianStaggered1d(gridInd.row, dim.rows, boundary.top, boundary.bottom, invDeltaSq.y, ap.down, invDeltaSq.y);
+    ds.laplacianStaggered1d(gridInd.col, dim.cols, boundary.left, boundary.right, invDeltaSq.x, ap.right, invDeltaSq.x);
+    ds.laplacianStaggered1d(gridInd.layer, dim.layers, boundary.front, boundary.back, invDeltaSq.z, ap.back, invDeltaSq.z);
 }
 
 AdjacencyPatern::AdjacencyPatern(GridDim dim):
@@ -211,7 +211,7 @@ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t>& diags, const cudaStream_t s
 
 
 template<typename T>
-BandedMat<T> LaplacianNodeCentered<T>::setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) {
+BandedMat<T> LaplacianNodeCentered<T>::setOperation(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) {
 
     T denDx2 = invSq(this->delta.x), denDy2 = invSq(this->delta.y), denDz2 = invSq(this->delta.z);
 
@@ -244,7 +244,7 @@ BandedMat<T> LaplacianNodeCentered<T>::L(const GridDim &dim, Handle &hand, const
 
     auto spaceForA = Mat<T>::create(dim.size(), numDiagonals3d);
     auto inds = SimpleArray<int32_t>::create(numDiagonals3d, hand);
-    auto A = LaplacianNodeCentered<T>(dim, delta, boundary).setL(hand, spaceForA, inds);
+    auto A = LaplacianNodeCentered<T>(dim, delta, boundary).setOperation(hand, spaceForA, inds);
     return A;
 }
 
@@ -264,7 +264,7 @@ LaplacianStagared<T>::LaplacianStagared(const GridDim& dim, const BoundaryConfig
 
 
 template<typename T>
-BandedMat<T> LaplacianStagared<T>::setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) {
+BandedMat<T> LaplacianStagared<T>::setOperation(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) {
 
 }
 

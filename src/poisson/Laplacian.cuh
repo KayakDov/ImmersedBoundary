@@ -66,14 +66,7 @@ public:
      * If the grid is 2d there should be 5 values here, if the grid is 3d there should be 7.
      * @return
      */
-    virtual BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) = 0;
-
-    /**
-     * Creates a vector that should be added to the rhs when solving L x = rhs, to account for the boundary conditions.
-     * @param stream
-     * @param rhs An empty vector that will be overwritten with the modifications that should be made to the rhs.
-     */
-    virtual void setRHS(cudaStream_t stream, Vec<T> &rhs) const = 0;
+    virtual BandedMat<T> setOperation(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) = 0;
 
 };
 
@@ -84,7 +77,7 @@ public:
     LaplacianNodeCentered(GridDim dim, Real3d delta, BoundaryConfig<T> boundary);
 
     /** @inheritdoc */
-    BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;
+    BandedMat<T> setOperation(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;
 
     /**
      * Allocates memory for, and creates, a laplacian.
@@ -117,7 +110,7 @@ public:
     LaplacianStagared(const GridDim& dim, const BoundaryConfig<T>& boundary, const Real3d& delta);
 
     /** @inheritdoc */
-    BandedMat<T> setL(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;
+    BandedMat<T> setOperation(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;
     /** @inheritdoc */
     void setRHS(cudaStream_t stream, Vec<T> &rhs) const override;
 };

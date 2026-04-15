@@ -65,8 +65,7 @@ public:
      * @param diagOffset Index offset to neighbor in the boundary-normal direction
      * @param rhs Right-hand side vector
      */
-    __device__
-    void set(DeviceData2d<Real> L,
+    __device__ void set(DeviceData2d<Real> L,
                      const size_t gridIndFlattened,
                      const size_t primaryDiagonalCol,
                      const size_t secondaryDiagonalCol,

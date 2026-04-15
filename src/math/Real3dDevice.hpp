@@ -1,6 +1,6 @@
 #ifndef CUDABANDED_REAL3DDEVICE_CUH
 #define CUDABANDED_REAL3DDEVICE_CUH
-#include <crt/host_defines.h>
+#include <cuda_runtime.h>
 
 template<typename Real>
 class Real3dDevice {
