@@ -58,6 +58,8 @@ public:
     __device__ inline GridInd3d(size_t row, size_t col, size_t layer): GridInd2d(row, col), layer(layer) {
     }
     __device__ inline GridInd3d(): GridInd2d(), layer(blockIdx.z * blockDim.z + threadIdx.z){}
+
+    __device__ inline void set(size_t row, size_t col, size_t layer){this->row = row; this->col = col; this->layer = layer;}
 };
 
 class GridDim {
@@ -82,6 +84,10 @@ public:
      */
     __host__ __device__ [[nodiscard]] inline size_t size() const {
         return layers * layerSize;
+    }
+
+    __device__ [[nodiscard]] size_t surfaceArea() const{
+        return 2 * (layerSize + rows * layers + cols * layers);
     }
 
     /**

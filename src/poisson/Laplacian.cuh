@@ -62,32 +62,43 @@ public:
     Laplacian(const GridDim& dim, const Real3d& delta, const BoundaryConfig<T>& boundary);
 
     /**
-     * @brief Assemble and store the discrete Laplacian operator and boundary contribution.
-     *
-     * Builds the matrix representation of the staggered-grid Laplacian and the
-     * corresponding right-hand-side contribution induced by boundary conditions.
-     * The resulting operator is stored internally in banded form for reuse across solves.
-     *
-     * @param stream CUDA stream on which all operations will be enqueued.
-     *               The caller is responsible for stream synchronization if needed.
-     *
-     * @param preAllocatedForL Preallocated matrix buffer that will be overwritten
-     *        with the assembled Laplacian operator. Must have the correct size.
-     *
-     * @param preAllocatedForIndices Preallocated buffer that will be filled with
-     *        index mappings required for banded matrix construction.
-     *
-     * @param rhsModifier Preallocated vector that will be overwritten with the
-     *        boundary-condition contribution to the right-hand side (b_bc).
-     *
-     * @note
-     * - All buffers must be allocated prior to calling this function.
-     * - The contents of the provided buffers are overwritten.
-     * - The assembled operator and RHS contribution are retained internally
-     *   and can be reused for multiple solves with different physical RHS terms.
-     */
-     void setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, Vec<int32_t> &preAllocatedForIndices, Vec<T> &rhsModifier);
+    * @brief Assemble and store the discrete Laplacian operator and boundary contribution.
+    *
+    * Builds the matrix representation of the staggered-grid Laplacian and the
+    * corresponding right-hand-side contribution induced by boundary conditions.
+    * The resulting operator is stored internally in banded form for reuse across solves.
+    *
+    * @param stream CUDA stream on which all operations will be enqueued.
+    *               The caller is responsible for stream synchronization if needed.
+    *
+    * @param preAllocatedForL Preallocated matrix buffer that will be overwritten
+    *        with the assembled Laplacian operator. Must have the correct size.
+    *
+    * @param preAllocatedForIndices Preallocated buffer that will be filled with
+    *        index mappings required for banded matrix construction.
+    *
+    * @param rhsModifier Preallocated vector that will be overwritten with the
+    *        boundary-condition contribution to the right-hand side (b_bc).
+    *
+    * @note
+    * - All buffers must be allocated prior to calling this function.
+    * - The contents of the provided buffers are overwritten.
+    * - The assembled operator and RHS contribution are retained internally
+    *   and can be reused for multiple solves with different physical RHS terms.
+    */
+    void setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, Vec<int32_t> &preAllocatedForIndices, Vec<T> &rhsModifier);
 
+    /**
+    * @brief Compute boundary-condition contributions to the right-hand side vector.
+    *
+    * Assembles the RHS modifications due to boundary conditions on all six faces.
+    * Contributions from multiple faces (at corners and edges) accumulate safely via
+    * atomic operations.
+    *
+    * @param[in] stream      CUDA stream for kernel execution.
+    * @param[in,out] rhsModifier Vector to be filled with boundary-condition RHS contributions.
+    */
+    void setRhsBC(cudaStream_t stream, Vec<T> &rhsModifier);
 };
 
 

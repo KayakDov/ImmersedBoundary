@@ -36,7 +36,14 @@ public:
      * @param[in,out] rhs The right-hand side vector.
      * @param[in] flat    The flattened index of the current grid point.
      */
-    RhsBCSetter1d(DeviceData1d<T> & rhs, size_t flat) : rhs(rhs), flat(flat) {}
+    __device__ RhsBCSetter1d(DeviceData1d<T> & rhs, size_t flat) : rhs(rhs), flat(flat) {}
+
+    /**
+     * Sets the flat index
+     * @param flat The new flat index.
+     */
+    __device__ void setFlat(size_t flat) {this->flat = flat;}
+
 
     /**
      * @brief Applies boundary-condition contributions to the RHS along one dimension.
@@ -160,37 +167,44 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> L, const GridDim dim, const
 }
 
 /**
- * @brief CUDA kernel to assemble boundary-condition contributions to the RHS on a staggered grid.
+ * @brief CUDA kernel to assemble boundary-condition contributions to the RHS.
  *
- * Computes only the boundary-condition-induced contribution to the right-hand side
- * vector (rhsBC), without modifying the operator (L). This is intended for use with
- * preassembled or matrix-free Laplacian operators.
+ * Uses a 2D thread grid where each thread handles up to 6 boundary faces.
+ * Threads are launched with dimensions max(rows, cols, layers) to efficiently
+ * cover all faces without underutilization. Atomic operations safely handle
+ * corners/edges where contributions from multiple faces accumulate.
  *
  * @param[in] dim        Grid dimensions.
  * @param[in] boundary   Boundary conditions for all six faces.
- * @param[in] ap         Adjacency pattern specifying indexing layout (used for consistency).
- * @param[in,out] rhs    Right-hand side vector; overwritten with boundary contributions.
+ * @param[in,out] rhs    Right-hand side vector; accumulates boundary contributions.
  */
 template<typename T>
 __global__ void buildRhsBCKernel(
     const GridDim dim,
     const BoundaryConfig<T> boundary,
-    const AdjacencyPatern ap,
     DeviceData1d<T> rhs
 ) {
-    GridInd3d gridInd;
-    if (gridInd >= dim) return;
+    GridInd2d ind;
+    GridInd3d ind3d;
 
-    RhsBCSetter1d<T> ds(rhs, dim[gridInd]);
-
-    rhs[ds.flat] = 0;
-
-    ds.setRHSIn1d(gridInd.row, dim.rows, boundary.top, boundary.bottom);
-
-    ds.setRHSIn1d(gridInd.col, dim.cols, boundary.left, boundary.right);
-
-    if (dim.layers > 1) ds.setRHSIn1d(gridInd.layer, dim.layers,boundary.front, boundary.back);
-
+    if (ind.row < dim.rows && ind.col < dim.cols) {
+        ind3d.set(ind.row, ind.col, 0);
+        boundary.front.setBoundaryRHSContribution(dim[ind3d], rhs);
+        ind3d.layer = dim.layers - 1;
+        boundary.back.setBoundaryRHSContribution(dim[ind3d], rhs);
+    }
+    if (ind.row < dim.rows && ind.col < dim.layers) {
+        ind3d.set(ind.row, 0, ind.col);
+        boundary.left.setBoundaryRHSContribution(dim[ind3d], rhs);
+        ind3d.col = dim.cols - 1;
+        boundary.right.setBoundaryRHSContribution(dim[ind3d], rhs);
+    }
+    if (ind.row < dim.layers && ind.col < dim.cols) {
+        ind3d.set(0, ind.col, ind.row);
+        boundary.top.setBoundaryRHSContribution(dim[ind3d], rhs);
+        ind3d.row = dim.rows - 1;
+        boundary.bottom.setBoundaryRHSContribution(dim[ind3d], rhs);
+    }
 }
 
 AdjacencyPatern::AdjacencyPatern(GridDim dim):
@@ -255,8 +269,12 @@ void Laplacian<T>::setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, V
 }
 
 template<typename T>
-void Laplacian<T>::setRhsBC(cudaStream_t stream, Mat<T> &preAllocatedForL, Vec<int32_t> &preAllocatedForIndices, Vec<T>& rhsModifier) {
-
+void Laplacian<T>::setRhsBC(cudaStream_t stream, Vec<T>& rhsModifier) {
+    size_t maxDim = std::max(std::max(dim.rows, dim.cols), dim.layers);
+    KernelPrep kp(maxDim, maxDim);
+    buildRhsBCKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(dim, boundary, rhsModifier);
+    CHECK_CUDA_ERROR(cudaGetLastError());
+    rhsBC = std::make_unique<Vec<T>>(rhsModifier);
 }
 
 template class Laplacian<float>;

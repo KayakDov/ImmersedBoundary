@@ -102,21 +102,26 @@ public:
  * @param rhs Right-hand side vector (modified in place)
  */
     __device__ void setBoundaryRHSContribution(const size_t gridIndFlattened, DeviceData1d<Real> rhs) const {
+        Real contribution = 0;
+
         switch (condition) {
             case ConditionType::NeumannStaggered:
-                rhs[gridIndFlattened] -= this->value * this->inverseDelta;
+                contribution = -this->value * this->inverseDelta;
                 break;
             case ConditionType::DirichletStaggered:
-                rhs[gridIndFlattened] += 2 * this->value * this->inverseDeltaSquared;
+                contribution = 2*this->value * this->inverseDeltaSquared;
                 break;
             case ConditionType::NeumannNodeCentered:
-                rhs[gridIndFlattened] += this->value * this->inverseDelta;
+                contribution = this->value * this->inverseDelta;
                 break;
             case ConditionType::DirichletNodeCentered:
-                rhs[gridIndFlattened] -= this->value * this->inverseDeltaSquared;
+                contribution = -this->value * this->inverseDeltaSquared;
                 break;
         }
+
+        atomicAdd(&rhs[gridIndFlattened], contribution);
     }
+
 };
 
 
