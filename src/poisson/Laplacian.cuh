@@ -64,6 +64,26 @@ public:
     /**
     * @brief Assemble and store the discrete Laplacian operator and boundary contribution.
     *
+    *This method allocates its own memory.
+    *
+    * Builds the matrix representation of the staggered-grid Laplacian and the
+    * corresponding right-hand-side contribution induced by boundary conditions.
+    * The resulting operator is stored internally in banded form for reuse across solves.
+    *
+    * @param stream CUDA stream on which all operations will be enqueued.
+    *               The caller is responsible for stream synchronization if needed.
+    *
+    * @note
+    * - All buffers must be allocated prior to calling this function.
+    * - The contents of the provided buffers are overwritten.
+    * - The assembled operator and RHS contribution are retained internally
+    *   and can be reused for multiple solves with different physical RHS terms.
+    */
+    void setOperation(cudaStream_t stream);
+
+    /**
+    * @brief Assemble and store the discrete Laplacian operator and boundary contribution.
+    *
     * Builds the matrix representation of the staggered-grid Laplacian and the
     * corresponding right-hand-side contribution induced by boundary conditions.
     * The resulting operator is stored internally in banded form for reuse across solves.
@@ -87,6 +107,19 @@ public:
     *   and can be reused for multiple solves with different physical RHS terms.
     */
     void setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, Vec<int32_t> &preAllocatedForIndices, Vec<T> &rhsModifier);
+
+    /**
+    * @brief Compute boundary-condition contributions to the right-hand side vector.
+    *
+    *This method allocates its own memory.
+    *
+    * Assembles the RHS modifications due to boundary conditions on all six faces.
+    * Contributions from multiple faces (at corners and edges) accumulate safely via
+    * atomic operations.
+    *
+    * @param[in] stream      CUDA stream for kernel execution.
+    */
+    void setRhsBC(cudaStream_t stream);
 
     /**
     * @brief Compute boundary-condition contributions to the right-hand side vector.

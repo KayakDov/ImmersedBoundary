@@ -187,7 +187,7 @@ __global__ void buildRhsBCKernel(
     GridInd2d ind;
     GridInd3d ind3d;
 
-    if (ind.row < dim.rows && ind.col < dim.cols) {
+    if (dim.layers > 1 && ind.row < dim.rows && ind.col < dim.cols) {
         ind3d.set(ind.row, ind.col, 0);
         boundary.front.setBoundaryRHSContribution(dim[ind3d], rhs);
         ind3d.layer = dim.layers - 1;
@@ -248,6 +248,16 @@ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t>& diags, const cudaStream_t s
 }
 
 template<typename T>
+void Laplacian<T>::setOperation(cudaStream_t stream) {
+    size_t numDiags =  dim.layers > 1 ? numDiagonals3d : numDiagonals2d;
+    Vec<int32_t> preAllocatedForIndices = Vec<int32_t>::create(numDiags, stream);
+    Mat<T> rhsAndL = Mat<T>::create(dim.size(), numDiags + 1);
+    Mat<T> preAllocatedForL = rhsAndL.col(numDiags);
+    Vec<T> rhsModifier = preAllocatedForL.col(rhsAndL.subMat(0,0,dim.size(), numDiags));
+
+    setOperation(stream, preAllocatedForL, preAllocatedForIndices, rhsModifier);
+}
+template<typename T>
 void Laplacian<T>::setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, Vec<int32_t> &preAllocatedForIndices, Vec<T>& rhsModifier) {
     KernelPrep kp = this->dim.kernelPrep();
     buildLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
@@ -269,9 +279,14 @@ void Laplacian<T>::setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, V
 }
 
 template<typename T>
+void Laplacian<T>::setRhsBC(cudaStream_t stream) {
+    Vec<T> rhsModifier = SimpleArray<T>::create(dim.size());
+    setRhsBC(stream, rhsModifier);
+}
+
+template<typename T>
 void Laplacian<T>::setRhsBC(cudaStream_t stream, Vec<T>& rhsModifier) {
-    size_t maxDim = std::max(std::max(dim.rows, dim.cols), dim.layers);
-    KernelPrep kp(maxDim, maxDim);
+    KernelPrep kp(std::max(dim.rows, dim.layers), std::max(dim.layers, dim.cols));
     buildRhsBCKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(dim, boundary, rhsModifier);
     CHECK_CUDA_ERROR(cudaGetLastError());
     rhsBC = std::make_unique<Vec<T>>(rhsModifier);
