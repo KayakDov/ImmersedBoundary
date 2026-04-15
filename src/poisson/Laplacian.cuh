@@ -7,6 +7,7 @@
 #include "math/Real3d.h"
 #include "deviceArrays/headers/SquareMat.h"
 #include "poisson/BoundaryCondition.hpp"
+#include "solvers/Event.h"
 
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;
@@ -48,6 +49,9 @@ protected:
     const Real3d delta;
     const BoundaryConfig<T> boundary;
 
+    std::unique_ptr<BandedMat<T>> banded = nullptr;
+    std::unique_ptr<Vec<T>> rhsBC = nullptr;
+
 public:
     /**
      * Creates the LHS matrix of the linear system used for solving the Poisson equation.
@@ -58,61 +62,34 @@ public:
     Laplacian(const GridDim& dim, const Real3d& delta, const BoundaryConfig<T>& boundary);
 
     /**
-     * Sets the values into the laplacian
-     * @param stream
-     * @param preAlocatedForA This matrix should be height * width * depth X (5 if 2d grid or 7 if 3d grid).
-     * The laplacian will be placed here.
-     * @param preAlocatedForIndices This vector will store the indices of the diagonals in A.
-     * If the grid is 2d there should be 5 values here, if the grid is 3d there should be 7.
-     * @return
-     */
-    virtual BandedMat<T> setOperation(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) = 0;
-
-};
-
-template<typename T>
-class LaplacianNodeCentered : public Laplacian<T> {
-public:
-
-    LaplacianNodeCentered(GridDim dim, Real3d delta, BoundaryConfig<T> boundary);
-
-    /** @inheritdoc */
-    BandedMat<T> setOperation(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;
-
-    /**
-     * Allocates memory for, and creates, a laplacian.
-     * @param dim The dimensions of the laplacian's grid.
-     * @param hand
-     * @return A new Laplacian.
-     */
-    static BandedMat<T> L(const GridDim &dim, Handle &hand, const BoundaryConfig<T>& boundary, Real3d delta = Real3d(1, 1, 1));
-
-    /**
-     * Prints a laplacian.
-     * @param dim
-     * @param hand
-     */
-    static void printL(const GridDim &dim, Handle &hand, const BoundaryConfig<T>& bc, Real3d delta = Real3d(1, 1, 1));
-
-    /** @inheritdoc */
-    void setRHS(cudaStream_t stream, Vec<T> &rhs) const override;
-};
-template<typename T>
-class LaplacianStagared : public Laplacian<T> {
-
-public:
-    /**
+     * @brief Assemble and store the discrete Laplacian operator and boundary contribution.
      *
-     * @param dim The number of dimensions of the grid.
-     * @param delta The space between nodes of the grid.  Note that only have this space exists between nodes and
-     * boundary conditions.
+     * Builds the matrix representation of the staggered-grid Laplacian and the
+     * corresponding right-hand-side contribution induced by boundary conditions.
+     * The resulting operator is stored internally in banded form for reuse across solves.
+     *
+     * @param stream CUDA stream on which all operations will be enqueued.
+     *               The caller is responsible for stream synchronization if needed.
+     *
+     * @param preAllocatedForL Preallocated matrix buffer that will be overwritten
+     *        with the assembled Laplacian operator. Must have the correct size.
+     *
+     * @param preAllocatedForIndices Preallocated buffer that will be filled with
+     *        index mappings required for banded matrix construction.
+     *
+     * @param rhsModifier Preallocated vector that will be overwritten with the
+     *        boundary-condition contribution to the right-hand side (b_bc).
+     *
+     * @note
+     * - All buffers must be allocated prior to calling this function.
+     * - The contents of the provided buffers are overwritten.
+     * - The assembled operator and RHS contribution are retained internally
+     *   and can be reused for multiple solves with different physical RHS terms.
      */
-    LaplacianStagared(const GridDim& dim, const BoundaryConfig<T>& boundary, const Real3d& delta);
+     void setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, Vec<int32_t> &preAllocatedForIndices, Vec<T> &rhsModifier);
 
-    /** @inheritdoc */
-    BandedMat<T> setOperation(cudaStream_t stream, Mat<T> &preAlocatedForA, Vec<int32_t> &preAlocatedForIndices) override;
-    /** @inheritdoc */
-    void setRHS(cudaStream_t stream, Vec<T> &rhs) const override;
 };
+
+
 
 #endif //CUDABANDED_POISSONLHS_H

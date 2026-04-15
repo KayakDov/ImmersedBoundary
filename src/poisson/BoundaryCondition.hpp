@@ -18,7 +18,7 @@
 #pragma once
 #include "deviceArrays/headers/DeviceData.cuh"
 
-enum class ConditionType{Dirichlet, Neumann};
+enum class ConditionType{DirichletStaggered, NeumannStaggered, DirichletNodeCentered, NeumannNodeCentered};
 
 /**
  * @class BoundaryCondition
@@ -42,7 +42,7 @@ public:
     /// Precomputed 1 / delta
     const Real inverseDelta;
 
-    ConditionType condition;
+    const ConditionType condition;
 
     /**
      * @brief Construct a boundary condition.
@@ -65,21 +65,56 @@ public:
      * @param diagOffset Index offset to neighbor in the boundary-normal direction
      * @param rhs Right-hand side vector
      */
-    __device__ void set(DeviceData2d<Real> L,
+    __device__ void setLAndRHS(DeviceData2d<Real> L,
                      const size_t gridIndFlattened,
                      const size_t primaryDiagonalCol,
                      const size_t secondaryDiagonalCol,
                      const DeviceData1d<Real> rhs
-    ){
-        if (condition == ConditionType::Neumann) {
-            L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
-            L(gridIndFlattened, primaryDiagonalCol) -= this->inverseDeltaSquared;
-            rhs[gridIndFlattened] -= this->value * this->inverseDelta;
+    ) const {
+        switch (condition) {
+            case ConditionType::NeumannStaggered:
+                L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
+                L(gridIndFlattened, primaryDiagonalCol) -= this->inverseDeltaSquared;
+                break;
+            case  ConditionType::DirichletStaggered:
+                L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
+                L(gridIndFlattened, primaryDiagonalCol) -= 3*this->inverseDeltaSquared;
+                break;
+            case ConditionType::NeumannNodeCentered:
+                L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
+                L(gridIndFlattened, primaryDiagonalCol) -= this->inverseDeltaSquared;
+                break;
+            case ConditionType::DirichletNodeCentered:
+                L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
+                L(gridIndFlattened, primaryDiagonalCol) -= 2 * this->inverseDeltaSquared;
+                break;
         }
-        else {
-            L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
-            L(gridIndFlattened, primaryDiagonalCol) -= 3*this->inverseDeltaSquared;
-            rhs[gridIndFlattened] += 2*this->value * this->inverseDeltaSquared;
+        setBoundaryRHSContribution(gridIndFlattened, rhs);
+    }
+
+    /**
+ * @brief Apply boundary condition contribution to RHS only.
+ *
+ * Adds the boundary-condition-induced contribution to the right-hand side
+ * vector, assuming the operator (L) is assembled independently.
+ *
+ * @param gridIndFlattened Index of the current grid point
+ * @param rhs Right-hand side vector (modified in place)
+ */
+    __device__ void setBoundaryRHSContribution(const size_t gridIndFlattened, DeviceData1d<Real> rhs) const {
+        switch (condition) {
+            case ConditionType::NeumannStaggered:
+                rhs[gridIndFlattened] -= this->value * this->inverseDelta;
+                break;
+            case ConditionType::DirichletStaggered:
+                rhs[gridIndFlattened] += 2 * this->value * this->inverseDeltaSquared;
+                break;
+            case ConditionType::NeumannNodeCentered:
+                rhs[gridIndFlattened] += this->value * this->inverseDelta;
+                break;
+            case ConditionType::DirichletNodeCentered:
+                rhs[gridIndFlattened] -= this->value * this->inverseDeltaSquared;
+                break;
         }
     }
 };
