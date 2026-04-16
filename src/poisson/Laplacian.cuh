@@ -2,13 +2,14 @@
 #ifndef CUDABANDED_POISSONLHS_H
 #define CUDABANDED_POISSONLHS_H
 #include <array>
-#include <bits/stl_vector.h>
+#include <vector>
 
 #include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "math/Real3d.h"
 #include "deviceArrays/headers/SquareMat.h"
 #include "poisson/BoundaryCondition.hpp"
 #include "solvers/Event.h"
+#include "poisson//LaplacianKernels.cuh"
 
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;
@@ -26,6 +27,15 @@ struct AdjacencyInd {
     }
 };
 
+template<typename T>
+class Laplacian1dManager {
+public:
+    std::unique_ptr<BandedMat<T>> Lx = nullptr;
+    std::unique_ptr<BandedMat<T>> Ly = nullptr;
+    std::unique_ptr<BandedMat<T>> Lz = nullptr;
+
+    std::unique_ptr<BandedMat<T>>& operator[](size_t dim);
+};
 
 /**
  * How the adjacent grid cells are stored in the laplacian. *
@@ -57,13 +67,16 @@ protected:
 
     std::unique_ptr<BandedMat<T>> bandedL = nullptr;
     std::unique_ptr<Vec<T>> rhsBC = nullptr;
-    std::unique_ptr<BandedMat<T>> Lx = nullptr, Ly = nullptr, Lz = nullptr;
+
 
 public:
+
+    Laplacian1dManager<T> _1d;
+
     /**
      * Creates the LHS matrix of the linear system used for solving the Poisson equation.
      * @param dim The dimensions of the Poisson grid.
-     * @param delta Distance between gird points.
+     * @param delta Distance between grid points.
      * @param boundary The boundary configuration.
      */
     Laplacian(const GridDim& dim, const Real3d& delta, const BoundaryConfig<T>& boundary);

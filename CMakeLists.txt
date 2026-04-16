@@ -70,6 +70,7 @@ add_library(CudaBandedLib STATIC
         ${SHROUD_SOURCES}
         src/poisson/BoundaryCondition.hpp
         src/math/Real3dDevice.hpp
+        src/poisson/LaplacianKernels.cuh
 )
 
 set_target_properties(CudaBandedLib PROPERTIES

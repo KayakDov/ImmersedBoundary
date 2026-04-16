@@ -190,8 +190,8 @@ struct BoundaryConfig {
      */
     __host__ __device__ BoundaryCondition<Real>& operator()(size_t dim, bool isStart) const {
         switch (dim) {
-            case 0: return isStart ? top : bottom;
-            case 1: return isStart ? left : right;
+            case 0: return isStart ? left : right;
+            case 1: return isStart ? top : bottom;
             case 2: return isStart ? front : back;
             default:
         #ifdef __CUDA_ARCH__
