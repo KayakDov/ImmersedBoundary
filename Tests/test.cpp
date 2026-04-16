@@ -112,10 +112,11 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     auto x = SimpleArray<Real>::create(dim.size(), hand);
     x.set(xHost.data(), hand);
 
-    auto L = LaplacianNodeCentered<Real>::L(dim, hand, BoundaryConfig<Real>(ConditionType::DirichletStaggered, 0, delta), delta);
+    Laplacian<Real> L(dim, delta, BoundaryConfig<Real>(ConditionType::DirichletStaggered, 0, delta));
+    L.setOperation(hand);
 
     auto LDense = SquareMat<Real>::create(dim.size());
-    L.getDense(LDense, &hand);
+    L.banded().getDense(LDense, &hand);
 
     auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
     LPlus2BTBx.fill(0, hand);
@@ -165,12 +166,12 @@ TEST(EigenDecomp, ThreeD) {
     std::vector<Real> xHost = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     x.set(xHost.data(), hand3[0]);
 
-    auto L = LaplacianNodeCentered<Real>::L(dim, hand3[0], BoundaryConfig<Real>(ConditionType::DirichletStaggered, 0, delta), delta);
+    Laplacian<Real> L(dim, delta,  BoundaryConfig<Real>(ConditionType::DirichletStaggered, 0, delta));
 
     auto b = SimpleArray<Real>::create(12, hand3[0]);
     b.fill(0, hand3[0]);
 
-    L.bandedMult(x, b, &hand3[0]);
+    L.banded().bandedMult(x, b, &hand3[0]);
 
     x.fill(0, hand3[0]);
 
@@ -190,7 +191,7 @@ TEST(EigenDecomp, ThreeD) {
     cudaDeviceSynchronize();
     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], i + 1, 1e-10);
 
-    L.bandedMult(x, b, &hand3[0]);
+    L.banded().bandedMult(x, b, &hand3[0]);
     x.fill(0, hand3[0]);
     x.get(xHost.data(), hand3[0]);
 
@@ -224,12 +225,12 @@ TEST(EigenDecomp, TwoD) {
     std::vector<Real> xHost = {1, 2, 3, 4, 5, 6};
     x.set(xHost.data(), hand2[0]);
 
-    auto L = LaplacianNodeCentered<Real>::L(dim, hand2[0], BoundaryConfig<Real>(ConditionType::DirichletStaggered, 0, delta), delta);
+    Laplacian<Real> L(dim, delta, BoundaryConfig<Real>(ConditionType::DirichletStaggered, 0, delta));
 
     auto b = SimpleArray<Real>::create(dim.size(), hand2[0]);
     b.fill(0, hand2[0]);
 
-    L.bandedMult(x, b, &hand2[0]);
+    L.banded().bandedMult(x, b, &hand2[0]);
 
     x.fill(0, hand2[0]);
 

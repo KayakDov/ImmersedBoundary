@@ -95,13 +95,15 @@ public:
         Real contribution = 0;
 
         switch (condition) {
-            case ConditionType::NeumannNodeCentered:
+
             case ConditionType::NeumannStaggered:
                 contribution = -this->value * this->inverseDelta;
                 break;
             case ConditionType::DirichletStaggered:
                 contribution = 2*this->value * this->inverseDeltaSquared;
                 break;
+            case ConditionType::NeumannNodeCentered:
+                contribution = this->value * this->inverseDelta;
             case ConditionType::DirichletNodeCentered:
                 contribution = -this->value * this->inverseDeltaSquared;
                 break;

@@ -33,7 +33,7 @@ public:
     /// Predefined constants for convenience
 
     using Vec<T>::get;  ///< Inherit Vec<T>::get methods
-    using Vec<T>::setLAndRHS;  ///< Inherit Vec<T>::set methods
+    using Vec<T>::set;  ///< Inherit Vec<T>::set methods
 
     /**
      * @brief Create an empty Singleton on the device.

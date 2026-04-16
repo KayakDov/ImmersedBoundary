@@ -93,13 +93,14 @@ public:
  */
 template<typename T>
 class LSetter {
-    size_t rowL;
+
 public:
-    DeviceData2d<T>& L;
+    DeviceData2d<T>* L;
+    size_t rowL;
     /**
      * @brief Constructs a DimensionSetter for a given grid point.
      */
-    __device__ LSetter(DeviceData2d<T>& L, size_t rowL) : L(L), rowL(rowL) {}
+    __device__ LSetter(DeviceData2d<T>& L, size_t rowL) : L(&L), rowL(rowL) {}
 
     /**
      * @brief Set coefficients for a 1D row in the banded Laplacian.
@@ -126,9 +127,9 @@ public:
         const BoundaryCondition<T>& lineStart, const BoundaryCondition<T>& lineEnd,
         const AdjacencyInd& primary, const AdjacencyInd& left, const AdjacencyInd& right
     ) {
-        T& mainDiag = L(rowL, primary);
-        T& rightDiag = L(rowL, right);
-        T& leftDiag = L(rowL, left);
+        T& mainDiag = (*L)(rowL, primary);
+        T& rightDiag = (*L)(rowL, right);
+        T& leftDiag = (*L)(rowL, left);
 
         if (indexInLine == 0) lineStart.setL(mainDiag, rightDiag);
         else if (indexInLine == lineLength - 1) lineEnd.setL(mainDiag, leftDiag);
@@ -177,18 +178,15 @@ public:
      * Diagonal and off-diagonal structure are set according
      * to the supplied adjacency pattern and boundary conditions.
      *
-     * @param indexInLine       Grid point index along this dimension.
-     * @param lineLength        Number of grid points in this dimension.
      * @param lineStart         Boundary condition at start   (index == 0).
      * @param lineEnd           Boundary condition at end     (index == lineLength-1).
      */
     __device__ void setRowInBanded1d(
         DeviceData2d<T>& L,
-        const size_t indexInLine,
         const BoundaryCondition<T>& lineStart, const BoundaryCondition<T>& lineEnd
     ) {
-        lSetter.L = L;
-        lSetter.setRowInBanded1d(indexInLine, L.rows, lineStart, lineEnd, primary, left, right);
+        lSetter.L = &L;
+        lSetter.setRowInBanded1d(lSetter.rowL, L.rows, lineStart, lineEnd, primary, left, right);
     }
 };
 
@@ -220,7 +218,7 @@ public:
     __device__ void setRowInBanded1dAndRhs(
         const size_t indexInLine, const size_t lineLength,
         const BoundaryCondition<T> lineStart, const BoundaryCondition<T> lineEnd,
-        const AdjacencyPatern& primary, const AdjacencyPatern& left, const AdjacencyPatern& right
+        const AdjacencyInd& primary, const AdjacencyInd& left, const AdjacencyInd& right
     ) {
         LSetter<T>::setRowInBanded1d(indexInLine, lineLength, lineStart, lineEnd, primary, left, right);
         RhsBCSetter1d<T>::setRHSIn1d(indexInLine, lineLength, lineStart, lineEnd);
@@ -317,7 +315,14 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
  * @param[in] next                Adjacency info for the positive diagonal (u_{i+1}).
  */
 template <typename T>
-__global__ void buildL1dKernel(DeviceData2d<T> bandedL_i, const BoundaryCondition<T> start, const BoundaryCondition<T> end, const AdjacencyInd primary, const AdjacencyInd prev, const AdjacencyInd next) {
+__global__ void buildL1dKernel(
+    DeviceData2d<T> bandedL_i,
+    const BoundaryCondition<T> start,
+    const BoundaryCondition<T> end,
+    const AdjacencyInd primary,
+    const AdjacencyInd prev,
+    const AdjacencyInd next
+) {
     size_t i = idx();
     if (i >= bandedL_i.rows) return;
 
@@ -329,7 +334,7 @@ template <typename T>
 __global__ void buildAllL1dKernel(DeviceData2d<T> bandedL_x, DeviceData2d<T> bandedL_y, DeviceData2d<T> bandedL_z, const BoundaryConfig<T> boundary, const AdjacencyInd primary, const AdjacencyInd prev, const AdjacencyInd next) {
     size_t i = idx();
 
-    LSetter1d<T> ds(bandedL_x, i, next.diag, primary.col, next.col, prev.col);
+    LSetter1d<T> ds(bandedL_x, i, primary, next, prev);
     if (i < bandedL_x.rows) ds.setRowInBanded1d(bandedL_x, boundary.left, boundary.right);
     if (i < bandedL_y.rows) ds.setRowInBanded1d(bandedL_y, boundary.top, boundary.bottom);
     if (i < bandedL_z.rows) ds.setRowInBanded1d(bandedL_z, boundary.front, boundary.back);

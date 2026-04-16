@@ -29,7 +29,7 @@ public:
 template<typename T>
 class Laplacian {
 protected:
-    const AdjacencyPatern adjacncies;
+    const AdjacencyPatern adjacencies;
     const GridDim dim;
     const Real3d delta;
     const BoundaryConfig<T> boundary;
@@ -37,8 +37,9 @@ protected:
     std::unique_ptr<BandedMat<T>> bandedL = nullptr;
     std::unique_ptr<Vec<T>> rhsBC = nullptr;
 
-
 public:
+
+
 
     Laplacian1dManager<T> _1d;
 
@@ -109,12 +110,12 @@ public:
      * @param[in,out] preAllocatedForIndices Vector of length 3 for diagonal indices.
      * @param[in] dim                       Dimension: 0=row/y, 1=col/x, 2=layer/z.
      */
-    void setL_i(cudaStream_t stream, SquareMat<T> &preAllocatedForL_i, Vec<int32_t> &preAllocatedForIndices, size_t dim);
+    void setL_i(cudaStream_t stream, Mat<T> &preAllocatedForL_i, Vec<int32_t> &preAllocatedForIndices, size_t dim);
 
     /**
      * @brief Effectively calls setL_i for each dimension.
      */
-    void setL_iAll(cudaStream_t stream, SquareMat<T> *preAllocatedForL_iX3, Vec<int32_t> &preAllocatedForIndices);
+    void setL_iAll(cudaStream_t stream, Mat<T> *preAllocatedForL_iX3, Vec<int32_t> &preAllocatedForIndices);
 
     /**
     * @brief Compute boundary-condition contributions to the right-hand side vector.
@@ -166,6 +167,13 @@ public:
      * @param[in] stream CUDA stream for kernel execution.
      */
     void setL_iAll(cudaStream_t stream);
+
+    /**
+     * Gets the value of L.
+     * @param stream used to build BandedL if it doesn't exist.
+     * @return BandedL.
+     */
+    BandedMat<T>& banded(cudaStream_t stream = nullptr);
 };
 
 
