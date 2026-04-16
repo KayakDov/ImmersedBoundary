@@ -1,26 +1,36 @@
 
 #ifndef CUDABANDED_LAPLACIANKERNELS_CUH
 #define CUDABANDED_LAPLACIANKERNELS_CUH
+#include "deviceArrays/headers/DeviceData.cuh"
 
 /**
- * holds a flat index.
+ * How the adjacent grid cells are stored in the laplacian. *
  */
-class FlatInd {
+class AdjacencyPatern {
 public:
-    size_t flat;            ///< Flattened grid index of the current grid point
 
+    AdjacencyInd here, up, down, left, right, front, back;
     /**
-     *  A constructor.
-     * @param flat The index
+     *
+     * @param dim The dimensions of the grid.
      */
-    __device__ FlatInd(const size_t flat) : flat(flat) {}
+    __host__ __device__ AdjacencyPatern(GridDim dim):
+        here(0, 0),
+        up(1, -1),
+        down(2, 1),
+        left(3, -dim.rows * dim.layers),
+        right(4, dim.rows * dim.layers),
+        front (5, -dim.rows),
+        back(6, dim.rows)
+    {
 
-    /**
-     * Sets the flat index
-     * @param flat The new flat index.
-     */
-    __device__ void setFlat(size_t flat) {this->flat = flat;}
+    };
+
+    __host__ void loadMapRowToDiag(Vec<int32_t>& diags, cudaStream_t stream) const;
+
+    __host__ static void loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> indices, cudaStream_t stream);
 };
+
 
 /**
  * @class RhsBCSetter1d
@@ -37,17 +47,17 @@ public:
  * @tparam T Floating-point type (float or double).
  */
 template<typename T>
-class RhsBCSetter1d : virtual public FlatInd{
-protected:
-    DeviceData1d<T> &rhs;   ///< Reference to the right-hand side vector
+class RhsBCSetter1d{
+
 public:
+    T& rhsVal;
     /**
      * @brief Constructs a DimensionSetter for a given grid point.
      *
      * @param[in,out] rhs The right-hand side vector.
      * @param[in] flat    The flattened index of the current grid point.
      */
-    __device__ RhsBCSetter1d(DeviceData1d<T> & rhs, size_t flat) : rhs(rhs), FlatInd(flat) {}
+    __device__ RhsBCSetter1d(T& rhsVal) : rhsVal(rhsVal) {}
 
     /**
      * @brief Applies boundary-condition contributions to the RHS along one dimension.
@@ -62,8 +72,8 @@ public:
      * @param[in] right     Boundary condition at gridIndex == end - 1.
      */
     __device__ void setRHSIn1d(const size_t indexInLine, const size_t end, const BoundaryCondition<T>& left, const BoundaryCondition<T>& right) {
-        if (indexInLine == 0) left.setBoundaryRHSContribution(flat, rhs);
-        else if (indexInLine == end - 1) right.setBoundaryRHSContribution(flat, rhs);
+        if (indexInLine == 0) left.setBoundaryRHSContribution(rhsVal);
+        else if (indexInLine == end - 1) right.setBoundaryRHSContribution(rhsVal);
     }
 };
 
@@ -82,43 +92,14 @@ public:
  * @tparam T Floating-point type (float or double).
  */
 template<typename T>
-class LSetter : virtual public FlatInd {
-    DeviceData2d<T> &L;     ///< Reference to the banded system matrix L
-    size_t diagOffset, primaryDiagColInd, rightDiagColInd, leftDiagColInd;
+class LSetter {
+    size_t rowL;
 public:
+    DeviceData2d<T>& L;
     /**
      * @brief Constructs a DimensionSetter for a given grid point.
-     *
-     * @param[in,out] L   The banded system matrix (7 or 5 diagonals for 3D or 2D).
-     * @param[in] flat    The flattened index of the current grid point.
      */
-    __device__ LSetter(DeviceData2d<T>& L, size_t flat) : FlatInd(flat),L(L) {}
-
-    /**
-     *
-     * @param L The banded laplacian to be set.
-     * @param flat The row of the laplacian that is to be set.
-     * @param diagOffset The number of elements from the primary diagonal to the nex diagonal that will be changed.
-     * This is also the index of the secondary diagonal.
-     * @param primaryDiagColInd The column index of the primary diagonal in the banded matrix.
-     * @param rightDiagColInd The index of the righ diagonal's column.
-     * @param leftDiagColInd The index of the left diagonal's column.
-     */
-    __device__ LSetter(DeviceData2d<T>& L, size_t flat, size_t diagOffset, size_t primaryDiagColInd, size_t rightDiagColInd, size_t leftDiagColInd) :
-        FlatInd(flat),L(L),
-        diagOffset(diagOffset),
-        primaryDiagColInd(primaryDiagColInd),
-        rightDiagColInd(rightDiagColInd),
-        leftDiagColInd(leftDiagColInd)
-        {}
-
-    /**
-     * Sets the laplacian the this dimension setter will modify on its subsequent calls.
-     * @param L The new laplacian to be held here.
-     */
-    __device__ void setL(DeviceData2d<T>& L) {
-        this->L = L;
-    }
+    __device__ LSetter(DeviceData2d<T>& L, size_t rowL) : L(L), rowL(rowL) {}
 
     /**
      * @brief Set coefficients for a 1D row in the banded Laplacian.
@@ -135,49 +116,91 @@ public:
      * @param lineLength        Number of grid points in this dimension.
      * @param lineStart         Boundary condition at start   (index == 0).
      * @param lineEnd           Boundary condition at end     (index == lineLength-1).
-     * @param diagOffset        Distance for the off-diagonal (storage offset).
-     * @param primraryDiagColInd Column for primary diagonal.
-     * @param rightDiagColInd   Column for right/forward-off diagonal.
-     * @param leftDiagColInd    Column for left/backward-off diagonal.
+     * @param primary          The value at the main diagoanl.
+     * @param left          The value at the left diagonal on the row.
+     * @param right         The value at the right diagonal on the row.
+
      */
     __device__ void setRowInBanded1d(
         const size_t indexInLine, const size_t lineLength,
-        const BoundaryCondition<T> lineStart, const BoundaryCondition<T> lineEnd,
-        const size_t diagOffset, const size_t primraryDiagColInd, const size_t rightDiagColInd, const size_t leftDiagColInd
+        const BoundaryCondition<T>& lineStart, const BoundaryCondition<T>& lineEnd,
+        const AdjacencyInd& primary, const AdjacencyInd& left, const AdjacencyInd& right
     ) {
-        if (indexInLine == 0) lineStart.setL(L, this->flat, primraryDiagColInd, rightDiagColInd);
-        else if (indexInLine == lineLength - 1) lineEnd.setL(L, this->flat - diagOffset, primraryDiagColInd, leftDiagColInd);
-        else {
-            L(this->flat, primraryDiagColInd) -= 2 * lineStart.inverseDeltaSquared;
-            L(this->flat, rightDiagColInd) = L(this->flat - diagOffset, leftDiagColInd) = lineStart.inverseDeltaSquared;
-        }
-    }
+        T& mainDiag = L(rowL, primary);
+        T& rightDiag = L(rowL, right);
+        T& leftDiag = L(rowL, left);
 
-    /**
-     * @brief Applies the 1D Laplacian stencil along one dimension with boundary condition handling.
-     *
-     *
-     * The method accounts for banded matrix storage where:
-     * - The main diagonal (index 0) is stored in column `primaryDiagColInd` at row `flat`.
-     * - The positive diagonal is stored in column `rightDiagColInd` at row `flat`.
-     * - The negative diagonal is stored in column `leftDiagColInd` at row `flat - diagOffset`,
-     *   where `diagOffset` is the absolute value of the diagonal index.
-     *
-     *   Note, this method assumes that the index in line is the same as the flat index.
-     *
-     * @param[in] lineLength          Size of the grid in this dimension (rows, cols, or layers).
-     * @param[in] lineStart         Boundary condition at gridIndex == 0.
-     * @param[in] lineEnd        Boundary condition at gridIndex == end - 1.
-     */
-    __device__ void setRowInBanded1d(const size_t lineLength, const BoundaryCondition<T> lineStart, const BoundaryCondition<T> lineEnd) {
-        setRowInBanded1d(this->flat, lineLength, lineStart, lineEnd, diagOffset, primaryDiagColInd, rightDiagColInd, leftDiagColInd);
+        if (indexInLine == 0) lineStart.setL(mainDiag, rightDiag);
+        else if (indexInLine == lineLength - 1) lineEnd.setL(mainDiag, leftDiag);
+        else {
+            mainDiag -= 2 * lineStart.inverseDeltaSquared;
+            leftDiag = rightDiag = lineStart.inverseDeltaSquared;
+        }
     }
 };
 
+/**
+ * This class does the same as LSetter, but stores primary, right, and left values.
+ * @tparam T
+ */
+template<typename T>
+class LSetter1d {
+    LSetter<T> lSetter;
+    const AdjacencyInd& primary;
+    const AdjacencyInd& right;
+    const AdjacencyInd& left;
+public:
+    /**
+     *
+     * @param L The banded laplacian to be set.
+     * @param rowL The row of the laplacian that is to be set.
+     * @param primary The column index of the primary diagonal in the banded matrix.
+     * @param right The index of the righ diagonal's column.
+     * @param left The index of the left diagonal's column.
+     */
+    __device__ LSetter1d(DeviceData2d<T>& L, size_t rowL, const AdjacencyInd& primary, const AdjacencyInd& left, const AdjacencyInd& right) :
+        lSetter(L, rowL),
+        primary(primary),
+        right(right),
+        left(left)
+    {}
+
+
+    /**
+     * @brief Set coefficients for a 1D row in the banded Laplacian.
+     *
+     * This method handles all cases:
+     * - Boundary at start (index == 0)
+     * - Boundary at end   (index == lineLength - 1)
+     * - Interior node     (otherwise)
+     *
+     * Diagonal and off-diagonal structure are set according
+     * to the supplied adjacency pattern and boundary conditions.
+     *
+     * @param indexInLine       Grid point index along this dimension.
+     * @param lineLength        Number of grid points in this dimension.
+     * @param lineStart         Boundary condition at start   (index == 0).
+     * @param lineEnd           Boundary condition at end     (index == lineLength-1).
+     */
+    __device__ void setRowInBanded1d(
+        DeviceData2d<T>& L,
+        const size_t indexInLine,
+        const BoundaryCondition<T>& lineStart, const BoundaryCondition<T>& lineEnd
+    ) {
+        lSetter.L = L;
+        lSetter.setRowInBanded1d(indexInLine, L.rows, lineStart, lineEnd, primary, left, right);
+    }
+};
+
+/**
+ * Sets both the laplacian and the BC modifications for the rhs.
+ * @tparam T
+ */
 template<typename T>
 class LAndRhsSetter : public LSetter<T>, public RhsBCSetter1d<T>{
-    __device__ LAndRhsSetter(DeviceData2d<T>& L, DeviceData1d<T>& rhs, size_t flat)
-        : FlatInd(flat), LSetter<T>(L, flat), RhsBCSetter1d<T>(rhs, flat) {}
+public:
+    __device__ LAndRhsSetter(DeviceData2d<T>& L, DeviceData1d<T>& rhs, size_t flatInd)
+        : RhsBCSetter1d<T>(rhs[flatInd]), LSetter<T>(L, flatInd) {}
 
     /**
      * @brief Applies the 1D Laplacian stencil along one dimension with boundary condition handling.
@@ -189,17 +212,17 @@ class LAndRhsSetter : public LSetter<T>, public RhsBCSetter1d<T>{
      * @param[in] lineLength     Size of the grid in this dimension.
      * @param[in] lineStart      Boundary condition at gridIndex == 0.
      * @param[in] lineEnd        Boundary condition at gridIndex == end - 1.
-     * @param[in] diagOffset     Absolute value of the negative diagonal index.
-     * @param[in] primraryDiagColInd Column index for the main diagonal.
-     * @param[in] rightDiagColInd    Column index for the positive diagonal.
-     * @param[in] leftDiagColInd     Column index for the negative diagonal.
+     * @param primary          The value on the main diagonal.
+     * @param left          The value on the left diagonal.
+     * @param right          The value on the right diagonal.
+     *
      */
     __device__ void setRowInBanded1dAndRhs(
         const size_t indexInLine, const size_t lineLength,
         const BoundaryCondition<T> lineStart, const BoundaryCondition<T> lineEnd,
-        const size_t diagOffset, const size_t primraryDiagColInd, const size_t rightDiagColInd, const size_t leftDiagColInd
+        const AdjacencyPatern& primary, const AdjacencyPatern& left, const AdjacencyPatern& right
     ) {
-        LSetter<T>::setRowInBanded1d(indexInLine, lineLength, lineStart, lineEnd, diagOffset, primraryDiagColInd, rightDiagColInd, leftDiagColInd);
+        LSetter<T>::setRowInBanded1d(indexInLine, lineLength, lineStart, lineEnd, primary, left, right);
         RhsBCSetter1d<T>::setRHSIn1d(indexInLine, lineLength, lineStart, lineEnd);
     }
 };
@@ -221,26 +244,21 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> L, const GridDim dim, const
 
     LAndRhsSetter<T> ds(L, rhs, dim[gridInd]);
 
-    L(ap.here.col, ds.flat) = rhs[ds.flat] = 0;
-
-    ds.setRowInBanded1d(
+    ds.setRowInBanded1dAndRhs(
         gridInd.row, dim.rows,
         boundary.top, boundary.bottom,
-        ap.down.diag,
-        ap.here.col, ap.down.col, ap.up.col
+        ap.here, ap.up, ap.down
     );
-    ds.setRowInBanded1d(
+    ds.setRowInBanded1dAndRhs(
         gridInd.col, dim.cols,
         boundary.left, boundary.right,
-        ap.right.diag,
-        ap.here.col, ap.right.col, ap.left.col
+        ap.here, ap.left, ap.right
     );
     if (dim.layers > 1)
-        ds.setRowInBanded1d(
+        ds.setRowInBanded1dAndRhs(
             gridInd.layer, dim.layers,
             boundary.front, boundary.back,
-            ap.back.diag,
-            ap.here.col, ap.back.col, ap.front.col
+            ap.here, ap.back, ap.front
         );
 }
 
@@ -261,23 +279,25 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
     GridInd2d ind;
     GridInd3d ind3d;
 
+    T& rhsVal = rhs[dim[ind3d]];
+
     if (dim.layers > 1 && ind.row < dim.rows && ind.col < dim.cols) {
         ind3d.set(ind.row, ind.col, 0);
-        boundary.front.setBoundaryRHSContribution(dim[ind3d], rhs);
+        boundary.front.setBoundaryRHSContribution(rhsVal);
         ind3d.layer = dim.layers - 1;
-        boundary.back.setBoundaryRHSContribution(dim[ind3d], rhs);
+        boundary.back.setBoundaryRHSContribution(rhsVal);
     }
     if (ind.row < dim.rows && ind.col < dim.layers) {
         ind3d.set(ind.row, 0, ind.col);
-        boundary.left.setBoundaryRHSContribution(dim[ind3d], rhs);
+        boundary.left.setBoundaryRHSContribution(rhsVal);
         ind3d.col = dim.cols - 1;
-        boundary.right.setBoundaryRHSContribution(dim[ind3d], rhs);
+        boundary.right.setBoundaryRHSContribution(rhsVal);
     }
     if (ind.row < dim.layers && ind.col < dim.cols) {
         ind3d.set(0, ind.col, ind.row);
-        boundary.top.setBoundaryRHSContribution(dim[ind3d], rhs);
+        boundary.top.setBoundaryRHSContribution(rhsVal);
         ind3d.row = dim.rows - 1;
-        boundary.bottom.setBoundaryRHSContribution(dim[ind3d], rhs);
+        boundary.bottom.setBoundaryRHSContribution(rhsVal);
     }
 }
 
@@ -302,23 +322,17 @@ __global__ void buildL1dKernel(DeviceData2d<T> bandedL_i, const BoundaryConditio
     if (i >= bandedL_i.rows) return;
 
     LSetter<T> ds(bandedL_i, i);
-    ds.setRowInBanded1d(i, bandedL_i.rows, start, end, next.diag, primary.col, next.col, prev.col);
+    ds.setRowInBanded1d(i, bandedL_i.rows, start, end, primary, next, prev);
 }
 
 template <typename T>
 __global__ void buildAllL1dKernel(DeviceData2d<T> bandedL_x, DeviceData2d<T> bandedL_y, DeviceData2d<T> bandedL_z, const BoundaryConfig<T> boundary, const AdjacencyInd primary, const AdjacencyInd prev, const AdjacencyInd next) {
     size_t i = idx();
 
-    LSetter<T> ds(bandedL_x, i, next.diag, primary.col, next.col, prev.col);
-    if (i < bandedL_x.rows) ds.setRowInBanded1d(bandedL_x.rows, boundary.left, boundary.right);
-    if (i < bandedL_y.rows) {
-        ds.setL(bandedL_y);
-        ds.setRowInBanded1d(bandedL_y.rows, boundary.top, boundary.bottom);
-    }
-    if (i < bandedL_z.rows) {
-        ds.setL(bandedL_z);
-        ds.setRowInBanded1d(bandedL_z.rows, boundary.front, boundary.back);
-    }
+    LSetter1d<T> ds(bandedL_x, i, next.diag, primary.col, next.col, prev.col);
+    if (i < bandedL_x.rows) ds.setRowInBanded1d(bandedL_x, boundary.left, boundary.right);
+    if (i < bandedL_y.rows) ds.setRowInBanded1d(bandedL_y, boundary.top, boundary.bottom);
+    if (i < bandedL_z.rows) ds.setRowInBanded1d(bandedL_z, boundary.front, boundary.back);
 }
 
 

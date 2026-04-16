@@ -60,32 +60,24 @@ public:
      *
      * Modifies the matrix L and RHS vector b for a grid point adjacent to the boundary.
      *
-     * @param L Discrete Laplacian matrix
-     * @param gridIndFlattened Index of the current grid point
-     * @param primaryDiagonalCol the column in the banded matrix of the primary diagonal.
-     * @param secondaryDiagonalCol The column in the banded matrix of the non primary diagonal that will need to be adjusted.
      */
-    __device__ void setL(DeviceData2d<Real> L,
-                     const size_t gridIndFlattened,
-                     const size_t primaryDiagonalCol,
-                     const size_t secondaryDiagonalCol
-    ) const {
+    __device__ void setL(Real& mainDiagVal, Real& offDiagVal) const {
         switch (condition) {
             case ConditionType::NeumannStaggered:
-                L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
-                L(gridIndFlattened, primaryDiagonalCol) -= this->inverseDeltaSquared;
+                offDiagVal = this->inverseDeltaSquared;
+                mainDiagVal -= this->inverseDeltaSquared;
                 break;
             case  ConditionType::DirichletStaggered:
-                L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
-                L(gridIndFlattened, primaryDiagonalCol) -= 3*this->inverseDeltaSquared;
+                offDiagVal = this->inverseDeltaSquared;
+                mainDiagVal -= 3*this->inverseDeltaSquared;
                 break;
             case ConditionType::NeumannNodeCentered:
-                L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
-                L(gridIndFlattened, primaryDiagonalCol) -= this->inverseDeltaSquared;
+                offDiagVal = this->inverseDeltaSquared;
+                mainDiagVal -= this->inverseDeltaSquared;
                 break;
             case ConditionType::DirichletNodeCentered:
-                L(gridIndFlattened, secondaryDiagonalCol) = this->inverseDeltaSquared;
-                L(gridIndFlattened, primaryDiagonalCol) -= 2 * this->inverseDeltaSquared;
+                offDiagVal = this->inverseDeltaSquared;
+                mainDiagVal -= 2 * this->inverseDeltaSquared;
                 break;
         }
     }
@@ -99,44 +91,32 @@ public:
  * @param gridIndFlattened Index of the current grid point
  * @param rhs Right-hand side vector (modified in place)
  */
-    __device__ void setBoundaryRHSContribution(const size_t gridIndFlattened, DeviceData1d<Real> rhs) const {
+    __device__ void setBoundaryRHSContribution(Real& rhsVal) const {
         Real contribution = 0;
 
         switch (condition) {
+            case ConditionType::NeumannNodeCentered:
             case ConditionType::NeumannStaggered:
                 contribution = -this->value * this->inverseDelta;
                 break;
             case ConditionType::DirichletStaggered:
                 contribution = 2*this->value * this->inverseDeltaSquared;
                 break;
-            case ConditionType::NeumannNodeCentered:
-                contribution = this->value * this->inverseDelta;
-                break;
             case ConditionType::DirichletNodeCentered:
                 contribution = -this->value * this->inverseDeltaSquared;
                 break;
         }
 
-        atomicAdd(&rhs[gridIndFlattened], contribution);
+        atomicAdd(&rhsVal, contribution);
     }
     /**
      * @brief Apply boundary condition contribution to system.
      *
      * Modifies the matrix L and RHS vector b for a grid point adjacent to the boundary.
-     *
-     * @param L Discrete Laplacian matrix
-     * @param gridIndFlattened Index of the current grid point
-     * @param primaryDiagonalCol the column in the banded matrix of the primary diagonal.
-     * @param secondaryDiagonalCol The column in the banded matrix of the non primary diagonal that will need to be adjusted.
      */
-    __device__ void setLAndRHS(DeviceData2d<Real> L,
-                     const size_t gridIndFlattened,
-                     const size_t primaryDiagonalCol,
-                     const size_t secondaryDiagonalCol,
-                     const DeviceData1d<Real> rhs
-    ) const {
-        setL(L, gridIndFlattened, primaryDiagonalCol, secondaryDiagonalCol);
-        setBoundaryRHSContribution(gridIndFlattened, rhs);
+    __device__ void setLAndRHS(Real& mainDiagVal, Real& offDiagVal, Real& rhsVal) const {
+        setL(mainDiagVal, offDiagVal);
+        setBoundaryRHSContribution(rhsVal);
     }
 };
 
@@ -188,7 +168,7 @@ struct BoundaryConfig {
      *
      * @throws std::out_of_range if dim is not 0, 1, or 2.
      */
-    __host__ __device__ BoundaryCondition<Real>& operator()(size_t dim, bool isStart) const {
+    __host__ __device__ const BoundaryCondition<Real>& operator()(size_t dim, bool isStart) const {
         switch (dim) {
             case 0: return isStart ? left : right;
             case 1: return isStart ? top : bottom;
@@ -201,6 +181,7 @@ struct BoundaryConfig {
                 throw std::out_of_range("Invalid dimension: must be 0, 1, or 2");
         #endif
         }
+
     }
 
 };

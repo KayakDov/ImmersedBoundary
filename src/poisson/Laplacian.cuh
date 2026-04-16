@@ -14,18 +14,6 @@
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;
 
-struct AdjacencyInd {
-    /**
-     * The column in the banded matrix.
-     */
-    const size_t col;
-    /**
-     * The index of the diagonal that is held by that column.
-     */
-    const int32_t diag;
-    __device__ __host__ AdjacencyInd(const size_t col, const int32_t diag) : col(col), diag(diag) {
-    }
-};
 
 template<typename T>
 class Laplacian1dManager {
@@ -37,25 +25,6 @@ public:
     std::unique_ptr<BandedMat<T>>& operator[](size_t dim);
 };
 
-/**
- * How the adjacent grid cells are stored in the laplacian. *
- */
-class AdjacencyPatern {
-public:
-
-    AdjacencyInd here, up, down, left, right, front, back;
-    /**
-     *
-     * @param dim The dimensions of the grid.
-     */
-    __host__ __device__ AdjacencyPatern(GridDim dim);
-
-    void loadMapRowToDiag(Vec<int32_t>& diags, cudaStream_t stream) const;
-
-    static void loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> indices, cudaStream_t stream);
-
-
-};
 
 template<typename T>
 class Laplacian {

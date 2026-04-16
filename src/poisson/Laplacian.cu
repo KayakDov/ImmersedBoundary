@@ -9,17 +9,6 @@
 #include "deviceArrays/headers/Support/Streamable.h"
 #include "math/Real3dDevice.hpp"
 
-AdjacencyPatern::AdjacencyPatern(GridDim dim):
-    here(0, 0),
-    up(1, -1),
-    down(2, 1),
-    left(3, -dim.rows * dim.layers),
-    right(4, dim.rows * dim.layers),
-    front (5, -dim.rows),
-    back(6, dim.rows)
-    {
-
-}
 
 
 template<typename T>
