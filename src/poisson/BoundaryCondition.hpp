@@ -62,14 +62,13 @@ public:
      *
      * @param L Discrete Laplacian matrix
      * @param gridIndFlattened Index of the current grid point
-     * @param diagOffset Index offset to neighbor in the boundary-normal direction
-     * @param rhs Right-hand side vector
+     * @param primaryDiagonalCol the column in the banded matrix of the primary diagonal.
+     * @param secondaryDiagonalCol The column in the banded matrix of the non primary diagonal that will need to be adjusted.
      */
-    __device__ void setLAndRHS(DeviceData2d<Real> L,
+    __device__ void setL(DeviceData2d<Real> L,
                      const size_t gridIndFlattened,
                      const size_t primaryDiagonalCol,
-                     const size_t secondaryDiagonalCol,
-                     const DeviceData1d<Real> rhs
+                     const size_t secondaryDiagonalCol
     ) const {
         switch (condition) {
             case ConditionType::NeumannStaggered:
@@ -89,7 +88,6 @@ public:
                 L(gridIndFlattened, primaryDiagonalCol) -= 2 * this->inverseDeltaSquared;
                 break;
         }
-        setBoundaryRHSContribution(gridIndFlattened, rhs);
     }
 
     /**
@@ -121,7 +119,25 @@ public:
 
         atomicAdd(&rhs[gridIndFlattened], contribution);
     }
-
+    /**
+     * @brief Apply boundary condition contribution to system.
+     *
+     * Modifies the matrix L and RHS vector b for a grid point adjacent to the boundary.
+     *
+     * @param L Discrete Laplacian matrix
+     * @param gridIndFlattened Index of the current grid point
+     * @param primaryDiagonalCol the column in the banded matrix of the primary diagonal.
+     * @param secondaryDiagonalCol The column in the banded matrix of the non primary diagonal that will need to be adjusted.
+     */
+    __device__ void setLAndRHS(DeviceData2d<Real> L,
+                     const size_t gridIndFlattened,
+                     const size_t primaryDiagonalCol,
+                     const size_t secondaryDiagonalCol,
+                     const DeviceData1d<Real> rhs
+    ) const {
+        setL(L, gridIndFlattened, primaryDiagonalCol, secondaryDiagonalCol);
+        setBoundaryRHSContribution(gridIndFlattened, rhs);
+    }
 };
 
 
@@ -160,5 +176,31 @@ struct BoundaryConfig {
         front(value, delta.z, type), back(value, delta.z, type){}
 
     __host__ BoundaryConfig(ConditionType type, Real value, Real delta): BoundaryConfig(type, value, Real3d(delta, delta, delta)){}
+
+    /**
+     * @brief Retrieve a boundary condition by dimension and position.
+     *
+     * @param[in] dim               Dimension: 0=row/y, 1=col/x, 2=layer/z.
+     * @param[in] isStart           If true, return the boundary at the start (left/top/front).
+     *                              If false, return the boundary at the end (right/bottom/back).
+     *
+     * @return Reference to the requested boundary condition.
+     *
+     * @throws std::out_of_range if dim is not 0, 1, or 2.
+     */
+    __host__ __device__ BoundaryCondition<Real>& operator()(size_t dim, bool isStart) const {
+        switch (dim) {
+            case 0: return isStart ? top : bottom;
+            case 1: return isStart ? left : right;
+            case 2: return isStart ? front : back;
+            default:
+        #ifdef __CUDA_ARCH__
+                asm("trap;");  // Device-side trap for invalid access
+                return left;   // Unreachable, but satisfies return requirement
+        #else
+                throw std::out_of_range("Invalid dimension: must be 0, 1, or 2");
+        #endif
+        }
+    }
 
 };
