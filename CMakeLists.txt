@@ -71,6 +71,7 @@ add_library(CudaBandedLib STATIC
         src/poisson/BoundaryCondition.hpp
         src/math/Real3dDevice.hpp
         src/poisson/LaplacianKernels.cuh
+        src/poisson/LaplacianEigenKernels.cuh
 )
 
 set_target_properties(CudaBandedLib PROPERTIES
@@ -105,7 +106,8 @@ enable_testing()
 # We use the source lists directly to ensure GTest macros are compiled into the binary
 file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp")
 
-add_executable(run_unit_tests ${TEST_SOURCES})
+add_executable(run_unit_tests ${TEST_SOURCES}
+        src/poisson/LaplacianEigenKernels.cuh)
 
 set_target_properties(run_unit_tests PROPERTIES
         CUDA_RESOLVE_DEVICE_SYMBOLS ON

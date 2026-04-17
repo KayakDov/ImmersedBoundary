@@ -9,10 +9,51 @@
 #include "deviceArrays/headers/Support/Streamable.h"
 #include "math/Real3dDevice.hpp"
 
+#include <memory>
 
+
+/**
+ * @brief Efficiently creates unique objects based on 1D Laplacian boundary conditions.
+ *
+ * This utility iterates through the X, Y, and Z dimensions of a Laplacian setup.
+ * If the boundary conditions (dimensions, spacing, and types) for two dimensions
+ * are identical, the function reuses the existing object by sharing ownership
+ * via std::shared_ptr. This prevents redundant memory allocations and unnecessary
+ * re-computation of Laplacian matrices or eigenvalue vectors.
+ *
+ * @tparam T          The floating-point type (e.g., float or double).
+ * @tparam ResultType The type of object to be created (e.g., Mat<T> or Vec<T>).
+ * @tparam Factory    A callable type (lambda or function) that returns ResultType by value.
+ *
+ * @param[in]  conds    A reference to an array of 3 LaplacianConditions (X, Y, Z).
+ * @param[out] outputs  An array of 3 shared_ptrs to be populated with the results.
+ * @param[in]  factory  A factory function: `ResultType factory(const LaplacianConditions<T>&)`.
+ * * @note Because ResultType is wrapped in a shared_ptr, ResultType does not need
+ * to be assignable, which is critical for classes with const data members.
+ */
+template <typename T, typename ResultType, typename Factory>
+void createUnique(const LaplcianConditions<T> (&conds)[3], std::shared_ptr<const ResultType> (&outputs)[3], Factory factory){
+    for (size_t i = 0; i < 3; ++i) {
+        bool matched = false;
+        for (size_t j = 0; j < i; ++j) {
+            if (conds[i] == conds[j]) {
+                outputs[i] = outputs[j];
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            outputs[i] = std::make_shared<ResultType>(factory(conds[i]));
+        }
+    }
+}
 
 template<typename T>
-std::unique_ptr<BandedMat<T>> & Laplacian1dManager<T>::operator[](size_t dim) {
+LaplcianConditions<T>::LaplcianConditions(const size_t length, const BoundaryConditionPair<T> &boundary) :
+    dim(length), boundary(boundary) {}
+
+template<typename T>
+std::unique_ptr<BandedMat<T>> & Laplacian1d<T>::operator[](size_t dim) {
     switch (dim) {
         case 0: return Lx;
         case 1: return Ly;
@@ -50,7 +91,7 @@ void Laplacian<T>::setOperation(cudaStream_t stream) {
     Vec<int32_t> preAllocatedForIndices = Vec<int32_t>::create(numDiags, stream);
     Mat<T> rhsAndL = Mat<T>::create(dim.size(), numDiags + 1);
     Mat<T> preAllocatedForL = rhsAndL.subMat(0,0,dim.size(), numDiags);
-    Vec<T> rhsModifier = preAllocatedForL.col(numDiags);
+    SimpleArray<T> rhsModifier = rhsAndL.col(numDiags);
 
     setOperation(stream, preAllocatedForL, preAllocatedForIndices, rhsModifier);
 }
@@ -74,7 +115,7 @@ void Laplacian<T>::setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, V
 }
 
 template<typename T>
-void Laplacian<T>::setL_i(cudaStream_t stream, Mat<T> &preAllocatedForL_i, Vec<int32_t> &preAllocatedForIndices, size_t dim) {
+void Laplacian1d<T>::set(cudaStream_t stream, Mat<T> &preAllocatedForL_i, Vec<int32_t> &preAllocatedForIndices, size_t dim) {
 
     AdjacencyInd prev(1, -1), next(2, 1), primary(0, 0);
 
@@ -90,15 +131,15 @@ void Laplacian<T>::setL_i(cudaStream_t stream, Mat<T> &preAllocatedForL_i, Vec<i
 
     AdjacencyPatern::loadMapRowToDiag(preAllocatedForIndices, {primary, prev, next}, stream);
 
-    _1d[dim] = std::make_unique<BandedMat<T>>(preAllocatedForL_i, preAllocatedForIndices);
+    this->operator[](dim) = std::make_unique<BandedMat<T>>(preAllocatedForL_i, preAllocatedForIndices);
 }
 
 template<typename T>
-void Laplacian<T>::setL_iAll(cudaStream_t stream, Mat<T>* preAllocatedForL_iX3, Vec<int32_t> &preAllocatedForIndices) {
+void Laplacian1d<T>::set(cudaStream_t stream, Mat<T>* preAllocatedForL_iX3, Vec<int32_t> &preAllocatedForIndices) {
 
     AdjacencyInd prev(1, -1), next(2, 1), primary(0, 0);
 
-    KernelPrep kp(this->dim.maxDim());
+    KernelPrep kp(std::max(preAllocatedForL_iX3[0].rows, std::max(preAllocatedForL_iX3[1].rows, preAllocatedForL_iX3[2].rows)));
 
     buildAllL1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
         preAllocatedForL_iX3[0].toKernel2d(), preAllocatedForL_iX3[1].toKernel2d(), preAllocatedForL_iX3[2].toKernel2d(),
@@ -110,26 +151,42 @@ void Laplacian<T>::setL_iAll(cudaStream_t stream, Mat<T>* preAllocatedForL_iX3, 
     AdjacencyPatern::loadMapRowToDiag(preAllocatedForIndices, {primary, prev, next}, stream);
 
     for (size_t i = 0; i < 3; i++)
-        _1d[i] = std::make_unique<BandedMat<T>>(preAllocatedForL_iX3[i], preAllocatedForIndices);
+        this->operator[](i) = std::make_unique<BandedMat<T>>(preAllocatedForL_iX3[i], preAllocatedForIndices);
 }
 
 template<typename T>
-void Laplacian<T>::setL_i(cudaStream_t stream, size_t dim) {
+void Laplacian1d<T>::set(cudaStream_t stream, size_t n, size_t dim) {
     Vec<int32_t> preAllocatedForIndices = Vec<int32_t>::create(3, stream);
-    Mat<T> preAllocatedForL_i = Mat<T>::create(this->dim[dim], 3);
-    setL_i(stream, preAllocatedForL_i, preAllocatedForIndices, dim);
+    Mat<T> preAllocatedForL_i = Mat<T>::create(n, 3);
+    set(stream, preAllocatedForL_i, preAllocatedForIndices, dim);
 }
 
 template<typename T>
-void Laplacian<T>::setL_iAll(cudaStream_t stream) {
+void Laplacian1d<T>::set(cudaStream_t stream, const GridDim& dim) {
     Vec<int32_t> preAllocatedForIndices = Vec<int32_t>::create(3, stream);
-    Mat<T> preAllocatedForL_iX3[3] = {
-        Mat<T>::create(this->dim[0], 3),
-        Mat<T>::create(this->dim[1], 3),
-        Mat<T>::create(this->dim[2], 3)
+
+    LaplcianConditions<T> laplcianConds[3] = {
+        LaplcianConditions<T>(dim.cols, boundary.left, boundary.right),
+        LaplcianConditions<T>(dim.rows, boundary.top, boundary.bottom),
+        LaplcianConditions<T>(dim.layers, boundary.front, boundary.back)
     };
-    setL_iAll(stream, preAllocatedForL_iX3, preAllocatedForIndices);
+
+    std::shared_ptr<Mat<T>> preAllocatedForL_iX3[3];
+
+    createUnique(laplcianConds, preAllocatedForL_iX3, [](const auto& c) {
+        return Mat<T>::create(c.dim, 3);
+    });
+
+    Mat<T> mats[3] = {*preAllocatedForL_iX3[0], *preAllocatedForL_iX3[1], *preAllocatedForL_iX3[2]};
+    set(stream, mats, preAllocatedForIndices);
 }
+
+template<typename T>
+LaplacianEigenVec<T>::LaplacianEigenVec(
+    const SquareMat<T>& eVecX,
+    const SquareMat<T>& eVecY,
+    const SquareMat<T>& eVecZ
+) : eVecX(eVecX), eVecY(eVecY), eVecZ(eVecZ) {}
 
 template<typename T>
 BandedMat<T> & Laplacian<T>::banded(cudaStream_t stream) {

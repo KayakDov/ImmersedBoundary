@@ -3,8 +3,7 @@
  * @brief Analytical Eigen-decomposition kernels for 1D Discrete Laplacians.
  * * Provides CUDA kernels for computing eigenvectors and eigenvalues for various
  * boundary condition combinations. Supports both Node-Centered and Staggered
- * grid alignments. The 'isStaggered' flag adjusts the frequency denominators
- * and spatial shifts to match the discrete operator's spectrum.
+ * grid alignments via a boolean flag.
  */
 
 #ifndef LAPLACIAN_EIGEN_KERNELS_CUH
@@ -25,36 +24,34 @@ template<typename T> __device__ __host__ constexpr T PI = T(3.141592653589793238
 
 /**
  * @brief Computes eigenvectors for DD boundary conditions.
- * * For Node-centered grids (DST-I), the denominator is (N+1).
- * For Staggered grids (DST-II), the denominator is N.
+ * * Formula: $$V_{jk} = \sqrt{\frac{2}{N+1}} \sin\left(\frac{\pi(j + 1 - \text{off})(k+1)}{N+1}\right)$$
+ * Where $\text{off} = 0.5$ for staggered grids and $0.0$ for node-centered.
  * * @tparam T          Floating-point precision.
  * @param eVecs       Output 2D device array for eigenvectors.
- * @param baseDen     The base denominator (usually 1/N or 1/(N+1)).
+ * @param den         The denominator term: $1 / (N + 1)$.
  * @param isStaggered True if using a staggered (cell-centered) grid.
  */
 template<typename T>
-__global__ void eigenMatLKernel_DD(DeviceData2d<T> eVecs, const T baseDen, bool isStaggered) {
+__global__ void eigenMatLKernel_DD(DeviceData2d<T> eVecs, const T den, bool isStaggered) {
     if (const GridInd2d ind; ind < eVecs) {
         const T off = isStaggered ? T(0.5) : T(0.0);
-        eVecs[ind] = std::sqrt(2 * baseDen) * std::sin((ind.row + 1 - off) * (ind.col + 1) * PI<T> * baseDen);
+        eVecs[ind] = std::sqrt(2 * den) * std::sin((ind.row + 1 - off) * (ind.col + 1) * PI<T> * den);
     }
 }
 
 /**
  * @brief Computes eigenvalues for DD boundary conditions.
- * * @param eVals               Output 1D device array for eigenvalues.
- * @param minFourOverDeltaSq  The coefficient -4 / delta^2.
- * @param baseDen             Base denominator for frequency calculation.
- * @param isStaggered         Uses denominator N if true, else N+1.
+ * * Formula: $$\lambda_k = - \frac{4}{\Delta^2} \sin^2\left(\frac{\pi(k+1)}{2(N+1)}\right)$$
+ * * @tparam T                  Floating-point precision.
+ * @param eVals               Output 1D device array for eigenvalues.
+ * @param minFourOverDeltaSq  The coefficient $-4 / \Delta^2$.
+ * @param piOverTwoNPlus1     The factor $\pi / (2(N + 1))$.
  */
 template<typename T>
-__global__ void eigenValLKernel_DD(DeviceData1d<T> eVals, const T minFourOverDeltaSq, const T baseDen, bool isStaggered) {
+__global__ void eigenValLKernel_DD(DeviceData1d<T> eVals, const T minFourOverDeltaSq, const T piOverTwoNPlus1) {
     const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < eVals.cols) {
-        // Staggered DD matches the DST-II spectrum (freq depends on 1/N)
-        // Node-centered DD matches DST-I (freq depends on 1/(N+1))
-        const T freqStep = PI<T> * T(0.5) * baseDen;
-        T s = std::sin((idx + 1) * freqStep);
+        T s = std::sin((idx + 1) * piOverTwoNPlus1);
         eVals[idx] = s * s * minFourOverDeltaSq;
     }
 }
@@ -65,6 +62,11 @@ __global__ void eigenValLKernel_DD(DeviceData1d<T> eVals, const T minFourOverDel
 
 /**
  * @brief Computes eigenvectors for NN boundary conditions.
+ * * Formula: $$V_{jk} = \sqrt{\frac{\alpha_k}{N}} \cos\left(\frac{\pi k (j + 0.5 - \text{off})}{N}\right)$$
+ * * @tparam T          Floating-point precision.
+ * @param eVecs       Output 2D device array for eigenvectors.
+ * @param invN        The inverse of the number of points $1/N$.
+ * @param isStaggered True if using a staggered grid.
  */
 template<typename T>
 __global__ void eigenMatLKernel_NN(DeviceData2d<T> eVecs, const T invN, bool isStaggered) {
@@ -77,16 +79,13 @@ __global__ void eigenMatLKernel_NN(DeviceData2d<T> eVecs, const T invN, bool isS
 
 /**
  * @brief Computes eigenvalues for NN boundary conditions.
- * * @param invN In Staggered mode, this is 1/N (DCT-II). In Node mode, this is 1/(N-1) (DCT-I).
+ * * Formula: $$\lambda_k = - \frac{4}{\Delta^2} \sin^2\left(\frac{\pi k}{2N}\right)$$
  */
 template<typename T>
-__global__ void eigenValLKernel_NN(DeviceData1d<T> eVals, const T minFourOverDeltaSq, const T invN, bool isStaggered) {
+__global__ void eigenValLKernel_NN(DeviceData1d<T> eVals, const T minFourOverDeltaSq, const T piOverTwoN) {
     const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < eVals.cols) {
-        // Node-centered NN eigenvalues use sin(k*pi / 2(N-1))
-        // Staggered NN eigenvalues use sin(k*pi / 2N)
-        const T freqStep = PI<T> * T(0.5) * invN;
-        T s = std::sin(idx * freqStep);
+        T s = std::sin(idx * piOverTwoN);
         eVals[idx] = s * s * minFourOverDeltaSq;
     }
 }
@@ -97,6 +96,11 @@ __global__ void eigenValLKernel_NN(DeviceData1d<T> eVals, const T minFourOverDel
 
 /**
  * @brief Computes eigenvectors for DN boundary conditions.
+ * * Formula: $$V_{jk} = \sqrt{\frac{2}{N}} \sin\left(\frac{\pi (j + 1 - \text{off}) (k + 0.5)}{N}\right)$$
+ * * @tparam T          Floating-point precision.
+ * @param eVecs       Output 2D device array for eigenvectors.
+ * @param invN        The inverse of the number of points $1/N$.
+ * @param isStaggered True if using a staggered grid.
  */
 template<typename T>
 __global__ void eigenMatLKernel_DN(DeviceData2d<T> eVecs, const T invN, bool isStaggered) {
@@ -108,15 +112,13 @@ __global__ void eigenMatLKernel_DN(DeviceData2d<T> eVecs, const T invN, bool isS
 
 /**
  * @brief Computes eigenvalues for DN boundary conditions.
+ * * Formula: $$\lambda_k = - \frac{4}{\Delta^2} \sin^2\left(\frac{\pi (k + 0.5)}{2N}\right)$$
  */
 template<typename T>
-__global__ void eigenValLKernel_DN(DeviceData1d<T> eVals, const T minFourOverDeltaSq, const T invN, bool isStaggered) {
+__global__ void eigenValLKernel_DN(DeviceData1d<T> eVals, const T minFourOverDeltaSq, const T piOverTwoN) {
     const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < eVals.cols) {
-        // Staggered DN frequency: (k+0.5)*pi / 2N
-        // Node-centered DN frequency: (k+0.5)*pi / 2(N+0.5)
-        const T freqStep = PI<T> * T(0.5) * invN;
-        T s = std::sin((idx + 0.5f) * freqStep);
+        T s = std::sin((idx + 0.5f) * piOverTwoN);
         eVals[idx] = s * s * minFourOverDeltaSq;
     }
 }
@@ -127,6 +129,7 @@ __global__ void eigenValLKernel_DN(DeviceData1d<T> eVals, const T minFourOverDel
 
 /**
  * @brief Computes eigenvectors for ND boundary conditions.
+ * * Formula: $$V_{jk} = \sqrt{\frac{2}{N}} \cos\left(\frac{\pi (j + 0.5 - \text{off}) (k + 0.5)}{N}\right)$$
  */
 template<typename T>
 __global__ void eigenMatLKernel_ND(DeviceData2d<T> eVecs, const T invN, bool isStaggered) {
@@ -137,11 +140,11 @@ __global__ void eigenMatLKernel_ND(DeviceData2d<T> eVecs, const T invN, bool isS
 }
 
 /** * @brief Computes eigenvalues for ND boundary conditions.
- * @note ND spectrum is functionally identical to DN.
+ * @note Spectrum is identical to DN.
  */
 template<typename T>
-__global__ void eigenValLKernel_ND(DeviceData1d<T> eVals, const T minFourOverDeltaSq, const T invN, bool isStaggered) {
-    eigenValLKernel_DN<T>(eVals, minFourOverDeltaSq, invN, isStaggered);
+__global__ void eigenValLKernel_ND(DeviceData1d<T> eVals, const T minFourOverDeltaSq, const T piOverTwoN) {
+    eigenValLKernel_DN<T>(eVals, minFourOverDeltaSq, piOverTwoN);
 }
 
 #endif // LAPLACIAN_EIGEN_KERNELS_CUH

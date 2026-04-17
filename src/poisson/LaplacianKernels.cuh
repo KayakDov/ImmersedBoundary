@@ -33,51 +33,6 @@ public:
 
 
 /**
- * @class RhsBCSetter1d
- * @brief Applies boundary-condition contributions to the RHS along a single dimension.
- *
- * This class provides a lightweight mechanism for adding boundary-condition-induced
- * contributions to the right-hand side vector without modifying the system operator.
- * It is intended for use in matrix-free or preassembled-operator workflows where only
- * the RHS must reflect boundary conditions.
- *
- * Each instance operates on a single grid point, identified by its flattened index,
- * and is typically invoked once per spatial dimension.
- *
- * @tparam T Floating-point type (float or double).
- */
-template<typename T>
-class RhsBCSetter1d{
-
-public:
-    T& rhsVal;
-    /**
-     * @brief Constructs a DimensionSetter for a given grid point.
-     *
-     * @param[in,out] rhs The right-hand side vector.
-     * @param[in] flat    The flattened index of the current grid point.
-     */
-    __device__ RhsBCSetter1d(T& rhsVal) : rhsVal(rhsVal) {}
-
-    /**
-     * @brief Applies boundary-condition contributions to the RHS along one dimension.
-     *
-     * This method mirrors the boundary handling of the 1D Laplacian stencil but only
-     * updates the boundary-condition contribution to the right-hand side vector.
-     * No modifications to the operator (L) are performed.
-     *
-     * @param[in] indexInLine Index of the current grid point along this dimension (0 to end-1).
-     * @param[in] end       Size of the grid in this dimension (rows, cols, or layers).
-     * @param[in] left      Boundary condition at gridIndex == 0.
-     * @param[in] right     Boundary condition at gridIndex == end - 1.
-     */
-    __device__ void setRHSIn1d(const size_t indexInLine, const size_t end, const BoundaryCondition<T>& left, const BoundaryCondition<T>& right) {
-        if (indexInLine == 0) left.setBoundaryRHSContribution(rhsVal);
-        else if (indexInLine == end - 1) right.setBoundaryRHSContribution(rhsVal);
-    }
-};
-
-/**
  * @class LSetter
  * @brief Helper class to set 1D Laplacian stencil coefficients for each spatial dimension.
  *
@@ -124,18 +79,16 @@ public:
      */
     __device__ void setRowInBanded1d(
         const size_t indexInLine, const size_t lineLength,
-        const BoundaryCondition<T>& lineStart, const BoundaryCondition<T>& lineEnd,
+        const BoundaryConditionPair<T>& boundaries,
         const AdjacencyInd& primary, const AdjacencyInd& left, const AdjacencyInd& right
     ) {
         T& mainDiag = (*L)(rowL, primary);
         T& rightDiag = (*L)(rowL, right);
         T& leftDiag = (*L)(rowL, left);
 
-        if (indexInLine == 0) lineStart.setL(mainDiag, rightDiag);
-        else if (indexInLine == lineLength - 1) lineEnd.setL(mainDiag, leftDiag);
-        else {
-            mainDiag -= 2 * lineStart.inverseDeltaSquared;
-            leftDiag = rightDiag = lineStart.inverseDeltaSquared;
+        if (!boundaries.setL(mainDiag, rightDiag)){
+            mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
+            leftDiag = rightDiag = boundaries.start.inverseDeltaSquared;
         }
     }
 };
@@ -183,10 +136,10 @@ public:
      */
     __device__ void setRowInBanded1d(
         DeviceData2d<T>& L,
-        const BoundaryCondition<T>& lineStart, const BoundaryCondition<T>& lineEnd
+        const BoundaryConditionPair<T>& boundary
     ) {
         lSetter.L = &L;
-        lSetter.setRowInBanded1d(lSetter.rowL, L.rows, lineStart, lineEnd, primary, left, right);
+        lSetter.setRowInBanded1d(lSetter.rowL, L.rows, boundary, primary, left, right);
     }
 };
 
@@ -195,10 +148,11 @@ public:
  * @tparam T
  */
 template<typename T>
-class LAndRhsSetter : public LSetter<T>, public RhsBCSetter1d<T>{
+class LAndRhsSetter : public LSetter<T>{
+    DeviceData1d<T> rhs;
 public:
     __device__ LAndRhsSetter(DeviceData2d<T>& L, DeviceData1d<T>& rhs, size_t flatInd)
-        : RhsBCSetter1d<T>(rhs[flatInd]), LSetter<T>(L, flatInd) {}
+        : rhs(rhs), LSetter<T>(L, flatInd) {}
 
     /**
      * @brief Applies the 1D Laplacian stencil along one dimension with boundary condition handling.
@@ -217,11 +171,12 @@ public:
      */
     __device__ void setRowInBanded1dAndRhs(
         const size_t indexInLine, const size_t lineLength,
-        const BoundaryCondition<T> lineStart, const BoundaryCondition<T> lineEnd,
+        const BoundaryConditionPair<T>& condition,
         const AdjacencyInd& primary, const AdjacencyInd& left, const AdjacencyInd& right
     ) {
-        LSetter<T>::setRowInBanded1d(indexInLine, lineLength, lineStart, lineEnd, primary, left, right);
-        RhsBCSetter1d<T>::setRHSIn1d(indexInLine, lineLength, lineStart, lineEnd);
+        LSetter<T>::setRowInBanded1d(indexInLine, lineLength, condition, primary, left, right);
+        condition.setBoundaryRHS(rhs, indexInLine, lineLength);
+
     }
 };
 
@@ -317,8 +272,7 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
 template <typename T>
 __global__ void buildL1dKernel(
     DeviceData2d<T> bandedL_i,
-    const BoundaryCondition<T> start,
-    const BoundaryCondition<T> end,
+    const BoundaryConditionPair<T> condition,
     const AdjacencyInd primary,
     const AdjacencyInd prev,
     const AdjacencyInd next
@@ -327,7 +281,7 @@ __global__ void buildL1dKernel(
     if (i >= bandedL_i.rows) return;
 
     LSetter<T> ds(bandedL_i, i);
-    ds.setRowInBanded1d(i, bandedL_i.rows, start, end, primary, next, prev);
+    ds.setRowInBanded1d(i, bandedL_i.rows, condition, primary, next, prev);
 }
 
 template <typename T>
