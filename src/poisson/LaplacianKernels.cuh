@@ -236,21 +236,21 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
 
     if (dim.layers > 1 && ind.row < dim.rows && ind.col < dim.cols) {
         ind3d.set(ind.row, ind.col, 0);
-        boundary.front.setBoundaryRHSContribution(rhsVal);
+        boundary.front.setBoundaryRHS(rhsVal);
         ind3d.layer = dim.layers - 1;
-        boundary.back.setBoundaryRHSContribution(rhsVal);
+        boundary.back.setBoundaryRHS(rhsVal);
     }
     if (ind.row < dim.rows && ind.col < dim.layers) {
         ind3d.set(ind.row, 0, ind.col);
-        boundary.left.setBoundaryRHSContribution(rhsVal);
+        boundary.left.setBoundaryRHS(rhsVal);
         ind3d.col = dim.cols - 1;
-        boundary.right.setBoundaryRHSContribution(rhsVal);
+        boundary.right.setBoundaryRHS(rhsVal);
     }
     if (ind.row < dim.layers && ind.col < dim.cols) {
         ind3d.set(0, ind.col, ind.row);
-        boundary.top.setBoundaryRHSContribution(rhsVal);
+        boundary.top.setBoundaryRHS(rhsVal);
         ind3d.row = dim.rows - 1;
-        boundary.bottom.setBoundaryRHSContribution(rhsVal);
+        boundary.bottom.setBoundaryRHS(rhsVal);
     }
 }
 
