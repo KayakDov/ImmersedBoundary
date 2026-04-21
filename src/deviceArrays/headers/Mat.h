@@ -234,6 +234,12 @@ public:
      */
     [[nodiscard]] SquareMat<T> sqSubMat(size_t startRow, size_t startCol, size_t dim) const;
 
+    /**
+     * Returns the largest sqyare matrix with start indicies (0, 0).
+     * @return The largest sqyare matrix with start indicies (0, 0).
+     */
+    SquareMat<T> sqSubMatFirstBiggest() const;
+
 
     /**
      * @brief Normalize the columns of the matrix, setting a specific row to 1.

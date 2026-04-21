@@ -15,6 +15,9 @@
 #include <cmath>
 #include <cuda_runtime.h>
 #include "deviceArrays/headers/DeviceData.cuh"
+#include "deviceArrays/headers/handle.h"
+#include "deviceArrays/headers/SquareMat.h"
+#include "poisson/BoundaryCondition.cuh"
 
 #ifndef PI_CONST
 #define PI_CONST
@@ -190,5 +193,33 @@ template<typename T>
 __global__ void eigenValLKernel_ND(DeviceData1d<T> eVals, const T minFourOverDeltaSq) {
     eigenMixed(eVals, minFourOverDeltaSq);
 }
+
+template<typename T>
+void BoundaryConditionPair<T>::generateEigen(cudaStream_t stream, SquareMat<T> eVecs, Vec<T> eVals) const {
+
+    KernelPrep vecKP = eVecs.kernelPrep();
+    KernelPrep valKP = eVals.kernelPrep();
+
+    if (isNeumann(start.condition) && isNeumann(end.condition)) {
+        eigenMatLKernel_NN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
+        eigenValLKernel_NN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared, isNodeCentered());
+    } else if (isNeumann(start.condition) && !isNeumann(end.condition)) {
+        eigenMatLKernel_ND<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
+        eigenValLKernel_ND<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared);
+    } else if (!isNeumann(start.condition) && isNeumann(end.condition)) {
+        eigenMatLKernel_DN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
+        eigenValLKernel_DN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared);
+    } else {
+        eigenMatLKernel_DD<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
+        eigenValLKernel_DD<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared, isNodeCentered());
+    }
+    cudaError_t err = cudaGetLastError();
+    CHECK_CUDA_ERROR (err);
+}
+
+
+
+template class BoundaryConditionPair<float>;
+template class BoundaryConditionPair<double>;
 
 #endif // LAPLACIAN_EIGEN_KERNELS_CUH

@@ -68,10 +68,10 @@ list(FILTER LIB_SOURCES EXCLUDE REGEX "[/\\\\]main\\.cu$")
 add_library(CudaBandedLib STATIC
         ${LIB_SOURCES}
         ${SHROUD_SOURCES}
-        src/poisson/BoundaryCondition.hpp
+        src/poisson/BoundaryCondition.cuh
         src/math/Real3dDevice.hpp
         src/poisson/LaplacianKernels.cuh
-        src/poisson/LaplacianEigenKernels.cuh
+        src/poisson/LaplacianEigenKernels.cu
 )
 
 set_target_properties(CudaBandedLib PROPERTIES
@@ -107,7 +107,7 @@ enable_testing()
 file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp")
 
 add_executable(run_unit_tests ${TEST_SOURCES}
-        src/poisson/LaplacianEigenKernels.cuh)
+        src/poisson/LaplacianEigenKernels.cu)
 
 set_target_properties(run_unit_tests PROPERTIES
         CUDA_RESOLVE_DEVICE_SYMBOLS ON

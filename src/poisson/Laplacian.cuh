@@ -7,38 +7,12 @@
 #include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "math/Real3d.h"
 #include "deviceArrays/headers/SquareMat.h"
-#include "poisson/BoundaryCondition.hpp"
+#include "poisson/BoundaryCondition.cuh"
 #include "solvers/Event.h"
 #include "poisson//LaplacianKernels.cuh"
 
 constexpr size_t numDiagonals3d = 7;
 constexpr size_t numDiagonals2d = 5;
-
-/**
- * Used to check of two 1d Laplacians are equal.
- * @tparam T
- */
-template<typename T>
-struct LaplcianConditions {
-    const BoundaryConditionPair<T> boundary;
-    const size_t dim;
-    LaplcianConditions(const size_t length, const BoundaryConditionPair<T>& condition);
-
-    /**
-     * @brief Equality operator implemented as a hidden friend.
-     */
-    friend bool operator==(const LaplcianConditions& lhs, const LaplcianConditions& rhs) {
-        return (lhs.dim == rhs.dim) && (lhs.boundary == rhs.boundary);
-    }
-
-    /**
-     * @brief Inequality operator (C++20 will generate this automatically if you only
-     * provide operator==, but for older standards it is good practice to include).
-     */
-    friend bool operator!=(const LaplcianConditions& lhs, const LaplcianConditions& rhs) {
-        return !(lhs == rhs);
-    }
-};
 
 
 /**
@@ -110,56 +84,76 @@ public:
     void set(cudaStream_t stream, const GridDim& dim);
 };
 
+
+template<typename T> class LaplacianEigen;
 /**
  * The matrices of eigen vectors for a 2d or 3d laplacian.
  * @tparam T
  */
 template<typename T>
 class LaplacianEigenVec {
-private:
+
+    friend LaplacianEigen<T>;
     LaplacianEigenVec(const SquareMat<T>& eVecX, const SquareMat<T>& eVecY, const SquareMat<T>& eVecZ);
 public:
     /**
      * The eigen vectors for L_x
      */
-    const SquareMat<T> eVecX;
+    const std::unique_ptr<SquareMat<T>> eVecX;
     /**
      * The eigen vectors for L_y
      */
-    const SquareMat<T> eVecY;
+    const std::unique_ptr<SquareMat<T>> eVecY;
     /**
      * The eigen vectors for L_z, if the laplacian is 3d.  Otherwise a null pointer.
      */
-    const SquareMat<T> eVecZ;
+    const std::unique_ptr<SquareMat<T>> eVecZ;
 
-    /**
-     * Generates the eigenvector matrices.
-     * @param boundary The boundary conditions.
-     * @param dim The dimensions of the grid.
-     * @param hand The handle.
-     * @return The Laplacian's Eigen vector matrices.
-     */
-    LaplacianEigenVec factory(BoundaryConfig<T> boundary, const GridDim& dim, Handle& hand);
 };
 
 template<typename T>
-struct LaplacianEigenVal {
-    SquareMat<T> eVecX;
-    SquareMat<T> eVecY;
-    SquareMat<T> eVecZ;
+class LaplacianEigenVal {
+
+    LaplacianEigenVal(const Vec<T>& eVecX, const Vec<T>& eVecY, const Vec<T>& eVecZ);
+    friend LaplacianEigen<T>;
+
+public:
+    /**
+     * The Eigenvalues for L_x
+     */
+    const std::unique_ptr<Vec<T>> eVecX;
+    /**
+     * The Eigenvalues for L_y
+     */
+    std::unique_ptr<Vec<T>> eVecY;
+    /**
+     * The Eigenvalues for L_z
+     */
+    std::unique_ptr<Vec<T>> eVecZ;
 };
 
 template<typename T>
 class LaplacianEigen {
+    LaplacianEigen(const LaplacianEigenVal<T>& vals, const LaplacianEigenVec<T>& vecs);
+public:
     LaplacianEigenVal<T> vals;
     LaplacianEigenVal<T> vecs;
 
+    /**
+     * Generates the eigenvector matrices.
+     * @param boundary The boundary conditions.
+     * @param hands A handle for each dimension.
+     * @param events an event for each dimension - 1
+     * @param hands
+     * @return The Laplacian's Eigen vector matrices.
+     */
+    static LaplacianEigen make(const BoundaryConfig<T> &boundary, Handle *hands, Event *events);
 };
 
 template<typename T>
 class Laplacian {
 protected:
-    const AdjacencyPatern adjacencies;
+    const AdjacencyPatern adjacencys;
     const GridDim dim;
     const Real3d delta;
     const BoundaryConfig<T> boundary;
@@ -168,8 +162,6 @@ protected:
     std::unique_ptr<Vec<T>> rhsBC = nullptr;
 
 public:
-
-    Laplacian1d<T> _1d;
 
     /**
      * Creates the LHS matrix of the linear system used for solving the Poisson equation.

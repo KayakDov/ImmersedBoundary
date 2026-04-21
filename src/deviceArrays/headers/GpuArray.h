@@ -90,9 +90,14 @@ public:
      * @brief Extract a column vector from the matrix.
      * @param index Column index.
      * @return Column as a Vec<T>.
-     * @note Not yet implemented.
      */
     virtual SimpleArray<T> col(size_t index, bool initDescr = false);
+
+    /**
+     * @brief Extract the last column vector from the matrix.
+     * @return Column as a Vec<T>.
+     */
+    virtual SimpleArray<T> lastCol(bool initDescr = false);
 
     virtual SimpleArray<T> col(size_t index, bool initDescr = false) const;
     /**

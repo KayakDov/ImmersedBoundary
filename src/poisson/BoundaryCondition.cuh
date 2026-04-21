@@ -16,8 +16,11 @@
  */
 
 #pragma once
+#include <functional>
+#include <set>
+
 #include "deviceArrays/headers/DeviceData.cuh"
-#include "poisson/LaplacianEigenKernels.cuh"
+#include "solvers/Event.h"
 
 enum class ConditionType{DirichletStaggered, NeumannStaggered, DirichletNodeCentered, NeumannNodeCentered};
 
@@ -55,6 +58,11 @@ public:
      * @param condition The type of the condition.
      */
     __device__ __host__ BoundaryCondition(Real value, Real delta, ConditionType condition) : value(value), inverseDeltaSquared(1/(delta*delta)), inverseDelta(1/delta), condition(condition) {};
+
+    /**
+     * An empty conditon, similar to a null pointer.
+     */
+    __device__ __host__ BoundaryCondition() : value(std::nan), inverseDeltaSquared(0), inverseDelta(0), condition(ConditionType::NeumannNodeCentered) {};
 
     /**
      * @brief Apply boundary condition contribution to system.
@@ -135,6 +143,14 @@ public:
         setL(mainDiagVal, offDiagVal);
         setBoundaryRHS(rhsVal);
     }
+
+    /**
+     * It's possible to create an undefined boundary condition.  This is to allow for flexabuility between 2 and 3 dimesnional creations.
+     * @return true if this us undefined, false otherwise.
+     */
+    __device__ __host__ bool isUndefined() {
+        return inverseDelta == 0;
+    }
 };
 
 /**
@@ -156,14 +172,18 @@ public:
     /** @brief The condition applied at the end (higher index) of the segment. */
     const BoundaryCondition<T> end;
 
+    /** @brief The length of the dimension.*/
+    const size_t dimLength;
+
+    __host__ __device__ BoundaryConditionPair() : dimLength(static_cast<size_t>(-1)){}
+
     /**
      * @brief Construct from existing BoundaryCondition objects.
      * @param start Condition for the beginning of the segment.
      * @param end Condition for the end of the segment.
      */
-    __device__ __host__ BoundaryConditionPair(const BoundaryCondition<T>& start,
-                                              const BoundaryCondition<T>& end)
-        : start(start), end(end) {}
+    __device__ __host__ BoundaryConditionPair(const BoundaryCondition<T>& start, const BoundaryCondition<T>& end, size_t dimLength)
+        : start(start), end(end), dimLength(dimLength) {}
 
     /**
      * @brief Construct by providing raw parameters for both boundaries.
@@ -179,9 +199,9 @@ public:
                                               const T valEnd,
                                               const ConditionType startCondition,
                                               const ConditionType endCondition,
-                                              T delta)
+                                              T delta, size_t dimLength)
         : start(valStart, delta, startCondition),
-          end(valEnd, delta, endCondition) {}
+          end(valEnd, delta, endCondition), dimLength(dimLength) {}
 
     /**
      * @brief Equality operator for condition pairs.
@@ -189,7 +209,7 @@ public:
      */
     __host__ __device__ friend bool operator==(const BoundaryConditionPair& lhs,
                                                const BoundaryConditionPair& rhs) {
-        return (lhs.start == rhs.start) && (lhs.end == rhs.end);
+        return (lhs.start == rhs.start) && (lhs.end == rhs.end) && (lhs.dimLength == rhs.dimLength);
     }
 
     __host__ __device__ friend bool operator!=(const BoundaryConditionPair& lhs,
@@ -197,6 +217,15 @@ public:
         return !(lhs == rhs);
     }
 
+
+    /**
+     * returns the start or the end.
+     * @param isEnd true if you want the end boundary condition, false if you want the start.
+     * @return the desired boundary condition.
+     */
+    __host__ __device__ const BoundaryCondition<T>& operator[](bool isEnd) const {
+        return isEnd ? end : start;
+    }
 
     /**
      * @brief Apply boundary condition contribution to system.
@@ -221,7 +250,7 @@ public:
      * @param rhs Right-hand side vector (modisfied in place)
      * @return true if a modification is made, false otherwise.
      */
-    __device__ bool setBoundaryRHS(DeviceData1d<T>& rhs, const size_t indexInLine, const size_t lineLength) const {
+    __device__ bool setBoundaryRHS1d(DeviceData1d<T>& rhs, const size_t indexInLine, const size_t lineLength) const {
         if (indexInLine == 0) start.setBoundaryRHS(rhs[0]);
         else if (indexInLine == lineLength - 1) end.setBoundaryRHS(rhs[lineLength - 1]);
         else return false;
@@ -236,7 +265,7 @@ public:
      */
     __device__ bool setLAndRHS(T& mainDiagVal, T& startDiagVal, T& endDiagonalVal, DeviceData1d<T> rhs, const size_t indexInLine, const size_t linelength) const {
         setL(mainDiagVal, startDiagVal, endDiagonalVal, indexInLine, linelength);
-        return setBoundaryRHS(rhs, indexInLine, linelength);
+        return setBoundaryRHS1d(rhs, indexInLine, linelength);
     }
 
     /**
@@ -252,7 +281,7 @@ public:
      * @param cond The condition
      * @return True if the condition is node centered,false otherwise.
      */
-    __host__ static bool isNodeCentered() {
+    __host__ bool isNodeCentered() const {
         return start.condition == ConditionType::DirichletNodeCentered || start.condition == ConditionType::NeumannNodeCentered;
     }
     /**
@@ -260,30 +289,25 @@ public:
      * * Reads the condition types (Dirichlet/Neumann) of the start and end boundaries,
      * computes the necessary normalization coefficients, and executes the corresponding
      * analytical eigen-kernel.
-     * * @param stream The CUDA stream to execute the kernel on.
+     * @param stream The CUDA stream to execute the kernel on.
      * @param eVecs  The pre-allocated 2D device array to store the eigenvectors.
      * The dimension $N$ is automatically deduced from `eVecs.cols`.
+     * @param eVals Places the eigen values here.
      */
-    void generateEigenbasis(cudaStream_t stream, SquareMat<T> eVecs, Vec<T> eVals) const {
+    void generateEigen(cudaStream_t stream, SquareMat<T> eVecs, Vec<T> eVals) const;
 
-        KernelPrep vecKP = eVecs.kernelPrep();
-        KernelPrep valKP = eVals.kernelPrep();
 
-        if (isNeumann(start.condition) && isNeumann(end.condition)) {
-            eigenMatLKernel_NN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
-            eigenValLKernel_NN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared, isNodeCentered());
-        } else if (isNeumann(start.condition) && !isNeumann(end.condition)) {
-            eigenMatLKernel_ND<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
-            eigenValLKernel_ND<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared);
-        } else if (!isNeumann(start.condition) && isNeumann(end.condition)) {
-            eigenMatLKernel_DN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
-            eigenValLKernel_DN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared);
-        } else {
-            eigenMatLKernel_DD<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
-            eigenValLKernel_DD<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared, isNodeCentered());
-        }
-        cudaError_t err = cudaGetLastError();
-        CHECK_CUDA_ERROR (err);
+    /**
+     * Builds the eigenvecotrs and eigenvalues.
+     * @param stream
+     * @param lengthXLengthPlus1 The eigenvecotrs are places in the beggining, and the last column gets the eigenvalues.
+     */
+    void generateEigen(cudaStream_t stream, Mat<T> lengthXLengthPlus1) {
+        generateEigen(stream, lengthXLengthPlus1.sqSubMatFirstBiggest(), lengthXLengthPlus1.lastCol());
+    }
+
+    __host__ __device__ bool isUndefined() {
+        return dimLength == static_cast<size_t>(-1);
     }
 };
 
@@ -313,37 +337,39 @@ struct BoundaryConfig {
     __host__ __device__ BoundaryConfig(
         const BoundaryCondition<Real>& left, const BoundaryCondition<Real>& right,
         const BoundaryCondition<Real>& top, const BoundaryCondition<Real>& bottom,
-        const BoundaryCondition<Real>& front, const BoundaryCondition<Real>& back
-        ) : leftRight(left, right), topBottom(top, bottom), frontBack(front, back){}
+        const BoundaryCondition<Real>& front, const BoundaryCondition<Real>& back,
+        const GridDim& dim
+        ) : leftRight(left, right, dim.cols), topBottom(top, bottom, dim.rows), frontBack(front, back, dim.layers){}
 
-    __host__ BoundaryConfig(ConditionType type, Real value, Real3d delta):
+    __host__ BoundaryConfig(ConditionType type, Real value, Real3d delta, const GridDim& dim):
         BoundaryConfig(
             {value, delta.x, type},
             {value, delta.x, type},
             {value, delta.y, type},
             {value, delta.y, type},
             {value, delta.z, type},
-            {value, delta.z, type}
+            {value, delta.z, type},
+            dim
         ){}
 
-    __host__ BoundaryConfig(ConditionType type, Real value, Real delta): BoundaryConfig(type, value, Real3d(delta, delta, delta)){}
+    __host__ BoundaryConfig(ConditionType type, Real value, Real delta, size_t dimLength): BoundaryConfig(type, value, Real3d(delta, delta, delta), dimLength){}
 
     /**
      * @brief Retrieve a boundary condition by dimension and position.
      *
      * @param[in] dim               Dimension: 0=row/y, 1=col/x, 2=layer/z.
-     * @param[in] isStart           If true, return the boundary at the start (left/top/front).
+     * @param[in] isEnd           If true, return the boundary at the start (left/top/front).
      *                              If false, return the boundary at the end (right/bottom/back).
      *
      * @return Reference to the requested boundary condition.
      *
      * @throws std::out_of_range if dim is not 0, 1, or 2.
      */
-    __host__ __device__ const BoundaryCondition<Real>& operator()(size_t dim, bool isStart) const {
+    __host__ __device__ const BoundaryConditionPair<Real>& operator[](size_t dim) const {
         switch (dim) {
-            case 0: return isStart ? left : right;
-            case 1: return isStart ? top : bottom;
-            case 2: return isStart ? front : back;
+            case 0: return leftRight;
+            case 1: return topBottom;
+            case 2: return frontBack;
             default:
         #ifdef __CUDA_ARCH__
                 asm("trap;");  // Device-side trap for invalid access
@@ -355,4 +381,53 @@ struct BoundaryConfig {
 
     }
 
+    /**
+     * True if i is the first index that these conditions appear at.
+     * @param i The index to be checked.
+     * @return the value of the index repeated, or -1 if this is the first appearence.
+     */
+    __host__ int repeat(int i) {
+        for (size_t j = 0; j < i; ++j) if (*this[j] == *this[i]) return j;
+        return -1;
+
+    }
+
+    /**
+     * @brief Efficiently creates unique objects based on 1D Laplacian boundary conditions.
+     *
+     * This utility iterates through the X, Y, and Z dimensions of a Laplacian setup.
+     * If the boundary conditions (dimensions, spacing, and types) for two dimensions
+     * are identical, the function reuses the existing object by sharing ownership
+     * via std::shared_ptr. This prevents redundant memory allocations and unnecessary
+     * re-computation of Laplacian matrices or eigenvalue vectors.
+     *
+     * @tparam T          The floating-point type (e.g., float or double).
+     * @tparam ResultType The type of object to be created (e.g., Mat<T> or Vec<T>).
+     * @tparam BoundaryPairToResultType    A callable type (lambda or function) that returns ResultType by value.
+     *
+     * @param[in]  conds    A reference to an array of 3 LaplacianConditions (X, Y, Z).
+     * @param[out] outputs  An array of 3 shared_ptrs to be populated with the results.
+     * @param[in]  factory  A factory function: `ResultType factory(const LaplacianConditions<T>&)`.
+     * * @note Because ResultType is wrapped in a shared_ptr, ResultType does not need
+     * to be assignable, which is critical for classes with const data members.
+     */
+    template <typename ResultType>
+    __host__ void createUnique(std::shared_ptr<const ResultType> (&outputs)[3], std::function<ResultType(const BoundaryConditionPair<Real>&)> factory){
+        for (size_t i = 0; i < 3; ++i) {
+            int repeatInd = repeat(i);
+            if (repeatInd == -1) outputs[i] = std::make_shared<ResultType>(factory((*this)[i]));
+            else outputs[i] = outputs[repeatInd];
+        }
+    }
+
+
+    /**
+     * Generates, including memory allocation, eigen values and vectors.  The matrices pointed to, that are retruned,
+     * hold the values in the last column, and the vectors in the first nxn cells.
+     * @param hands Used to create the different vectors in parrallel.  The number of handles should be equal to the number of dimentisons.
+     * @param events The number of events should be equal to the number of dimesnions.
+     * @param preAllocatedForL_iX3
+     * @return pointers to matrices containing the eigen values and vectors.
+     */
+    void generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]);
 };

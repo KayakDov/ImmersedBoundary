@@ -12,46 +12,6 @@
 #include <memory>
 
 
-/**
- * @brief Efficiently creates unique objects based on 1D Laplacian boundary conditions.
- *
- * This utility iterates through the X, Y, and Z dimensions of a Laplacian setup.
- * If the boundary conditions (dimensions, spacing, and types) for two dimensions
- * are identical, the function reuses the existing object by sharing ownership
- * via std::shared_ptr. This prevents redundant memory allocations and unnecessary
- * re-computation of Laplacian matrices or eigenvalue vectors.
- *
- * @tparam T          The floating-point type (e.g., float or double).
- * @tparam ResultType The type of object to be created (e.g., Mat<T> or Vec<T>).
- * @tparam Factory    A callable type (lambda or function) that returns ResultType by value.
- *
- * @param[in]  conds    A reference to an array of 3 LaplacianConditions (X, Y, Z).
- * @param[out] outputs  An array of 3 shared_ptrs to be populated with the results.
- * @param[in]  factory  A factory function: `ResultType factory(const LaplacianConditions<T>&)`.
- * * @note Because ResultType is wrapped in a shared_ptr, ResultType does not need
- * to be assignable, which is critical for classes with const data members.
- */
-template <typename T, typename ResultType, typename Factory>
-void createUnique(const LaplcianConditions<T> (&conds)[3], std::shared_ptr<const ResultType> (&outputs)[3], Factory factory){
-    for (size_t i = 0; i < 3; ++i) {
-        bool matched = false;
-        for (size_t j = 0; j < i; ++j) {
-            if (conds[i] == conds[j]) {
-                outputs[i] = outputs[j];
-                matched = true;
-                break;
-            }
-        }
-        if (!matched) {
-            outputs[i] = std::make_shared<ResultType>(factory(conds[i]));
-        }
-    }
-}
-
-template<typename T>
-LaplcianConditions<T>::LaplcianConditions(const size_t length, const BoundaryConditionPair<T> &boundary) :
-    dim(length), boundary(boundary) {}
-
 template<typename T>
 std::unique_ptr<BandedMat<T>> & Laplacian1d<T>::operator[](size_t dim) {
     switch (dim) {
@@ -67,7 +27,7 @@ Laplacian<T>::Laplacian(const GridDim& dim, const Real3d& delta, const BoundaryC
     dim(dim),
     delta(delta),
     boundary(boundary),
-    adjacencies(dim) {
+    adjacencys(dim) {
 }
 
 template <typename T>
@@ -76,7 +36,7 @@ T invSq(T x) {
 }
 
 void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t>& diags, const cudaStream_t stream) const{
-    loadMapRowToDiag(diags, {here, up, down, left, right, front, back}, stream);
+    loadMapRowToDiag(diags, {here, upDown.getLeft(), upDown.getRight(), leftRight.getLeft(), leftRight.getRight(), frontBack.getLeft(), frontBack.getRight()}, stream);
 }
 
 void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> indices, cudaStream_t stream) {
@@ -103,12 +63,12 @@ void Laplacian<T>::setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, V
     buildLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
         preAllocatedForL.toKernel2d(),
         this->dim, this->boundary,
-        this->adjacencies,
+        this->adjacencys,
         rhsModifier.toKernel1d()
     );
     CHECK_CUDA_ERROR(cudaGetLastError());
 
-    this->adjacencies.loadMapRowToDiag(preAllocatedForIndices, stream);
+    this->adjacencys.loadMapRowToDiag(preAllocatedForIndices, stream);
 
     bandedL = std::make_unique<BandedMat<T>>(preAllocatedForL, preAllocatedForIndices);
     rhsBC = std::make_unique<Vec<T>>(rhsModifier);
@@ -165,15 +125,9 @@ template<typename T>
 void Laplacian1d<T>::set(cudaStream_t stream, const GridDim& dim) {
     Vec<int32_t> preAllocatedForIndices = Vec<int32_t>::create(3, stream);
 
-    LaplcianConditions<T> laplcianConds[3] = {
-        LaplcianConditions<T>(dim.cols, boundary.left, boundary.right),
-        LaplcianConditions<T>(dim.rows, boundary.top, boundary.bottom),
-        LaplcianConditions<T>(dim.layers, boundary.front, boundary.back)
-    };
-
     std::shared_ptr<Mat<T>> preAllocatedForL_iX3[3];
 
-    createUnique(laplcianConds, preAllocatedForL_iX3, [](const auto& c) {
+    createUnique(boundary, preAllocatedForL_iX3, [](const auto& c) {
         return Mat<T>::create(c.dim, 3);
     });
 
@@ -187,6 +141,44 @@ LaplacianEigenVec<T>::LaplacianEigenVec(
     const SquareMat<T>& eVecY,
     const SquareMat<T>& eVecZ
 ) : eVecX(eVecX), eVecY(eVecY), eVecZ(eVecZ) {}
+
+template<typename T>
+LaplacianEigenVal<T>::LaplacianEigenVal(const Vec<T> &eVecX, const Vec<T> &eVecY, const Vec<T> &eVecZ) :
+    eVecX(eVecX), eVecY(eVecY), eVecZ(eVecZ) {
+}
+
+template<typename T>
+LaplacianEigen<T>::LaplacianEigen(const LaplacianEigenVal<T> &vals, const LaplacianEigenVec<T> &vecs) :
+    vals(vals), vecs(vecs) {}
+
+
+template<typename Real>
+void BoundaryConfig<Real>::generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) {
+
+
+    createUnique(preAllocatedForL_iX3, [](BoundaryConditionPair<Real> c) {
+        return Mat<Real>::create(c.dimLength, c.dimLength + 1);
+    });
+
+    for (size_t i = 0; i < 3; ++i)
+        if (repeat(i) < 0) (*this)[i].generateEigen(hands[i], *(preAllocatedForL_iX3[i]));
+
+    events[0].record(hands[1]);
+    events[1].record(hands[2]);
+
+}
+
+template<typename T>
+LaplacianEigen<T> LaplacianEigen<T>::make(const BoundaryConfig<T>& boundary, Handle* hands, Event* events) {
+
+    std::shared_ptr<Mat<T>> eigen[3];
+    boundary.generateEigen(hands, events, eigen);
+    LaplacianEigenVal<T> vals(eigen[0]->lastCol(), eigen[1]->lastCol(), eigen[2]->lastCol());
+    LaplacianEigenVec<T> vecs(eigen[0]->sqSubMatFirstBiggest(), eigen[1]->sqSubMatFirstBiggest(), eigen[2]->sqSubMatFirstBiggest());
+    events[0].hold(hands[0]);
+    events[1].hold(hands[0]);
+    return LaplacianEigen<T>(vals, vecs);
+}
 
 template<typename T>
 BandedMat<T> & Laplacian<T>::banded(cudaStream_t stream) {
@@ -209,5 +201,13 @@ void Laplacian<T>::setRhsBC(cudaStream_t stream, Vec<T>& rhsModifier) {
 }
 
 
-template class Laplacian<float>;
-template class Laplacian<double>;
+#define INSTANTIATE_LAPLACIAN(T) \
+template class Laplacian<T>; \
+template class Laplacian1d<T>; \
+template class LaplacianEigenVal<T>; \
+template class LaplacianEigenVec<T>; \
+template class LaplacianEigen<T>; \
+template class BoundaryConfig<T>;
+
+INSTANTIATE_LAPLACIAN(float)
+INSTANTIATE_LAPLACIAN(double)

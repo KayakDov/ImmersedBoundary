@@ -9,19 +9,17 @@
 class AdjacencyPatern {
 public:
 
-    AdjacencyInd here, up, down, left, right, front, back;
+    AdjacencyInd here;
+    AdjacencyIndPair upDown, leftRight, frontBack;
     /**
      *
      * @param dim The dimensions of the grid.
      */
     __host__ __device__ AdjacencyPatern(GridDim dim):
         here(0, 0),
-        up(1, -1),
-        down(2, 1),
-        left(3, -dim.rows * dim.layers),
-        right(4, dim.rows * dim.layers),
-        front (5, -dim.rows),
-        back(6, dim.rows)
+        upDown(1, 1),
+        leftRight(3, dim.rows * dim.layers),
+        frontBack(5, dim.rows)
     {
 
     };
@@ -80,13 +78,13 @@ public:
     __device__ void setRowInBanded1d(
         const size_t indexInLine, const size_t lineLength,
         const BoundaryConditionPair<T>& boundaries,
-        const AdjacencyInd& primary, const AdjacencyInd& left, const AdjacencyInd& right
+        const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
     ) {
         T& mainDiag = (*L)(rowL, primary);
-        T& rightDiag = (*L)(rowL, right);
-        T& leftDiag = (*L)(rowL, left);
+        T& rightDiag = (*L)(rowL, leftRight.getRight());
+        T& leftDiag = (*L)(rowL, leftRight.getLeft());
 
-        if (!boundaries.setL(mainDiag, rightDiag)){
+        if (!boundaries.setL(mainDiag, leftDiag, rightDiag, indexInLine, lineLength)) {
             mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
             leftDiag = rightDiag = boundaries.start.inverseDeltaSquared;
         }
@@ -172,10 +170,10 @@ public:
     __device__ void setRowInBanded1dAndRhs(
         const size_t indexInLine, const size_t lineLength,
         const BoundaryConditionPair<T>& condition,
-        const AdjacencyInd& primary, const AdjacencyInd& left, const AdjacencyInd& right
+        const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
     ) {
-        LSetter<T>::setRowInBanded1d(indexInLine, lineLength, condition, primary, left, right);
-        condition.setBoundaryRHS(rhs, indexInLine, lineLength);
+        LSetter<T>::setRowInBanded1d(indexInLine, lineLength, condition, primary, leftRight);
+        condition.setBoundaryRHS1d(rhs, indexInLine, lineLength);
 
     }
 };
@@ -199,19 +197,19 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> L, const GridDim dim, const
 
     ds.setRowInBanded1dAndRhs(
         gridInd.row, dim.rows,
-        boundary.top, boundary.bottom,
-        ap.here, ap.up, ap.down
+        boundary.topBottom,
+        ap.here, ap.upDown
     );
     ds.setRowInBanded1dAndRhs(
         gridInd.col, dim.cols,
-        boundary.left, boundary.right,
-        ap.here, ap.left, ap.right
+        boundary.leftRight,
+        ap.here, ap.leftRight
     );
     if (dim.layers > 1)
         ds.setRowInBanded1dAndRhs(
             gridInd.layer, dim.layers,
-            boundary.front, boundary.back,
-            ap.here, ap.back, ap.front
+            boundary.frontBack,
+            ap.here, ap.frontBack
         );
 }
 
@@ -236,21 +234,21 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
 
     if (dim.layers > 1 && ind.row < dim.rows && ind.col < dim.cols) {
         ind3d.set(ind.row, ind.col, 0);
-        boundary.front.setBoundaryRHS(rhsVal);
+        boundary.frontBack[0].setBoundaryRHS(rhsVal);
         ind3d.layer = dim.layers - 1;
-        boundary.back.setBoundaryRHS(rhsVal);
+        boundary.frontBack[1].setBoundaryRHS(rhsVal);
     }
     if (ind.row < dim.rows && ind.col < dim.layers) {
         ind3d.set(ind.row, 0, ind.col);
-        boundary.left.setBoundaryRHS(rhsVal);
+        boundary.leftRight[0].setBoundaryRHS(rhsVal);
         ind3d.col = dim.cols - 1;
-        boundary.right.setBoundaryRHS(rhsVal);
+        boundary.leftRight[1].setBoundaryRHS(rhsVal);
     }
     if (ind.row < dim.layers && ind.col < dim.cols) {
         ind3d.set(0, ind.col, ind.row);
-        boundary.top.setBoundaryRHS(rhsVal);
+        boundary.topBottom[0].setBoundaryRHS(rhsVal);
         ind3d.row = dim.rows - 1;
-        boundary.bottom.setBoundaryRHS(rhsVal);
+        boundary.topBottom[1].setBoundaryRHS(rhsVal);
     }
 }
 

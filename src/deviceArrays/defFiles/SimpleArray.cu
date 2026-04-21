@@ -72,6 +72,11 @@ SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr){
 }
 
 template <typename T>
+SimpleArray<T> GpuArray<T>::lastCol(bool initDescr){
+    return col(this->_cols - 1, initDescr);
+}
+
+template <typename T>
 SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr) const {
     return SimpleArray<T>((const_cast<GpuArray<T>*>(this))->col(index, initDescr));
 }

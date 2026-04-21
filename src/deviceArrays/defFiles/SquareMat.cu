@@ -151,6 +151,10 @@ template<typename T>
 SquareMat<T> Mat<T>::sqSubMat(size_t startRow, size_t startCol, size_t dim) const {
     return SquareMat<T>(dim, this->_ld, offset(startRow, startCol));
 }
+template<typename T>
+SquareMat<T> Mat<T>::sqSubMatFirstBiggest() const {
+    return SquareMat<T>(std::min(this->rows, this->cols), this->_ld, offset(0, 0));
+}
 
 template<typename T>
 void SquareMat<T>::solveLUDecomposed(Mat<T> &b, Vec<int32_t>& rowSwaps, Handle *handle, Singleton<int32_t>* info, bool transpose) {
