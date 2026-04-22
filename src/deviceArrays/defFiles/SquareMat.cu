@@ -153,7 +153,7 @@ SquareMat<T> Mat<T>::sqSubMat(size_t startRow, size_t startCol, size_t dim) cons
 }
 template<typename T>
 SquareMat<T> Mat<T>::sqSubMatFirstBiggest() const {
-    return SquareMat<T>(std::min(this->rows, this->cols), this->_ld, offset(0, 0));
+    return SquareMat<T>(std::min(this->_rows, this->_cols), this->_ld, offset(0, 0));
 }
 
 template<typename T>
@@ -196,13 +196,18 @@ void SquareMat<T>::solve(Vec<T> &b, Handle *handle, Singleton<int32_t> *info, Ve
 template<typename T>
 const SquareMat<T> SquareMat<T>::SIZE_ZERO = SquareMat<T>::create(0);
 
-template class SquareMat<float>;
-template class SquareMat<double>;
-template class SquareMat<unsigned long>;
-template class SquareMat<int32_t>;
-template class SquareMat<unsigned char>;
+// 1. Define the expansion macro
+#define INSTANTIATE_SQUARE_MAT(T) \
+template class SquareMat<T>; \
+template SquareMat<T> Mat<T>::sqSubMat(size_t, size_t, size_t) const; \
+template SquareMat<T> Mat<T>::sqSubMatFirstBiggest() const;
 
-template SquareMat<float> Mat<float>::sqSubMat(size_t startRow, size_t startCol, size_t dim) const;
-template SquareMat<double> Mat<double>::sqSubMat(size_t startRow, size_t startCol, size_t dim) const;
-template SquareMat<size_t> Mat<size_t>::sqSubMat(size_t startRow, size_t startCol, size_t dim) const;
-template SquareMat<int32_t> Mat<int32_t>::sqSubMat(size_t startRow, size_t startCol, size_t dim) const;
+// 2. Use the macro for all your types
+INSTANTIATE_SQUARE_MAT(float)
+INSTANTIATE_SQUARE_MAT(double)
+INSTANTIATE_SQUARE_MAT(int32_t)
+INSTANTIATE_SQUARE_MAT(size_t)
+INSTANTIATE_SQUARE_MAT(unsigned char)
+
+// 3. Clean up (optional)
+#undef INSTANTIATE_SQUARE_MAT

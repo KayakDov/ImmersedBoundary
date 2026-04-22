@@ -21,6 +21,7 @@
 
 #include "deviceArrays/headers/DeviceData.cuh"
 #include "solvers/Event.h"
+#include <limits>
 
 enum class ConditionType{DirichletStaggered, NeumannStaggered, DirichletNodeCentered, NeumannNodeCentered};
 
@@ -62,7 +63,7 @@ public:
     /**
      * An empty conditon, similar to a null pointer.
      */
-    __device__ __host__ BoundaryCondition() : value(std::nan), inverseDeltaSquared(0), inverseDelta(0), condition(ConditionType::NeumannNodeCentered) {};
+    __device__ __host__ BoundaryCondition() : value(std::numeric_limits<Real>::quiet_NaN()), inverseDeltaSquared(0), inverseDelta(0), condition(ConditionType::NeumannNodeCentered) {};
 
     /**
      * @brief Apply boundary condition contribution to system.
@@ -302,7 +303,7 @@ public:
      * @param stream
      * @param lengthXLengthPlus1 The eigenvecotrs are places in the beggining, and the last column gets the eigenvalues.
      */
-    void generateEigen(cudaStream_t stream, Mat<T> lengthXLengthPlus1) {
+    void generateEigen(cudaStream_t stream, Mat<T>& lengthXLengthPlus1) const {
         generateEigen(stream, lengthXLengthPlus1.sqSubMatFirstBiggest(), lengthXLengthPlus1.lastCol());
     }
 
@@ -352,7 +353,7 @@ struct BoundaryConfig {
             dim
         ){}
 
-    __host__ BoundaryConfig(ConditionType type, Real value, Real delta, size_t dimLength): BoundaryConfig(type, value, Real3d(delta, delta, delta), dimLength){}
+    __host__ BoundaryConfig(const ConditionType& type, Real value, Real delta, const GridDim& dim): BoundaryConfig(type, value, Real3d(delta, delta, delta), dim){}
 
     /**
      * @brief Retrieve a boundary condition by dimension and position.
@@ -373,7 +374,7 @@ struct BoundaryConfig {
             default:
         #ifdef __CUDA_ARCH__
                 asm("trap;");  // Device-side trap for invalid access
-                return left;   // Unreachable, but satisfies return requirement
+                return leftRight;   // Unreachable, but satisfies return requirement
         #else
                 throw std::out_of_range("Invalid dimension: must be 0, 1, or 2");
         #endif
@@ -386,8 +387,8 @@ struct BoundaryConfig {
      * @param i The index to be checked.
      * @return the value of the index repeated, or -1 if this is the first appearence.
      */
-    __host__ int repeat(int i) {
-        for (size_t j = 0; j < i; ++j) if (*this[j] == *this[i]) return j;
+    __host__ int repeat(int i) const {
+        for (size_t j = 0; j < i; ++j) if ((*this)[j] == (*this)[i]) return j;
         return -1;
 
     }
@@ -412,7 +413,7 @@ struct BoundaryConfig {
      * to be assignable, which is critical for classes with const data members.
      */
     template <typename ResultType>
-    __host__ void createUnique(std::shared_ptr<const ResultType> (&outputs)[3], std::function<ResultType(const BoundaryConditionPair<Real>&)> factory){
+    __host__ void createUnique(std::shared_ptr<ResultType> (&outputs)[3], std::function<ResultType(const BoundaryConditionPair<Real>&)> factory) const {
         for (size_t i = 0; i < 3; ++i) {
             int repeatInd = repeat(i);
             if (repeatInd == -1) outputs[i] = std::make_shared<ResultType>(factory((*this)[i]));
@@ -429,5 +430,5 @@ struct BoundaryConfig {
      * @param preAllocatedForL_iX3
      * @return pointers to matrices containing the eigen values and vectors.
      */
-    void generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]);
+    void generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const;
 };

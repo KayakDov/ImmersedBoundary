@@ -71,8 +71,8 @@ public:
      * @param lineStart         Boundary condition at start   (index == 0).
      * @param lineEnd           Boundary condition at end     (index == lineLength-1).
      * @param primary          The value at the main diagoanl.
-     * @param left          The value at the left diagonal on the row.
-     * @param right         The value at the right diagonal on the row.
+     * @param leftRight          The value at the left and right diagonals on the row.
+
 
      */
     __device__ void setRowInBanded1d(
@@ -99,22 +99,19 @@ template<typename T>
 class LSetter1d {
     LSetter<T> lSetter;
     const AdjacencyInd& primary;
-    const AdjacencyInd& right;
-    const AdjacencyInd& left;
+    const AdjacencyIndPair& leftRight;
 public:
     /**
      *
      * @param L The banded laplacian to be set.
      * @param rowL The row of the laplacian that is to be set.
      * @param primary The column index of the primary diagonal in the banded matrix.
-     * @param right The index of the righ diagonal's column.
-     * @param left The index of the left diagonal's column.
+     * @param leftRight
      */
-    __device__ LSetter1d(DeviceData2d<T>& L, size_t rowL, const AdjacencyInd& primary, const AdjacencyInd& left, const AdjacencyInd& right) :
+    __device__ LSetter1d(DeviceData2d<T>& L, size_t rowL, const AdjacencyInd& primary, const AdjacencyIndPair& leftRight) :
         lSetter(L, rowL),
         primary(primary),
-        right(right),
-        left(left)
+        leftRight(leftRight)
     {}
 
 
@@ -137,7 +134,7 @@ public:
         const BoundaryConditionPair<T>& boundary
     ) {
         lSetter.L = &L;
-        lSetter.setRowInBanded1d(lSetter.rowL, L.rows, boundary, primary, left, right);
+        lSetter.setRowInBanded1d(lSetter.rowL, L.rows, boundary, primary, leftRight);
     }
 };
 
@@ -264,32 +261,31 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
  * @param[in] start               Boundary condition at i == 0.
  * @param[in] end                 Boundary condition at i == n - 1.
  * @param[in] primary             Adjacency info for the main diagonal.
- * @param[in] prev                Adjacency info for the negative diagonal (u_{i-1}).
- * @param[in] next                Adjacency info for the positive diagonal (u_{i+1}).
+ * @param[in] prevNext            The indices of the previouse and next element.
+
  */
 template <typename T>
 __global__ void buildL1dKernel(
     DeviceData2d<T> bandedL_i,
     const BoundaryConditionPair<T> condition,
     const AdjacencyInd primary,
-    const AdjacencyInd prev,
-    const AdjacencyInd next
+    const AdjacencyIndPair prevNext
 ) {
     size_t i = idx();
     if (i >= bandedL_i.rows) return;
 
     LSetter<T> ds(bandedL_i, i);
-    ds.setRowInBanded1d(i, bandedL_i.rows, condition, primary, next, prev);
+    ds.setRowInBanded1d(i, bandedL_i.rows, condition, primary, prevNext);
 }
 
 template <typename T>
-__global__ void buildAllL1dKernel(DeviceData2d<T> bandedL_x, DeviceData2d<T> bandedL_y, DeviceData2d<T> bandedL_z, const BoundaryConfig<T> boundary, const AdjacencyInd primary, const AdjacencyInd prev, const AdjacencyInd next) {
+__global__ void buildAllL1dKernel(DeviceData2d<T> bandedL_x, DeviceData2d<T> bandedL_y, DeviceData2d<T> bandedL_z, const BoundaryConfig<T> boundary, const AdjacencyInd primary, const AdjacencyIndPair prevNext) {
     size_t i = idx();
 
-    LSetter1d<T> ds(bandedL_x, i, primary, next, prev);
-    if (i < bandedL_x.rows) ds.setRowInBanded1d(bandedL_x, boundary.left, boundary.right);
-    if (i < bandedL_y.rows) ds.setRowInBanded1d(bandedL_y, boundary.top, boundary.bottom);
-    if (i < bandedL_z.rows) ds.setRowInBanded1d(bandedL_z, boundary.front, boundary.back);
+    LSetter1d<T> ds(bandedL_x, i, primary, prevNext);
+    if (i < bandedL_x.rows) ds.setRowInBanded1d(bandedL_x, boundary.leftRight);
+    if (i < bandedL_y.rows) ds.setRowInBanded1d(bandedL_y, boundary.topBottom);
+    if (i < bandedL_z.rows) ds.setRowInBanded1d(bandedL_z, boundary.frontBack);
 }
 
 

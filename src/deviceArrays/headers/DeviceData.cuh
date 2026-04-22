@@ -50,22 +50,23 @@ public:
  * * Provides utility methods to derive "left" (lower) and "right" (upper) diagonal
  * descriptors based on a central mapping.
  */
-class AdjacencyIndPair : private AdjacencyInd {
+class AdjacencyIndPair {
+    const size_t firstCol, nextDiagOffset;
 public:
     /**
      * @brief Constructs an Adjacency Index Pair.
-     * @param col The base column index.  The right diagonal will be stored at this index plus 1, so be sure not to
+     * @param firstCol The base column index.  The right diagonal will be stored at this index plus 1, so be sure not to
      * put anything else there.
-     * @param diag The base diagonal offset.
+     * @param nextDiagOffset The base diagonal offset.  This should be positive.
      */
-    __host__ __device__ AdjacencyIndPair(const size_t col, const int32_t diag) : AdjacencyInd(col, diag) {}
+    __host__ __device__ AdjacencyIndPair(const size_t firstCol, const size_t nextDiagOffset) : firstCol(firstCol), nextDiagOffset(nextDiagOffset) {}
 
     /**
      * @brief Returns the "Left" (mirrored) version of this diagonal.
      * @return An AdjacencyInd with the same column but a negated diagonal offset.
      */
     __host__ __device__ AdjacencyInd getLeft() const {
-        return AdjacencyInd(this->col, -this->diag);
+        return AdjacencyInd(this->firstCol, -static_cast<int32_t>(this->nextDiagOffset));
     }
 
     /**
@@ -73,7 +74,7 @@ public:
      * @return An AdjacencyInd with the next sequential column and the original diagonal offset.
      */
     __host__ __device__ AdjacencyInd getRight() const {
-        return {this->col + 1, this->diag};
+        return {this->firstCol + 1, static_cast<int32_t>(this->nextDiagOffset)};
     }
 
     /**

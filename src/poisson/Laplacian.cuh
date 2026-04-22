@@ -57,7 +57,7 @@ public:
     /**
      * @brief Effectively calls setL_i for each dimension.
      */
-    void set(cudaStream_t stream, Mat<T> *preAllocatedForL_iX3, Vec<int32_t> &preAllocatedForIndices);
+    void set(cudaStream_t stream, Mat<T> (&preAllocatedForL)[3], Vec<int32_t> &preAllocatedForIndices);
 
 
     /**
@@ -99,45 +99,45 @@ public:
     /**
      * The eigen vectors for L_x
      */
-    const std::unique_ptr<SquareMat<T>> eVecX;
+    SquareMat<T> eVecX;
     /**
      * The eigen vectors for L_y
      */
-    const std::unique_ptr<SquareMat<T>> eVecY;
+    SquareMat<T> eVecY;
     /**
      * The eigen vectors for L_z, if the laplacian is 3d.  Otherwise a null pointer.
      */
-    const std::unique_ptr<SquareMat<T>> eVecZ;
+    SquareMat<T> eVecZ;
 
 };
 
 template<typename T>
 class LaplacianEigenVal {
 
-    LaplacianEigenVal(const Vec<T>& eVecX, const Vec<T>& eVecY, const Vec<T>& eVecZ);
+    LaplacianEigenVal(const Vec<T>& eValX, const Vec<T>& eValY, const Vec<T>& eValZ);
     friend LaplacianEigen<T>;
 
 public:
     /**
      * The Eigenvalues for L_x
      */
-    const std::unique_ptr<Vec<T>> eVecX;
+    Vec<T> eValX;
     /**
      * The Eigenvalues for L_y
      */
-    std::unique_ptr<Vec<T>> eVecY;
+    Vec<T> eValY;
     /**
      * The Eigenvalues for L_z
      */
-    std::unique_ptr<Vec<T>> eVecZ;
+    Vec<T> eValZ;
 };
 
 template<typename T>
 class LaplacianEigen {
     LaplacianEigen(const LaplacianEigenVal<T>& vals, const LaplacianEigenVec<T>& vecs);
 public:
-    LaplacianEigenVal<T> vals;
-    LaplacianEigenVal<T> vecs;
+    const LaplacianEigenVal<T> vals;
+    const LaplacianEigenVec<T> vecs;
 
     /**
      * Generates the eigenvector matrices.

@@ -77,41 +77,43 @@ void Laplacian<T>::setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, V
 template<typename T>
 void Laplacian1d<T>::set(cudaStream_t stream, Mat<T> &preAllocatedForL_i, Vec<int32_t> &preAllocatedForIndices, size_t dim) {
 
-    AdjacencyInd prev(1, -1), next(2, 1), primary(0, 0);
+    AdjacencyIndPair prevNext(1, 1);
+    AdjacencyInd primary(0, 0);
 
     KernelPrep kp(dim);
 
     buildL1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
         preAllocatedForL_i.toKernel2d(),
-        this->boundary(dim, true), this->boundary(dim, false),
-        primary, prev, next
+        this->boundary[dim],
+        primary, prevNext
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());
 
-    AdjacencyPatern::loadMapRowToDiag(preAllocatedForIndices, {primary, prev, next}, stream);
+    AdjacencyPatern::loadMapRowToDiag(preAllocatedForIndices, {primary, prevNext.getLeft(), prevNext.getRight()}, stream);
 
     this->operator[](dim) = std::make_unique<BandedMat<T>>(preAllocatedForL_i, preAllocatedForIndices);
 }
 
 template<typename T>
-void Laplacian1d<T>::set(cudaStream_t stream, Mat<T>* preAllocatedForL_iX3, Vec<int32_t> &preAllocatedForIndices) {
+void Laplacian1d<T>::set(cudaStream_t stream, Mat<T> (&preAllocatedForL)[3], Vec<int32_t> &preAllocatedForIndices) {
 
-    AdjacencyInd prev(1, -1), next(2, 1), primary(0, 0);
+    AdjacencyIndPair prevNext(1, 1);
+    AdjacencyInd primary(0, 0);
 
-    KernelPrep kp(std::max(preAllocatedForL_iX3[0].rows, std::max(preAllocatedForL_iX3[1].rows, preAllocatedForL_iX3[2].rows)));
+    KernelPrep kp(std::max(preAllocatedForL[0]._rows, std::max(preAllocatedForL[1]._rows, preAllocatedForL[2]._rows)));
 
     buildAllL1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
-        preAllocatedForL_iX3[0].toKernel2d(), preAllocatedForL_iX3[1].toKernel2d(), preAllocatedForL_iX3[2].toKernel2d(),
+        preAllocatedForL[0].toKernel2d(), preAllocatedForL[1].toKernel2d(), preAllocatedForL[2].toKernel2d(),
         this->boundary,
-        primary, prev, next
+        primary, prevNext
     );
     CHECK_CUDA_ERROR(cudaGetLastError());
 
-    AdjacencyPatern::loadMapRowToDiag(preAllocatedForIndices, {primary, prev, next}, stream);
+    AdjacencyPatern::loadMapRowToDiag(preAllocatedForIndices, {primary, prevNext.getLeft(), prevNext.getRight()}, stream);
 
     for (size_t i = 0; i < 3; i++)
-        this->operator[](i) = std::make_unique<BandedMat<T>>(preAllocatedForL_iX3[i], preAllocatedForIndices);
+        this->operator[](i) = std::make_unique<BandedMat<T>>(preAllocatedForL[i], preAllocatedForIndices);
 }
 
 template<typename T>
@@ -127,8 +129,8 @@ void Laplacian1d<T>::set(cudaStream_t stream, const GridDim& dim) {
 
     std::shared_ptr<Mat<T>> preAllocatedForL_iX3[3];
 
-    createUnique(boundary, preAllocatedForL_iX3, [](const auto& c) {
-        return Mat<T>::create(c.dim, 3);
+    boundary.template createUnique<Mat<T>>(preAllocatedForL_iX3, [](const BoundaryConditionPair<T>& c) {
+        return Mat<T>::create(c.dimLength, 3);
     });
 
     Mat<T> mats[3] = {*preAllocatedForL_iX3[0], *preAllocatedForL_iX3[1], *preAllocatedForL_iX3[2]};
@@ -143,8 +145,8 @@ LaplacianEigenVec<T>::LaplacianEigenVec(
 ) : eVecX(eVecX), eVecY(eVecY), eVecZ(eVecZ) {}
 
 template<typename T>
-LaplacianEigenVal<T>::LaplacianEigenVal(const Vec<T> &eVecX, const Vec<T> &eVecY, const Vec<T> &eVecZ) :
-    eVecX(eVecX), eVecY(eVecY), eVecZ(eVecZ) {
+LaplacianEigenVal<T>::LaplacianEigenVal(const Vec<T> &eValX, const Vec<T> &eValY, const Vec<T> &eValZ) :
+    eValX(eValX), eValY(eValY), eValZ(eValZ) {
 }
 
 template<typename T>
@@ -153,10 +155,10 @@ LaplacianEigen<T>::LaplacianEigen(const LaplacianEigenVal<T> &vals, const Laplac
 
 
 template<typename Real>
-void BoundaryConfig<Real>::generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) {
+void BoundaryConfig<Real>::generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const{
 
 
-    createUnique(preAllocatedForL_iX3, [](BoundaryConditionPair<Real> c) {
+    createUnique<Mat<Real>>(preAllocatedForL_iX3, [](const BoundaryConditionPair<Real>& c) {
         return Mat<Real>::create(c.dimLength, c.dimLength + 1);
     });
 
