@@ -202,8 +202,13 @@ void Vec<T>::fill(T val, cudaStream_t stream) {
 }
 
 template<typename T>
-Singleton<T> Vec<T>::get(size_t i) {
+Singleton<T> Vec<T>::get(size_t i) const {
     return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->toKernel1d() + i * this->_ld));
+}
+
+template<typename T>
+Singleton<T> Vec<T>::operator[](size_t i) const{
+    return get(i);
 }
 
 template<typename T>
@@ -486,27 +491,31 @@ void Vec<T>::permute(Vec<Int> permutation, Vec<T> dst, Handle& hand) {
 }
 
 
+// =========================================================================
+// Explicit Template Instantiations
+// =========================================================================
 
-template class Vec<float>;
-template class Vec<double>;
-template class Vec<size_t>;
-template class Vec<int32_t>;
-template class Vec<int64_t>;
-template class Vec<unsigned char>;
-template class Vec<uint32_t>;
+#define INSTANTIATE_VEC_CORE(T) \
+template class Vec<T>; \
+template Vec<T> GpuArray<T>::row(size_t) const;
 
+INSTANTIATE_VEC_CORE(float)
+INSTANTIATE_VEC_CORE(double)
+INSTANTIATE_VEC_CORE(int32_t)
+INSTANTIATE_VEC_CORE(uint32_t)
+INSTANTIATE_VEC_CORE(int64_t)
+INSTANTIATE_VEC_CORE(size_t)
+INSTANTIATE_VEC_CORE(unsigned char)
 
-// Instantiate GpuArray::row(size_t) const for all necessary types
-template Vec<float> GpuArray<float>::row(size_t) const;
-template Vec<double> GpuArray<double>::row(size_t) const;
-template Vec<size_t> GpuArray<size_t>::row(size_t) const; // Maps to 'unsigned long' in the error
-template Vec<unsigned char> GpuArray<unsigned char>::row(size_t) const;
-template Vec<uint32_t> GpuArray<uint32_t>::row(size_t) const;
-template Vec<int64_t> GpuArray<int64_t>::row(size_t) const;
-template Vec<int32_t> GpuArray<int32_t>::row(size_t) const;
+#undef INSTANTIATE_VEC_CORE
 
-// Explicitly instantiate permute for the combinations used in getCSR
-template void Vec<int32_t>::permute<int32_t>(Vec<int32_t>, Vec<int32_t>, Handle&);
-template void Vec<double>::permute<int32_t>(Vec<int32_t>, Vec<double>, Handle&);
-template void Vec<float>::permute<int32_t>(Vec<int32_t>, Vec<float>, Handle&);
-template void Vec<int64_t>::permute<int32_t>(Vec<int32_t>, Vec<int64_t>, Handle&);
+// Specialized permute combinations
+#define INSTANTIATE_VEC_PERMUTE(T, INDEX_T) \
+template void Vec<T>::permute<INDEX_T>(Vec<INDEX_T>, Vec<T>, Handle&);
+
+INSTANTIATE_VEC_PERMUTE(int32_t, int32_t)
+INSTANTIATE_VEC_PERMUTE(double,  int32_t)
+INSTANTIATE_VEC_PERMUTE(float,   int32_t)
+INSTANTIATE_VEC_PERMUTE(int64_t, int32_t)
+
+#undef INSTANTIATE_VEC_PERMUTE

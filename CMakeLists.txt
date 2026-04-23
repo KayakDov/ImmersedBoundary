@@ -68,12 +68,6 @@ list(FILTER LIB_SOURCES EXCLUDE REGEX "[/\\\\]main\\.cu$")
 add_library(CudaBandedLib STATIC
         ${LIB_SOURCES}
         ${SHROUD_SOURCES}
-        src/poisson/BoundaryCondition.cuh
-        src/math/Real3dDevice.hpp
-        src/poisson/LaplacianKernels.cuh
-        src/poisson/LaplacianEigenKernels.cu
-        src/math/XYZ.cpp
-        src/math/XYZ.h
 )
 
 set_target_properties(CudaBandedLib PROPERTIES

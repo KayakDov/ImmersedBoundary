@@ -347,12 +347,12 @@ struct BoundaryConfig {
 
     __host__ BoundaryConfig(ConditionType type, Real value, Real3d delta, const GridDim& dim):
         BoundaryConfig(
-            {value, delta.x, type},
-            {value, delta.x, type},
-            {value, delta.y, type},
-            {value, delta.y, type},
-            {value, delta.z, type},
-            {value, delta.z, type},
+            {value, static_cast<Real>(delta.x), type},
+            {value, static_cast<Real>(delta.x), type},
+            {value, static_cast<Real>(delta.y), type},
+            {value, static_cast<Real>(delta.y), type},
+            {value, static_cast<Real>(delta.z), type},
+            {value, static_cast<Real>(delta.z), type},
             dim
         ){}
 

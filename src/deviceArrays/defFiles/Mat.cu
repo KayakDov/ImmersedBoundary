@@ -49,7 +49,6 @@ void Mat<T>::mult(
     const Singleton<T> *alpha,
     const Singleton<T> *beta,
     bool transpose
-
 ) const {
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);

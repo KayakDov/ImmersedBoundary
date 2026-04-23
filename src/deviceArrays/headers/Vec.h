@@ -129,11 +129,16 @@ public:
 
     /**
      * @brief Returns a single element as Singleton<T>.
-     * 
+     *
      * @param i Index of the element.
      * @return Singleton<T> representing the element.
      */
-    Singleton<T> get(size_t i);
+    Singleton<T> get(size_t i) const;
+
+    /**
+     * @see get(size_t i)
+     */
+    Singleton<T> operator[](size_t i) const;
 
     /**
      * @brief Multiply this vector by a matrix and optionally store result.

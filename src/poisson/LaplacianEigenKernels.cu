@@ -90,7 +90,6 @@ __global__ void eigenMatLKernel_NN(DeviceData2d<T> eVecs, bool isNodeCentered) {
     if (ind.col == 0) eVecs[ind] = std::sqrt(den);
     else if (ind.col < eVecs.cols)
         eVecs[ind] = std::sqrt(2 * den) * std::cos(PI<T> * ind.col * (ind.row + (!isNodeCentered) * 0.5)* den);
-
 }
 
 /**

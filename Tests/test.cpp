@@ -4,7 +4,7 @@
 #include "solvers/EigenDecomp/EigenDecompThomas.cuh"
 #include "poisson/Laplacian.cuh"
 #include "solvers/EigenDecomp/EigenDecomp3d.cuh"
-
+#include <cmath>
 #include "immersedBoundary/ImerssedEquation.h"
 //
 // TEST(ImmersedEq, SolvesPrimes_3x2x1) {
@@ -290,13 +290,40 @@
 //         EXPECT_NEAR(actual[i], resultHost[i], 1e-5) << "Mismatch at solution vector index " << i;
 // }
 
+
+template<typename T>
+static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, T tol = 1e-6){
+
+    for (size_t i = 0; i < lambda.size(); ++i) {
+        Vec<T> vi = V.col(i);   // adjust if your API differs
+
+        Vec Lvi = SimpleArray<T>::create(L._rows, hand);
+        L.mult(vi, Lvi, &hand, &GPUConst<T>::get(1), &GPUConst<T>::get(0), false);
+
+
+        Vec<T> lam_vi = SimpleArray<T>::create(L._rows, hand);
+        lam_vi.set(vi, hand);
+        lam_vi.mult(lambda[i], &hand);
+
+        Lvi.add(lam_vi, &GPUConst<T>::get(-1), &hand);
+
+        Lvi.norm(lam_vi[0], hand);
+
+        T err = lam_vi[0].get(hand);
+
+        EXPECT_LT(err, tol)
+            << "Eigenpair failed at index " << i
+            << " residual = " << err;
+    }
+}
+
 TEST(LaplacianMath, laplacian) {
     using Real = double;
     GridDim dim(2, 3, 2);
     Handle hand3[3];
     Event event2[2];
     Real3d delta(1, 1, 1);
-    ConditionType type = ConditionType::DirichletNodeCentered;
+    ConditionType type = ConditionType::NeumannNodeCentered;
 
     BoundaryConfig<Real> boundary(type, 0, 1, dim);
     Laplacian<Real> laplacian(dim, delta, boundary);
@@ -314,6 +341,9 @@ TEST(LaplacianMath, laplacian) {
     std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
     std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
 
+    for (size_t i = 0; i < 3; ++i) {
+        checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i], hand3[i]);
+    }
 
 }
 
