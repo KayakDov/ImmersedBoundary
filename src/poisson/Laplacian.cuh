@@ -7,6 +7,7 @@
 #include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "math/Real3d.h"
 #include "deviceArrays/headers/SquareMat.h"
+#include "math/XYZ.h"
 #include "poisson/BoundaryCondition.cuh"
 #include "solvers/Event.h"
 #include "poisson//LaplacianKernels.cuh"
@@ -22,122 +23,43 @@ constexpr size_t numDiagonals2d = 5;
  */
 template<typename T>
 class Laplacian1d {
-public:
-
-    std::unique_ptr<BandedMat<T>> Lx = nullptr;
-    std::unique_ptr<BandedMat<T>> Ly = nullptr;
-    std::unique_ptr<BandedMat<T>> Lz = nullptr;
-
-    /**
-     * The boundary.
-     */
+    Vec<int32_t> inds;
     const BoundaryConfig<T> boundary;
+
+public:
+    const XYZ<Mat<T>> rawBanded;
+    /**
+     *
+     * @param boundary The boundary for the 1d laplacians.
+     * @param hand The context.
+     */
+    Laplacian1d(const BoundaryConfig<T> &boundary, Handle &hand);
     /**
      * Selects one of the laplacian 1d operators.
      * @param dim 0 for the x dimension, 1 for the y dimesnion, and 2 for the z dimension.
      * @return a 1d operator.
      */
-    std::unique_ptr<BandedMat<T>>& operator[](size_t dim);
-
-
-    /**
-     * @brief Build a 1D banded Laplacian operator for a single dimension.
-     *
-     * Constructs the 1D finite difference matrix for dimension `dim` with appropriate
-     * boundary conditions and diagonal storage layout. The resulting banded matrix is
-     * stored internally for later use.
-     *
-     * @param[in] stream                    CUDA stream for kernel execution.
-     * @param[in,out] preAllocatedForL_i    Banded matrix (size(dim) × 3) to fill with coefficients.
-     * @param[in,out] preAllocatedForIndices Vector of length 3 for diagonal indices.
-     * @param[in] dim                       Dimension: 0=row/y, 1=col/x, 2=layer/z.
-     */
-    void set(cudaStream_t stream, Mat<T> &preAllocatedForL_i, Vec<int32_t> &preAllocatedForIndices, size_t dim);
+    BandedMat<T> banded(size_t dim);
 
     /**
-     * @brief Effectively calls setL_i for each dimension.
+     * The square matrix of the given dimension.
+     * @param dim 0 for x, 1 for y, 2 for z.
+     * @param hand
+     * @return A square 1d laplacian matrix.
      */
-    void set(cudaStream_t stream, Mat<T> (&preAllocatedForL)[3], Vec<int32_t> &preAllocatedForIndices);
-
-
-    /**
-     * @brief Build a 1D banded Laplacian operator for a single dimension.
-     *
-     * Allocates memory and constructs the 1D finite difference matrix for dimension `dim`.
-     *
-     * @param[in] stream CUDA stream for kernel execution.
-     * @param n The number of elements in this dimension.  The vector length.
-     * @param[in] dim    Dimension: 0=row/y, 1=col/x, 2=layer/z.
-     */
-    void set(cudaStream_t stream, size_t n, size_t dim);
-
-    /**
-     * @brief Build 1D banded Laplacian operators for all three dimensions.
-     *
-     * Ensures that if two Laplacians have the same dimension size and memory, then only one object in memory is created.
-     *
-     * Allocates memory and constructs all three 1D finite difference matrices simultaneously.
-     *
-     * @param[in] stream CUDA stream for kernel execution.
-     * @param dim The dimension of the underlying 2 or 3d grid.
-     */
-    void set(cudaStream_t stream, const GridDim& dim);
+    SquareMat<T> dense(size_t dim, Handle &hand);
 };
+
 
 
 template<typename T> class LaplacianEigen;
-/**
- * The matrices of eigen vectors for a 2d or 3d laplacian.
- * @tparam T
- */
-template<typename T>
-class LaplacianEigenVec {
-
-    friend LaplacianEigen<T>;
-    LaplacianEigenVec(const SquareMat<T>& eVecX, const SquareMat<T>& eVecY, const SquareMat<T>& eVecZ);
-public:
-    /**
-     * The eigen vectors for L_x
-     */
-    SquareMat<T> eVecX;
-    /**
-     * The eigen vectors for L_y
-     */
-    SquareMat<T> eVecY;
-    /**
-     * The eigen vectors for L_z, if the laplacian is 3d.  Otherwise a null pointer.
-     */
-    SquareMat<T> eVecZ;
-
-};
-
-template<typename T>
-class LaplacianEigenVal {
-
-    LaplacianEigenVal(const Vec<T>& eValX, const Vec<T>& eValY, const Vec<T>& eValZ);
-    friend LaplacianEigen<T>;
-
-public:
-    /**
-     * The Eigenvalues for L_x
-     */
-    Vec<T> eValX;
-    /**
-     * The Eigenvalues for L_y
-     */
-    Vec<T> eValY;
-    /**
-     * The Eigenvalues for L_z
-     */
-    Vec<T> eValZ;
-};
 
 template<typename T>
 class LaplacianEigen {
-    LaplacianEigen(const LaplacianEigenVal<T>& vals, const LaplacianEigenVec<T>& vecs);
+    LaplacianEigen(const XYZ<Vec<T>>& vals, const XYZ<SquareMat<T>>& vecs);
 public:
-    const LaplacianEigenVal<T> vals;
-    const LaplacianEigenVec<T> vecs;
+    const XYZ<Vec<T>> vals;
+    const XYZ<SquareMat<T>> vecs;
 
     /**
      * Generates the eigenvector matrices.
@@ -256,6 +178,13 @@ public:
      * @return BandedL.
      */
     BandedMat<T>& banded(cudaStream_t stream = nullptr);
+
+    /**
+     * The dense version of this matrix.
+     * @param handle
+     * @return The dense version of this matrix.
+     */
+    SquareMat<T> dense(Handle &handle);
 };
 
 

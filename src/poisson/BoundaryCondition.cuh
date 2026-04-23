@@ -23,6 +23,9 @@
 #include "solvers/Event.h"
 #include <limits>
 
+/**
+ * Dirchlet is fixed value while Neumann is fixed gradient.
+ */
 enum class ConditionType{DirichletStaggered, NeumannStaggered, DirichletNodeCentered, NeumannNodeCentered};
 
 /**
@@ -323,7 +326,7 @@ template<typename Real>
 struct BoundaryConfig {
 
     /// Boundary conditions for each face
-    const BoundaryConditionPair<Real> leftRight, topBottom, frontBack;
+    const BoundaryConditionPair<Real> leftRight, topBottom, frontBack; //TODO: Can xyz be used here?  It's not currently implemented on the device.
 
     /**
      * @brief Construct boundary configuration.

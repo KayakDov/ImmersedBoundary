@@ -75,63 +75,6 @@ public:
     }
 };
 
-template<typename Real>
-void loadYuriData() {
-
-    Handle hand;
-
-    GridDim dim(1000, 1000, 1);
-
-    LoadBHost b;
-
-    auto cooB = SparseCOO<Real, int32_t>::create(b.bVals.size(), dim.size(), dim.size(), hand);
-    cooB.set(b.bRows.data(), b.bCols.data(), b.bVals.data(), hand);
-
-    auto offsets = SimpleArray<int32_t>::create(cooB.rows + 1, hand);
-    auto nnzAllocated = SimpleArray<int32_t>::create(b.nnz(), hand);
-    std::unique_ptr<SimpleArray<Real>> buffer = nullptr;
-
-    auto csrB = cooB.getCSR(offsets, nnzAllocated, buffer, hand);
-
-    std::vector<Real> bVals(csrB.values.size());
-    csrB.values.get(bVals.data(), hand);
-    std::vector<int32_t> bColInds(csrB.inds.size());
-    csrB.inds.get(bColInds.data(), hand);
-    std::vector<int32_t> bRowOffsets(csrB.offsets.size());
-    csrB.offsets.get(bRowOffsets.data(), hand);
-
-    auto A = Laplacian<Real>::L(dim, hand);
-
-    LoadRHSHost rhs;
-
-    std::cout << "f size = " << rhs.FHost.size() << std::endl;
-
-    cudaDeviceSynchronize();
-
-    Real3d delta(1.0/1000, 1.0/1000, 1.0/1000);
-
-    std::vector<Real> result(dim.size());
-
-    auto start = std::chrono::high_resolution_clock::now();
-    ImmersedEq<Real, int32_t> imEq(dim, rhs.FHost.size(), b.nnz(), rhs.pHost.data(), rhs.FHost.data(), delta, 1, 1e-18, 100);
-    imEq.solve(result.data(), b.nnz(), bRowOffsets.data(), bColInds.data(), bVals.data());
-
-    cudaDeviceSynchronize();
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = end - start;
-    std::cout << "Total Solver Time: " << duration.count() << " ms" << std::endl;
-
-    std::ofstream resFile("../dataFromYuri/result.dat");
-    if (resFile.is_open()) {
-        for (size_t i = 0; i < result.size(); ++i) {
-            resFile << i << " " << std::scientific << result[i] << "\n";
-        }
-        resFile.close();
-        std::cout << "Saved results to result.dat" << std::endl;
-    }
-
-}
-
 template<typename Real, typename Int>
 void testPrimes() {
     GridDim dim(3, 2, 1);

@@ -72,6 +72,8 @@ add_library(CudaBandedLib STATIC
         src/math/Real3dDevice.hpp
         src/poisson/LaplacianKernels.cuh
         src/poisson/LaplacianEigenKernels.cu
+        src/math/XYZ.cpp
+        src/math/XYZ.h
 )
 
 set_target_properties(CudaBandedLib PROPERTIES
@@ -107,7 +109,9 @@ enable_testing()
 file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp")
 
 add_executable(run_unit_tests ${TEST_SOURCES}
-        src/poisson/LaplacianEigenKernels.cu)
+        src/poisson/LaplacianEigenKernels.cu
+        src/math/XYZ.cpp
+        src/math/XYZ.h)
 
 set_target_properties(run_unit_tests PROPERTIES
         CUDA_RESOLVE_DEVICE_SYMBOLS ON

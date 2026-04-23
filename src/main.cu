@@ -123,7 +123,7 @@ void solveSystem(int argc, char const* argv[], bool isText, size_t maxIter, doub
 
     Vec<T> b = Vec<T>::create(width, hand);
     Vec<int> diags = Vec<int>::create(numDiags, hand);
-    BandedMat<T> A = BandedMat<T>::create(width, numDiags, diags);
+    BandedMat<T> A = BandedMat<T>::create(width, diags);
 
     readAndPrint(diags, diags_file, isText, hand);
     readAndPrint(A, a_file, isText, hand);

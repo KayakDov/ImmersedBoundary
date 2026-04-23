@@ -160,8 +160,8 @@ BandedMat<T>::BandedMat(const Mat<T> &copyFrom, const Vec<int32_t> &indices) : B
 }
 
 template<typename T>
-BandedMat<T> BandedMat<T>::create(size_t denseSqMatDim, size_t numDiagonals, const Vec<int32_t> &indices) {
-    return BandedMat<T>(Mat<T>::create(denseSqMatDim, numDiagonals), indices);
+BandedMat<T> BandedMat<T>::create(size_t denseSqMatDim, const Vec<int32_t> &indices) {
+    return BandedMat<T>(Mat<T>::create(denseSqMatDim, indices.size()), indices);
 }
 
 template<typename T>

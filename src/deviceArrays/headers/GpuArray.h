@@ -449,6 +449,14 @@ public:
      */
     Vec<T> vec(size_t offset, size_t ld, size_t size);
 
+    /**
+     * Creates a vector that is a window into part of this GpuArray, or the underlying data.
+     * Note: before using this method, make sure row, col, or diag don't meet your needs, as they are safer.
+     * @param offset The vector starts here relative to the first element of this matrix.
+     * @param ld The step size between vector elements.
+     * @param size The number of elements in the new vector.
+     * @return The new vector created that is a window into this matrix.
+     */
     Vec<T> vec(size_t offset, size_t ld, size_t size) const;
 };
 

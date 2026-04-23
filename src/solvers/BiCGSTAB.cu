@@ -228,7 +228,7 @@ void BCGBanded<T>::test() {
     std::vector<int32_t>  indicesHost = {0, 1};
     indices.set(indicesHost.data(), hand4[0]);
 
-    auto banded = BandedMat<double>::create(n, indicesHost.size(), indices);
+    auto banded = BandedMat<double>::create(n, indices);
     banded.col(0).fill(1, hand4[0]);
     banded.col(1).fill(2, hand4[0]);
 

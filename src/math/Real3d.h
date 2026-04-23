@@ -3,15 +3,14 @@
 
 #include <cstddef>
 
-class Real3d {
+#include "XYZ.h"
+
+class Real3d : public XYZ<double>{
 
     public:
-    double x, y, z;
+
     Real3d(double x, double y, double z);
 
-    double& operator[](size_t i);
-
-    double operator[](size_t i) const;
 
     static const Real3d ZERO;
 

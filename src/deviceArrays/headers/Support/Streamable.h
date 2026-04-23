@@ -7,6 +7,8 @@
 #include <iostream>
 #include <type_traits> // For std::is_const_v
 
+#include "poisson/Laplacian.cuh"
+
 /**
  * @brief Base class for GpuArray streaming, holding common context parameters.
  */
@@ -72,6 +74,31 @@ public:
     std::ostream& write(std::ostream& os) const;
 };
 
+/**
+ * @brief Helper wrapper for printing Laplacian1d objects using a Handle.
+ */
+template<typename dataStruct, typename T>
+struct GpuX3Out {
+    const XYZ<dataStruct>& gpu3d;
+    Handle& hand;
+    GpuX3Out(const XYZ<dataStruct>& gpu3d, Handle& hand);
+};
+
+
+template<typename  structure, typename T>
+std::ostream& operator<<(std::ostream& os, const GpuX3Out<structure, T>& out) {
+
+    os << "x:\n"
+       << GpuOut<T>(out.gpu3d[0], out.hand) << "\n";
+
+    os << "y:\n"
+       << GpuOut<T>(out.gpu3d[1], out.hand) << "\n";
+
+    os << "z:\n"
+       << GpuOut<T>(out.gpu3d[2], out.hand);
+
+    return os;
+}
 
 /**
  * @brief Global stream insertion operator to wrap a GpuArray for printing.
@@ -102,5 +129,7 @@ template <typename T>
 std::istream& operator>>(std::istream& input_stream, GpuIn<T>&& wrapper) {
     return wrapper.read(input_stream);
 }
+
+
 
 #endif //BICGSTAB_STREAMABLE_H

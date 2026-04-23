@@ -26,7 +26,7 @@ public:
 
     __host__ void loadMapRowToDiag(Vec<int32_t>& diags, cudaStream_t stream) const;
 
-    __host__ static void loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> indices, cudaStream_t stream);
+    __host__ static void loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, cudaStream_t stream);
 };
 
 
@@ -48,12 +48,12 @@ template<typename T>
 class LSetter {
 
 public:
-    DeviceData2d<T>* L;
+    DeviceData2d<T>* laplacian;
     size_t rowL;
     /**
      * @brief Constructs a DimensionSetter for a given grid point.
      */
-    __device__ LSetter(DeviceData2d<T>& L, size_t rowL) : L(&L), rowL(rowL) {}
+    __device__ LSetter(DeviceData2d<T>& L, size_t rowL) : laplacian(&L), rowL(rowL) {}
 
     /**
      * @brief Set coefficients for a 1D row in the banded Laplacian.
@@ -80,9 +80,9 @@ public:
         const BoundaryConditionPair<T>& boundaries,
         const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
     ) {
-        T& mainDiag = (*L)(rowL, primary);
-        T& rightDiag = (*L)(rowL, leftRight.getRight());
-        T& leftDiag = (*L)(rowL, leftRight.getLeft());
+        T& mainDiag = (*laplacian)(rowL, primary);
+        T& rightDiag = (*laplacian)(rowL, leftRight.getRight());
+        T& leftDiag = (*laplacian)(rowL, leftRight.getLeft());
 
         if (!boundaries.setL(mainDiag, leftDiag, rightDiag, indexInLine, lineLength)) {
             mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
@@ -130,11 +130,11 @@ public:
      * @param lineEnd           Boundary condition at end     (index == lineLength-1).
      */
     __device__ void setRowInBanded1d(
-        DeviceData2d<T>& L,
+        DeviceData2d<T>& laplacian,
         const BoundaryConditionPair<T>& boundary
     ) {
-        lSetter.L = &L;
-        lSetter.setRowInBanded1d(lSetter.rowL, L.rows, boundary, primary, leftRight);
+        lSetter.laplacian = &laplacian;
+        lSetter.setRowInBanded1d(lSetter.rowL, laplacian.rows, boundary, primary, leftRight);
     }
 };
 

@@ -101,30 +101,31 @@ std::ostream& GpuOut<T>::write(std::ostream& os) const {
     return os;
 }
 
+template<typename  dataStruct, typename T>
+GpuX3Out<dataStruct, T>::GpuX3Out(const XYZ<dataStruct> &gpu3d, Handle &hand): gpu3d(gpu3d), hand(hand) {
+}
 
 
-// float
-template class GpuIn<float>;
-template class GpuOut<float>;
+// Helper macro for scalar GPU wrappers
+#define INSTANTIATE_GPU_IO(T)   \
+template class GpuIn<T>;    \
+template class GpuOut<T>;
 
-// double
-template class GpuIn<double>;
-template class GpuOut<double>;
+INSTANTIATE_GPU_IO(float)
+INSTANTIATE_GPU_IO(double)
+INSTANTIATE_GPU_IO(size_t)
+INSTANTIATE_GPU_IO(int32_t)
+INSTANTIATE_GPU_IO(int64_t)
+INSTANTIATE_GPU_IO(unsigned char)
+INSTANTIATE_GPU_IO(uint32_t)
 
-// size_t
-template class GpuIn<size_t>;
-template class GpuOut<size_t>;
+#undef INSTANTIATE_GPU_IO
+#undef INSTANTIATE_GPU_X3_OUT
 
-// int32_t
-template class GpuIn<int32_t>;
-template class GpuOut<int32_t>;
+template class GpuX3Out<Vec<float>, float>;
+template class GpuX3Out<Mat<float>, float>;
+template class GpuX3Out<Vec<double>, double>;
+template class GpuX3Out<Mat<double>, double>;
 
-template class GpuIn<int64_t>;
-template class GpuOut<int64_t>;
-
-// unsigned char
-template class GpuIn<unsigned char>;
-template class GpuOut<unsigned char>;
-
-template class GpuIn<uint32_t>;
-template class GpuOut<uint32_t>;
+template class GpuX3Out<SquareMat<double>, double>;
+template class GpuX3Out<SquareMat<float>, double>;
