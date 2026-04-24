@@ -26,6 +26,18 @@
 template<typename T> __device__ __host__ constexpr T PI = T(3.14159265358979323846L);
 #endif
 
+template<typename T>
+__device__ __forceinline__ T _sqrt(T x) {
+    if constexpr (std::is_same_v<T, float>) return sqrtf(x);
+    else return sqrt(x);
+}
+template<typename T>
+__device__ __forceinline__ T _rsqrt(T x) {
+    if constexpr (std::is_same_v<T, float>) return __frsqrt_rn(x);
+    else return rsqrt(x);
+}
+
+
 // =============================================================================
 // DIRICHLET - DIRICHLET (DD)
 // =============================================================================
@@ -44,8 +56,8 @@ template<typename T>
 __global__ void eigenMatLKernel_DD(DeviceData2d<T> eVecs, bool isNodeCentered) {
     if (const GridInd2d ind; ind < eVecs) {
         const T den = 1.0/(eVecs.rows + isNodeCentered);
-        eVecs[ind] = std::sqrt(den * 2) *
-            std::sin(PI<T> * (ind.row + (isNodeCentered ? 1 : 0.5)) * (ind.col + 1) * den);
+        eVecs[ind] = _sqrt<T>(den * 2) *
+            sin(PI<T> * (ind.row + (isNodeCentered ? 1 : 0.5)) * (ind.col + 1) * den);
     }
 }
 
@@ -62,7 +74,7 @@ __global__ void eigenValLKernel_DD(DeviceData1d<T> eVals, const T minFourOverDel
     const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < eVals.cols) {
         const T den = 1.0/(eVals.cols + isNodeCentered * 1);
-        const T sineComponent = std::sin(PI<T> * (idx + 1) * 0.5 * den);
+        const T sineComponent = sin(PI<T> * (idx + 1) * 0.5 * den);
         eVals[idx] = sineComponent * sineComponent * minFourOverDeltaSq;
     }
 }
@@ -86,10 +98,10 @@ __global__ void eigenMatLKernel_NN(DeviceData2d<T> eVecs, bool isNodeCentered) {
     const GridInd2d ind;
     if (ind.row >= eVecs.rows) return;
 
-    T den = 1.0/(eVecs.rows - isNodeCentered);
-    if (ind.col == 0) eVecs[ind] = std::sqrt(den);
+    T den = 1.0/(eVecs.rows);
+    if (isNodeCentered && ind.col == 0) eVecs[ind] = _rsqrt<T>(eVecs.rows);
     else if (ind.col < eVecs.cols)
-        eVecs[ind] = std::sqrt(2 * den) * std::cos(PI<T> * ind.col * (ind.row + (!isNodeCentered) * 0.5)* den);
+        eVecs[ind] = _sqrt<T>(2.0 * den) * cos(PI<T> * ind.col * (ind.row  + isNodeCentered*0.5) * den);
 }
 
 /**
@@ -104,8 +116,8 @@ template<typename T>
 __global__ void eigenValLKernel_NN(DeviceData1d<T> eVals, const T minFourOverDeltaSq, bool isNodeCentered) {
     const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < eVals.cols) {
-        const T den = 1.0/(eVals.cols - isNodeCentered);
-        const T sineComponent = std::sin(PI<T> * idx * 0.5 * den);
+        const T den = 0.5/(eVals.cols);
+        const T sineComponent = sin(PI<T> * idx * den);
         eVals[idx] = sineComponent * sineComponent * minFourOverDeltaSq;
     }
 }
@@ -122,7 +134,7 @@ template<typename T>
 __device__ void eigenMixed(DeviceData1d<T> eVals, const T minFourOverDeltaSq) {
     const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < eVals.cols) {
-        const T sineComponent = std::sin(PI<T> * (idx + 0.5)/(2 * eVals.cols));
+        const T sineComponent = sin(PI<T> * (idx + 0.5)/(2 * eVals.cols));
         eVals[idx] = sineComponent * sineComponent * minFourOverDeltaSq;
     }
 }
@@ -141,7 +153,7 @@ template<typename T>
 __global__ void eigenMatLKernel_DN(DeviceData2d<T> eVecs, bool isNodeCentered) {
     if (const GridInd2d ind; ind < eVecs) {
         const T den = 1.0/eVecs.rows;
-        eVecs[ind] = std::sqrt(2 * den) * std::sin((PI<T> * (ind.row + 0.5 + isNodeCentered * 0.5) * (ind.col + 0.5) * 0.5 * den));
+        eVecs[ind] = _sqrt<T>(2 * den) * sin((PI<T> * (ind.row + 0.5 + isNodeCentered * 0.5) * (ind.col + 0.5) * 0.5 * den));
     }
 }
 
@@ -175,7 +187,7 @@ template<typename T>
 __global__ void eigenMatLKernel_ND(DeviceData2d<T> eVecs, bool isNodeCentered) {
     if (const GridInd2d ind; ind < eVecs) {
         const T den = 1.0/eVecs.rows;
-        eVecs[ind] = std::sqrt(2 * den) * std::cos((PI<T> * (ind.row + (!isNodeCentered) * 0.5) * (ind.col + 0.5) * den));
+        eVecs[ind] = _sqrt<T>(2 * den) * cos((PI<T> * (ind.row + (!isNodeCentered) * 0.5) * (ind.col + 0.5) * den));
     }
 }
 
