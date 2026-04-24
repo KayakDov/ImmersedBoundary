@@ -1,3 +1,5 @@
+
+//TODO: condense thees!
 /**
  * @file LaplacianEigenKernels.cuh
  * @brief Analytical Eigen-decomposition kernels for 1D Discrete Laplacians.
@@ -94,7 +96,7 @@ __global__ void eigenValLKernel_DD(DeviceData1d<T> eVals, const T minFourOverDel
  * @param isNodeCentered True if the gird is node centered, false if it's staggered / cell centered.
  */
 template<typename T>
-__global__ void eigenMatLKernel_NN_NodeCentered(DeviceData2d<T> eVecs, bool isNodeCentered) {
+__global__ void eigenMatLKernel_NN(DeviceData2d<T> eVecs, bool isNodeCentered) {
     const GridInd2d ind;
     if (ind.row >= eVecs.rows) return;
 
@@ -127,18 +129,6 @@ __global__ void eigenValLKernel_NN(DeviceData1d<T> eVals, const T minFourOverDel
 // DIRICHLET - NEUMANN (DN)
 // =============================================================================
 
-/**
- * Computes the eigen values for both ND and DN, staggered and node centered, as these are all the same.
- * @param eVals
- */
-template<typename T>
-__device__ void eigenMixed(DeviceData1d<T> eVals, const T minFourOverDeltaSq) {
-    const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < eVals.cols) {
-        const T sineComponent = sin(PI<T> * (idx + 0.5)/(2 * eVals.cols));
-        eVals[idx] = sineComponent * sineComponent * minFourOverDeltaSq;
-    }
-}
 
 /**
  * @brief Computes eigenvectors for Dirichlet-Neumann boundary conditions.
@@ -153,8 +143,9 @@ __device__ void eigenMixed(DeviceData1d<T> eVals, const T minFourOverDeltaSq) {
 template<typename T>
 __global__ void eigenMatLKernel_DN(DeviceData2d<T> eVecs, bool isNodeCentered) {
     if (const GridInd2d ind; ind < eVecs) {
-        const T den = 1.0/eVecs.rows;
-        eVecs[ind] = _sqrt<T>(2 * den) * sin((PI<T> * (ind.row + 0.5 + isNodeCentered * 0.5) * (ind.col + 0.5) * 0.5 * den));
+
+        eVecs[ind] = _sqrt<T>(2 / (eVecs.rows + isNodeCentered * 0.5)) *
+            sin(PI<T> * (ind.row + 0.5 + isNodeCentered * 0.5) * (2 * ind.col + 1) / (2 * eVecs.rows + isNodeCentered * 1));
     }
 }
 
@@ -166,8 +157,12 @@ __global__ void eigenMatLKernel_DN(DeviceData2d<T> eVecs, bool isNodeCentered) {
  * @param minFourOverDeltaSq The physical grid coefficient: $$-\frac{4}{\Delta^2}$$
  */
 template<typename T>
-__global__ void eigenValLKernel_DN(DeviceData1d<T> eVals, const T minFourOverDeltaSq) {
-    eigenMixed(eVals, minFourOverDeltaSq);
+__global__ void eigenValLKernel_DN(DeviceData1d<T> eVals, const T minFourOverDeltaSq, bool isNodeCentered) {
+    const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < eVals.cols) {
+        const T sineComponent = sin(PI<T> * (idx + 0.5)/(2 * eVals.cols + isNodeCentered));
+        eVals[idx] = sineComponent * sineComponent * minFourOverDeltaSq;
+    }
 }
 
 // =============================================================================
@@ -187,8 +182,9 @@ __global__ void eigenValLKernel_DN(DeviceData1d<T> eVals, const T minFourOverDel
 template<typename T>
 __global__ void eigenMatLKernel_ND(DeviceData2d<T> eVecs, bool isNodeCentered) {
     if (const GridInd2d ind; ind < eVecs) {
-        const T den = 1.0/eVecs.rows;
-        eVecs[ind] = _sqrt<T>(2 * den) * cos((PI<T> * (ind.row + (!isNodeCentered) * 0.5) * (ind.col + 0.5) * den));
+
+        eVecs[ind] = _sqrt<T>(2 / (eVecs.rows + isNodeCentered * 0.5))
+            * cos((PI<T> * (ind.row + 0.5) * (2 * ind.col + 1) / (2 * eVecs.rows + isNodeCentered * 1)));
     }
 }
 
@@ -202,8 +198,12 @@ __global__ void eigenMatLKernel_ND(DeviceData2d<T> eVecs, bool isNodeCentered) {
  * @param isStaggered True if the grid nodes are cell-centered; False if node-centered.
  */
 template<typename T>
-__global__ void eigenValLKernel_ND(DeviceData1d<T> eVals, const T minFourOverDeltaSq) {
-    eigenMixed(eVals, minFourOverDeltaSq);
+__global__ void eigenValLKernel_ND(DeviceData1d<T> eVals, const T minFourOverDeltaSq, bool isNodeCentered) {
+    const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < eVals.cols) {
+        const T sineComponent = sin(PI<T> * (idx + 0.5)/(2 * eVals.cols + isNodeCentered));
+        eVals[idx] = sineComponent * sineComponent * minFourOverDeltaSq;
+    }
 }
 
 template<typename T>
@@ -212,18 +212,21 @@ void BoundaryConditionPair<T>::generateEigen(cudaStream_t stream, SquareMat<T> e
     KernelPrep vecKP = eVecs.kernelPrep();
     KernelPrep valKP = eVals.kernelPrep();
 
-    if (isNeumann(start.condition) && isNeumann(end.condition)) {
-        eigenMatLKernel_NN_NodeCentered<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
-        eigenValLKernel_NN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared, isNodeCentered());
-    } else if (isNeumann(start.condition) && !isNeumann(end.condition)) {
-        eigenMatLKernel_ND<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
-        eigenValLKernel_ND<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared);
-    } else if (!isNeumann(start.condition) && isNeumann(end.condition)) {
-        eigenMatLKernel_DN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
-        eigenValLKernel_DN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared);
+    T minFourOvDe = -4 * start.inverseDeltaSquared;
+    bool isNodeCent = start.isNodeCentered();
+
+    if (start.isNeumann && end.isNeumann) {
+        eigenMatLKernel_NN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCent);
+        eigenValLKernel_NN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
+    } else if (start.isNeumann && end.isDirichlet()) {
+        eigenMatLKernel_ND<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCent);
+        eigenValLKernel_ND<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
+    } else if (start.isDirichlet() && end.isNeumann) {
+        eigenMatLKernel_DN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCent);
+        eigenValLKernel_DN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
     } else {
-        eigenMatLKernel_DD<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
-        eigenValLKernel_DD<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared, isNodeCentered());
+        eigenMatLKernel_DD<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>( eVecs.toKernel2d(), isNodeCent);
+        eigenValLKernel_DD<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
     }
     cudaError_t err = cudaGetLastError();
     CHECK_CUDA_ERROR (err);

@@ -23,10 +23,6 @@
 #include "solvers/Event.h"
 #include <limits>
 
-/**
- * Dirchlet is fixed value while Neumann is fixed gradient.
- */
-enum class ConditionType{DirichletStaggered, NeumannStaggered, DirichletNodeCentered, NeumannNodeCentered};
 
 /**
  * @class BoundaryCondition
@@ -50,7 +46,10 @@ public:
     /// Precomputed 1 / delta
     const Real inverseDelta;
 
-    const ConditionType condition;
+    const bool isNeumann;
+    const bool isStaggered;
+    __host__ __device__ bool isDirichlet() const { return !isNeumann;}
+    __host__ __device__ bool isNodeCentered() const { return !isStaggered;}
 
     /**
      * @brief Construct a boundary condition.
@@ -59,14 +58,15 @@ public:
      *              - Dirichlet: prescribed field value
      *              - Neumann: prescribed normal derivative
      * @param delta Grid spacing in the relevant direction
-     * @param condition The type of the condition.
+     * @param isNeumann Neumann or Dirichlet
+     * @param isStaggered Staggered or node centered.
      */
-    __device__ __host__ BoundaryCondition(Real value, Real delta, ConditionType condition) : value(value), inverseDeltaSquared(1/(delta*delta)), inverseDelta(1/delta), condition(condition) {};
+    __device__ __host__ BoundaryCondition(Real value, Real delta, bool isNeumann, bool isStaggered) : value(value), inverseDeltaSquared(1/(delta*delta)), inverseDelta(1/delta), isNeumann(isNeumann), isStaggered(isStaggered) {};
 
     /**
      * An empty conditon, similar to a null pointer.
      */
-    __device__ __host__ BoundaryCondition() : value(std::numeric_limits<Real>::quiet_NaN()), inverseDeltaSquared(0), inverseDelta(0), condition(ConditionType::NeumannNodeCentered) {};
+    __device__ __host__ BoundaryCondition() : value(std::numeric_limits<Real>::quiet_NaN()), inverseDeltaSquared(0), inverseDelta(0), isNeumann(false), isStaggered(false) {};
 
     /**
      * @brief Apply boundary condition contribution to system.
@@ -75,17 +75,11 @@ public:
      *
      */
     __device__ void setL(Real& mainDiagVal, Real& offDiagVal) const {
-        switch (condition) {
-            case ConditionType::NeumannNodeCentered:
-            case ConditionType::NeumannStaggered:
-                mainDiagVal -= this->inverseDeltaSquared;
-                break;
-            case  ConditionType::DirichletStaggered:
-                mainDiagVal -= 3*this->inverseDeltaSquared;
-                break;
-            case ConditionType::DirichletNodeCentered:
-                mainDiagVal -= 2 * this->inverseDeltaSquared;
-                break;
+        if (isNeumann)
+            mainDiagVal -= this->inverseDeltaSquared;
+        else {
+            if (isStaggered) mainDiagVal -= 3*this->inverseDeltaSquared;
+            else mainDiagVal -= 2 * this->inverseDeltaSquared;
         }
         offDiagVal = this->inverseDeltaSquared;
     }
@@ -94,7 +88,8 @@ public:
     * Compares all precomputed factors and the condition type.
     */
     __host__ __device__ friend bool operator==(const BoundaryCondition& lhs, const BoundaryCondition& rhs) {
-        return (lhs.condition == rhs.condition) &&
+        return (lhs.isNeumann == rhs.isNeumann) &&
+               (lhs.isStaggered == rhs.isStaggered) &&
                (lhs.value == rhs.value) &&
                (lhs.inverseDelta == rhs.inverseDelta);
     }
@@ -119,21 +114,12 @@ public:
     __device__ void setBoundaryRHS(Real& rhsVal) const {
         Real contribution = 0;
 
-        switch (condition) {
-
-            case ConditionType::NeumannStaggered:
-                contribution = -this->value * this->inverseDelta;
-                break;
-            case ConditionType::DirichletStaggered:
-                contribution = 2*this->value * this->inverseDeltaSquared;
-                break;
-            case ConditionType::NeumannNodeCentered:
-                contribution = this->value * this->inverseDelta;
-                break;
-            case ConditionType::DirichletNodeCentered:
-                contribution = -this->value * this->inverseDeltaSquared;
-                break;
+        if (isNeumann) contribution = this->value * this->inverseDelta;
+        else {
+            if (isStaggered) contribution = 2*this->value * this->inverseDeltaSquared;
+            else contribution = -this->value * this->inverseDeltaSquared;
         }
+
 
         atomicAdd(&rhsVal, contribution);
     }
@@ -181,30 +167,20 @@ public:
     __host__ __device__ BoundaryConditionPair() : dimLength(static_cast<size_t>(-1)){}
 
     /**
-     * @brief Construct from existing BoundaryCondition objects.
-     * @param start Condition for the beginning of the segment.
-     * @param end Condition for the end of the segment.
-     */
-    __device__ __host__ BoundaryConditionPair(const BoundaryCondition<T>& start, const BoundaryCondition<T>& end, size_t dimLength)
-        : start(start), end(end), dimLength(dimLength) {}
-
-    /**
-     * @brief Construct by providing raw parameters for both boundaries.
-     * * This constructor initializes the internal BoundaryCondition objects directly.
+    * @brief Construct by providing raw parameters for both boundaries.
+     * This constructor initializes the internal BoundaryCondition objects directly.
      *
-     * @param valStart       Physical value at the start (e.g., Temperature or Flux).
-     * @param valEnd         Physical value at the end.
-     * @param startCondition Type of condition (Dirichlet/Neumann) for the start.
-     * @param endCondition   Type of condition for the end.
-     * @param delta          Grid spacing used to precompute gradient factors.
+     * @param beginIsNeumann Is the beggin condition Neuman.  Set to false for Dirichlet.
+     * @param endIsNeumann Is the end condition Neumann.  Set to false for Dirichlet.
+     * @param beginVal The value at the beginning condition.
+     * @param endVal The value at the end condition.
+     * @param isStaggered True if the grid is staggered, false if it's node centered.
+     * @param delta The distance between grid points.
+     * @param dimLength The numver of grid points in this dimension.
      */
-    __device__ __host__ BoundaryConditionPair(const T valStart,
-                                              const T valEnd,
-                                              const ConditionType startCondition,
-                                              const ConditionType endCondition,
-                                              T delta, size_t dimLength)
-        : start(valStart, delta, startCondition),
-          end(valEnd, delta, endCondition), dimLength(dimLength) {}
+    __device__ __host__ BoundaryConditionPair(bool beginIsNeumann, bool endIsNeumann, T beginVal, T endVal, bool isStaggered, double delta, size_t dimLength) :
+        start(beginVal, delta, beginIsNeumann, isStaggered), end((endIsNeumann ? -endVal : endVal), delta, endIsNeumann, isStaggered), dimLength(dimLength)
+    {}
 
     /**
      * @brief Equality operator for condition pairs.
@@ -236,9 +212,9 @@ public:
      * Modifies the matrix L for a grid point adjacent to the boundary.
      * @return true if a modification is made, false otherwise.
      */
-    __device__ bool setL(T& mainDiagVal, T& leftDiagonal, T& rightDiagonal, const size_t indexInLine, const size_t lineLength) const {
+    __device__ bool setL(T& mainDiagVal, T& leftDiagonal, T& rightDiagonal, const size_t indexInLine) const {
         if (indexInLine == 0) start.setL(mainDiagVal, rightDiagonal);
-        else if (indexInLine == lineLength - 1) end.setL(mainDiagVal, leftDiagonal);
+        else if (indexInLine == dimLength - 1) end.setL(mainDiagVal, leftDiagonal);
         else return false;
         return true;
     }
@@ -249,13 +225,13 @@ public:
      * Adds the boundary-condition-induced contribution to the right-hand side
      * vector, assuming the operator (L) is assembled independently.
      *
-     * @param gridIndFlattened Index of the current grid point
      * @param rhs Right-hand side vector (modisfied in place)
+     * @param indexInLine  The index of this point in this dimension.
      * @return true if a modification is made, false otherwise.
      */
-    __device__ bool setBoundaryRHS1d(DeviceData1d<T>& rhs, const size_t indexInLine, const size_t lineLength) const {
+    __device__ bool setBoundaryRHS1d(DeviceData1d<T>& rhs, const size_t indexInLine) const {
         if (indexInLine == 0) start.setBoundaryRHS(rhs[0]);
-        else if (indexInLine == lineLength - 1) end.setBoundaryRHS(rhs[lineLength - 1]);
+        else if (indexInLine == dimLength - 1) end.setBoundaryRHS(rhs[dimLength - 1]);
         else return false;
         return true;
     }
@@ -266,27 +242,11 @@ public:
      * @return true if a modification is made, false otherwise.
      * @return true if a modification is made, false otherwise.
      */
-    __device__ bool setLAndRHS(T& mainDiagVal, T& startDiagVal, T& endDiagonalVal, DeviceData1d<T> rhs, const size_t indexInLine, const size_t linelength) const {
-        setL(mainDiagVal, startDiagVal, endDiagonalVal, indexInLine, linelength);
-        return setBoundaryRHS1d(rhs, indexInLine, linelength);
+    __device__ bool setLAndRHS(T& mainDiagVal, T& startDiagVal, T& endDiagonalVal, DeviceData1d<T> rhs, const size_t indexInLine) const {
+        setL(mainDiagVal, startDiagVal, endDiagonalVal, indexInLine);
+        return setBoundaryRHS1d(rhs, indexInLine);
     }
 
-    /**
-     *
-     * @param cond The condition.
-     * @return True if the condition is Neumann.  False otherwise.
-     */
-    __host__ static bool isNeumann(ConditionType cond) {
-        return cond == ConditionType::NeumannNodeCentered || cond == ConditionType::NeumannStaggered;
-    }
-    /**
-     *
-     * @param cond The condition
-     * @return True if the condition is node centered,false otherwise.
-     */
-    __host__ bool isNodeCentered() const {
-        return start.condition == ConditionType::DirichletNodeCentered || start.condition == ConditionType::NeumannNodeCentered;
-    }
     /**
      * @brief Dispatches the appropriate Eigen-decomposition kernel to generate the spectral basis.
      * * Reads the condition types (Dirichlet/Neumann) of the start and end boundaries,
@@ -325,37 +285,57 @@ template<typename Real>
 struct BoundaryConfig {
 
     /// Boundary conditions for each face
-    const BoundaryConditionPair<Real> leftRight, topBottom, frontBack; //TODO: Can xyz be used here?  It's not currently implemented on the device.
+    const BoundaryConditionPair<Real> leftRight, topBottom, frontBack;
+
 
     /**
-     * @brief Construct boundary configuration.
+     * A simplified constructor that creates uniform boundary conditions.
+     * @param isNeumann
+     * @param isStaggered
+     * @param dim
+     */
+    __host__ __device__ BoundaryConfig(bool isNeumann, bool isStaggered, const GridDim& dim, const Real3d delta = Real3d(1, 1, 1)):
+        BoundaryConfig(isNeumann, isNeumann,isStaggered, dim, delta){}
+
+    /**
+     * A simplified constructor that creates identical boundary conditions for each dimensions.
+     * @param startIsNeumann
+     * @param endIsNeumann
+     * @param dim
+     * @param isStaggered
+     */
+    __host__ __device__ BoundaryConfig( bool startIsNeumann,  const bool endIsNeumann, bool isStaggered, const GridDim& dim, const Real3d delta = Real3d(1, 1, 1)):
+        BoundaryConfig(
+            XYZ<bool>::fill(startIsNeumann),
+            XYZ<bool>::fill(endIsNeumann),
+            XYZ<Real>::fill(startIsNeumann),
+            XYZ<Real>::fill(endIsNeumann),
+            Real3d(1, 1, 1),
+            dim, isStaggered)
+    {
+
+    }
+
+    /**
      *
-     * @param left   Boundary at minimum x
-     * @param right  Boundary at maximum x
-     * @param top    Boundary at maximum y
-     * @param bottom Boundary at minimum y
-     * @param front  Boundary at minimum z (optional)
-     * @param back   Boundary at maximum z (optional)
+     * @param startIsNeumann The condition for the bginning of each dimesnion, true for Neumann and false for Dirichlet.
+     * @param endIsNeumann The condition for the end of each dimension.
+     * @param startVal The value for the condition at the beginning of each dimension: Neumann -> d/d_delta at boundary, Dirichlet -> const value for all boundary
+     * @param endVal The valued for the condition at the end of each dimension.
+     * @param delta The distance between grid points.
+     * @param dim The shape of the grid.
+     * @param isStaggered True for staggered grids, false for node centered grids.
      */
     __host__ __device__ BoundaryConfig(
-        const BoundaryCondition<Real>& left, const BoundaryCondition<Real>& right,
-        const BoundaryCondition<Real>& top, const BoundaryCondition<Real>& bottom,
-        const BoundaryCondition<Real>& front, const BoundaryCondition<Real>& back,
-        const GridDim& dim
-        ) : leftRight(left, right, dim.cols), topBottom(top, bottom, dim.rows), frontBack(front, back, dim.layers){}
-
-    __host__ BoundaryConfig(ConditionType type, Real value, Real3d delta, const GridDim& dim):
-        BoundaryConfig(
-            {value, static_cast<Real>(delta.x), type},
-            {value, static_cast<Real>(delta.x), type},
-            {value, static_cast<Real>(delta.y), type},
-            {value, static_cast<Real>(delta.y), type},
-            {value, static_cast<Real>(delta.z), type},
-            {value, static_cast<Real>(delta.z), type},
-            dim
-        ){}
-
-    __host__ BoundaryConfig(const ConditionType& type, Real value, Real delta, const GridDim& dim): BoundaryConfig(type, value, Real3d(delta, delta, delta), dim){}
+        const XYZ<bool>& startIsNeumann,  const XYZ<bool>& endIsNeumann,
+        const XYZ<Real>& startVal, const XYZ<Real>& endVal,
+        const Real3d& delta,
+        const GridDim& dim,
+        bool isStaggered
+    ):
+        leftRight(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
+        topBottom(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
+        frontBack(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers){}
 
     /**
      * @brief Retrieve a boundary condition by dimension and position.

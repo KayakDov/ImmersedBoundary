@@ -323,9 +323,9 @@ TEST(LaplacianMath, laplacian) {
     Handle hand3[3];
     Event event2[2];
     Real3d delta(1, 1, 1);
-    ConditionType type = ConditionType::NeumannStaggered;
 
-    BoundaryConfig<Real> boundary(type, 0, 1, dim);
+//TODO: run this tests on all 8 variations.  Once that works, try different sizes, then remove output.
+    BoundaryConfig<Real> boundary(true, false, true,  dim);
     Laplacian<Real> laplacian(dim, delta, boundary);
     SquareMat<Real> dense = laplacian.dense(hand3[0]);
     std::cout << "The Laplacian for " << dim << " is \n"<< GpuOut<Real>(dense, hand3[0]) << std::endl;
@@ -341,9 +341,8 @@ TEST(LaplacianMath, laplacian) {
     std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
     std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
 
-    for (size_t i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < 3; ++i)
         checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i], hand3[i]);
-    }
 
 }
 

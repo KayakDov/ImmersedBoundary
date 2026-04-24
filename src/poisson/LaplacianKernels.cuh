@@ -84,7 +84,7 @@ public:
         T& rightDiag = (*laplacian)(rowL, leftRight.getRight());
         T& leftDiag = (*laplacian)(rowL, leftRight.getLeft());
 
-        if (!boundaries.setL(mainDiag, leftDiag, rightDiag, indexInLine, lineLength)) {
+        if (!boundaries.setL(mainDiag, leftDiag, rightDiag, indexInLine)) {
             mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
             leftDiag = rightDiag = boundaries.start.inverseDeltaSquared;
         }
@@ -170,7 +170,7 @@ public:
         const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
     ) {
         LSetter<T>::setRowInBanded1d(indexInLine, lineLength, condition, primary, leftRight);
-        condition.setBoundaryRHS1d(rhs, indexInLine, lineLength);
+        condition.setBoundaryRHS1d(rhs, indexInLine);
 
     }
 };
