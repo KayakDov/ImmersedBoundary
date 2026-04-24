@@ -78,18 +78,16 @@ public:
         switch (condition) {
             case ConditionType::NeumannNodeCentered:
             case ConditionType::NeumannStaggered:
-                offDiagVal = this->inverseDeltaSquared;
                 mainDiagVal -= this->inverseDeltaSquared;
                 break;
             case  ConditionType::DirichletStaggered:
-                offDiagVal = this->inverseDeltaSquared;
                 mainDiagVal -= 3*this->inverseDeltaSquared;
                 break;
             case ConditionType::DirichletNodeCentered:
-                offDiagVal = this->inverseDeltaSquared;
                 mainDiagVal -= 2 * this->inverseDeltaSquared;
                 break;
         }
+        offDiagVal = this->inverseDeltaSquared;
     }
     /**
     * @brief Equality operator implemented as a hidden friend.
@@ -131,6 +129,7 @@ public:
                 break;
             case ConditionType::NeumannNodeCentered:
                 contribution = this->value * this->inverseDelta;
+                break;
             case ConditionType::DirichletNodeCentered:
                 contribution = -this->value * this->inverseDeltaSquared;
                 break;

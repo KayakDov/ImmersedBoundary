@@ -91,18 +91,19 @@ __global__ void eigenValLKernel_DD(DeviceData1d<T> eVals, const T minFourOverDel
  *
  * @tparam T Floating-point precision.
  * @param eVecs 2D device array to store the orthogonal basis.
- * @param isNodeCentered True if the grid nodes are node-centered; False if staggered.
+ * @param isNodeCentered True if the gird is node centered, false if it's staggered / cell centered.
  */
 template<typename T>
-__global__ void eigenMatLKernel_NN(DeviceData2d<T> eVecs, bool isNodeCentered) {
+__global__ void eigenMatLKernel_NN_NodeCentered(DeviceData2d<T> eVecs, bool isNodeCentered) {
     const GridInd2d ind;
     if (ind.row >= eVecs.rows) return;
 
-    T den = 1.0/(eVecs.rows);
+    T den = 1.0/eVecs.rows;
     if (isNodeCentered && ind.col == 0) eVecs[ind] = _rsqrt<T>(eVecs.rows);
     else if (ind.col < eVecs.cols)
-        eVecs[ind] = _sqrt<T>(2.0 * den) * cos(PI<T> * ind.col * (ind.row  + isNodeCentered*0.5) * den);
+        eVecs[ind] = _sqrt<T>(2.0 * den) * cos(PI<T> * ind.col * (ind.row  + 0.5) * den);
 }
+
 
 /**
  * @brief Computes eigenvalues for Neumann-Neumann boundary conditions.
@@ -212,7 +213,7 @@ void BoundaryConditionPair<T>::generateEigen(cudaStream_t stream, SquareMat<T> e
     KernelPrep valKP = eVals.kernelPrep();
 
     if (isNeumann(start.condition) && isNeumann(end.condition)) {
-        eigenMatLKernel_NN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
+        eigenMatLKernel_NN_NodeCentered<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());
         eigenValLKernel_NN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), -4 * start.inverseDeltaSquared, isNodeCentered());
     } else if (isNeumann(start.condition) && !isNeumann(end.condition)) {
         eigenMatLKernel_ND<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCentered());

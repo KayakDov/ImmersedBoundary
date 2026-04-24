@@ -323,7 +323,7 @@ TEST(LaplacianMath, laplacian) {
     Handle hand3[3];
     Event event2[2];
     Real3d delta(1, 1, 1);
-    ConditionType type = ConditionType::NeumannNodeCentered;
+    ConditionType type = ConditionType::NeumannStaggered;
 
     BoundaryConfig<Real> boundary(type, 0, 1, dim);
     Laplacian<Real> laplacian(dim, delta, boundary);
