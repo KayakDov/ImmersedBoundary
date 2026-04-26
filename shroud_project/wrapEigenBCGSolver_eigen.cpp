@@ -13,18 +13,32 @@ extern "C" {
 // splicer end namespace.eigen.C_definitions
 
 void EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
-    size_t layers, double dx, double dy, double dz, bool thomas)
+    size_t layers, double dx, double dy, double dz, bool leftIsNeumann,
+    bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
+    bool backIsNeumann, bool frontIsNeumann, double leftVal,
+    double rightVal, double topVal, double bottomVal, double frontVal,
+    double backVal, bool isStaggered, bool thomas)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_d
-    eigen::initEigenDecomp_d(rows, cols, layers, dx, dy, dz, thomas);
+    eigen::initEigenDecomp_d(rows, cols, layers, dx, dy, dz,
+        leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann,
+        backIsNeumann, frontIsNeumann, leftVal, rightVal, topVal,
+        bottomVal, frontVal, backVal, isStaggered, thomas);
     // splicer end namespace.eigen.function.initEigenDecomp_d
 }
 
 void EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
-    size_t layers, double dx, double dy, double dz, bool thomas)
+    size_t layers, double dx, double dy, double dz, bool leftIsNeumann,
+    bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
+    bool backIsNeumann, bool frontIsNeumann, float leftVal,
+    float rightVal, float topVal, float bottomVal, float frontVal,
+    float backVal, bool isStaggered, bool thomas)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_s
-    eigen::initEigenDecomp_s(rows, cols, layers, dx, dy, dz, thomas);
+    eigen::initEigenDecomp_s(rows, cols, layers, dx, dy, dz,
+        leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann,
+        backIsNeumann, frontIsNeumann, leftVal, rightVal, topVal,
+        bottomVal, frontVal, backVal, isStaggered, thomas);
     // splicer end namespace.eigen.function.initEigenDecomp_s
 }
 

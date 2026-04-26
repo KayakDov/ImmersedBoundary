@@ -21,7 +21,7 @@
  */
 template<typename T>
 class EigenDecompThomas : public EigenDecomp3d<T> {
-
+protected:
     /** @brief GPU workspace for the Thomas solver's modified super-diagonal coefficients. */
     Tensor<T> workSpaceSuperPrime;
 
@@ -44,33 +44,34 @@ class EigenDecompThomas : public EigenDecomp3d<T> {
      */
     void setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handle &hand) const override;
 
-    /**
-     * @brief Internal constructor for resource delegation.
-     */
-    EigenDecompThomas(const GridDim &dim, Handle *hand3, const Real3d &delta, Mat<T> sizeOfBX3, Event *event2);
-
-
 public:
     /**
      * @brief Constructs the hybrid solver using existing matrix workspaces.
-     * * @param rowsXRowsP1 Matrix for X-direction eigenvectors. It will be overwritten. [rows x rows+1]
-     * @param colsXColsP1 Matrix for Y-direction eigenvectors. It will be overwritten. [cols x cols+1]
-     * @param depthsXDepthsP1 Matrix for Z-direction (Thomas) setup.
+     * @param eigen The eigen vectors and values.
+     * @param deltaX The distance between x grid points.
      * @param sizeOfBX3 A 3-column matrix providing scratch space for [Solution, SuperPrime, RHSPrime].
-     * @param hand3 Pointer to array of Handles for multi-stream execution.
-     * @param delta Grid spacing (dx, dy, dz).
-     * @param event Event for stream synchronization.
      */
-    EigenDecompThomas(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, Mat<T> &sizeOfBX3, Handle *hand3, const Real3d &delta, Event *event);
+    EigenDecompThomas(const LaplacianEigen<T> &eigen, double deltaX, Mat<T> &sizeOfBX3);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.
-     * * @param dim Grid dimensions.
+     * @param boundary The boundary conditions.
+     * @param deltaX The distance between x grid points.
      * @param hand3 Pointer to array of Handles.
-     * @param delta Grid spacing.
+     * @param event2 Event for stream synchronization.
+     * @param sizeOfBX3 allocated memory for the right hand side, and the thomas calculations.  It should have as amny rows
+     * as there are rows in L, and 3 columns.
+     */
+    EigenDecompThomas(const BoundaryConfig<T>& boundary, double deltaX, Handle *hand3, Event *event2, Mat<T> sizeOfBX3);
+
+    /**
+     * @brief Constructs the hybrid solver and manages its own internal memory.
+     * @param boundary The boundary conditions.
+     * @param deltaX The distance between x grid points.
+     * @param hand3 Pointer to array of Handles.
      * @param event2 Event for stream synchronization.
      */
-    EigenDecompThomas(const GridDim &dim, Handle *hand3, const Real3d &delta, Event *event2);
+    EigenDecompThomas(const BoundaryConfig<T>& boundary, double deltaX, Handle *hand3, Event *event2);
 
 };
 

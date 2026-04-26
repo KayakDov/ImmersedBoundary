@@ -25,11 +25,10 @@ enum class GridInd : size_t {
     RHSPPrime   = 1,  ///< Right-Hand Side for the pressure correction (p')
     Result      = 2,  ///< General output buffer
     pPrime      = 2,  ///< Pressure correction field (aliases Result)
-    EDS         = 3,  ///< Eigen-Decomposition Solver scratch space
+    LHS_BTBx    = 3, ///< LHS intermediate: $B^T B x$ (aliases RHS_BTF)
     LHS_invLBTBx= 4,  ///< LHS intermediate: $L^{-1} B^T B x$
     RHS         = 4,  ///< Global Right-Hand Side vector (aliases LHS_invLBTBx)
-    LHS_BTBx    = 5,  ///< LHS intermediate: $B^T B x$ (aliases RHS_BTF)
-    Count       = 6   ///< Number of standard grid indices
+    Count       = 5   ///< Number of standard grid indices
 };
 
 /** * @enum LagrangeInd
@@ -114,11 +113,14 @@ template <typename Real, typename Int> class ImmersedEqSolver;
 template <typename Real, typename Int>
 class ImmersedEq {
 
+    const BoundaryConfig<Real> boundary;
+
+    const GridDim dim = boundary.dim();
+
     mutable Handle hand5[5]{}; ///< Array of 5 CUDA Handles for multi-streaming.
     mutable std::unique_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr; ///< A buffer space for sparse vector multiplication.  The space grows as needed.
     Event events12[12]{}; ///< CUDA events for fine-grained synchronization.
 
-    const GridDim dim; ///< Dimensions of the Eulerian grid.
 
     SimpleArray<Int> maxSparseInds; ///< Storage for maximum allowed sparse indices.
     SimpleArray<Int> maxSparseOffsets; ///< Storage for maximum allowed sparse offsets.
@@ -131,10 +133,7 @@ class ImmersedEq {
      * @brief Vector field storage on the staggered grid.
      * * Allocation accounts for face-centered velocities in 2d and 3D.
      */
-    SimpleArray<Real> velocities = SimpleArray<Real>::create(dim.numDims() * dim.size()
-        + dim.cols * dim.layers
-        + dim.rows * dim.layers
-        + dim.cols * dim.rows * (dim.layers > 1), hand5[0]);
+    SimpleArray<Real> velocities = SimpleArray<Real>::create(dim.velocitiesStaggeredSize(), hand5[0]);
 
     /// CSR matrix mapping Eulerian space to Lagrangian space ($B$).
     std::unique_ptr<SparseMat<Real, Int>> B = std::make_unique<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
@@ -198,7 +197,7 @@ class ImmersedEq {
     /**
      * used for eigen decomposition.
      */
-    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(dim, gridVec(GridInd::EDS), &hand5[0], delta, events12);
+    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(boundary, &hand5[0], events12);
 
     /**
      * @brief Computes the Left-Hand Side (LHS) operation: $x = A \cdot b$.
@@ -234,9 +233,8 @@ class ImmersedEq {
     void multSparse(const std::unique_ptr<SparseMat<Real, Int>> &mat, const SimpleArray<Real> &vec, SimpleArray<Real> &result, const
                     Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
 
-    ImmersedEq(SimpleArray<Int> maxSparseInds, SimpleArray<Int> maxSparseOffsets, const GridDim &dim,
-               const Real3d &delta,
-               Singleton<Real> dT, Real tolerance, size_t maxBCGIterations);
+    ImmersedEq(SimpleArray<Int> maxSparseInds, SimpleArray<Int> maxSparseOffsets, const BoundaryConfig<Real> &boundary,
+               const Real3d &delta, Singleton<Real> dT, Real tolerance, size_t maxBCGIterations);
 
     /**
      * @brief Debug method to materialize the full LHS matrix.
@@ -261,7 +259,7 @@ public:
      * @brief Constructor for the ImmersedEq system.
      * * Initializes the CUDA environment, pre-allocates workspace matrices for
      * iterative solving, and sets up the Eigen-Decomposition for the Laplacian operator.
-     * * @param dim              Dimensions of the Eulerian grid.
+     * * @param boundary              Dimensions of the Eulerian grid.
      * @param fSize            Size of the Lagrangian force vector (number of boundary points).
      * @param nnzMax           Maximum expected non-zero elements in the sparse matrices B and R.
      * @param p                Initial pressure field array (Size: dim.size()).
@@ -272,7 +270,7 @@ public:
      * @param maxBCGIterations Maximum iterations permitted for the BiCGSTAB solver.
      */
     ImmersedEq(
-        const GridDim &dim,
+        const BoundaryConfig<Real> &boundary,
         size_t fSize,
         size_t nnzMax,
         Real *p,

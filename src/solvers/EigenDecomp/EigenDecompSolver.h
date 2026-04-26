@@ -51,48 +51,14 @@ template<typename T>
 class EigenDecompSolver {
 protected:
     /**
-     * @brief Eigenvector matrices for the three 1-D Laplacians.
-     *
-     * eVecs[0] = eigenvectors of L_x
-     * eVecs[1] = eigenvectors of L_y
-     * eVecs[2] = eigenvectors of L_z
+     * The eigen vectors and values.
      */
-    std::vector<SquareMat<T>> eVecs;//stored x, y, z which is cols, rows, layers
-
-    /**
-     * @brief Eigenvalues matrix.
-     *
-     * Column 0: eigenvalues of L_x
-     * Column 1: eigenvalues of L_y
-     * Column 2: eigenvalues of L_z
-     */
-    std::vector<Vec<T>> eVals;
-
+    LaplacianEigen<T> eigen;
 
     /**
      * A workspace the size of b = L_cols.  You may store b itself here, but it will be overwritten.
      */
     mutable SimpleArray<T> sizeOfB;
-
-    void eigenVecsL(size_t i, cudaStream_t stream);
-
-    void eigenValsL(size_t i, double delta, cudaStream_t stream);
-
-    /**
-     * @brief Compute eigenvalues and eigenvectors for L[i].
-     *
-     * @param i Index (0=x, 1=y, 2=z).
-     * @param stream CUDA stream to execute kernels on.
-     */
-    void eigenL(size_t i, Real3d delta, cudaStream_t stream);
-
-    /**
-     * takes in the a matrix.  Its last column will become space for an eigen vector and the first n X n columns
-     * will store an eigen vector matrix.
-     * @param src An n X n+1 matrix where n is height, width, or depth.
-     */
-    void appendMatAndVec(Mat<T> &src);
-
 
 
 public:
@@ -112,28 +78,28 @@ public:
      * A must be the standard second-difference (Toeplitz) discrete Laplacian on a uniform grid with homogeneous Dirichlet boundary conditions.
      *
      * These matrices will be overwritten.
-     * @param eMatsAndVecs Should have a number of elements equal to the number of dimensions.  If two dimensions are
-     * equal in length, be sure that the matrices passed point to the same gpu memmory.  Each matrix passed should
-     * be n X n+1 where n = x (cols), y (rows), and z (layers) if applicable in that order.
+     * @param eMatsAndVecs The eigen matrices and values for the laplacian.
      * @param sizeOfB An array the size of b = xLength * yLength * zLength that will be overwritten.  You may use b for this.
      */
-    EigenDecompSolver(std::vector<Mat<T>> eMatsAndVecs, SimpleArray<T> &sizeOfB);
+    EigenDecompSolver(const LaplacianEigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB);
+
 
     /**
      *
-     * @param dim The dimensions of the grid.
-     * @param delta The distance between grid points.
+     * @param boundary The boundary conditions.
+     * @param hands A handle for each dimension.
+     * @param events If 3d, then 2 events, if 2d then 1 event.
      * @param sizeOfB A cratch space that can hold the same number of elements as B.
      */
-    EigenDecompSolver(const GridDim &dim, const Real3d &delta, SimpleArray<T> sizeOfB);
+    EigenDecompSolver(const BoundaryConfig<T> &boundary, Handle *hands, Event *events, SimpleArray<T> sizeOfB);
 
     /**
      * Created an eigen decomposition solver where all memory is owned by this object.
-     * @param dim The dimensions of grid.
-     * @param delta The distance between fgrid points.
-     * @param hand The handle.
+     * @param boundary The boundary conditions.
+     * @param hands A handle for each dimension.
+     * @param events 2 for 3d and 1 for 2d.
      */
-    EigenDecompSolver(const GridDim &dim, const Real3d &delta, Handle &hand);
+    EigenDecompSolver(const BoundaryConfig<T> &boundary, Handle *hands, Event *events);
 
     /**
      * Solves for A x = b
@@ -146,8 +112,6 @@ public:
      * @param hand
      */
     virtual void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const = 0;
-
-
 
     /**
      * This method computes the inverse of L.  It should only be used for debugging.  It is not efficient.

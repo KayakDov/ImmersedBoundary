@@ -17,14 +17,30 @@ module eigenbcgsolver_imeq_mod
     interface
 
         subroutine c_init_immersed_eq_d_i32(gridHeight, gridWidth, &
-                gridDepth, fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, &
-                dt, tolerance, maxBCGIterations) &
+                gridDepth, leftIsNeumann, rightIsNeumann, topIsNeumann, &
+                bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+                rightVal, topVal, bottomVal, frontVal, backVal, &
+                isStaggered, fSize, nnzMaxB, p, f, deltaX, deltaY, &
+                deltaZ, dt, tolerance, maxBCGIterations) &
                 bind(C, name="EIG_ImEq_initImmersedEq_d_i32")
-            use iso_c_binding, only : C_DOUBLE, C_SIZE_T
+            use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: gridHeight
             integer(C_SIZE_T), value, intent(IN) :: gridWidth
             integer(C_SIZE_T), value, intent(IN) :: gridDepth
+            logical(C_BOOL), value, intent(IN) :: leftIsNeumann
+            logical(C_BOOL), value, intent(IN) :: rightIsNeumann
+            logical(C_BOOL), value, intent(IN) :: topIsNeumann
+            logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
+            logical(C_BOOL), value, intent(IN) :: backIsNeumann
+            logical(C_BOOL), value, intent(IN) :: frontIsNeumann
+            real(C_DOUBLE), value, intent(IN) :: leftVal
+            real(C_DOUBLE), value, intent(IN) :: rightVal
+            real(C_DOUBLE), value, intent(IN) :: topVal
+            real(C_DOUBLE), value, intent(IN) :: bottomVal
+            real(C_DOUBLE), value, intent(IN) :: frontVal
+            real(C_DOUBLE), value, intent(IN) :: backVal
+            logical(C_BOOL), value, intent(IN) :: isStaggered
             integer(C_SIZE_T), value, intent(IN) :: fSize
             integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
             real(C_DOUBLE), intent(IN) :: p(*)
@@ -38,14 +54,30 @@ module eigenbcgsolver_imeq_mod
         end subroutine c_init_immersed_eq_d_i32
 
         subroutine c_init_immersed_eq_s_i32(gridHeight, gridWidth, &
-                gridDepth, fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, &
-                dt, tolerance, maxBCGIterations) &
+                gridDepth, leftIsNeumann, rightIsNeumann, topIsNeumann, &
+                bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+                rightVal, topVal, bottomVal, frontVal, backVal, &
+                isStaggered, fSize, nnzMaxB, p, f, deltaX, deltaY, &
+                deltaZ, dt, tolerance, maxBCGIterations) &
                 bind(C, name="EIG_ImEq_initImmersedEq_s_i32")
-            use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
+            use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: gridHeight
             integer(C_SIZE_T), value, intent(IN) :: gridWidth
             integer(C_SIZE_T), value, intent(IN) :: gridDepth
+            logical(C_BOOL), value, intent(IN) :: leftIsNeumann
+            logical(C_BOOL), value, intent(IN) :: rightIsNeumann
+            logical(C_BOOL), value, intent(IN) :: topIsNeumann
+            logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
+            logical(C_BOOL), value, intent(IN) :: backIsNeumann
+            logical(C_BOOL), value, intent(IN) :: frontIsNeumann
+            real(C_DOUBLE), value, intent(IN) :: leftVal
+            real(C_DOUBLE), value, intent(IN) :: rightVal
+            real(C_DOUBLE), value, intent(IN) :: topVal
+            real(C_DOUBLE), value, intent(IN) :: bottomVal
+            real(C_DOUBLE), value, intent(IN) :: frontVal
+            real(C_DOUBLE), value, intent(IN) :: backVal
+            logical(C_BOOL), value, intent(IN) :: isStaggered
             integer(C_SIZE_T), value, intent(IN) :: fSize
             integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
             real(C_FLOAT), intent(IN) :: p(*)
@@ -59,14 +91,30 @@ module eigenbcgsolver_imeq_mod
         end subroutine c_init_immersed_eq_s_i32
 
         subroutine c_init_immersed_eq_d_i64(gridHeight, gridWidth, &
-                gridDepth, fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, &
-                dt, tolerance, maxBCGIterations) &
+                gridDepth, leftIsNeumann, rightIsNeumann, topIsNeumann, &
+                bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+                rightVal, topVal, bottomVal, frontVal, backVal, &
+                isStaggered, fSize, nnzMaxB, p, f, deltaX, deltaY, &
+                deltaZ, dt, tolerance, maxBCGIterations) &
                 bind(C, name="EIG_ImEq_initImmersedEq_d_i64")
-            use iso_c_binding, only : C_DOUBLE, C_SIZE_T
+            use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: gridHeight
             integer(C_SIZE_T), value, intent(IN) :: gridWidth
             integer(C_SIZE_T), value, intent(IN) :: gridDepth
+            logical(C_BOOL), value, intent(IN) :: leftIsNeumann
+            logical(C_BOOL), value, intent(IN) :: rightIsNeumann
+            logical(C_BOOL), value, intent(IN) :: topIsNeumann
+            logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
+            logical(C_BOOL), value, intent(IN) :: backIsNeumann
+            logical(C_BOOL), value, intent(IN) :: frontIsNeumann
+            real(C_DOUBLE), value, intent(IN) :: leftVal
+            real(C_DOUBLE), value, intent(IN) :: rightVal
+            real(C_DOUBLE), value, intent(IN) :: topVal
+            real(C_DOUBLE), value, intent(IN) :: bottomVal
+            real(C_DOUBLE), value, intent(IN) :: frontVal
+            real(C_DOUBLE), value, intent(IN) :: backVal
+            logical(C_BOOL), value, intent(IN) :: isStaggered
             integer(C_SIZE_T), value, intent(IN) :: fSize
             integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
             real(C_DOUBLE), intent(IN) :: p(*)
@@ -80,14 +128,30 @@ module eigenbcgsolver_imeq_mod
         end subroutine c_init_immersed_eq_d_i64
 
         subroutine c_init_immersed_eq_s_i64(gridHeight, gridWidth, &
-                gridDepth, fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, &
-                dt, tolerance, maxBCGIterations) &
+                gridDepth, leftIsNeumann, rightIsNeumann, topIsNeumann, &
+                bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+                rightVal, topVal, bottomVal, frontVal, backVal, &
+                isStaggered, fSize, nnzMaxB, p, f, deltaX, deltaY, &
+                deltaZ, dt, tolerance, maxBCGIterations) &
                 bind(C, name="EIG_ImEq_initImmersedEq_s_i64")
-            use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
+            use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: gridHeight
             integer(C_SIZE_T), value, intent(IN) :: gridWidth
             integer(C_SIZE_T), value, intent(IN) :: gridDepth
+            logical(C_BOOL), value, intent(IN) :: leftIsNeumann
+            logical(C_BOOL), value, intent(IN) :: rightIsNeumann
+            logical(C_BOOL), value, intent(IN) :: topIsNeumann
+            logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
+            logical(C_BOOL), value, intent(IN) :: backIsNeumann
+            logical(C_BOOL), value, intent(IN) :: frontIsNeumann
+            real(C_DOUBLE), value, intent(IN) :: leftVal
+            real(C_DOUBLE), value, intent(IN) :: rightVal
+            real(C_DOUBLE), value, intent(IN) :: topVal
+            real(C_DOUBLE), value, intent(IN) :: bottomVal
+            real(C_DOUBLE), value, intent(IN) :: frontVal
+            real(C_DOUBLE), value, intent(IN) :: backVal
+            logical(C_BOOL), value, intent(IN) :: isStaggered
             integer(C_SIZE_T), value, intent(IN) :: fSize
             integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
             real(C_FLOAT), intent(IN) :: p(*)
@@ -255,12 +319,28 @@ module eigenbcgsolver_imeq_mod
 contains
 
     subroutine init_immersed_eq_d_i32(gridHeight, gridWidth, gridDepth, &
+            leftIsNeumann, rightIsNeumann, topIsNeumann, &
+            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+            rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
             nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance, &
             maxBCGIterations)
-        use iso_c_binding, only : C_DOUBLE, C_SIZE_T
+        use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: gridHeight
         integer(C_SIZE_T), value, intent(IN) :: gridWidth
         integer(C_SIZE_T), value, intent(IN) :: gridDepth
+        logical, value, intent(IN) :: leftIsNeumann
+        logical, value, intent(IN) :: rightIsNeumann
+        logical, value, intent(IN) :: topIsNeumann
+        logical, value, intent(IN) :: bottomIsNeumann
+        logical, value, intent(IN) :: backIsNeumann
+        logical, value, intent(IN) :: frontIsNeumann
+        real(C_DOUBLE), value, intent(IN) :: leftVal
+        real(C_DOUBLE), value, intent(IN) :: rightVal
+        real(C_DOUBLE), value, intent(IN) :: topVal
+        real(C_DOUBLE), value, intent(IN) :: bottomVal
+        real(C_DOUBLE), value, intent(IN) :: frontVal
+        real(C_DOUBLE), value, intent(IN) :: backVal
+        logical, value, intent(IN) :: isStaggered
         integer(C_SIZE_T) :: SH_fSize
         integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
         real(C_DOUBLE), intent(IN) :: p(:)
@@ -272,20 +352,54 @@ contains
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         ! splicer begin namespace.ImEq.function.init_immersed_eq_d_i32
+        logical(C_BOOL) :: SHT_leftIsNeumann_cxx
+        logical(C_BOOL) :: SHT_rightIsNeumann_cxx
+        logical(C_BOOL) :: SHT_topIsNeumann_cxx
+        logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
+        logical(C_BOOL) :: SHT_backIsNeumann_cxx
+        logical(C_BOOL) :: SHT_frontIsNeumann_cxx
+        logical(C_BOOL) :: SHT_isStaggered_cxx
+        SHT_leftIsNeumann_cxx = leftIsNeumann  ! coerce to C_BOOL
+        SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
+        SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
+        SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
+        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
+        SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
+        SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SH_fSize = size(f,kind=C_SIZE_T)
         call c_init_immersed_eq_d_i32(gridHeight, gridWidth, gridDepth, &
-            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, &
-            tolerance, maxBCGIterations)
+            SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
+            SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
+            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
+            rightVal, topVal, bottomVal, frontVal, backVal, &
+            SHT_isStaggered_cxx, SH_fSize, nnzMaxB, p, f, deltaX, &
+            deltaY, deltaZ, dt, tolerance, maxBCGIterations)
         ! splicer end namespace.ImEq.function.init_immersed_eq_d_i32
     end subroutine init_immersed_eq_d_i32
 
     subroutine init_immersed_eq_s_i32(gridHeight, gridWidth, gridDepth, &
+            leftIsNeumann, rightIsNeumann, topIsNeumann, &
+            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+            rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
             nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance, &
             maxBCGIterations)
-        use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
+        use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: gridHeight
         integer(C_SIZE_T), value, intent(IN) :: gridWidth
         integer(C_SIZE_T), value, intent(IN) :: gridDepth
+        logical, value, intent(IN) :: leftIsNeumann
+        logical, value, intent(IN) :: rightIsNeumann
+        logical, value, intent(IN) :: topIsNeumann
+        logical, value, intent(IN) :: bottomIsNeumann
+        logical, value, intent(IN) :: backIsNeumann
+        logical, value, intent(IN) :: frontIsNeumann
+        real(C_DOUBLE), value, intent(IN) :: leftVal
+        real(C_DOUBLE), value, intent(IN) :: rightVal
+        real(C_DOUBLE), value, intent(IN) :: topVal
+        real(C_DOUBLE), value, intent(IN) :: bottomVal
+        real(C_DOUBLE), value, intent(IN) :: frontVal
+        real(C_DOUBLE), value, intent(IN) :: backVal
+        logical, value, intent(IN) :: isStaggered
         integer(C_SIZE_T) :: SH_fSize
         integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
         real(C_FLOAT), intent(IN) :: p(:)
@@ -297,20 +411,54 @@ contains
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         ! splicer begin namespace.ImEq.function.init_immersed_eq_s_i32
+        logical(C_BOOL) :: SHT_leftIsNeumann_cxx
+        logical(C_BOOL) :: SHT_rightIsNeumann_cxx
+        logical(C_BOOL) :: SHT_topIsNeumann_cxx
+        logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
+        logical(C_BOOL) :: SHT_backIsNeumann_cxx
+        logical(C_BOOL) :: SHT_frontIsNeumann_cxx
+        logical(C_BOOL) :: SHT_isStaggered_cxx
+        SHT_leftIsNeumann_cxx = leftIsNeumann  ! coerce to C_BOOL
+        SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
+        SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
+        SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
+        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
+        SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
+        SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SH_fSize = size(f,kind=C_SIZE_T)
         call c_init_immersed_eq_s_i32(gridHeight, gridWidth, gridDepth, &
-            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, &
-            tolerance, maxBCGIterations)
+            SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
+            SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
+            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
+            rightVal, topVal, bottomVal, frontVal, backVal, &
+            SHT_isStaggered_cxx, SH_fSize, nnzMaxB, p, f, deltaX, &
+            deltaY, deltaZ, dt, tolerance, maxBCGIterations)
         ! splicer end namespace.ImEq.function.init_immersed_eq_s_i32
     end subroutine init_immersed_eq_s_i32
 
     subroutine init_immersed_eq_d_i64(gridHeight, gridWidth, gridDepth, &
+            leftIsNeumann, rightIsNeumann, topIsNeumann, &
+            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+            rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
             nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance, &
             maxBCGIterations)
-        use iso_c_binding, only : C_DOUBLE, C_SIZE_T
+        use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: gridHeight
         integer(C_SIZE_T), value, intent(IN) :: gridWidth
         integer(C_SIZE_T), value, intent(IN) :: gridDepth
+        logical, value, intent(IN) :: leftIsNeumann
+        logical, value, intent(IN) :: rightIsNeumann
+        logical, value, intent(IN) :: topIsNeumann
+        logical, value, intent(IN) :: bottomIsNeumann
+        logical, value, intent(IN) :: backIsNeumann
+        logical, value, intent(IN) :: frontIsNeumann
+        real(C_DOUBLE), value, intent(IN) :: leftVal
+        real(C_DOUBLE), value, intent(IN) :: rightVal
+        real(C_DOUBLE), value, intent(IN) :: topVal
+        real(C_DOUBLE), value, intent(IN) :: bottomVal
+        real(C_DOUBLE), value, intent(IN) :: frontVal
+        real(C_DOUBLE), value, intent(IN) :: backVal
+        logical, value, intent(IN) :: isStaggered
         integer(C_SIZE_T) :: SH_fSize
         integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
         real(C_DOUBLE), intent(IN) :: p(:)
@@ -322,20 +470,54 @@ contains
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         ! splicer begin namespace.ImEq.function.init_immersed_eq_d_i64
+        logical(C_BOOL) :: SHT_leftIsNeumann_cxx
+        logical(C_BOOL) :: SHT_rightIsNeumann_cxx
+        logical(C_BOOL) :: SHT_topIsNeumann_cxx
+        logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
+        logical(C_BOOL) :: SHT_backIsNeumann_cxx
+        logical(C_BOOL) :: SHT_frontIsNeumann_cxx
+        logical(C_BOOL) :: SHT_isStaggered_cxx
+        SHT_leftIsNeumann_cxx = leftIsNeumann  ! coerce to C_BOOL
+        SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
+        SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
+        SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
+        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
+        SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
+        SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SH_fSize = size(f,kind=C_SIZE_T)
         call c_init_immersed_eq_d_i64(gridHeight, gridWidth, gridDepth, &
-            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, &
-            tolerance, maxBCGIterations)
+            SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
+            SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
+            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
+            rightVal, topVal, bottomVal, frontVal, backVal, &
+            SHT_isStaggered_cxx, SH_fSize, nnzMaxB, p, f, deltaX, &
+            deltaY, deltaZ, dt, tolerance, maxBCGIterations)
         ! splicer end namespace.ImEq.function.init_immersed_eq_d_i64
     end subroutine init_immersed_eq_d_i64
 
     subroutine init_immersed_eq_s_i64(gridHeight, gridWidth, gridDepth, &
+            leftIsNeumann, rightIsNeumann, topIsNeumann, &
+            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+            rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
             nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, tolerance, &
             maxBCGIterations)
-        use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_SIZE_T
+        use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: gridHeight
         integer(C_SIZE_T), value, intent(IN) :: gridWidth
         integer(C_SIZE_T), value, intent(IN) :: gridDepth
+        logical, value, intent(IN) :: leftIsNeumann
+        logical, value, intent(IN) :: rightIsNeumann
+        logical, value, intent(IN) :: topIsNeumann
+        logical, value, intent(IN) :: bottomIsNeumann
+        logical, value, intent(IN) :: backIsNeumann
+        logical, value, intent(IN) :: frontIsNeumann
+        real(C_DOUBLE), value, intent(IN) :: leftVal
+        real(C_DOUBLE), value, intent(IN) :: rightVal
+        real(C_DOUBLE), value, intent(IN) :: topVal
+        real(C_DOUBLE), value, intent(IN) :: bottomVal
+        real(C_DOUBLE), value, intent(IN) :: frontVal
+        real(C_DOUBLE), value, intent(IN) :: backVal
+        logical, value, intent(IN) :: isStaggered
         integer(C_SIZE_T) :: SH_fSize
         integer(C_SIZE_T), value, intent(IN) :: nnzMaxB
         real(C_FLOAT), intent(IN) :: p(:)
@@ -347,10 +529,28 @@ contains
         real(C_DOUBLE), value, intent(IN) :: tolerance
         integer(C_SIZE_T), value, intent(IN) :: maxBCGIterations
         ! splicer begin namespace.ImEq.function.init_immersed_eq_s_i64
+        logical(C_BOOL) :: SHT_leftIsNeumann_cxx
+        logical(C_BOOL) :: SHT_rightIsNeumann_cxx
+        logical(C_BOOL) :: SHT_topIsNeumann_cxx
+        logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
+        logical(C_BOOL) :: SHT_backIsNeumann_cxx
+        logical(C_BOOL) :: SHT_frontIsNeumann_cxx
+        logical(C_BOOL) :: SHT_isStaggered_cxx
+        SHT_leftIsNeumann_cxx = leftIsNeumann  ! coerce to C_BOOL
+        SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
+        SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
+        SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
+        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
+        SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
+        SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SH_fSize = size(f,kind=C_SIZE_T)
         call c_init_immersed_eq_s_i64(gridHeight, gridWidth, gridDepth, &
-            SH_fSize, nnzMaxB, p, f, deltaX, deltaY, deltaZ, dt, &
-            tolerance, maxBCGIterations)
+            SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
+            SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
+            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
+            rightVal, topVal, bottomVal, frontVal, backVal, &
+            SHT_isStaggered_cxx, SH_fSize, nnzMaxB, p, f, deltaX, &
+            deltaY, deltaZ, dt, tolerance, maxBCGIterations)
         ! splicer end namespace.ImEq.function.init_immersed_eq_s_i64
     end subroutine init_immersed_eq_s_i64
 

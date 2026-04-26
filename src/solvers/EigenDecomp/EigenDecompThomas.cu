@@ -92,8 +92,8 @@ void EigenDecompThomas<T>::setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handl
     solveThomas3dLaplacianKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, hand>>>(
         dst.toKernel3d(),
         src.toKernel3d(),
-        this->eVals[1].toKernel1d(),
-        this->eVals[2].toKernel1d(),
+        this->eigen.vals.y.toKernel1d(),
+        this->eigen.vals.z.toKernel1d(),
         workSpaceSuperPrime.toKernel3d(),
         workSpaceRHSPrime.toKernel3d(),
         1/deltaX/deltaX
@@ -101,34 +101,31 @@ void EigenDecompThomas<T>::setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handl
 }
 
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, Mat<T> &sizeOfBX3, Handle *hand3, const Real3d& delta, Event *event):
+EigenDecompThomas<T>::EigenDecompThomas(const LaplacianEigen<T>& eigen, double deltaX, Mat<T> &sizeOfBX3):
     EigenDecomp3d<T>(
-        rowsXRowsP1,
-        colsXColsP1,
-        depthsXDepthsP1,
-        sizeOfBX3.col(0),
-        hand3,
-        delta,
-        event
+        eigen,
+        sizeOfBX3.col(0)
     ),
-    workSpaceSuperPrime(sizeOfBX3.col(1).tensor(rowsXRowsP1._rows, depthsXDepthsP1._rows)),
-    workSpaceRHSPrime(sizeOfBX3.col(2).tensor(rowsXRowsP1._rows, depthsXDepthsP1._rows)),
-    deltaX(delta.x)
+    workSpaceSuperPrime(sizeOfBX3.col(1).tensor(eigen.dim().rows, eigen.dim().layers)),
+    workSpaceRHSPrime(sizeOfBX3.col(2).tensor(eigen.dim().rows, eigen.dim().layers)),
+    deltaX(deltaX)
 {
 }
 
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const GridDim& dim, Handle *hand3, const Real3d& delta, Mat<T> sizeOfBX3, Event *event2):
-    EigenDecomp3d<T>(dim, hand3, delta, sizeOfBX3.col(0), event2),
-    workSpaceSuperPrime(sizeOfBX3.col(1).tensor(dim.rows, dim.layers)),
-    workSpaceRHSPrime(sizeOfBX3.col(2).tensor(dim.rows, dim.layers)),
-    deltaX(delta.x)
+EigenDecompThomas<T>::EigenDecompThomas(const BoundaryConfig<T> &boundary, double deltaX, Handle *hand3, Event *event2, Mat<T> sizeOfBX3):
+    EigenDecomp3d<T>(boundary, hand3, event2, sizeOfBX3.col(0)),
+    workSpaceSuperPrime(sizeOfBX3.col(1).tensor(boundary.dim().rows, boundary.dim().layers)),
+    workSpaceRHSPrime(sizeOfBX3.col(2).tensor(boundary.dim().rows, boundary.dim().layers)),
+    deltaX(deltaX)
 {}
 
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const GridDim& dim, Handle *hand3, const Real3d& delta, Event *event2):
-    EigenDecompThomas(dim, hand3, delta, Mat<T>::create(dim.size(), 3), event2) {
+EigenDecompThomas<T>::EigenDecompThomas(const BoundaryConfig<T> &boundary, double deltaX, Handle *hand3, Event *event2):
+    EigenDecompThomas(boundary, deltaX, hand3, event2, Mat<T>::create(boundary.dim().size(), 3))
+{
 }
+
 
 template class EigenDecompThomas<double>;
 template class EigenDecompThomas<float>;

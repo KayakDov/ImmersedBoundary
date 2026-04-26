@@ -17,30 +17,14 @@ void EigenDecomp2d<T>::eValsLInvMult(const Mat<T> &src, Mat<T> &dst, Handle &han
     KernelPrep kp = src.kernelPrep();
     eValsLInvMultKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         dst.toKernel2d(),
-        this->eVals[0].toKernel1d(),
-        this->eVals[1].toKernel1d(),
+        this->eigen.vals.x.toKernel1d(),
+        this->eigen.vals.y.toKernel1d(),
         src.toKernel2d());
 }
 
 template<typename T>
-void EigenDecomp2d<T>::setEigens(Handle* hand2, const Real2d delta, Event& event){
-    this->eigenL(1, delta, hand2[1]);
-    event.record(hand2[1]);
-
-    this->eigenL(0, delta, hand2[0]);
-    event.hold(hand2[0]);
-}
-
-template<typename T>
-EigenDecomp2d<T>::EigenDecomp2d(SquareMat<T> &rowsXRowsP1, SquareMat<T> &colsXColsP1, SimpleArray<T> &sizeOfB, Handle* hand2, const Real2d delta, Event& event) :
-    EigenDecompSolver<T>({colsXColsP1, rowsXRowsP1}, sizeOfB) {
-    setEigens(hand2, delta, event);
-}
-
-template<typename T>
-EigenDecomp2d<T>::EigenDecomp2d(GridDim dim, Handle* hand2, const Real2d delta, Event& event) :
-    EigenDecompSolver<T>(dim, delta, hand2[0]) {
-    setEigens(hand2, delta, event);
+EigenDecomp2d<T>::EigenDecomp2d(const BoundaryConfig<T>& boundary, Handle* hand2, Event& event) :
+    EigenDecompSolver<T>(boundary, hand2, &event) {
 }
 
 template<typename T>
@@ -50,13 +34,13 @@ void EigenDecomp2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle 
     auto temp = this->sizeOfB.matrix(this->dim.rows);
     auto xM = x.matrix(this->dim.rows);
 
-    this->eVecs[1].mult(bM, &xM, &hand, true, false);
-    xM.mult(this->eVecs[0], &temp, &hand, false, false);
+    this->eigen.vecs.y.mult(bM, &xM, &hand, true, false);
+    xM.mult(this->eigen.vecs.x, &temp, &hand, false, false);
 
     eValsLInvMult(temp, xM, hand);
 
-    this->eVecs[1].mult(xM, &temp, &hand, false, false);
-    temp.mult(this->eVecs[0], &xM, &hand, false, true);
+    this->eigen.vecs.y.mult(xM, &temp, &hand, false, false);
+    temp.mult(this->eigen.vecs.x, &xM, &hand, false, true);
 }
 
 template class EigenDecomp2d<double>;

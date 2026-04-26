@@ -208,7 +208,7 @@ __global__ void eigenValLKernel_ND(DeviceData1d<T> eVals, const T minFourOverDel
 }
 
 template<typename T>
-void BoundaryConditionPair<T>::generateEigen(cudaStream_t stream, SquareMat<T> eVecs, Vec<T> eVals) const {
+void BoundaryPair<T>::generateEigen(cudaStream_t stream, SquareMat<T> eVecs, Vec<T> eVals) const {
 
     KernelPrep vecKP = eVecs.kernelPrep();
     KernelPrep valKP = eVals.kernelPrep();
@@ -235,7 +235,7 @@ void BoundaryConditionPair<T>::generateEigen(cudaStream_t stream, SquareMat<T> e
 
 
 
-template class BoundaryConditionPair<float>;
-template class BoundaryConditionPair<double>;
+template class BoundaryPair<float>;
+template class BoundaryPair<double>;
 
 #endif // LAPLACIAN_EIGEN_KERNELS_CUH

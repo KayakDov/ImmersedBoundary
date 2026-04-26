@@ -70,6 +70,8 @@ public:
      * @return The Laplacian's Eigen vector matrices.
      */
     static LaplacianEigen make(const BoundaryConfig<T> &boundary, Handle *hands, Event *events);
+
+    GridDim dim() const;
 };
 
 template<typename T>

@@ -25,9 +25,27 @@ namespace ImEq {
     std::unique_ptr<ImmersedEq<Real, Int> > eq = nullptr;
 
     template<typename Real, typename Int>
-    void initImmersedEq(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMax, Real *p, Real *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
-        eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(GridDim(gridHeight, gridWidth, gridDepth), forceSize, nnzMax, p, f, Real3d(dx, dy, dz), dt, tol, iter
-       );
+    void initImmersedEq(
+        size_t gridHeight, size_t gridWidth, size_t gridDepth,
+        bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+        Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
+        bool isStaggered,
+        size_t forceSize,
+        size_t nnzMax,
+        Real *p, Real *f,
+        double dx, double dy, double dz, double dt,
+        double tol, size_t maxIterations
+    ) {
+        Real3d delta(dx, dy, dz);
+
+        BoundaryConfig<Real> boundary(
+            {leftIsNeumann, topIsNeumann, frontIsNeumann}, {rightIsNeumann, bottomIsNeumann, backIsNeumann},
+            {leftVal, topVal, frontVal}, {rightVal, bottomVal, backVal},
+            delta,
+            GridDim(gridHeight, gridWidth, gridDepth),
+            isStaggered
+        );
+        eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(boundary, forceSize, nnzMax, p, f, delta, dt, tol, maxIterations);
     }
 
     template<typename Real, typename Int>
@@ -50,20 +68,100 @@ namespace ImEq {
     }
 
     extern "C" {
-        inline void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
-            initImmersedEq<double, int32_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
+        inline void initImmersedEq_d_i32(
+            size_t gridHeight, size_t gridWidth, size_t gridDepth,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
+            bool isStaggered,
+            size_t forceSize,
+            size_t nnzMax,
+            double *p, double *f,
+            double dx, double dy, double dz, double dt,
+            double tol, size_t maxIterations
+        ) {
+            initImmersedEq<double, int32_t>(
+                gridHeight, gridWidth, gridDepth,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann, frontIsNeumann,
+                leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
+                isStaggered,
+                forceSize,
+                nnzMax,
+                p, f,
+                dx, dy, dz, dt,
+                tol, maxIterations
+            );
         }
 
-        inline void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
-            initImmersedEq<float, int32_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
+        inline void initImmersedEq_s_i32(
+            size_t gridHeight, size_t gridWidth, size_t gridDepth,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
+            bool isStaggered,
+            size_t forceSize,
+            size_t nnzMax,
+            float *p, float *f,
+            double dx, double dy, double dz, double dt,
+            double tol, size_t maxIterations
+        ) {
+            initImmersedEq<float, int32_t>(
+                gridHeight, gridWidth, gridDepth,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann, frontIsNeumann,
+                leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
+                isStaggered,
+                forceSize,
+                nnzMax,
+                p, f,
+                dx, dy, dz, dt,
+                tol, maxIterations
+            );
         }
 
-        inline void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, double *p, double *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
-            initImmersedEq<double, int64_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
+        inline void initImmersedEq_d_i64(
+            size_t gridHeight, size_t gridWidth, size_t gridDepth,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
+            bool isStaggered,
+            size_t forceSize,
+            size_t nnzMax,
+            double *p, double *f,
+            double dx, double dy, double dz, double dt,
+            double tol, size_t maxIterations
+        ) {
+            initImmersedEq<double, int64_t>(
+                gridHeight, gridWidth, gridDepth,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann, frontIsNeumann,
+                leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
+                isStaggered,
+                forceSize,
+                nnzMax,
+                p, f,
+                dx, dy, dz, dt,
+                tol, maxIterations
+            );
         }
 
-        inline void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, size_t forceSize, size_t nnzMaxB, float *p, float *f, double dx, double dy, double dz, double dt, double tol, size_t iter) {
-            initImmersedEq<float, int64_t>(gridHeight, gridWidth, gridDepth, forceSize, nnzMaxB, p, f, dx, dy, dz, dt, tol, iter);
+        inline void initImmersedEq_s_i64(
+            size_t gridHeight, size_t gridWidth, size_t gridDepth,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
+            bool isStaggered,
+            size_t forceSize,
+            size_t nnzMax,
+            float *p, float *f,
+            double dx, double dy, double dz, double dt,
+            double tol, size_t maxIterations
+        ) {
+            initImmersedEq<float, int64_t>(
+                gridHeight, gridWidth, gridDepth,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann, frontIsNeumann,
+                leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
+                isStaggered,
+                forceSize,
+                nnzMax,
+                p, f,
+                dx, dy, dz, dt,
+                tol, maxIterations
+            );
         }
 
         inline void solveImmersedEq_d_i32(double *result, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, double *val, bool multi = true) {
@@ -122,9 +220,22 @@ namespace eigen {
     std::unique_ptr<EigenDecompForFortran<Real>> eds = nullptr;
 
     template<typename Real>
-    void initEigenDecompSolver(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas) {
+    void initEigenDecompSolver(
+        size_t rows, size_t cols, size_t layers,
+        double dx, double dy, double dz,
+        bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+        Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
+        bool isStaggered,
+        bool thomas
+    ) {
         auto xb = Mat<Real>::create(rows * cols * layers, 2);
-        eds<Real> = std::make_unique<EigenDecompForFortran<Real>>(rows, cols, layers, dx, dy, dz, thomas, xb.col(0), xb.col(1));
+        eds<Real> = std::make_unique<EigenDecompForFortran<Real>>(
+            rows, cols, layers,
+            dx, dy, dz,
+            leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
+            leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
+            isStaggered,
+            thomas, xb.col(0), xb.col(1));
     }
 
     template<typename Real>
@@ -142,12 +253,37 @@ namespace eigen {
 
     // --- Initialization Functions ---
     extern "C" {
-        inline void initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas) {
-            initEigenDecompSolver<double>(rows, cols, layers, dx, dy, dz, thomas);
+        inline void initEigenDecomp_d(
+            size_t rows, size_t cols, size_t layers,
+            double dx, double dy, double dz,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
+            bool isStaggered,
+            bool thomas
+        ) {
+            initEigenDecompSolver<double>(
+                rows, cols, layers,
+                dx, dy, dz,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
+                leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
+                isStaggered, thomas);
         }
 
-        inline void initEigenDecomp_s(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas) {
-            initEigenDecompSolver<float>(rows, cols, layers, dx, dy, dz, thomas);
+        inline void initEigenDecomp_s(
+            size_t rows, size_t cols, size_t layers,
+            double dx, double dy, double dz,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal,
+            bool isStaggered,
+            bool thomas
+        ) {
+            initEigenDecompSolver<float>(
+                rows, cols, layers,
+                dx, dy, dz,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
+                leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
+                isStaggered, thomas
+            );
         }
 
         inline void solveEigenDecomp_d(double *x, double* b) {

@@ -57,50 +57,37 @@ protected:
      */
     virtual void multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T> &dst, bool transposeE) const;
 
-    /**
-     * Sets the eigen vectors and values.
-     * @param hand3 Handles used to make the settings.
-     * @param delta The distance between the grid points.
-     * @param event2 3 Events to control the stream flow.
-     */
-    void setEigens(Handle *hand3, Real3d delta, Event *event2);
+
 
 public:
 
 
     /**
      * @brief Creates an eigen decomposition solver for a 3D staggered MAC grid.
-     * * @param rowsXRowsP1 Matrix workspace for X-direction operations. Dimensions: [rows x (rows + 1)].
-     * @param colsXColsP1 Matrix workspace for Y-direction operations. Dimensions: [cols x (cols + 1)].
-     * @note Optimization: If rows == cols, pass the same matrix as rowsXRows.
-     * @param depthsXDepthsP1 Matrix workspace for Z-direction operations. Dimensions: [layers x (layers + 1)].
-     * @note Optimization: If layers == rows or layers == cols, you may pass the corresponding
-     * matrix used for those dimensions.
+     * @param eigen The eigens.
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
-     * @param hand3 Pointer to an array of at least three Handles for concurrent 3D stream processing.
-     * @param delta The grid spacing (dx, dy, dz).
-     * @param event2 Pointer to 3 events object or array used for multistream synchronization.
      */
-    EigenDecomp3d(Mat<T> &rowsXRowsP1, Mat<T> &colsXColsP1, Mat<T> &depthsXDepthsP1, SimpleArray<T> sizeOfB, Handle *hand3, Real3d delta, Event *event2);
+    EigenDecomp3d(const LaplacianEigen<T> &eigen, SimpleArray<T> sizeOfB);
 
     /**
      * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.
-     * @param dim The dimensions of the solver.
-     * @param hand3 3 contexts for parallel streaming.
-     * @param delta The distance between grid points.
+     * @param boundary The boundary conditions.
+     * @param hand3 3 contexts for parallel streaming
      * @param event2 an event for controlling stream dependency.
      */
-    EigenDecomp3d(const GridDim& dim, Handle *hand3, const Real3d& delta, Event *event2);
+    EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event *event2);
+
+
+
 
     /**
      * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.
-     * @param dim The dimensions of the solver.
+     * @param boundary The boundary conditions.
      * @param hand3 3 contexts for parallel streaming.
-     * @param delta The distance between grid points.
      * @param sizeOfB A scratch space the size of the RHS.  This will be overwritten.
      * @param event2 an event for controlling stream dependency.
      */
-    EigenDecomp3d(const GridDim& dim, Handle *hand3, const Real3d& delta, SimpleArray<T> sizeOfB, Event *event2);
+    EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB);
 
     /**
      * Solves the system.

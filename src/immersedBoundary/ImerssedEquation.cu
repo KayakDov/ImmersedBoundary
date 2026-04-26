@@ -65,16 +65,10 @@ SimpleArray<Real> ImmersedEq<Real, Int>::gridVec(GridInd ind) const{
 }
 
 template<typename Real>
-std::shared_ptr<EigenDecompSolver<Real>> createEDS(
-    const GridDim &dim,
-    SimpleArray<Real> sizeOfP,
-    Handle *hand,
-    Real3d delta,
-    Event* event
-) {
+std::shared_ptr<EigenDecompSolver<Real>> createEDS(const BoundaryConfig<Real> &bounary, Handle *hand, Event* event) {
 
-    if (dim.numDims() == 3) return  std::make_shared<EigenDecomp3d<Real>>(dim, hand, delta, event);
-    return  std::make_shared<EigenDecomp2d<Real>>(dim, hand, Real2d(delta.x, delta.y), event[0]);
+    if (bounary.dim().numDims() == 3) return std::make_shared<EigenDecomp3d<Real>>(bounary, hand, event);
+    return std::make_shared<EigenDecomp2d<Real>>(bounary, hand, event[0]);
 
 }
 
@@ -92,10 +86,10 @@ template<typename Real, typename Int>
 ImmersedEq<Real, Int>::ImmersedEq(
     SimpleArray<Int> maxSparseInds,
     SimpleArray<Int> maxSparseOffsets,
-    const GridDim &dim,
+    const BoundaryConfig<Real> &boundary,
     const Real3d &delta,
     Singleton<Real> dT, Real tolerance, size_t maxBCGIterations):
-    dim(dim),
+    boundary(boundary),
     maxSparseInds(maxSparseInds),
     maxSparseOffsets(maxSparseOffsets),
     delta(delta),
@@ -104,7 +98,8 @@ ImmersedEq<Real, Int>::ImmersedEq(
 }
 
 template<typename Real, typename Int>
-ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim,
+ImmersedEq<Real, Int>::ImmersedEq(
+    const BoundaryConfig<Real> &boundary,
     size_t fSize,
     size_t nnzMax,
     Real *p,
@@ -116,7 +111,7 @@ ImmersedEq<Real, Int>::ImmersedEq(const GridDim &dim,
 ) :
     maxSparseInds(SimpleArray<Int>::create(nnzMax + fSize + 1, hand5[0]).subArray(0, nnzMax)),
     maxSparseOffsets(maxSparseInds.subArray(nnzMax, fSize + 1)),
-    dim(dim),
+    boundary(boundary),
     delta(delta),
     dT(Singleton<Real>::create(3/(2 * dT), hand5[0])),
     solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events12[0]){

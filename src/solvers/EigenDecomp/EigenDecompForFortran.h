@@ -13,7 +13,7 @@
  */
 template<typename Real>
 class EigenDecompForFortran {
-    std::unique_ptr<EigenDecompSolver<Real>> eds = nullptr;
+    std::unique_ptr<EigenDecompSolver<Real>> eds = nullptr;//This may hold any type of eigen solver, 2d, 3d, or Thomas.
     Handle hand;
     SimpleArray<Real> x, b;
 public:
@@ -29,8 +29,10 @@ public:
      * @param x Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
      * @param b Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
      */
-    EigenDecompForFortran(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool thomas, SimpleArray<Real> x, SimpleArray<Real> b);
-
+     EigenDecompForFortran(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool leftIsNeumann,
+                          bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
+                          bool frontIsNeumann, Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal,
+                          Real backVal, bool isStaggered, bool thomas, SimpleArray<Real> x, SimpleArray<Real> b);
     /**
      * Solves the equation L x = b.
      * @param xHost The solution overwrites this array.

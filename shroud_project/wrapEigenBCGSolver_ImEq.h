@@ -14,6 +14,7 @@
 #include <cstdint>
 #else
 #include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 #endif
 #include "typesEigenBCGSolver.h"
@@ -29,24 +30,40 @@ extern "C" {
 // splicer end namespace.ImEq.C_declarations
 
 void EIG_ImEq_initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth,
-    size_t gridDepth, size_t fSize, size_t nnzMaxB, double *p,
-    double *f, double deltaX, double deltaY, double deltaZ, double dt,
-    double tolerance, size_t maxBCGIterations);
+    size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann,
+    bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
+    bool frontIsNeumann, double leftVal, double rightVal, double topVal,
+    double bottomVal, double frontVal, double backVal, bool isStaggered,
+    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
+    double deltaY, double deltaZ, double dt, double tolerance,
+    size_t maxBCGIterations);
 
 void EIG_ImEq_initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth,
-    size_t gridDepth, size_t fSize, size_t nnzMaxB, float *p, float *f,
-    double deltaX, double deltaY, double deltaZ, double dt,
-    double tolerance, size_t maxBCGIterations);
+    size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann,
+    bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
+    bool frontIsNeumann, double leftVal, double rightVal, double topVal,
+    double bottomVal, double frontVal, double backVal, bool isStaggered,
+    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
+    double deltaY, double deltaZ, double dt, double tolerance,
+    size_t maxBCGIterations);
 
 void EIG_ImEq_initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth,
-    size_t gridDepth, size_t fSize, size_t nnzMaxB, double *p,
-    double *f, double deltaX, double deltaY, double deltaZ, double dt,
-    double tolerance, size_t maxBCGIterations);
+    size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann,
+    bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
+    bool frontIsNeumann, double leftVal, double rightVal, double topVal,
+    double bottomVal, double frontVal, double backVal, bool isStaggered,
+    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
+    double deltaY, double deltaZ, double dt, double tolerance,
+    size_t maxBCGIterations);
 
 void EIG_ImEq_initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth,
-    size_t gridDepth, size_t fSize, size_t nnzMaxB, float *p, float *f,
-    double deltaX, double deltaY, double deltaZ, double dt,
-    double tolerance, size_t maxBCGIterations);
+    size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann,
+    bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
+    bool frontIsNeumann, double leftVal, double rightVal, double topVal,
+    double bottomVal, double frontVal, double backVal, bool isStaggered,
+    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
+    double deltaY, double deltaZ, double dt, double tolerance,
+    size_t maxBCGIterations);
 
 void EIG_ImEq_solveImmersedEq_d_i32(double *result, size_t nnzB,
     int32_t *rowOffsetsB, int32_t *colIndsB, double *valuesB);

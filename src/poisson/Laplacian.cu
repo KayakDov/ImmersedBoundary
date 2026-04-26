@@ -110,8 +110,7 @@ LaplacianEigen<T>::LaplacianEigen(const XYZ<Vec<T>> &vals, const XYZ<SquareMat<T
 template<typename Real>
 void BoundaryConfig<Real>::generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const{
 
-
-    createUnique<Mat<Real>>(preAllocatedForL_iX3, [](const BoundaryConditionPair<Real>& c) {
+    createUnique<Mat<Real>>(preAllocatedForL_iX3, [](const BoundaryPair<Real>& c) {
         return Mat<Real>::create(c.dimLength, c.dimLength + 1);
     });
 
@@ -133,6 +132,11 @@ LaplacianEigen<T> LaplacianEigen<T>::make(const BoundaryConfig<T>& boundary, Han
     events[0].hold(hands[0]);
     events[1].hold(hands[0]);
     return LaplacianEigen<T>(vals, vecs);
+}
+
+template<typename T>
+GridDim LaplacianEigen<T>::dim() const{
+    return GridDim(vals.x._rows, vals.y._rows, vals.z._rows);
 }
 
 template<typename T>

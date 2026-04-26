@@ -77,7 +77,7 @@ public:
      */
     __device__ void setRowInBanded1d(
         const size_t indexInLine, const size_t lineLength,
-        const BoundaryConditionPair<T>& boundaries,
+        const BoundaryPair<T>& boundaries,
         const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
     ) {
         T& mainDiag = (*laplacian)(rowL, primary);
@@ -132,7 +132,7 @@ public:
      */
     __device__ void setRowInBanded1d(
         DeviceData2d<T>& laplacian,
-        const BoundaryConditionPair<T>& boundary
+        const BoundaryPair<T>& boundary
     ) {
         lSetter.laplacian = &laplacian;
         lSetter.setRowInBanded1d(lSetter.rowL, laplacian.rows, boundary, primary, leftRight);
@@ -175,7 +175,7 @@ public:
      */
     __device__ void setRowInBanded1dAndRhs(
         const size_t indexInLine, const size_t lineLength,
-        const BoundaryConditionPair<T>& condition,
+        const BoundaryPair<T>& condition,
         const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
     ) {
         LSetter<T>::setRowInBanded1d(indexInLine, lineLength, condition, primary, leftRight);
@@ -278,7 +278,7 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
 template <typename T>
 __global__ void buildL1dKernel(
     DeviceData2d<T> bandedL_i,
-    const BoundaryConditionPair<T> condition,
+    const BoundaryPair<T> condition,
     const AdjacencyInd primary,
     const AdjacencyIndPair prevNext
 ) {

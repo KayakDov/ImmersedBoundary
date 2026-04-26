@@ -355,14 +355,14 @@ TEST(LaplacianMath, laplacian) {
     Event event2[2];
     Real3d delta(1, 1, 1);
 
-    
+
 //NN boundary conditions are invertible.
     for (size_t j = 0; j < 2; ++j) {
         for (size_t k = 0; k < 2; ++k) {
             for (size_t l = 0; l < 2; ++l) {
-                for (size_t m = 0; m < 3; ++m) {
-                    for (size_t n = 0; n < 3; ++n) {
-                        for (size_t o = 0; o < 3; ++o) {
+                for (size_t m = 0; m < 5; ++m) {
+                    for (size_t n = 0; n < 5; ++n) {
+                        for (size_t o = 0; o < 5; ++o) {
                             GridDim dim(2 + m, 2 + n, 2 + o);
                             std::stringstream ss;
                             ss << "startIsNeuman = " << static_cast<bool>(j)

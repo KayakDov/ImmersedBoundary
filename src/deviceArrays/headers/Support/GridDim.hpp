@@ -140,6 +140,10 @@ public:
     [[nodiscard]] Real3d center() const{
         return {cols/2.0, rows/2.0, layers/2.0};
     }
+    
+    __host__ size_t velocitiesStaggeredSize() const{
+        return numDims() * size() + cols * layers + rows * layers + cols * rows * (layers > 1);
+    }
 };
 
 inline std::ostream& operator<<(std::ostream& os, const GridDim& g) {

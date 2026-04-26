@@ -18,9 +18,9 @@ void EigenDecomp3d<T>::setUTilde(const Tensor<T> &f, Tensor<T> &u, Handle &hand)
     KernelPrep kp = f.kernelPrep();
     setUTildeKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         u.toKernel3d(),
-        this->eVals[0].toKernel1d(),
-        this->eVals[1].toKernel1d(),
-        this->eVals[2].toKernel1d(),
+        this->eigen.vals.x.toKernel1d(),
+        this->eigen.vals.y.toKernel1d(),
+        this->eigen.vals.z.toKernel1d(),
         f.toKernel3d());
 }
 
@@ -36,7 +36,7 @@ void EigenDecomp3d<T>::multE(
     size_t batchCount
 ) const {
 
-    auto eigenMat = this->eVecs[i];
+    auto eigenMat = this->eigen.vecs[i];
 
     const Mat<T> *a, *b;
     size_t aStride, bStride;
@@ -84,45 +84,23 @@ void EigenDecomp3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, const Tens
 }
 
 template<typename T>
-void EigenDecomp3d<T>::setEigens(Handle* hand3, Real3d delta, Event* event2) {
-    this->eigenL(0, delta, hand3[1]);
-    event2[0].record(hand3[1]);
-
-    this->eigenL(1, delta, hand3[2]);
-    event2[1].record(hand3[2]);
-    event2[1].hold(hand3[0]);
-
-    this->eigenL(2, delta, hand3[0]);
-    event2[0].hold(hand3[0]);
+EigenDecomp3d<T>::EigenDecomp3d(
+    const LaplacianEigen<T>& eigen,
+    SimpleArray<T> sizeOfB
+) : EigenDecompSolver<T>(eigen, sizeOfB) {
 }
 
 template<typename T>
 EigenDecomp3d<T>::EigenDecomp3d(
-    Mat<T> &rowsXRowsP1,
-    Mat<T> &colsXColsP1,
-    Mat<T> &depthsXDepthsP1,
-    SimpleArray<T> sizeOfB,
+    BoundaryConfig<T> boundary,
     Handle* hand3,
-    Real3d delta,
     Event* event2
-) : EigenDecompSolver<T>({colsXColsP1, rowsXRowsP1, depthsXDepthsP1}, sizeOfB) {
-    setEigens(hand3, delta, event2);
+) : EigenDecompSolver<T>(boundary, hand3, event2) {
 }
 
 template<typename T>
-EigenDecomp3d<T>::EigenDecomp3d(
-    const GridDim& dim,
-    Handle* hand3,
-    const Real3d& delta,
-    Event* event2
-) : EigenDecompSolver<T>(dim, delta, hand3[0]) {
-    setEigens(hand3, delta, event2);
-}
-
-template<typename T>
-EigenDecomp3d<T>::EigenDecomp3d(const GridDim &dim, Handle *hand3, const Real3d &delta, SimpleArray<T> sizeOfB, Event *event2):
-    EigenDecompSolver<T>(dim, delta, sizeOfB){
-    setEigens(hand3, delta, event2);
+EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB):
+    EigenDecompSolver<T>(boundary, hand3, event2, sizeOfB){
 }
 
 template<typename T>

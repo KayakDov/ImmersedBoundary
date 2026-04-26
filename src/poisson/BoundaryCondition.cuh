@@ -143,7 +143,7 @@ public:
 };
 
 /**
- * @class BoundaryConditionPair
+ * @class BoundaryPair
  * @brief Encapsulates the boundary conditions for both ends of a 1D grid segment.
  *
  * This class stores the physical and numerical constraints for the start and end
@@ -153,7 +153,7 @@ public:
  * * @tparam T The floating-point type (float or double).
  */
 template<typename T>
-class BoundaryConditionPair {
+class BoundaryPair {
 public:
     /** @brief The condition applied at the start (lower index) of the segment. */
     const BoundaryCondition<T> start;
@@ -164,7 +164,7 @@ public:
     /** @brief The length of the dimension.*/
     const size_t dimLength;
 
-    __host__ __device__ BoundaryConditionPair() : dimLength(static_cast<size_t>(-1)){}
+    __host__ __device__ BoundaryPair() : dimLength(static_cast<size_t>(-1)){}
 
     /**
     * @brief Construct by providing raw parameters for both boundaries.
@@ -178,21 +178,23 @@ public:
      * @param delta The distance between grid points.
      * @param dimLength The numver of grid points in this dimension.
      */
-    __device__ __host__ BoundaryConditionPair(bool beginIsNeumann, bool endIsNeumann, T beginVal, T endVal, bool isStaggered, double delta, size_t dimLength) :
-        start(beginVal, delta, beginIsNeumann, isStaggered), end((endIsNeumann ? -endVal : endVal), delta, endIsNeumann, isStaggered), dimLength(dimLength)
+    __device__ __host__ BoundaryPair(bool beginIsNeumann, bool endIsNeumann, T beginVal, T endVal, bool isStaggered, double delta, size_t dimLength) :
+        start(beginVal, delta, beginIsNeumann, isStaggered),
+        end((endIsNeumann ? -endVal : endVal), delta, endIsNeumann, isStaggered),
+        dimLength(dimLength)
     {}
 
     /**
      * @brief Equality operator for condition pairs.
      * Required for deduplication in spectral or multi-dimensional setups.
      */
-    __host__ __device__ friend bool operator==(const BoundaryConditionPair& lhs,
-                                               const BoundaryConditionPair& rhs) {
+    __host__ __device__ friend bool operator==(const BoundaryPair& lhs,
+                                               const BoundaryPair& rhs) {
         return (lhs.start == rhs.start) && (lhs.end == rhs.end) && (lhs.dimLength == rhs.dimLength);
     }
 
-    __host__ __device__ friend bool operator!=(const BoundaryConditionPair& lhs,
-                                               const BoundaryConditionPair& rhs) {
+    __host__ __device__ friend bool operator!=(const BoundaryPair& lhs,
+                                               const BoundaryPair& rhs) {
         return !(lhs == rhs);
     }
 
@@ -272,6 +274,14 @@ public:
     __host__ __device__ bool isUndefined() {
         return dimLength == static_cast<size_t>(-1);
     }
+
+    /**
+     * Are both conditions Neumann resulting in singular 1d matrix?
+     * @return true if both conditions are neumann.
+     */
+    __host__ bool bothNeumann() const {
+        return start.isNeumann && end.isNeumann;
+    }
 };
 
 /**
@@ -285,7 +295,7 @@ template<typename Real>
 struct BoundaryConfig {
 
     /// Boundary conditions for each face
-    const BoundaryConditionPair<Real> leftRight, topBottom, frontBack;
+    const BoundaryPair<Real> leftRight, topBottom, frontBack;
 
 
     /**
@@ -312,9 +322,7 @@ struct BoundaryConfig {
             XYZ<Real>::fill(endIsNeumann),
             Real3d(1, 1, 1),
             dim, isStaggered)
-    {
-
-    }
+    {}
 
     /**
      *
@@ -348,7 +356,7 @@ struct BoundaryConfig {
      *
      * @throws std::out_of_range if dim is not 0, 1, or 2.
      */
-    __host__ __device__ const BoundaryConditionPair<Real>& operator[](size_t dim) const {
+    __host__ __device__ const BoundaryPair<Real>& operator[](size_t dim) const {
         switch (dim) {
             case 0: return leftRight;
             case 1: return topBottom;
@@ -395,7 +403,7 @@ struct BoundaryConfig {
      * to be assignable, which is critical for classes with const data members.
      */
     template <typename ResultType>
-    __host__ void createUnique(std::shared_ptr<ResultType> (&outputs)[3], std::function<ResultType(const BoundaryConditionPair<Real>&)> factory) const {
+    __host__ void createUnique(std::shared_ptr<ResultType> (&outputs)[3], std::function<ResultType(const BoundaryPair<Real>&)> factory) const {
         for (size_t i = 0; i < 3; ++i) {
             int repeatInd = repeat(i);
             if (repeatInd == -1) outputs[i] = std::make_shared<ResultType>(factory((*this)[i]));
@@ -412,5 +420,23 @@ struct BoundaryConfig {
      * @param preAllocatedForL_iX3
      * @return pointers to matrices containing the eigen values and vectors.
      */
-    void generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const;
+    __host__ void generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const;
+
+    /**
+     * Checks if all the boundary oncdiitons are Neumann resulting in a singular laplacian.
+     * @return True if all the boundary conditions are Neumann.
+     */
+    __host__ bool allNeumann() const {
+        return leftRight.bothNeumann() && topBottom.bothNeumann() && frontBack.bothNeumann();
+    }
+
+    /**
+     *
+     * @return The dimensions of the grid.
+     */
+    __host__ __device__ GridDim dim() const {
+        return GridDim(topBottom.dimLength, leftRight.dimLength, frontBack.dimLength);
+    }
+
+
 };
