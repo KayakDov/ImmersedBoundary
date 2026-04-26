@@ -292,7 +292,7 @@
 
 
 template<typename T>
-static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, T tol = 1e-6){
+static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, std::string errorMsg, T tol = 1e-6){
 
     for (size_t i = 0; i < lambda.size(); ++i) {
         Vec<T> vi = V.col(i);   // adjust if your API differs
@@ -312,38 +312,70 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
         T err = lam_vi[0].get(hand);
 
         EXPECT_LT(err, tol)
-            << "Eigenpair failed at index " << i
+            << errorMsg << "\nEigenpair failed at index " << i
+            << " residual = " << err;
+    }
+    auto colNorm= Singleton<T>::create(hand);
+    for (size_t i = 0; i < V._cols; ++i) {
+        V.col(i).norm(colNorm, hand);
+        T err = colNorm.get(hand) - 1;
+        EXPECT_LT(err, tol)
+            << errorMsg << "\nEigen Vector is not orthogonal, col " << i << " has a norm not equal to 1 "
             << " residual = " << err;
     }
 }
 
 TEST(LaplacianMath, laplacian) {
     using Real = double;
-    GridDim dim(2, 3, 2);
+
     Handle hand3[3];
     Event event2[2];
     Real3d delta(1, 1, 1);
 
 //TODO: run this tests on all 8 variations.  Once that works, try different sizes, then remove output.
-    BoundaryConfig<Real> boundary(true, false, true,  dim);
-    Laplacian<Real> laplacian(dim, delta, boundary);
-    SquareMat<Real> dense = laplacian.dense(hand3[0]);
-    std::cout << "The Laplacian for " << dim << " is \n"<< GpuOut<Real>(dense, hand3[0]) << std::endl;
+    //todo: verify that all laplacians are invertible.
 
-    Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
+    for (size_t j = 0; j < 2; ++j) {
+        for (size_t k = 0; k < 2; ++k) {
+            for (size_t l = 0; l < 2; ++l) {
+                for (size_t m = 0; m < 3; ++m) {
+                    for (size_t n = 0; n < 3; ++n) {
+                        for (size_t o = 0; o < 3; ++o) {
+                            GridDim dim(2 + m, 2 + n, 2 + o);
+                            std::stringstream ss;
+                            ss << "startIsNeuman = " << static_cast<bool>(j)
+                               << " endIsNeumann = " << static_cast<bool>(k)
+                               << " isStagered = " << static_cast<bool>(l)
+                               << " dim = " << dim;
 
-    std::cout << "L 1d matrices:\nx:\n" << GpuOut<Real>(laplacian1d.dense(0, hand3[0]), hand3[0])
-                                    << "y\n" << GpuOut<Real>(laplacian1d.dense(1, hand3[0]), hand3[0])
-                                    << "z\n" << GpuOut<Real>(laplacian1d.dense(2, hand3[0]), hand3[0])
-                                    << std::endl;
-    
-    LaplacianEigen<Real> laplacianEigen = LaplacianEigen<Real>::make(boundary, hand3, event2);
-    std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
-    std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
+                            std::string locMsg = ss.str();
 
-    for (size_t i = 0; i < 3; ++i)
-        checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i], hand3[i]);
+                            BoundaryConfig<Real> boundary(j, k, l,  dim);
 
+                            Laplacian<Real> laplacian(dim, delta, boundary);
+                            SquareMat<Real> dense = laplacian.dense(hand3[0]);
+                            // std::cout << "The Laplacian for " << dim << " is \n"<< GpuOut<Real>(dense, hand3[0]) << std::endl;
+
+                            Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
+
+                            // std::cout << "L 1d matrices:\nx:\n" << GpuOut<Real>(laplacian1d.dense(0, hand3[0]), hand3[0])
+                            //                                 << "y\n" << GpuOut<Real>(laplacian1d.dense(1, hand3[0]), hand3[0])
+                            //                                 << "z\n" << GpuOut<Real>(laplacian1d.dense(2, hand3[0]), hand3[0])
+                            //                                 << std::endl;
+
+                            LaplacianEigen<Real> laplacianEigen = LaplacianEigen<Real>::make(boundary, hand3, event2);
+                            // std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
+                            std::cout << locMsg << std::endl;
+                            std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
+
+                            for (size_t i = 0; i < 3; ++i)
+                                checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 int main(int argc, char **argv) {

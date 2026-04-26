@@ -58,7 +58,8 @@ template<typename T>
 __global__ void eigenMatLKernel_DD(DeviceData2d<T> eVecs, bool isNodeCentered) {
     if (const GridInd2d ind; ind < eVecs) {
         const T den = 1.0/(eVecs.rows + isNodeCentered);
-        eVecs[ind] = _sqrt<T>(den * 2) *
+        T normalize = (!isNodeCentered && ind.col == eVecs.cols - 1) ? _rsqrt<T>(eVecs.rows) : _sqrt<T>(den * 2);
+        eVecs[ind] =  normalize *
             sin(PI<T> * (ind.row + (isNodeCentered ? 1 : 0.5)) * (ind.col + 1) * den);
     }
 }
@@ -101,7 +102,7 @@ __global__ void eigenMatLKernel_NN(DeviceData2d<T> eVecs, bool isNodeCentered) {
     if (ind.row >= eVecs.rows) return;
 
     T den = 1.0/eVecs.rows;
-    if (isNodeCentered && ind.col == 0) eVecs[ind] = _rsqrt<T>(eVecs.rows);
+    if (ind.col == 0) eVecs[ind] = _rsqrt<T>(eVecs.rows);
     else if (ind.col < eVecs.cols)
         eVecs[ind] = _sqrt<T>(2.0 * den) * cos(PI<T> * ind.col * (ind.row  + 0.5) * den);
 }

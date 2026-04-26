@@ -111,8 +111,9 @@ public:
     __device__ LSetter1d(DeviceData2d<T>& L, size_t rowL, const AdjacencyInd& primary, const AdjacencyIndPair& leftRight) :
         lSetter(L, rowL),
         primary(primary),
-        leftRight(leftRight)
-    {}
+        leftRight(leftRight) {
+
+    }
 
 
     /**
@@ -146,8 +147,16 @@ template<typename T>
 class LAndRhsSetter : public LSetter<T>{
     DeviceData1d<T> rhs;
 public:
+    /**
+     *
+     * @param L A banded matrix, number of columns is the numver of diagonals in the dense representation, and number
+     * of rows is the same..
+     * @param rhs A rhs vector
+     * @param flatInd the index for the rhs vector.
+     */
     __device__ LAndRhsSetter(DeviceData2d<T>& L, DeviceData1d<T>& rhs, size_t flatInd)
-        : rhs(rhs), LSetter<T>(L, flatInd) {}
+        : rhs(rhs), LSetter<T>(L, flatInd) {
+    }
 
     /**
      * @brief Applies the 1D Laplacian stencil along one dimension with boundary condition handling.
@@ -190,7 +199,9 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> L, const GridDim dim, const
     GridInd3d gridInd;
     if (gridInd >= dim) return;
 
-    LAndRhsSetter<T> ds(L, rhs, dim[gridInd]);
+    size_t rowIndex = dim[gridInd];
+    LAndRhsSetter<T> ds(L, rhs, rowIndex);
+    L(rowIndex, ap.here) = rhs[rowIndex] = 0;
 
     ds.setRowInBanded1dAndRhs(
         gridInd.row, dim.rows,
@@ -283,6 +294,7 @@ __global__ void buildAllL1dKernel(DeviceData2d<T> bandedL_x, DeviceData2d<T> ban
     size_t i = idx();
 
     LSetter1d<T> ds(bandedL_x, i, primary, prevNext);
+    bandedL_x(i, primary) = bandedL_y(i, primary) = bandedL_z(i, primary) = 0;
     if (i < bandedL_x.rows) ds.setRowInBanded1d(bandedL_x, boundary.leftRight);
     if (i < bandedL_y.rows) ds.setRowInBanded1d(bandedL_y, boundary.topBottom);
     if (i < bandedL_z.rows) ds.setRowInBanded1d(bandedL_z, boundary.frontBack);

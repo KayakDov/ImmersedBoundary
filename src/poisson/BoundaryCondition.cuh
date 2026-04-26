@@ -304,7 +304,7 @@ struct BoundaryConfig {
      * @param dim
      * @param isStaggered
      */
-    __host__ __device__ BoundaryConfig( bool startIsNeumann,  const bool endIsNeumann, bool isStaggered, const GridDim& dim, const Real3d delta = Real3d(1, 1, 1)):
+    __host__  BoundaryConfig( bool startIsNeumann,  const bool endIsNeumann, bool isStaggered, const GridDim& dim, const Real3d delta = Real3d(1, 1, 1)):
         BoundaryConfig(
             XYZ<bool>::fill(startIsNeumann),
             XYZ<bool>::fill(endIsNeumann),
