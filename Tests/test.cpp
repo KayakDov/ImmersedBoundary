@@ -291,11 +291,31 @@
 // }
 
 
+/**
+ * Examines eigen vectors and values, confiriming all vectors have norm 1, they are all orthonormal to one another,
+ * and that L V = V Lambda.
+ * @tparam T
+ * @param L The 1d laplacian.
+ * @param V The eigenvectors for the 1d laplacian.  Each column is a vector.
+ * @param lambda The eigen values.
+ * @param hand The context.
+ * @param errorMsg Anthing that should be appended to an error message.
+ * @param tol The tolerance.
+ */
 template<typename T>
 static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, std::string errorMsg, T tol = 1e-6){
 
+
+    auto normGpu= Singleton<T>::create(hand);
+
     for (size_t i = 0; i < lambda.size(); ++i) {
-        Vec<T> vi = V.col(i);   // adjust if your API differs
+        Vec<T> vi = V.col(i);
+
+        vi.norm(normGpu, hand);
+        T err = normGpu.get(hand) - 1;
+        EXPECT_LT(err, tol)
+            << errorMsg << "\nEigen Vector is not orthogonal, col " << i << " has a norm not equal to 1 "
+            << " residual = " << err;
 
         Vec Lvi = SimpleArray<T>::create(L._rows, hand);
         L.mult(vi, Lvi, &hand, &GPUConst<T>::get(1), &GPUConst<T>::get(0), false);
@@ -307,22 +327,25 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
 
         Lvi.add(lam_vi, &GPUConst<T>::get(-1), &hand);
 
-        Lvi.norm(lam_vi[0], hand);
+        Lvi.norm(normGpu, hand);
 
-        T err = lam_vi[0].get(hand);
+        err = normGpu.get(hand);
 
         EXPECT_LT(err, tol)
             << errorMsg << "\nEigenpair failed at index " << i
             << " residual = " << err;
     }
-    auto colNorm= Singleton<T>::create(hand);
-    for (size_t i = 0; i < V._cols; ++i) {
-        V.col(i).norm(colNorm, hand);
-        T err = colNorm.get(hand) - 1;
-        EXPECT_LT(err, tol)
-            << errorMsg << "\nEigen Vector is not orthogonal, col " << i << " has a norm not equal to 1 "
+
+    for (size_t i = 0; i < V._cols; ++i)
+        for (size_t j = i + 1; j < V._cols; ++j) {
+            T err = normGpu.get(hand);
+            V.col(i).mult(V.col(j), normGpu, &hand);
+            EXPECT_LT(err, tol)
+            << errorMsg << "\nEigenpair failed at index " << i
             << " residual = " << err;
-    }
+        }
+
+
 }
 
 TEST(LaplacianMath, laplacian) {
@@ -332,9 +355,8 @@ TEST(LaplacianMath, laplacian) {
     Event event2[2];
     Real3d delta(1, 1, 1);
 
-//TODO: run this tests on all 8 variations.  Once that works, try different sizes, then remove output.
-    //todo: verify that all laplacians are invertible.
-
+    
+//NN boundary conditions are invertible.
     for (size_t j = 0; j < 2; ++j) {
         for (size_t k = 0; k < 2; ++k) {
             for (size_t l = 0; l < 2; ++l) {
@@ -365,8 +387,8 @@ TEST(LaplacianMath, laplacian) {
 
                             LaplacianEigen<Real> laplacianEigen = LaplacianEigen<Real>::make(boundary, hand3, event2);
                             // std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
-                            std::cout << locMsg << std::endl;
-                            std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
+                            // std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
+
 
                             for (size_t i = 0; i < 3; ++i)
                                 checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
