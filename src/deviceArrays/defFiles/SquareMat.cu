@@ -71,7 +71,11 @@ inline void processInfo(const Singleton<int32_t>& info_dev,
 }
 
 
-// Wrapper for cusolverDnXgeev
+template<typename T>
+SquareMat<T> SquareMat<T>::empty() {
+    return SquareMat<T>(0, 0, nonOwningGpuPtr<T>(nullptr));
+}
+
 //TODO:Get this working for floats
 template <typename T>
 void SquareMat<T>::eigen(
@@ -193,8 +197,6 @@ void SquareMat<T>::solve(Vec<T> &b, Handle *handle, Singleton<int32_t> *info, Ve
     solve(mat, handle, info, workspace, rowSwaps);
 }
 
-template<typename T>
-const SquareMat<T> SquareMat<T>::SIZE_ZERO = SquareMat<T>::create(0);
 
 // 1. Define the expansion macro
 #define INSTANTIATE_SQUARE_MAT(T) \

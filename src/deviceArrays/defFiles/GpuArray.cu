@@ -137,7 +137,7 @@ __global__ void kroneckerKernel(const DeviceData2d<T> a, const DeviceData2d<T> b
 template<typename T>
 void GpuArray<T>::multKronecker(const GpuArray<T>& other, GpuArray<T>& result, cudaStream_t stream) const {
 
-    KernelPrep kp = kernelPrep();
+    KernelPrep kp = result.kernelPrep();
 
     kroneckerKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
         this->toKernel2d(),

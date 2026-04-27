@@ -66,7 +66,7 @@ public:
     /**
      * An empty conditon, similar to a null pointer.
      */
-    __device__ __host__ BoundaryCondition() : value(std::numeric_limits<Real>::quiet_NaN()), inverseDeltaSquared(0), inverseDelta(0), isNeumann(false), isStaggered(false) {};
+    __device__ __host__ BoundaryCondition() : value(0), inverseDeltaSquared(0), inverseDelta(0), isNeumann(false), isStaggered(false) {};
 
     /**
      * @brief Apply boundary condition contribution to system.
@@ -137,7 +137,7 @@ public:
      * It's possible to create an undefined boundary condition.  This is to allow for flexabuility between 2 and 3 dimesnional creations.
      * @return true if this us undefined, false otherwise.
      */
-    __device__ __host__ bool isUndefined() {
+    __device__ __host__ bool isUndefined() const{
         return inverseDelta == 0;
     }
 };
@@ -163,8 +163,6 @@ public:
 
     /** @brief The length of the dimension.*/
     const size_t dimLength;
-
-    __host__ __device__ BoundaryPair() : dimLength(static_cast<size_t>(-1)){}
 
     /**
     * @brief Construct by providing raw parameters for both boundaries.
@@ -320,7 +318,7 @@ struct BoundaryConfig {
             XYZ<bool>::fill(endIsNeumann),
             XYZ<Real>::fill(startIsNeumann),
             XYZ<Real>::fill(endIsNeumann),
-            Real3d(1, 1, 1),
+            delta,
             dim, isStaggered)
     {}
 
@@ -404,11 +402,13 @@ struct BoundaryConfig {
      */
     template <typename ResultType>
     __host__ void createUnique(std::shared_ptr<ResultType> (&outputs)[3], std::function<ResultType(const BoundaryPair<Real>&)> factory) const {
-        for (size_t i = 0; i < 3; ++i) {
+        size_t numDim = dim().numDims();
+        for (size_t i = 0; i <  numDim; ++i) {
             int repeatInd = repeat(i);
             if (repeatInd == -1) outputs[i] = std::make_shared<ResultType>(factory((*this)[i]));
             else outputs[i] = outputs[repeatInd];
         }
+        if (numDim == 2) outputs[2] = nullptr;
     }
 
 

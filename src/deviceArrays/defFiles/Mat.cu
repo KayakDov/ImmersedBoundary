@@ -400,6 +400,11 @@ Mat<T> Mat<T>::create(size_t rows, size_t cols, const size_t ld, T *devicePointe
     return Mat<T>(rows, cols, ld, nonOwningGpuPtr(devicePointer));
 }
 
+template<typename T>
+Mat<T> Mat<T>::empty() {
+    return Mat<T>(0, 0, 0, nonOwningGpuPtr<T>(nullptr));
+}
+
 template <typename T>
 std::shared_ptr<T> Mat<T>::offset(size_t row, size_t col) {
     return std::shared_ptr<T>(this->_ptr, const_cast<T*>(this->_ptr.get() + col * this->_ld + row));

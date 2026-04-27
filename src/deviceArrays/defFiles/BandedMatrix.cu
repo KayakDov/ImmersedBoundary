@@ -136,7 +136,7 @@ void BandedMat<T>::getDense(SquareMat<T> dense, Handle *hand) const {
     //TODO: have a default nullptr dense value and return Square Mat
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(hand, temp_hand_ptr);
-    dense.fill(0, *hand);
+    dense.fill(0, *h);
     const KernelPrep kp = this->kernelPrep();
 
     mapToDenseKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, *h>>>(

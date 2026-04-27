@@ -76,6 +76,17 @@ public:
     static SquareMat<T> create(size_t rowsCols, size_t ld, const T* ptr);
 
     /**
+     * @brief Factory method to create an empty SquareMat.
+     *
+     * @return A SquareMat<T> with zero rows, zero columns, zero leading dimension,
+     *         and a null device pointer.
+     *
+     * @note No GPU memory is allocated.
+     */
+    static SquareMat<T> empty();
+
+
+    /**
      * @brief Computes the eigenvalues and optionally the eigenvectors of the matrix.
      * 
      * @param eVals Vector to store the computed eigenvalues.
@@ -124,11 +135,6 @@ public:
 
     void solve(Vec<T> &b, Handle *handle = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workspace = nullptr, Vec<int32_t> *
                        rowSwaps = nullptr);
-
-    /**
-     * A square matrix that is 0x0.
-     */
-    static const SquareMat<T> SIZE_ZERO;
 
 };
 

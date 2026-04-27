@@ -215,6 +215,17 @@ public:
     static Mat<T> create(size_t rows, size_t cols, size_t ld, T* devicePointer);
 
     /**
+     * @brief Static factory method to create an empty matrix.
+     *
+     * @return A Mat<T> with zero rows, zero columns, zero leading dimension,
+     *         and a null device pointer.
+     *
+     * @note No GPU memory is allocated.
+     */
+    static Mat<T> empty();
+
+
+    /**
      * @brief Extract a submatrix from this matrix.
      * @param startRow Row index of top-left corner.
      * @param startCol Column index of top-left corner.

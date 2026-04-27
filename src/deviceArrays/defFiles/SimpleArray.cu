@@ -16,6 +16,11 @@ SimpleArray<T> SimpleArray<T>::create(size_t size, cudaStream_t stream, bool ini
 }
 
 template<typename T>
+SimpleArray<T> SimpleArray<T>::empty() {
+    return SimpleArray<T>(0, nonOwningGpuPtr<T>(nullptr));
+}
+
+template<typename T>
 SimpleArray<T>::SimpleArray(Vec<T> vecWithLD1)
     : SimpleArray<T>(vecWithLD1.size(), vecWithLD1.ptr()) {
 

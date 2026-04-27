@@ -15,7 +15,7 @@
 template<typename T>
 Laplacian1d<T>::Laplacian1d(const BoundaryConfig<T> &boundary, Handle& hand) :
     boundary(boundary),
-    rawBanded(Mat<T>::create(boundary.leftRight.dimLength, 3), Mat<T>::create(boundary.topBottom.dimLength, 3), Mat<T>::create(boundary.frontBack.dimLength, 3)),
+    rawBanded(Mat<T>::create(boundary.leftRight.dimLength, 3), Mat<T>::create(boundary.topBottom.dimLength, 3), boundary.dim().numDims() == 3 ? Mat<T>::create(boundary.frontBack.dimLength, 3) : Mat<T>::empty()),
     inds(SimpleArray<int32_t>::create(3, hand)){
 
     AdjacencyIndPair prevNext(1, 1);
@@ -47,20 +47,7 @@ SquareMat<T> Laplacian1d<T>::dense(size_t dim, Handle& hand) {
     return square;
 }
 
-template<typename T>
-Laplacian<T>::Laplacian(const GridDim& dim, const Real3d& delta, const BoundaryConfig<T>& boundary) :
-    dim(dim),
-    delta(delta),
-    boundary(boundary),
-    adjacencys(dim) {
-}
-
-template <typename T>
-T invSq(T x) {
-    return 1/(x*x);
-}
-
-void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t>& diags, const cudaStream_t stream) const{
+void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t>& diags, cudaStream_t stream) const{
     std::vector<AdjacencyInd> adjacencies = {here, upDown.getLeft(), upDown.getRight(), leftRight.getLeft(), leftRight.getRight(), frontBack.getLeft(), frontBack.getRight()};
     loadMapRowToDiag(diags, adjacencies, stream);
 }
@@ -69,38 +56,8 @@ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, std::vector<Adjacenc
     std::vector<int32_t> diagsCpu(diags.size(), 0);
     for (AdjacencyInd ind : indices) diagsCpu[ind.col] = ind.diag;
     diags.set(diagsCpu.data(), stream);
+    cudaStreamSynchronize(stream);//Don't want diagsCpu to be destroyed before the memory is passed.
 }
-
-template<typename T>
-void Laplacian<T>::setOperation(cudaStream_t stream) {
-    size_t numDiags =  dim.layers > 1 ? numDiagonals3d : numDiagonals2d;
-    Vec<int32_t> preAllocatedForIndices = Vec<int32_t>::create(numDiags, stream);
-    Mat<T> rhsAndL = Mat<T>::create(dim.size(), numDiags + 1);
-    Mat<T> preAllocatedForL = rhsAndL.subMat(0,0,dim.size(), numDiags);
-    SimpleArray<T> rhsModifier = rhsAndL.col(numDiags);
-
-    setOperation(stream, preAllocatedForL, preAllocatedForIndices, rhsModifier);
-}
-
-template<typename T>
-void Laplacian<T>::setOperation(cudaStream_t stream, Mat<T> &preAllocatedForL, Vec<int32_t> &preAllocatedForIndices, Vec<T>& rhsModifier) {
-
-    KernelPrep kp = this->dim.kernelPrep();
-    buildLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
-        preAllocatedForL.toKernel2d(),
-        this->dim, this->boundary,
-        this->adjacencys,
-        rhsModifier.toKernel1d()
-    );
-    CHECK_CUDA_ERROR(cudaGetLastError());
-
-    this->adjacencys.loadMapRowToDiag(preAllocatedForIndices, stream);
-
-    bandedL = std::make_unique<BandedMat<T>>(preAllocatedForL, preAllocatedForIndices);
-    rhsBC = std::make_unique<Vec<T>>(rhsModifier);
-}
-
-
 
 template<typename T>
 LaplacianEigen<T>::LaplacianEigen(const XYZ<Vec<T>> &vals, const XYZ<SquareMat<T>> &vecs) :
@@ -114,65 +71,89 @@ void BoundaryConfig<Real>::generateEigen(Handle *hands, Event *events, std::shar
         return Mat<Real>::create(c.dimLength, c.dimLength + 1);
     });
 
-    for (size_t i = 0; i < 3; ++i)
+    bool is3d = dim().numDims() == 3;
+
+    for (size_t i = 0; i < 2 + is3d; ++i)
         if (repeat(i) < 0) (*this)[i].generateEigen(hands[i], *(preAllocatedForL_iX3[i]));
 
     events[0].record(hands[1]);
-    events[1].record(hands[2]);
-
+    if (is3d) events[1].record(hands[2]);
 }
 
 template<typename T>
 LaplacianEigen<T> LaplacianEigen<T>::make(const BoundaryConfig<T>& boundary, Handle* hands, Event* events) {
 
+    bool is3d = boundary.dim().numDims() == 3;
     std::shared_ptr<Mat<T>> eigen[3];
     boundary.generateEigen(hands, events, eigen);
-    XYZ<Vec<T>> vals(eigen[0]->lastCol(), eigen[1]->lastCol(), eigen[2]->lastCol());
-    XYZ<SquareMat<T>> vecs(eigen[0]->sqSubMatFirstBiggest(), eigen[1]->sqSubMatFirstBiggest(), eigen[2]->sqSubMatFirstBiggest());
+    XYZ<Vec<T>> vals(eigen[0]->lastCol(), eigen[1]->lastCol(), is3d ? eigen[2]->lastCol() : SimpleArray<T>::empty());
+    XYZ<SquareMat<T>> vecs(eigen[0]->sqSubMatFirstBiggest(), eigen[1]->sqSubMatFirstBiggest(), is3d ? eigen[2]->sqSubMatFirstBiggest() : SquareMat<T>::empty());
     events[0].hold(hands[0]);
-    events[1].hold(hands[0]);
+    if (is3d) events[1].hold(hands[0]);
     return LaplacianEigen<T>(vals, vecs);
 }
 
 template<typename T>
-GridDim LaplacianEigen<T>::dim() const{
-    return GridDim(vals.x._rows, vals.y._rows, vals.z._rows);
-}
+BandedMat<T> laplacianLinear(const BoundaryConfig<T>& boundary, cudaStream_t stream){
+    Vec<int32_t> indices =
+        Vec<int32_t>::create(boundary.dim().numDims() == 3
+                             ? numDiagonals3d
+                             : numDiagonals2d,
+                             stream);
 
-template<typename T>
-BandedMat<T> & Laplacian<T>::banded(cudaStream_t stream) {
-    if (bandedL == nullptr) setOperation(stream);
-    return *bandedL;
-}
+    AdjacencyPatern ap(boundary.dim());
+    ap.loadMapRowToDiag(indices, stream);
 
-template<typename T>
-SquareMat<T> Laplacian<T>::dense(Handle& handle) {
-    BandedMat<T> banded = this->banded(handle);
-    auto result = SquareMat<T>::create(banded._rows);
-    banded.getDense(result, &handle);
-    return result;
-}
+    Mat<T> data = Mat<T>::create(boundary.dim().size(), indices.size());
 
-template<typename T>
-void Laplacian<T>::setRhsBC(cudaStream_t stream) {
-    Vec<T> rhsModifier = SimpleArray<T>::create(dim.size(), stream);
-    setRhsBC(stream, rhsModifier);
-}
+    KernelPrep kp = boundary.dim().kernelPrep();
 
-template<typename T>
-void Laplacian<T>::setRhsBC(cudaStream_t stream, Vec<T>& rhsModifier) {
-    KernelPrep kp(std::max(dim.rows, dim.layers), std::max(dim.layers, dim.cols));
-    buildRhsBCKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(dim, boundary, rhsModifier.toKernel1d());
+    buildLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
+        data.toKernel2d(),
+        boundary.dim(),
+        boundary,
+        ap
+    );
+
     CHECK_CUDA_ERROR(cudaGetLastError());
-    rhsBC = std::make_unique<Vec<T>>(rhsModifier);
+
+    return BandedMat<T>(data, indices);
 }
 
 
-#define INSTANTIATE_LAPLACIAN(T) \
-template class Laplacian<T>; \
-template class Laplacian1d<T>; \
-template class LaplacianEigen<T>; \
-template class BoundaryConfig<T>;
+template<typename T>
+void laplacianRHS(const BoundaryConfig<T>& boundary, SimpleArray<T>& rhs, cudaStream_t stream)
+{
+    GridDim dim = boundary.dim();
+
+    KernelPrep kp(
+        std::max(dim.rows, dim.layers),
+        std::max(dim.layers, dim.cols)
+    );
+
+    buildRhsBCKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
+        dim,
+        boundary,
+        rhs.toKernel1d()
+    );
+
+    CHECK_CUDA_ERROR(cudaGetLastError());
+}
+
+template<typename T>
+SimpleArray<T> laplacianRHS(const BoundaryConfig<T>& boundary, cudaStream_t stream){
+    SimpleArray<T> rhs = SimpleArray<T>::create(boundary.dim().size(), stream);
+
+    laplacianRHS(boundary, rhs, stream);
+
+    return rhs;
+}
+
+#define INSTANTIATE_LAPLACIAN(T)                          \
+template SimpleArray<T> laplacianRHS<T>(const BoundaryConfig<T>&, cudaStream_t); \
+template BandedMat<T> laplacianLinear<T>(const BoundaryConfig<T>&, cudaStream_t); \
+template class Laplacian1d<T>;                            \
+template class LaplacianEigen<T>;
 
 INSTANTIATE_LAPLACIAN(float)
 INSTANTIATE_LAPLACIAN(double)

@@ -349,6 +349,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
 }
 
 TEST(LaplacianMath, laplacian) {
+
     using Real = double;
 
     Handle hand3[3];
@@ -374,8 +375,10 @@ TEST(LaplacianMath, laplacian) {
 
                             BoundaryConfig<Real> boundary(j, k, l,  dim);
 
-                            Laplacian<Real> laplacian(dim, delta, boundary);
-                            SquareMat<Real> dense = laplacian.dense(hand3[0]);
+                            auto laplacian = laplacianLinear(boundary, hand3[0]);
+
+                            auto dense = SquareMat<Real>::create(dim.size());
+                            laplacian.getDense(dense, hand3);
                             // std::cout << "The Laplacian for " << dim << " is \n"<< GpuOut<Real>(dense, hand3[0]) << std::endl;
 
                             Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
@@ -390,7 +393,7 @@ TEST(LaplacianMath, laplacian) {
                             // std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
 
 
-                            for (size_t i = 0; i < 3; ++i)
+                            for (size_t i = 0; i < dim.numDims(); ++i)
                                 checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
                         }
                     }
@@ -401,6 +404,7 @@ TEST(LaplacianMath, laplacian) {
 }
 
 int main(int argc, char **argv) {
+    //TODO: If then how do boundary condition affect Thomas's algorythm?
     std::cout << "--- DIAGNOSTIC: Test Binary Starting ---" << std::endl;
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
