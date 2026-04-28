@@ -432,7 +432,7 @@ TEST(LaplacianMath, laplacian) {
     }
 }
 
-int main(int argc, char **argv) {//TODO: add rhs adujustmant to ImmeressedEq and FortranDecompSolver
+int main(int argc, char **argv) {
     std::cout << "--- DIAGNOSTIC: Test Binary Starting ---" << std::endl;
     testing::InitGoogleTest(&argc, argv);
 

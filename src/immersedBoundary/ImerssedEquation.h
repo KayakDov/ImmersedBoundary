@@ -28,7 +28,8 @@ enum class GridInd : size_t {
     LHS_BTBx    = 3, ///< LHS intermediate: $B^T B x$ (aliases RHS_BTF)
     LHS_invLBTBx= 4,  ///< LHS intermediate: $L^{-1} B^T B x$
     RHS         = 4,  ///< Global Right-Hand Side vector (aliases LHS_invLBTBx)
-    Count       = 5   ///< Number of standard grid indices
+    boundRHSAdj = 5, ///< adjustmant to the right hand side of the equation on account of the boundary.
+    Count       = 6   ///< Number of standard grid indices
 };
 
 /** * @enum LagrangeInd

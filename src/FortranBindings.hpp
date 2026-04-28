@@ -228,14 +228,14 @@ namespace eigen {
         bool isStaggered,
         bool thomas
     ) {
-        auto xb = Mat<Real>::create(rows * cols * layers, 2);
+        auto xb = Mat<Real>::create(rows * cols * layers, 3);
         eds<Real> = std::make_unique<EigenDecompForFortran<Real>>(
             rows, cols, layers,
             dx, dy, dz,
             leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
             leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
             isStaggered,
-            thomas, xb.col(0), xb.col(1));
+            thomas, xb.col(0), xb.col(1), xb.col(2));
     }
 
     template<typename Real>

@@ -15,7 +15,7 @@ template<typename Real>
 class EigenDecompForFortran {
     std::unique_ptr<EigenDecompSolver<Real>> eds = nullptr;//This may hold any type of eigen solver, 2d, 3d, or Thomas.
     Handle hand;
-    SimpleArray<Real> x, b;
+    SimpleArray<Real> x, b, adjToB;
 public:
     /**
      * Constructs the Eigen decomposition solver.
@@ -28,11 +28,14 @@ public:
      * @param thomas True if Thomas algorythm should be used for the z direction, false otherwise.
      * @param x Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
      * @param b Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
+     * @param adjToB Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
+     *
      */
-     EigenDecompForFortran(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool leftIsNeumann,
+    EigenDecompForFortran(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool leftIsNeumann,
                           bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
                           bool frontIsNeumann, Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal,
-                          Real backVal, bool isStaggered, bool thomas, SimpleArray<Real> x, SimpleArray<Real> b);
+                          Real backVal, bool isStaggered, bool thomas, SimpleArray<Real> x, SimpleArray<Real> b,
+                          SimpleArray<Real> adjToB);
     /**
      * Solves the equation L x = b.
      * @param xHost The solution overwrites this array.

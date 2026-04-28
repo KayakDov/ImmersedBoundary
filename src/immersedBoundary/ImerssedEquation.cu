@@ -88,13 +88,17 @@ ImmersedEq<Real, Int>::ImmersedEq(
     SimpleArray<Int> maxSparseOffsets,
     const BoundaryConfig<Real> &boundary,
     const Real3d &delta,
-    Singleton<Real> dT, Real tolerance, size_t maxBCGIterations):
+    Singleton<Real> dT, Real tolerance, size_t maxBCGIterations
+):
     boundary(boundary),
     maxSparseInds(maxSparseInds),
     maxSparseOffsets(maxSparseOffsets),
     delta(delta),
     dT(dT),
-    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events12[0]){
+    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events12[0])
+{
+    auto boundaryRHSAdjust = this->gridVec(GridInd::boundRHSAdj);
+    poisson::boundaryCorrection(boundary, boundaryRHSAdjust, hand5[0]);
 }
 
 template<typename Real, typename Int>
@@ -114,10 +118,12 @@ ImmersedEq<Real, Int>::ImmersedEq(
     boundary(boundary),
     delta(delta),
     dT(Singleton<Real>::create(3/(2 * dT), hand5[0])),
-    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events12[0]){
-
+    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events12[0])
+{
     this->lagrangeVec(LagrangeInd::f).set(f, hand5[0]);
     this->gridVec(GridInd::p).set(p, hand5[0]);
+    auto boundaryRHSAdjust = this->gridVec(GridInd::boundRHSAdj);
+    poisson::boundaryCorrection(boundary, boundaryRHSAdjust, hand5[0]);
 }
 
 template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
@@ -160,9 +166,12 @@ void ImmersedEq<Real, Int>::setRHS(bool prime) {
 
     auto p = gridVec(prime ? GridInd::RHSPPrime : GridInd::p);
     auto f = lagrangeVec(prime? LagrangeInd::RHSFPrime : LagrangeInd::f);
+    auto boundaryRhsAdj = gridVec(GridInd::boundRHSAdj);
 
     multSparse(B, f, p, GPUConst<Real>::get(2), GPUConst<Real>::get(1), true);
     //p <- BT*f+p
+
+    p.add(boundaryRhsAdj, &GPUConst<Real>::get(-1), hand5);
 
     auto RHS = gridVec(GridInd::RHS);
     eds->solve(RHS, p, hand5[0]);
