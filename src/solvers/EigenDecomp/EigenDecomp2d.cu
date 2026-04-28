@@ -7,25 +7,26 @@ __global__ void eValsLInvMultKernel(DeviceData2d<T> dst,
                                   const DeviceData1d<T> eValsX,
                                   const DeviceData1d<T> eValsY,
                                   const DeviceData2d<T> src,
-                                  T tolerance
+                                  bool isSingular
                                   ) {
     if (GridInd2d ind; ind < dst) {
-        T den = eValsX[ind.col] + eValsY[ind.row];
-        bool denNot0 = abs(den) > tolerance;
-        dst[ind] = denNot0 ? src[ind] / den : 0;
+
+        bool den0 = isSingular && ind.col == 0 && ind.row == 0;
+
+        dst[ind] = den0 ? 0 :src[ind] / (eValsX[ind.col] + eValsY[ind.row]);
     }
 }
 
 
 template<typename T>
-void EigenDecomp2d<T>::eValsLInvMult(const Mat<T> &src, Mat<T> &dst, T tolerance, Handle &hand) const {
+void EigenDecomp2d<T>::eValsLInvMult(const Mat<T> &src, Mat<T> &dst, Handle &hand) const {
     KernelPrep kp = src.kernelPrep();
     eValsLInvMultKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         dst.toKernel2d(),
         this->eigen.vals.x.toKernel1d(),
         this->eigen.vals.y.toKernel1d(),
         src.toKernel2d(),
-        tolerance
+        this->isSingular
     );
 }
 

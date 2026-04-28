@@ -28,10 +28,15 @@ XYZ<T> XYZ<T>::fill(T i) {
 template class XYZ<Vec<double>>;
 template class XYZ<Mat<double>>;
 template class XYZ<SquareMat<double>>;
+template class XYZ<DeviceData1d<double>>;
+template class XYZ<DeviceData2d<double>>;
+
 
 template class XYZ<Vec<float>>;
 template class XYZ<Mat<float>>;
 template class XYZ<SquareMat<float>>;
+template class XYZ<DeviceData1d<float>>;
+template class XYZ<DeviceData2d<float>>;
 
 template class XYZ<double>;
 template class XYZ<float>;

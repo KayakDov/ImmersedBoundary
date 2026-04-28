@@ -45,6 +45,7 @@ __device__ void solveThomas3dLap(DeviceData1d<Real> rhs, DeviceData1d<Real> x, D
  * @tparam Real Floating-point precision (float or double).
  * @param x Output 3D tensor for the solution.
  * @param b Input 3D tensor for the RHS (f-tilde).
+ * @param eValsX Vector containing the eigenvalues of the X-direction Laplacian.
  * @param eValsY Vector containing the eigenvalues of the Y-direction Laplacian.
  * @param superPrime 3D workspace tensor for modified super-diagonals.
  * @param bPrime 3D workspace tensor for modified intermediate RHS.
@@ -59,17 +60,17 @@ __global__ void solveThomas3dLaplacianKernel(
     DeviceData3d<Real> superPrime,
     DeviceData3d<Real> bPrime,
     Real deltaSquaredInv,
-    Real tolerance
+    bool isSingular
 ) {//width is layers and height is rows
     GridInd3d system(idy(), 0, idx());
-    if (system.row >= x.rows || system.layer >= x.layers) return;
 
-    if (abs(eValsY[system.row] + eValsZ[system.layer]) < tolerance) {
+    if (isSingular && system.row == 0 && system.layer == 0) {
         DeviceData1d<Real> colX(x.cols, x, system, 0, 1, 0);
         for (size_t i = 0; i < colX.cols; i++) colX[i] = 0;
         return;
     }
 
+    if (system.row >= x.rows || system.layer >= x.layers) return;
     DeviceData1d<Real> colX(x.cols, x, system, 0, 1, 0);//TODO: remove all the extra variables for speed improvement.
     DeviceData1d<Real> colB(b.cols, b, system, 0, 1, 0);
     DeviceData1d<Real> colSuperPrime(superPrime.cols, superPrime, system, 0, 1, 0);
@@ -103,15 +104,17 @@ void EigenDecompThomas<T>::setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handl
         this->eigen.vals.z.toKernel1d(),
         workSpaceSuperPrime.toKernel3d(),
         workSpaceRHSPrime.toKernel3d(),
-        1/deltaX/deltaX
+        1/deltaX/deltaX,
+        this->isSingular
     );
 }
 
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const poisson::Eigen<T>& eigen, double deltaX, Mat<T> &sizeOfBX3):
+EigenDecompThomas<T>::EigenDecompThomas(const poisson::Eigen<T>& eigen, double deltaX, Mat<T> &sizeOfBX3, bool isSingular):
     EigenDecomp3d<T>(
         eigen,
-        sizeOfBX3.col(0)
+        sizeOfBX3.col(0),
+        isSingular
     ),
     workSpaceSuperPrime(sizeOfBX3.col(1).tensor(eigen.dim().rows, eigen.dim().layers)),
     workSpaceRHSPrime(sizeOfBX3.col(2).tensor(eigen.dim().rows, eigen.dim().layers)),

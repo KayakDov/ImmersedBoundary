@@ -50,8 +50,9 @@ public:
      * @param eigen The eigen vectors and values.
      * @param deltaX The distance between x grid points.
      * @param sizeOfBX3 A 3-column matrix providing scratch space for [Solution, SuperPrime, RHSPrime].
+     * @param isSingular true if the laplacian is singular.
      */
-    EigenDecompThomas(const poisson::Eigen<T> &eigen, double deltaX, Mat<T> &sizeOfBX3);
+    EigenDecompThomas(const poisson::Eigen<T> &eigen, double deltaX, Mat<T> &sizeOfBX3, bool isSingular);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.

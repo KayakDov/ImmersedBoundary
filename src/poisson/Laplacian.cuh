@@ -1,14 +1,13 @@
 
 #ifndef CUDABANDED_POISSONLHS_H
 #define CUDABANDED_POISSONLHS_H
-#include <array>
-#include <vector>
 
+#include "BoundaryConfig.cuh"
 #include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
 #include "math/XYZ.h"
-#include "poisson/BoundaryCondition.cuh"
 #include "solvers/Event.h"
+
 
 
 namespace poisson {
@@ -72,7 +71,7 @@ namespace poisson {
          */
         static Eigen make(const BoundaryConfig<T> &boundary, Handle *hands, Event *events);
 
-        GridDim dim() const;
+        [[nodiscard]] GridDim dim() const;
 
     };
 
@@ -85,12 +84,12 @@ namespace poisson {
      * for RHS construction.
      *
      * @tparam T Floating-point type.
-     * @param boundary Boundary configuration (Neumann/Dirichlet/mixed conditions).
      * @param correctionGoesHere Preallocated device array to store the RHS values.
      * @param stream CUDA stream used for asynchronous execution.
      */
     template<typename T>
     void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T>& correctionGoesHere, cudaStream_t stream);
+
 
 
     /**
@@ -104,7 +103,7 @@ namespace poisson {
      * @return Device array containing the computed RHS vector.
      */
     template<typename T>
-    SimpleArray<T> boundaryCorrection(const BoundaryConfig<T>& boundary, cudaStream_t stream);
+    SimpleArray<T> boundaryCorrection(const BoundaryConfig<T>& boundary, cudaStream_t stream) ;
 
 
     /**
@@ -120,8 +119,6 @@ namespace poisson {
      * @return Fully constructed banded Laplacian operator.
      */
     template<typename T>
-    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary,
-                                cudaStream_t stream);
-
+    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, cudaStream_t stream);
 }
 #endif //CUDABANDED_POISSONLHS_H

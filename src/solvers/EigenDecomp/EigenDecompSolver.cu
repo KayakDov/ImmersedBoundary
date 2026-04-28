@@ -6,21 +6,24 @@
 
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(const poisson::Eigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB) :
+EigenDecompSolver<T>::EigenDecompSolver(const poisson::Eigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular) :
     dim(
         eMatsAndVecs.vecs.y._rows,
         eMatsAndVecs.vecs.x._rows,
         eMatsAndVecs.vecs.y._rows
     ),
     eigen(eMatsAndVecs),
-    sizeOfB(sizeOfB) {
+    sizeOfB(sizeOfB),
+    isSingular(isSingular){
+
 }
 
 template<typename T>
 EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handle* hands, Event* events, SimpleArray<T> sizeOfB):
     EigenDecompSolver(
         poisson::Eigen<T>::make(boundary, hands, events),
-        sizeOfB
+        sizeOfB,
+        boundary.allNeumann()
     ){
 }
 

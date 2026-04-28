@@ -10,6 +10,7 @@
 /**
  * Holds data for each dimension, x, y, and z.
  * @tparam T
+ * TODO: pass this class to kernels.
  */
 template<typename T>
 struct XYZ {

@@ -27,7 +27,7 @@ namespace poisson {
         KernelPrep kp(std::max(std::max(rawBanded.x._rows, rawBanded.y._rows), rawBanded.z._rows));
 
         buildAllL1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-            rawBanded.x.toKernel2d(), rawBanded.y.toKernel2d(), rawBanded.z.toKernel2d(),
+            {rawBanded.x.toKernel2d(), rawBanded.y.toKernel2d(), rawBanded.z.toKernel2d()},
             this->boundary,
             primary, prevNext
         );
@@ -74,23 +74,25 @@ namespace poisson {
     }
 
     template<typename T>
-    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, cudaStream_t stream){
-        Vec<int32_t> indices =
-            Vec<int32_t>::create(boundary.dim().numDims() == 3
-                                 ? numDiagonals3d
-                                 : numDiagonals2d,
-                                 stream);
+    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, cudaStream_t stream) {
 
-        AdjacencyPatern ap(boundary.dim());
+        GridDim dimension = boundary.dim();
+
+        Vec<int32_t> indices = Vec<int32_t>::create(
+            dimension.numDims() == 3 ? numDiagonals3d : numDiagonals2d,
+            stream
+        );
+
+        AdjacencyPatern ap(dimension);
         ap.loadMapRowToDiag(indices, stream);
 
-        Mat<T> data = Mat<T>::create(boundary.dim().size(), indices.size());
+        Mat<T> data = Mat<T>::create(dimension.size(), indices.size());
 
-        KernelPrep kp = boundary.dim().kernelPrep();
+        KernelPrep kp = dimension.kernelPrep();
 
         buildLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
             data.toKernel2d(),
-            boundary.dim(),
+            dimension,
             boundary,
             ap
         );
@@ -100,19 +102,17 @@ namespace poisson {
         return BandedMat<T>(data, indices);
     }
 
-
     template<typename T>
-    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T>& correctionGoesHere, cudaStream_t stream)
-    {
-        GridDim dim = boundary.dim();
+    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T>& correctionGoesHere, cudaStream_t stream) {
+        GridDim dimension = boundary.dim();
 
         KernelPrep kp(
-            std::max(dim.rows, dim.layers),
-            std::max(dim.layers, dim.cols)
+            std::max(dimension.rows, dimension.layers),
+            std::max(dimension.layers, dimension.cols)
         );
 
         buildRhsBCKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
-            dim,
+            dimension,
             boundary,
             correctionGoesHere.toKernel1d()
         );
@@ -121,7 +121,7 @@ namespace poisson {
     }
 
     template<typename T>
-    SimpleArray<T> boundaryCorrection(const BoundaryConfig<T>& boundary, cudaStream_t stream){
+    SimpleArray<T> boundaryCorrection(const BoundaryConfig<T>& boundary, cudaStream_t stream) {
         SimpleArray<T> rhs = SimpleArray<T>::create(boundary.dim().size(), stream);
 
         boundaryCorrection(boundary, rhs, stream);

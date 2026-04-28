@@ -66,6 +66,7 @@ public:
      * The dimensions of the grid.
      */
     const GridDim dim;
+    const bool isSingular;
 
     virtual ~EigenDecompSolver() = default;
 
@@ -81,7 +82,7 @@ public:
      * @param eMatsAndVecs The eigen matrices and values for the laplacian.
      * @param sizeOfB An array the size of b = xLength * yLength * zLength that will be overwritten.  You may use b for this.
      */
-    EigenDecompSolver(const poisson::Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB);
+    EigenDecompSolver(const poisson::Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular);
 
 
     /**

@@ -201,14 +201,14 @@ __global__ void buildL1dKernel(
 }
 
 template <typename T>
-__global__ void buildAllL1dKernel(DeviceData2d<T> bandedL_x, DeviceData2d<T> bandedL_y, DeviceData2d<T> bandedL_z, const BoundaryConfig<T> boundary, const AdjacencyInd primary, const AdjacencyIndPair prevNext) {
+__global__ void buildAllL1dKernel(XYZ<DeviceData2d<T>> bandedL, const BoundaryConfig<T> boundary, const AdjacencyInd primary, const AdjacencyIndPair prevNext) {
     size_t i = idx();
 
-    LSetter1d<T> ds(bandedL_x, i, primary, prevNext);
+    LSetter1d<T> ds(bandedL.x, i, primary, prevNext);
 
-    if (i < bandedL_x.rows) ds.setRowInBanded1d(bandedL_x, boundary.leftRight);
-    if (i < bandedL_y.rows) ds.setRowInBanded1d(bandedL_y, boundary.topBottom);
-    if (bandedL_z.size() > 1 && i < bandedL_z.rows) ds.setRowInBanded1d(bandedL_z, boundary.frontBack);
+    if (i < bandedL.x.rows) ds.setRowInBanded1d(bandedL.x, boundary.leftRight);
+    if (i < bandedL.y.rows) ds.setRowInBanded1d(bandedL.y, boundary.topBottom);
+    if (bandedL.z.size() > 1 && i < bandedL.z.rows) ds.setRowInBanded1d(bandedL.z, boundary.frontBack);
 }
 
 

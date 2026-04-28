@@ -5,15 +5,14 @@
 
 template<typename T>
 __global__ void setUTildeKernel3d(DeviceData3d<T> uTilde,
-      const DeviceData1d<T> eValsX,
-      const DeviceData1d<T> eValsY,
-      const DeviceData1d<T> eValsZ,
+      const XYZ<DeviceData1d<T>> eVals,
       const DeviceData3d<T> fTilde,
-      T tolerance) {
+      bool isSingular) {
     if (GridInd3d ind; ind < uTilde) {
-        T den = eValsX[ind.col] + eValsY[ind.row] + eValsZ[ind.layer];
-        bool denNot0 = abs(den) > tolerance;
-        uTilde[ind] = denNot0 ? fTilde[ind] / den : 0;
+
+        bool den0 = isSingular && ind.layer == 0 && ind.row == 0 && ind.col == 0;
+
+        uTilde[ind] = den0 ? 0 : fTilde[ind] / (eVals.x[ind.col] + eVals.y[ind.row] + eVals.z[ind.layer]);
     }
 }
 
@@ -22,10 +21,9 @@ void EigenDecomp3d<T>::setUTilde(const Tensor<T> &f, Tensor<T> &u, Handle &hand)
     KernelPrep kp = f.kernelPrep();
     setUTildeKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         u.toKernel3d(),
-        this->eigen.vals.x.toKernel1d(),
-        this->eigen.vals.y.toKernel1d(),
-        this->eigen.vals.z.toKernel1d(),
-        f.toKernel3d());
+        {this->eigen.vals.x.toKernel1d(), this->eigen.vals.y.toKernel1d(), this->eigen.vals.z.toKernel1d()},
+        f.toKernel3d(),
+        this->isSingular);
 }
 
 template<typename T>
@@ -90,8 +88,9 @@ void EigenDecomp3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, const Tens
 template<typename T>
 EigenDecomp3d<T>::EigenDecomp3d(
     const poisson::Eigen<T>& eigen,
-    SimpleArray<T> sizeOfB
-) : EigenDecompSolver<T>(eigen, sizeOfB) {
+    SimpleArray<T> sizeOfB,
+    bool isSingular
+) : EigenDecompSolver<T>(eigen, sizeOfB, isSingular) {
 }
 
 template<typename T>
@@ -100,6 +99,7 @@ EigenDecomp3d<T>::EigenDecomp3d(
     Handle* hand3,
     Event* event2
 ) : EigenDecompSolver<T>(boundary, hand3, event2) {
+
 }
 
 template<typename T>

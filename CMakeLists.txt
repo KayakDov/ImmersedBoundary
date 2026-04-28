@@ -68,8 +68,6 @@ list(FILTER LIB_SOURCES EXCLUDE REGEX "[/\\\\]main\\.cu$")
 add_library(CudaBandedLib STATIC
         ${LIB_SOURCES}
         ${SHROUD_SOURCES}
-        src/deviceArrays/headers/Support/AdjacencyIndex.cuh
-        src/deviceArrays/headers/Support/AdjacencyIndex.cuh
 )
 
 set_target_properties(CudaBandedLib PROPERTIES

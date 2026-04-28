@@ -57,8 +57,6 @@ protected:
      */
     virtual void multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T> &dst, bool transposeE) const;
 
-
-
 public:
 
 
@@ -66,8 +64,9 @@ public:
      * @brief Creates an eigen decomposition solver for a 3D staggered MAC grid.
      * @param eigen The eigens.
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
+     * @param isSingular Is the laplacian singular (all boundary conditions are Neumann)
      */
-    EigenDecomp3d(const poisson::Eigen<T> &eigen, SimpleArray<T> sizeOfB);
+    EigenDecomp3d(const poisson::Eigen<T> &eigen, SimpleArray<T> sizeOfB, bool isSingular);
 
     /**
      * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.
