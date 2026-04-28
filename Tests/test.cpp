@@ -364,7 +364,7 @@ TEST(LaplacianMath, laplacian) {
                 for (size_t m = 0; m < 5; ++m) {
                     for (size_t n = 0; n < 5; ++n) {
                         for (size_t o = 0; o < 5; ++o) {
-                            GridDim dim(2 + m, 2 + n, 2 + o);
+                            GridDim dim(2 + m, 2 + n, 1 + o);
                             std::stringstream ss;
                             ss << "startIsNeuman = " << static_cast<bool>(j)
                                << " endIsNeumann = " << static_cast<bool>(k)
@@ -404,8 +404,8 @@ TEST(LaplacianMath, laplacian) {
 }
 
 int main(int argc, char **argv) {
-    //TODO: If then how do boundary condition affect Thomas's algorythm?
     std::cout << "--- DIAGNOSTIC: Test Binary Starting ---" << std::endl;
     testing::InitGoogleTest(&argc, argv);
+
     return RUN_ALL_TESTS();
 }

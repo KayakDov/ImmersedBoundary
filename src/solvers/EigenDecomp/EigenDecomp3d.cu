@@ -8,9 +8,13 @@ __global__ void setUTildeKernel3d(DeviceData3d<T> uTilde,
       const DeviceData1d<T> eValsX,
       const DeviceData1d<T> eValsY,
       const DeviceData1d<T> eValsZ,
-      const DeviceData3d<T> fTilde) {
-    if (GridInd3d ind; ind < uTilde)
-        uTilde[ind] = fTilde[ind] / (eValsX[ind.col] + eValsY[ind.row] + eValsZ[ind.layer]);
+      const DeviceData3d<T> fTilde,
+      T tolerance) {
+    if (GridInd3d ind; ind < uTilde) {
+        T den = eValsX[ind.col] + eValsY[ind.row] + eValsZ[ind.layer];
+        bool denNot0 = abs(den) > tolerance;
+        uTilde[ind] = denNot0 ? fTilde[ind] / den : 0;
+    }
 }
 
 template<typename T>
