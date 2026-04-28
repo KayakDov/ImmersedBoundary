@@ -3,40 +3,6 @@
 #define CUDABANDED_LAPLACIANKERNELS_CUH
 #include "deviceArrays/headers/DeviceData.cuh"
 
-/**
- * How the adjacent grid cells are stored in the laplacian. *
- */
-class AdjacencyPatern {
-public:
-
-    AdjacencyInd here;
-    AdjacencyIndPair upDown, leftRight, frontBack;
-    /**
-     *
-     * @param dim The dimensions of the grid.
-     */
-    __host__ __device__ AdjacencyPatern(GridDim dim):
-        here(0, 0),
-        upDown(1, 1),
-        leftRight(3, dim.rows * dim.layers),
-        frontBack(5, dim.rows)
-    {
-
-    };
-
-    __host__ void loadMapRowToDiag(Vec<int32_t> &diags, cudaStream_t stream) const{
-        std::vector<AdjacencyInd> adjacencies = {here, upDown.getLeft(), upDown.getRight(), leftRight.getLeft(), leftRight.getRight(), frontBack.getLeft(), frontBack.getRight()};
-        loadMapRowToDiag(diags, adjacencies, stream);
-    }
-
-    __host__ static void loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, cudaStream_t stream){
-        std::vector<int32_t> diagsCpu(diags.size(), 0);
-        for (AdjacencyInd ind : indices) diagsCpu[ind.col] = ind.diag;
-        diags.set(diagsCpu.data(), stream);
-        cudaStreamSynchronize(stream);//Don't want diagsCpu to be destroyed before the memory is passed.
-    }
-};
-
 
 
 /**

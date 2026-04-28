@@ -2,7 +2,7 @@
 // Created by usr on 1/28/26.
 //
 
-#include "../headers/sparse/SparseCSR.h"
+#include "../../headers/sparse/SparseCSR.h"
 
 template<typename Real, typename Int>
 void SparseCSR<Real, Int>::setDescriptor() {

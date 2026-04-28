@@ -1,11 +1,11 @@
 #include <iostream>
 
 #include "solvers/BiCGSTAB.cuh"
-#include "../headers/sparse/BandedMat.h"
-#include "../headers/KernelSupport.cuh"
-#include "../headers/Singleton.h"
-#include "../headers/SquareMat.h"
-#include "../headers/Vec.h"
+#include "../../headers/sparse/BandedMat.h"
+#include "../../headers/KernelSupport.cuh"
+#include "../../headers/Singleton.h"
+#include "../../headers/SquareMat.h"
+#include "../../headers/Vec.h"
 
 /**
  * Checks if the index is in bounds.

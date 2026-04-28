@@ -490,6 +490,22 @@ void Vec<T>::permute(Vec<Int> permutation, Vec<T> dst, Handle& hand) {
     permuteKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(permutation.toKernel1d(), this->toKernel1d(), dst.toKernel1d());
 }
 
+__host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, cudaStream_t stream) const{
+    std::vector<AdjacencyInd> adjacencies = {here, upDown.getLeft(), upDown.getRight(), leftRight.getLeft(), leftRight.getRight()};
+    if (is3d) {
+        adjacencies.push_back(frontBack.getLeft());
+        adjacencies.push_back(frontBack.getRight());
+    }
+    loadMapRowToDiag(diags, adjacencies, stream);
+}
+
+__host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, cudaStream_t stream){
+    std::vector<int32_t> diagsCpu(diags.size(), 0);
+    for (AdjacencyInd ind : indices) diagsCpu[ind.col] = ind.diag;
+    diags.set(diagsCpu.data(), stream);
+    cudaStreamSynchronize(stream);//Don't want diagsCpu to be destroyed before the memory is passed.
+}
+
 
 // =========================================================================
 // Explicit Template Instantiations

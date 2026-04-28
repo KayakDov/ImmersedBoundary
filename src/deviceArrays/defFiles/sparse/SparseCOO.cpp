@@ -2,7 +2,7 @@
 // Created by usr on 2/3/26.
 //
 
-#include "../headers/sparse/SparseCOO.h"
+#include "../../headers/sparse/SparseCOO.h"
 
 #include "deviceArrays//headers/sparse/SparseCSR.h"
 

@@ -1,5 +1,5 @@
 
-#include "../headers/sparse/SparseCSC.cuh"
+#include "../../headers/sparse/SparseCSC.cuh"
 
 
 template<typename Real, typename Int>
