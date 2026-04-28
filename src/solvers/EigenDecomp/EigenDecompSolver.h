@@ -53,7 +53,7 @@ protected:
     /**
      * The eigen vectors and values.
      */
-    LaplacianEigen<T> eigen;
+    poisson::Eigen<T> eigen;
 
     /**
      * A workspace the size of b = L_cols.  You may store b itself here, but it will be overwritten.
@@ -81,7 +81,7 @@ public:
      * @param eMatsAndVecs The eigen matrices and values for the laplacian.
      * @param sizeOfB An array the size of b = xLength * yLength * zLength that will be overwritten.  You may use b for this.
      */
-    EigenDecompSolver(const LaplacianEigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB);
+    EigenDecompSolver(const poisson::Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB);
 
 
     /**

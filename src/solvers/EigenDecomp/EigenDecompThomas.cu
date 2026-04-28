@@ -101,7 +101,7 @@ void EigenDecompThomas<T>::setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handl
 }
 
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const LaplacianEigen<T>& eigen, double deltaX, Mat<T> &sizeOfBX3):
+EigenDecompThomas<T>::EigenDecompThomas(const poisson::Eigen<T>& eigen, double deltaX, Mat<T> &sizeOfBX3):
     EigenDecomp3d<T>(
         eigen,
         sizeOfBX3.col(0)

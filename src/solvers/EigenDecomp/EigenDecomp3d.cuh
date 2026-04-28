@@ -67,7 +67,7 @@ public:
      * @param eigen The eigens.
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
      */
-    EigenDecomp3d(const LaplacianEigen<T> &eigen, SimpleArray<T> sizeOfB);
+    EigenDecomp3d(const poisson::Eigen<T> &eigen, SimpleArray<T> sizeOfB);
 
     /**
      * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.

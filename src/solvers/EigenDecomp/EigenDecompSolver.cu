@@ -6,7 +6,7 @@
 
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(const LaplacianEigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB) :
+EigenDecompSolver<T>::EigenDecompSolver(const poisson::Eigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB) :
     dim(
         eMatsAndVecs.vecs.y._rows,
         eMatsAndVecs.vecs.x._rows,
@@ -19,7 +19,7 @@ EigenDecompSolver<T>::EigenDecompSolver(const LaplacianEigen<T>& eMatsAndVecs, S
 template<typename T>
 EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handle* hands, Event* events, SimpleArray<T> sizeOfB):
     EigenDecompSolver(
-        LaplacianEigen<T>::make(boundary, hands, events),
+        poisson::Eigen<T>::make(boundary, hands, events),
         sizeOfB
     ){
 }

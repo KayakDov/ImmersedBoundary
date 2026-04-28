@@ -24,10 +24,19 @@ public:
 
     };
 
-    __host__ void loadMapRowToDiag(Vec<int32_t> &diags, cudaStream_t stream) const;
+    __host__ void loadMapRowToDiag(Vec<int32_t> &diags, cudaStream_t stream) const{
+        std::vector<AdjacencyInd> adjacencies = {here, upDown.getLeft(), upDown.getRight(), leftRight.getLeft(), leftRight.getRight(), frontBack.getLeft(), frontBack.getRight()};
+        loadMapRowToDiag(diags, adjacencies, stream);
+    }
 
-    __host__ static void loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, cudaStream_t stream);
+    __host__ static void loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, cudaStream_t stream){
+        std::vector<int32_t> diagsCpu(diags.size(), 0);
+        for (AdjacencyInd ind : indices) diagsCpu[ind.col] = ind.diag;
+        diags.set(diagsCpu.data(), stream);
+        cudaStreamSynchronize(stream);//Don't want diagsCpu to be destroyed before the memory is passed.
+    }
 };
+
 
 
 /**
@@ -67,9 +76,7 @@ public:
      * to the supplied adjacency pattern and boundary conditions.
      *
      * @param indexInLine       Grid point index along this dimension.
-     * @param lineLength        Number of grid points in this dimension.
-     * @param lineStart         Boundary condition at start   (index == 0).
-     * @param lineEnd           Boundary condition at end     (index == lineLength-1).
+     * @param boundaries    The boundary conditions in the dimesnion being worked on.
      * @param primary          The value at the main diagoanl.
      * @param leftRight          The value at the left and right diagonals on the row.
 

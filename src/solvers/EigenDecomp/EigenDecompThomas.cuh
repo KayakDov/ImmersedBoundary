@@ -51,7 +51,7 @@ public:
      * @param deltaX The distance between x grid points.
      * @param sizeOfBX3 A 3-column matrix providing scratch space for [Solution, SuperPrime, RHSPrime].
      */
-    EigenDecompThomas(const LaplacianEigen<T> &eigen, double deltaX, Mat<T> &sizeOfBX3);
+    EigenDecompThomas(const poisson::Eigen<T> &eigen, double deltaX, Mat<T> &sizeOfBX3);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.

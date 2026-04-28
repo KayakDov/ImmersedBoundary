@@ -375,20 +375,20 @@ TEST(LaplacianMath, laplacian) {
 
                             BoundaryConfig<Real> boundary(j, k, l,  dim);
 
-                            auto laplacian = laplacianLinear(boundary, hand3[0]);
+                            auto laplacian = poisson::laplacian(boundary, hand3[0]);
 
                             auto dense = SquareMat<Real>::create(dim.size());
                             laplacian.getDense(dense, hand3);
                             // std::cout << "The Laplacian for " << dim << " is \n"<< GpuOut<Real>(dense, hand3[0]) << std::endl;
 
-                            Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
+                            poisson::Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
 
                             // std::cout << "L 1d matrices:\nx:\n" << GpuOut<Real>(laplacian1d.dense(0, hand3[0]), hand3[0])
                             //                                 << "y\n" << GpuOut<Real>(laplacian1d.dense(1, hand3[0]), hand3[0])
                             //                                 << "z\n" << GpuOut<Real>(laplacian1d.dense(2, hand3[0]), hand3[0])
                             //                                 << std::endl;
 
-                            LaplacianEigen<Real> laplacianEigen = LaplacianEigen<Real>::make(boundary, hand3, event2);
+                            poisson::Eigen<Real> laplacianEigen = poisson::Eigen<Real>::make(boundary, hand3, event2);
                             // std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
                             // std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
 

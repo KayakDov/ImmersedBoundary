@@ -85,7 +85,7 @@ void EigenDecomp3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, const Tens
 
 template<typename T>
 EigenDecomp3d<T>::EigenDecomp3d(
-    const LaplacianEigen<T>& eigen,
+    const poisson::Eigen<T>& eigen,
     SimpleArray<T> sizeOfB
 ) : EigenDecompSolver<T>(eigen, sizeOfB) {
 }
