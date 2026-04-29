@@ -41,19 +41,21 @@ void KroneckerTriplet<T>::mult1D(
 }
 
 template<typename T>
-void KroneckerTriplet<T>::multRows(const Mat<T> &other, const Mat<T> result, bool transposeThis, Handle &hand) {
+void KroneckerTriplet<T>::multRows(const Mat<T> &other, Mat<T> result, bool transposeThis, Handle &hand) {
     // mult1D(mat.x, transposeThis, true, other.layerRowCol(0), result.layerRowCol(0), other._rows, hand, other.layers);
     other.mult(mat.x, &result, &hand, false, !transposeThis);
 }
 
 template<typename T>
 void KroneckerTriplet<T>::multCols(const Tensor<T> &other, Tensor<T> result, bool transposeThis, Handle &hand) {
-    mult1D(mat.y, transposeThis, false, other.layerRowCol(0), result.layerRowCol(0), other._rows, hand, other.layers);
+    Mat<T> dst1 = result.layerRowCol(0);
+    mult1D(mat.y, transposeThis, false, other.layerRowCol(0), dst1, other._rows, hand, other._layers);
 }
 
 template<typename T>
 void KroneckerTriplet<T>::multDepths(const Tensor<T> &other, Tensor<T> result, bool transposeThis, Handle &hand) {
-    mult1D(mat.z, transposeThis, true, other.layerColDepth(0), result.layerColDepth(0), other.layers * other.rows, hand, other.cols);
+    auto dst1 = result.layerColDepth(0);
+    mult1D(mat.z, transposeThis, true, other.layerColDepth(0), dst1, other._layers * other._rows, hand, other._cols);
 }
 
 template<typename T>
@@ -77,25 +79,42 @@ Mat<T> KroneckerTriplet<T>::product(Handle &hand) {
 
 template<typename T>
 GridDim KroneckerTriplet<T>::dim() {
-    return GridDim(mat.y.cols, mat.x._cols, mat.z._cols);
+    return GridDim(mat.y._cols, mat.x._cols, mat.z._cols);
 }
-//yzx
+
+template<typename T>
+void KroneckerTriplet<T>::mult(const SimpleArray<T>& other, SimpleArray<T>& result, bool transposeThis, Handle &hand) {
+    auto buffer = SimpleArray<T>::create(result.size(), hand);
+    mult(other, result, transposeThis, buffer, hand);
+}
+
 template<typename T>
 void KroneckerTriplet<T>::mult(const SimpleArray<T>& other, SimpleArray<T>& result, bool transposeThis, SimpleArray<T> resultSizeBuffer, Handle &hand) {
 
     GridDim dim = this->dim();
 
     Tensor<T> otherTensor = other.tensor(dim.rows, dim.layers),
-            resultTensor = result.tensor(dim.rows, dim.layers);
+            resultTensor = result.tensor(dim.rows, dim.layers),
+            bufferTensor = resultSizeBuffer.tensor(dim.rows, dim.layers);
     Mat<T> otherMat = other.matrix(dim.rows), resultMat = result.matrix(dim.rows);
     multRows(otherMat, resultMat, transposeThis, hand);
-    multDepths(resultTensor, resultSizeBuffer, transposeThis, hand);
-    multCols(resultSizeBuffer, resultTensor, transposeThis, hand);
+    multDepths(resultTensor, bufferTensor, transposeThis, hand);
+    multCols(bufferTensor, resultTensor, transposeThis, hand);
 }
 
 template<typename T>
-void KroneckerTriplet<T>::mult(Mat<T> other, Mat<T> result, bool transposeThis, SimpleArray<T> resultHeightBuffer, Handle &hand) {
+void KroneckerTriplet<T>::mult(const Mat<T>& other, Mat<T>& result, bool transposeThis, Handle &hand) {
+    auto buffer = SimpleArray<T>::create(result._rows, hand);
+    mult(other, result, transposeThis, buffer, hand);
+}
+
+template<typename T>
+void KroneckerTriplet<T>::mult(const Mat<T>& other, Mat<T>& result, bool transposeThis, SimpleArray<T>& resultHeightBuffer, Handle &hand) {
     for (size_t colInd = 0; colInd < other._cols; colInd++) {
-        mult(other.col(colInd), result.col(colInd), transposeThis, resultHeightBuffer, hand);
+        SimpleArray<T> resultCol = result.col(colInd);
+        mult(other.col(colInd), resultCol, transposeThis, resultHeightBuffer, hand);
     }
 }
+
+template class KroneckerTriplet<float>;
+template class KroneckerTriplet<double>;

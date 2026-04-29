@@ -106,6 +106,8 @@ public:
      */
     GridDim dim();
 
+    void mult(const SimpleArray<T> &other, SimpleArray<T> &result, bool transposeThis, Handle &hand);
+
     /**
      * @brief Multiplies the Kronecker triplet implicitly with a 3D vector (flattened array).
      *
@@ -120,16 +122,18 @@ public:
      */
     void mult(const SimpleArray<T> &other, SimpleArray<T> &result, bool transposeThis, SimpleArray<T> resultSizeBuffer, Handle &hand);
 
+    void mult(const Mat<T> &other, Mat<T> &result, bool transposeThis, Handle &hand);
+
     /**
      * @brief Multiplies the Kronecker triplet implicitly with a batch of vectors (a matrix).
      *
      * @param other The input matrix where each column is a flattened 3D array.
      * @param result The output matrix.
      * @param transposeThis If true, applies the transpose of the entire triplet operator.
-     * @param resultHeightBuffer An intermediate scratch buffer equal to the height of `result`.
      * @param hand CUDA handle.
      */
-    void mult(Mat<T> other, Mat<T> result, bool transposeThis, SimpleArray<T> resultHeightBuffer, Handle &hand);
+    void mult(const Mat<T> &other, Mat<T> &result, bool transposeThis, SimpleArray<T> &resultHeightBuffer, Handle &hand);
+
 };
 
 #endif //CUDABANDED_KRONECKERTRIPLET_H
