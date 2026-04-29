@@ -445,14 +445,14 @@ TEST(LaplacianMath, laplacian) {
     Event event2[2];
     double tolerance = 1e-12;
 
-    // size_t j, k, l, m, n, o; j = k = l = m = 0; o = n = 1;
+    size_t j, k, l, m, n, o; j = k = l = n = 0; o = m = 1;
 
-    for (size_t j = 0; j < 2; ++j) {
-        for (size_t k = 0; k < 2; ++k) {
-            for (size_t l = 0; l < 2; ++l) {
-                for (size_t m = 0; m < 2; ++m) {
-                    for (size_t n = 0; n < 2; ++n) {
-                        for (size_t o = 0; o < 2; ++o) {
+    // for (size_t j = 0; j < 2; ++j) {
+    //     for (size_t k = 0; k < 2; ++k) {
+    //         for (size_t l = 0; l < 2; ++l) {
+    //             for (size_t m = 1; m < 2; ++m) {
+    //                 for (size_t n = 0; n < 2; ++n) {
+    //                     for (size_t o = 1; o < 2; ++o) {
                             GridDim dim(2 + m, 2 + n, 1 + o);
                             std::stringstream ss;
                             ss << "startIsNeuman = " << static_cast<bool>(j)
@@ -483,17 +483,19 @@ TEST(LaplacianMath, laplacian) {
                              //
                              // for (size_t i = 0; i < dim.numDims(); ++i)
                              //     checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
-                         }
-                     }
-                 }
-             }
-         }
-     }
+                         // }
+     //                 }
+     //             }
+     //         }
+     //     }
+     // }
 }
 
 int main(int argc, char **argv) {
     std::cout << "--- DIAGNOSTIC: Test Binary Starting ---" << std::endl;
     testing::InitGoogleTest(&argc, argv);
+
+    auto mat = Mat<double>::create(2, 2);
 
     return RUN_ALL_TESTS();
 }

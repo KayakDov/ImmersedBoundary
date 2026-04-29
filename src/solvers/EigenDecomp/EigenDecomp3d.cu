@@ -79,10 +79,10 @@ void EigenDecomp3d<T>::multEZ(const Mat<T> &src1, Mat<T> dst1, Handle &hand, boo
 
 template<typename T>
 void EigenDecomp3d<T>::multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T>& dst, bool transposeE) const {
-
+    Tensor<T> temp = this->sizeOfB.tensor(this->dim.rows, this->dim.layers);
     multEY( src.layerRowCol(0), dst.layerRowCol(0), hand, transposeE);
-    multEZ(dst.layerColDepth(0),  src.layerColDepth(0), hand, transposeE);//TODO: modify this so that src is not changed.  Can be done by passing another temp variable, if that variable is the same as rhs, then rhs will be overwritten, if it's different, tahn rhs will not be overwritten.  If this is done, then it may be possible the remove sizeOfB as a field.
-    multEX(src.layerRowCol(0), dst.layerRowCol(0), hand, transposeE);
+    multEZ(dst.layerColDepth(0),  temp.layerColDepth(0), hand, transposeE);
+    multEX(temp.layerRowCol(0), dst.layerRowCol(0), hand, transposeE);
 }
 
 template<typename T>
