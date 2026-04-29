@@ -57,6 +57,8 @@ public:
         T& rightDiag = (*laplacian)(rowL, leftRight.getRight());
         T& leftDiag = (*laplacian)(rowL, leftRight.getLeft());
 
+        rightDiag = leftDiag = 0;
+
         if (!boundaries.setL(mainDiag, leftDiag, rightDiag, indexInLine)) {
             mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
             leftDiag = rightDiag = boundaries.start.inverseDeltaSquared;

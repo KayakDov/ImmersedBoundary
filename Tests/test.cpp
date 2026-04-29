@@ -427,9 +427,7 @@ void verifyEigenSolverIdentity(
 
     // Retrieve results to host
     x.get(xCpu.data(), hands[0]);
-    hands[0].synch();
-
-
+    cudaDeviceSynchronize();
 
     // Validate identity: x_final ≈ x_orig
     for (size_t i = 0; i < dim.size(); ++i) {

@@ -146,17 +146,15 @@ struct BoundaryConfig {
             return Mat<Real>::create(c.dimLength, c.dimLength + 1);
         });
 
-        bool is3d = dim().numDims() == 3;
+        (*this)[0].generateEigen(hands3[0], *(preAllocatedForL_iX3[0]));
 
-        for (size_t i = 0; i < 2 + is3d; ++i)
-            if (repeat(i) < 0) (*this)[i].generateEigen(hands3[i], *(preAllocatedForL_iX3[i]));
+        for (size_t i = 1; i < dim().numDims(); ++i)
+            if (repeat(i) < 0){
+                (*this)[i].generateEigen(hands3[i], *(preAllocatedForL_iX3[i]));
+                events[i - 1].record(hands3[i]);
+                events[i - 1].hold(hands3[0]);
+            }
 
-        events[0].record(hands3[1]);
-        events[0].hold(hands3[0]);
-        if (is3d) {
-            events[1].record(hands3[2]);
-            events[1].hold(hands3[0]);
-        }
     }
     /**
      * Checks if all the boundary oncdiitons are Neumann resulting in a singular laplacian.
