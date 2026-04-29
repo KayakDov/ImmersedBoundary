@@ -96,7 +96,7 @@ void KroneckerTriplet<T>::mult(const SimpleArray<T>& other, SimpleArray<T>& resu
     Tensor<T> otherTensor = other.tensor(dim.rows, dim.layers),
             resultTensor = result.tensor(dim.rows, dim.layers),
             bufferTensor = resultSizeBuffer.tensor(dim.rows, dim.layers);
-    Mat<T> otherMat = other.matrix(dim.rows), resultMat = result.matrix(dim.rows);
+    Mat<T> otherMat = other.matrix(dim.rows*dim.layers), resultMat = result.matrix(dim.rows*dim.layers);
     multRows(otherMat, resultMat, transposeThis, hand);
     multDepths(resultTensor, bufferTensor, transposeThis, hand);
     multCols(bufferTensor, resultTensor, transposeThis, hand);
