@@ -1,5 +1,4 @@
 
-//TODO: condense thees!
 /**
  * @file LaplacianEigenKernels.cuh
  * @brief Analytical Eigen-decomposition kernels for 1D Discrete Laplacians.
@@ -229,8 +228,8 @@ void BoundaryPair<T>::generateEigen(cudaStream_t stream, SquareMat<T> eVecs, Vec
         eigenMatLKernel_DD<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>( eVecs.toKernel2d(), isNodeCent);
         eigenValLKernel_DD<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
     }
-    cudaError_t err = cudaGetLastError();
-    CHECK_CUDA_ERROR (err);
+
+    CHECK_CUDA_ERROR (cudaGetLastError());
 }
 
 

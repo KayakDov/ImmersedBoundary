@@ -12,8 +12,6 @@
  * @param file Source file where the check occurred.
  * @param line Line number in the source file.
  *
- *Handle must always be passed by reference!  TODO:figure out how to make this not necessary.
- *
  * This function is the backend of the CHECK_CUDA_ERROR macro.
  */
 void checkCudaErrors(cudaError_t err, const char *file, int line);

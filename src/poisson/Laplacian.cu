@@ -56,15 +56,13 @@ namespace poisson {
 
 
     template<typename T>
-    Eigen<T> Eigen<T>::make(const BoundaryConfig<T>& boundary, Handle* hands, Event* events) {
+    Eigen<T> Eigen<T>::make(const BoundaryConfig<T>& boundary, Handle* hands3, Event* events) {
 
         bool is3d = boundary.dim().numDims() == 3;
         std::shared_ptr<Mat<T>> eigen[3];
-        boundary.generateEigen(hands, events, eigen);
+        boundary.generateEigen(hands3, events, eigen);
         XYZ<Vec<T>> vals(eigen[0]->lastCol(), eigen[1]->lastCol(), is3d ? eigen[2]->lastCol() : SimpleArray<T>::empty());
         XYZ<SquareMat<T>> vecs(eigen[0]->sqSubMatFirstBiggest(), eigen[1]->sqSubMatFirstBiggest(), is3d ? eigen[2]->sqSubMatFirstBiggest() : SquareMat<T>::empty());
-        events[0].hold(hands[0]);
-        if (is3d) events[1].hold(hands[0]);
         return Eigen<T>(vals, vecs);
     }
 
@@ -74,32 +72,34 @@ namespace poisson {
     }
 
     template<typename T>
-    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, cudaStream_t stream) {
+    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, cudaStream_t stream) {
 
         GridDim dimension = boundary.dim();
 
-        Vec<int32_t> indices = Vec<int32_t>::create(
-            dimension.numDims() == 3 ? numDiagonals3d : numDiagonals2d,
-            stream
-        );
-
         AdjacencyPatern ap(dimension);
-        ap.loadMapRowToDiag(indices, stream);
-
-        Mat<T> data = Mat<T>::create(dimension.size(), indices.size());
+        ap.loadMapRowToDiag(numDiags, stream);
 
         KernelPrep kp = dimension.kernelPrep();
 
         buildLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
-            data.toKernel2d(),
+            gridSizeXnumDiags.toKernel2d(),
             dimension,
             boundary,
             ap
         );
 
         CHECK_CUDA_ERROR(cudaGetLastError());
+        return BandedMat<T>(gridSizeXnumDiags, numDiags);
+    }
 
-        return BandedMat<T>(data, indices);
+    template<typename T>
+    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, cudaStream_t stream) {
+        GridDim dim = boundary.dim();
+        size_t numDiags = dim.numDims() == 3 ? numDiagonals3d : numDiagonals2d;
+        auto mat = Mat<T>::create(dim.size(), numDiags);
+        Vec<int32_t> indices = Vec<int32_t>::create(numDiags, stream);
+        laplacian(boundary, mat, indices, stream);
+        return BandedMat<T>(mat, indices);
     }
 
     template<typename T>

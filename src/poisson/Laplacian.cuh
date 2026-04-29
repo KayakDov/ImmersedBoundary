@@ -64,12 +64,12 @@ namespace poisson {
         /**
          * Generates the eigenvector matrices.
          * @param boundary The boundary conditions.
-         * @param hands A handle for each dimension.
+         * @param hands3 A handle for each dimension.
          * @param events an event for each dimension - 1
-         * @param hands
+         * @param hands3
          * @return The Laplacian's Eigen vector matrices.
          */
-        static Eigen make(const BoundaryConfig<T> &boundary, Handle *hands, Event *events);
+        static Eigen make(const BoundaryConfig<T> &boundary, Handle *hands3, Event *events);
 
         [[nodiscard]] GridDim dim() const;
 
@@ -120,5 +120,21 @@ namespace poisson {
      */
     template<typename T>
     BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, cudaStream_t stream);
+
+    /**
+     * @brief Constructs the sparse/banded Laplacian operator matrix.
+     *
+     * This is the core implementation that builds both:
+     * - the banded matrix representation of the Laplacian
+     * - the diagonal index structure
+     *
+     * @tparam T Floating-point type.
+     * @param boundary Boundary configuration defining Neumann/Dirichlet structure.
+     * @param gridSizeXnumDiags The laplacian will be put in this space.
+     * @param stream CUDA stream used for asynchronous execution.
+     * @return Fully constructed banded Laplacian operator.
+     */
+    template<typename T>
+    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, Mat<T>& gridSizeXnumDiags, Vec<T>& numDiags, cudaStream_t stream);
 }
 #endif //CUDABANDED_POISSONLHS_H

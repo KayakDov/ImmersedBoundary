@@ -135,12 +135,12 @@ struct BoundaryConfig {
     /**
      * Generates, including memory allocation, eigen values and vectors.  The matrices pointed to, that are retruned,
      * hold the values in the last column, and the vectors in the first nxn cells.
-     * @param hands Used to create the different vectors in parrallel.  The number of handles should be equal to the number of dimentisons.
+     * @param hands3 Used to create the different vectors in parrallel.  The number of handles should be equal to the number of dimentisons.
      * @param events The number of events should be equal to the number of dimesnions.
      * @param preAllocatedForL_iX3
      * @return pointers to matrices containing the eigen values and vectors.
      */
-    __host__ void generateEigen(Handle *hands, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const{
+    __host__ void generateEigen(Handle *hands3, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const{
 
         createUnique<Mat<Real>>(preAllocatedForL_iX3, [](const BoundaryPair<Real>& c) {
             return Mat<Real>::create(c.dimLength, c.dimLength + 1);
@@ -149,10 +149,14 @@ struct BoundaryConfig {
         bool is3d = dim().numDims() == 3;
 
         for (size_t i = 0; i < 2 + is3d; ++i)
-            if (repeat(i) < 0) (*this)[i].generateEigen(hands[i], *(preAllocatedForL_iX3[i]));
+            if (repeat(i) < 0) (*this)[i].generateEigen(hands3[i], *(preAllocatedForL_iX3[i]));
 
-        events[0].record(hands[1]);
-        if (is3d) events[1].record(hands[2]);
+        events[0].record(hands3[1]);
+        events[0].hold(hands3[0]);
+        if (is3d) {
+            events[1].record(hands3[2]);
+            events[1].hold(hands3[0]);
+        }
     }
     /**
      * Checks if all the boundary oncdiitons are Neumann resulting in a singular laplacian.

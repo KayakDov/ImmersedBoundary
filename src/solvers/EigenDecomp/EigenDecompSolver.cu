@@ -29,7 +29,7 @@ EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handl
 
 template<typename T>
 EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handle* hands, Event* events):
-    EigenDecompSolver(boundary, hands, events, SimpleArray<T>::create(dim.size(), hands[0]))
+    EigenDecompSolver(boundary, hands, events, SimpleArray<T>::create(boundary.dim().size(), hands[0]))
 {}
 
 template<typename T>
