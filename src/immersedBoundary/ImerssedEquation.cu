@@ -171,7 +171,7 @@ void ImmersedEq<Real, Int>::setRHS(bool prime) {
     multSparse(B, f, p, GPUConst<Real>::get(2), GPUConst<Real>::get(1), true);
     //p <- BT*f+p
 
-    p.add(boundaryRhsAdj, &GPUConst<Real>::get(-1), hand5);
+    p.add(boundaryRhsAdj, &GPUConst<Real>::get(1), hand5);
 
     auto RHS = gridVec(GridInd::RHS);
     eds->solve(RHS, p, hand5[0]);

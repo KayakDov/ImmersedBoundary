@@ -123,6 +123,7 @@ namespace poisson {
     template<typename T>
     SimpleArray<T> boundaryCorrection(const BoundaryConfig<T>& boundary, cudaStream_t stream) {
         SimpleArray<T> rhs = SimpleArray<T>::create(boundary.dim().size(), stream);
+        rhs.fill(0, stream);
 
         boundaryCorrection(boundary, rhs, stream);
 

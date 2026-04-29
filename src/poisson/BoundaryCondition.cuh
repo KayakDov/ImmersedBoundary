@@ -114,9 +114,9 @@ public:
     __device__ void setBoundaryRHS(Real& rhsVal) const {
         Real contribution = 0;
 
-        if (isNeumann) contribution = this->value * this->inverseDelta;
+        if (isNeumann) contribution = -this->value * this->inverseDelta;
         else {
-            if (isStaggered) contribution = 2*this->value * this->inverseDeltaSquared;
+            if (isStaggered) contribution = -2*this->value * this->inverseDeltaSquared;
             else contribution = -this->value * this->inverseDeltaSquared;
         }
 

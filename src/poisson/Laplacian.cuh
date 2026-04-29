@@ -135,6 +135,6 @@ namespace poisson {
      * @return Fully constructed banded Laplacian operator.
      */
     template<typename T>
-    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, Mat<T>& gridSizeXnumDiags, Vec<T>& numDiags, cudaStream_t stream);
+    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, cudaStream_t stream);
 }
 #endif //CUDABANDED_POISSONLHS_H
