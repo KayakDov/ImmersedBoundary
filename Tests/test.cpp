@@ -322,17 +322,6 @@
 
 
 template<typename T>
-Mat<T> randomMat(size_t rows, size_t cols, Handle& hand) {
-    Mat<T> m = Mat<T>::create(rows, cols);
-    std::vector<T> mCpu(rows*cols, 0);
-    for (size_t i = 0; i < rows; i++)
-        for (size_t j = 0; j < cols; j++)
-            mCpu[j*rows + i] = static_cast<T>((i + 1) * (j + 2) % 7 + 0.1); // deterministic
-    m.set(mCpu.data(), hand);
-    return m;
-}
-
-template<typename T>
 void expectMatrixNear(const Mat<T>& A, const Mat<T>& B, Handle& hand, T tol = 1e-6) {
     ASSERT_EQ(A._rows, B._rows);
     ASSERT_EQ(A._cols, B._cols);
@@ -353,85 +342,89 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
     Handle hand;
 
     // Nontrivial sizes
-    const size_t nx = 2;
-    const size_t ny = 3;
-    const size_t nz = 2;
+    GridDim dim(3, 2, 2);
 
-    Mat<T> A = randomMat<T>(nx, nx, hand);
-    Mat<T> B = randomMat<T>(ny, ny, hand);
-    Mat<T> C = randomMat<T>(nz, nz, hand);
+    auto X = SquareMat<T>::create(dim.cols);
+    std::vector<T> xCpu ={2, 1, 1, 2};
+    X.set(xCpu.data(), hand);
 
-    XYZ<Mat<T>> mats{A, B, C};
+    auto Y = SquareMat<T>::create(dim.rows);
+    std::vector<T> yCpu ={3, 1, 0, 1, 3, 1, 0, 1, 3};
+    Y.set(yCpu.data(), hand);
+
+    auto Z = SquareMat<T>::create(dim.layers);
+    std::vector<T> zCpu ={5, 1, 1, 5};
+    Z.set(zCpu.data(), hand);
+
+    XYZ<Mat<T>> mats{X, Y, Z};
     KroneckerTriplet<T> kt(mats);
 
     Mat<T> implicitResult = kt.product(hand);
 
-    size_t dim = nx * ny * nz;
+    auto I = SquareMat<T>::create(dim.size()).setToIdentity(hand);
 
-    auto I = SquareMat<T>::create(dim).setToIdentity(hand);
-
-    Mat<T> explicitResult = Mat<T>::create(dim, dim);
+    Mat<T> explicitResult = Mat<T>::create(dim.size(), dim.size());
     kt.mult(I, explicitResult, false, hand);
 
     expectMatrixNear(explicitResult, implicitResult, hand);
 }
 
-// /**
-//  * Examines eigen vectors and values, confiriming all vectors have norm 1, they are all orthonormal to one another,
-//  * and that L V = V Lambda.
-//  * @tparam T
-//  * @param L The 1d laplacian.
-//  * @param V The eigenvectors for the 1d laplacian.  Each column is a vector.
-//  * @param lambda The eigen values.
-//  * @param hand The context.
-//  * @param errorMsg Anthing that should be appended to an error message.
-//  * @param tol The tolerance.
-//  */
-// template<typename T>
-// static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, std::string errorMsg, T tol = 1e-6){
-//
-//
-//     auto normGpu= Singleton<T>::create(hand);
-//
-//     for (size_t i = 0; i < lambda.size(); ++i) {
-//         Vec<T> vi = V.col(i);
-//
-//         vi.norm(normGpu, hand);
-//         T err = normGpu.get(hand) - 1;
-//         EXPECT_LT(err, tol)
-//             << errorMsg << "\nEigen Vector is not orthogonal, col " << i << " has a norm not equal to 1 "
-//             << " residual = " << err;
-//
-//         Vec Lvi = SimpleArray<T>::create(L._rows, hand);
-//         L.mult(vi, Lvi, &hand, &GPUConst<T>::get(1), &GPUConst<T>::get(0), false);
-//
-//
-//         Vec<T> lam_vi = SimpleArray<T>::create(L._rows, hand);
-//         lam_vi.set(vi, hand);
-//         lam_vi.mult(lambda[i], &hand);
-//
-//         Lvi.add(lam_vi, &GPUConst<T>::get(-1), &hand);
-//
-//         Lvi.norm(normGpu, hand);
-//
-//         err = normGpu.get(hand);
-//
-//         EXPECT_LT(err, tol)
-//             << errorMsg << "\nEigenpair failed at index " << i
-//             << " residual = " << err;
-//     }
-//
-//     for (size_t i = 0; i < V._cols; ++i)
-//         for (size_t j = i + 1; j < V._cols; ++j) {
-//             T err = normGpu.get(hand);
-//             V.col(i).mult(V.col(j), normGpu, &hand);
-//             EXPECT_LT(err, tol)
-//             << errorMsg << "\nEigenpair failed at index " << i
-//             << " residual = " << err;
-//         }
-//
-//
-// }
+/**
+ * Examines eigen vectors and values, confiriming all vectors have norm 1, they are all orthonormal to one another,
+ * and that L V = V Lambda.
+ * @tparam T
+ * @param L The 1d laplacian.
+ * @param V The eigenvectors for the 1d laplacian.  Each column is a vector.
+ * @param lambda The eigen values.
+ * @param hand The context.
+ * @param errorMsg Anthing that should be appended to an error message.
+ * @param tol The tolerance.
+ */
+template<typename T>
+static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, std::string errorMsg, T tol = 1e-6){
+
+
+    auto normGpu= Singleton<T>::create(hand);
+
+    for (size_t i = 0; i < lambda.size(); ++i) {
+        Vec<T> vi = V.col(i);
+
+        vi.norm(normGpu, hand);
+        T err = normGpu.get(hand) - 1;
+        EXPECT_LT(err, tol)
+            << errorMsg << "\nEigen Vector is not orthogonal, col " << i << " has a norm not equal to 1 "
+            << " residual = " << err;
+
+        Vec Lvi = SimpleArray<T>::create(L._rows, hand);
+        L.mult(vi, Lvi, &hand, &GPUConst<T>::get(1), &GPUConst<T>::get(0), false);
+
+
+        Vec<T> lam_vi = SimpleArray<T>::create(L._rows, hand);
+        lam_vi.set(vi, hand);
+        lam_vi.mult(lambda[i], &hand);
+
+        Lvi.add(lam_vi, &GPUConst<T>::get(-1), &hand);
+
+        Lvi.norm(normGpu, hand);
+
+        err = normGpu.get(hand);
+
+        EXPECT_LT(err, tol)
+            << errorMsg << "\nEigenpair failed at index " << i
+            << " residual = " << err;
+    }
+
+    for (size_t i = 0; i < V._cols; ++i)
+        for (size_t j = i + 1; j < V._cols; ++j) {
+            T err = normGpu.get(hand);
+            V.col(i).mult(V.col(j), normGpu, &hand);
+            EXPECT_LT(err, tol)
+            << errorMsg << "\nEigenpair failed at index " << i
+            << " residual = " << err;
+        }
+
+
+}
 
 /**
  * Verifies the numerical identity of the EigenDecomposition solver.

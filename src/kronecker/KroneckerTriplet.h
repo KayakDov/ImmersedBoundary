@@ -1,12 +1,12 @@
 #ifndef CUDABANDED_KRONECKERTRIPLET_H
 #define CUDABANDED_KRONECKERTRIPLET_H
-#include "deviceArrays/headers/Mat.h"
+#include "deviceArrays/headers/SquareMat.h"
 
 /**
  * @class KroneckerTriplet
  * @brief Computes operations involving the Kronecker product of three matrices.
  *
- * This class facilitates operations representing A ⊗ B ⊗ C, specifically designed
+ * This class facilitates operations representing Y ⊗ Z ⊗ X, specifically designed
  * for 3D spectral decompositions where the matrices correspond to 1D eigenbases.
  *
  * Memory layout assumption: Flattened indices represent a 3D grid where the
@@ -15,33 +15,11 @@
  * @tparam T Floating-point type (e.g., float, double).
  */
 template <typename T>
-class KroneckerTriplet {
-    /**
-     * @brief A structure holding the three matrices (x, y, z) that form the triplet.
-     * mat.x applies to the fastest changing dimension (rows),
-     * mat.z applies to the middle dimension (layers),
-     * mat.y applies to the slowest changing dimension (columns).
-     */
-    const XYZ<Mat<T>>& mat;
+class KroneckerTriplet : public XYZ<Mat<T>> {
 
-    /**
-     * @brief Wrapper for batched cuBLAS matrix multiplication.
-     *
-     * Computes combinations of (kMat * operand) or (operand * kMat), with optional
-     * transpositions on the Kronecker matrix kMat.
-     *
-     * @param kMat The 1D operator matrix for a specific dimension.
-     * @param transposeThis If true, uses kMatᵀ instead of kMat.
-     * @param transposeOperand If true, computes (operand * kMat). If false, computes (kMat * operand).
-     * @param operand1 The input tensor/matrix data.
-     * @param dst1 The output tensor/matrix data.
-     * @param stride Memory stride between batches.
-     * @param hand The CUDA handle for asynchronous execution.
-     * @param batchCount The number of matrices in the batch.
-     */
-    void mult1D(Mat<T> kMat, bool transposeThis, bool transposeOperand, const Mat<T> &operand1, Mat<T> &dst1,
-                size_t stride, Handle &hand, size_t batchCount) const;
+    const GridDim dim;
 
+public:
     /**
      * @brief Applies the X-dimension matrix to the rows of the tensor.
      * @param other Input tensor.
@@ -49,7 +27,7 @@ class KroneckerTriplet {
      * @param transposeThis If true, applies the transpose of the X matrix.
      * @param hand CUDA handle.
      */
-    void multRows(const Mat<T> &other, Mat<T> result, bool transposeThis, Handle &hand);
+    void multRows(const SimpleArray<T> &other, SimpleArray<T> result, bool transposeThis, Handle &hand);
 
     /**
      * @brief Applies the Y-dimension matrix to the columns of the tensor.
@@ -58,7 +36,7 @@ class KroneckerTriplet {
      * @param transposeThis If true, applies the transpose of the Y matrix.
      * @param hand CUDA handle.
      */
-    void multCols(const Tensor<T> &other, Tensor<T> result, bool transposeThis, Handle &hand);
+    void multCols(const SimpleArray<T> &other, SimpleArray<T> result, bool transposeThis, Handle &hand);
 
     /**
      * @brief Applies the Z-dimension matrix to the layers of the tensor.
@@ -67,9 +45,8 @@ class KroneckerTriplet {
      * @param transposeThis If true, applies the transpose of the Z matrix.
      * @param hand CUDA handle.
      */
-    void multDepths(const Tensor<T> &other, Tensor<T> result, bool transposeThis, Handle &hand);
+    void multDepths(const SimpleArray<T> &other, SimpleArray<T> result, bool transposeThis, Handle &hand);
 
-public:
     /**
      * @brief Constructs a KroneckerTriplet from three constituent matrices.
      *
@@ -81,16 +58,18 @@ public:
      */
     KroneckerTriplet(const XYZ<Mat<T>>& mat);
 
+    KroneckerTriplet(Mat<T> x, Mat<T> y, Mat<T> z);
+
     /**
      * @brief Explicitly forms the full dense matrix result of the Kronecker triplet product.
      *
      * Computes `result = mat.y ⊗ mat.z ⊗ mat.x`.
      *
      * @param result A pre-allocated matrix to store the final Kronecker product.
-     * @param yDimMultZDimBuffer A pre-allocated intermediate buffer to store `mat.y ⊗ mat.z`.
+     * @param xDimMultZDimBuffer A pre-allocated intermediate buffer to store `mat.y ⊗ mat.z`.
      * @param hand CUDA handle.
      */
-    void product(Mat<T> &result, Mat<T> &yDimMultZDimBuffer, Handle &hand);
+    void product(Mat<T> &result, Mat<T> &xDimMultZDimBuffer, Handle &hand);
 
     /**
      * @brief Explicitly forms the full dense matrix result, allocating necessary memory.
@@ -99,12 +78,6 @@ public:
      * @return The fully evaluated dense Kronecker product matrix.
      */
     Mat<T> product(Handle& hand);
-
-    /**
-     * @brief Retrieves the logical 3D grid dimensions required for vector multiplication.
-     * @return A GridDim object representing (cols, rows, layers) corresponding to the matrices.
-     */
-    GridDim dim();
 
     void mult(const SimpleArray<T> &other, SimpleArray<T> &result, bool transposeThis, Handle &hand);
 
@@ -134,6 +107,11 @@ public:
      */
     void mult(const Mat<T> &other, Mat<T> &result, bool transposeThis, SimpleArray<T> &resultHeightBuffer, Handle &hand);
 
+    static KroneckerTriplet<T> xOperator(const GridDim &gridDim, const Mat<T> &forRows);
+
+    static KroneckerTriplet<T> yOperator(const GridDim &gridDim, const Mat<T> &forCols);
+
+    static KroneckerTriplet<T> zOperator(const GridDim &gridDim, const Mat<T> &forLayers);
 };
 
 #endif //CUDABANDED_KRONECKERTRIPLET_H

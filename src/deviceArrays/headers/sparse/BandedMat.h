@@ -121,6 +121,13 @@ public:
      * @param hand
      */
     void getDense(SquareMat<T> dense, Handle *hand = nullptr) const;
+
+    /**
+     * This method allocates its own ememory.
+     * @param hand
+     * @return A dense version of this matrix.
+     */
+    SquareMat<T> getDense(Handle &hand) const;
 };
 
 
