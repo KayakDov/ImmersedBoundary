@@ -4,7 +4,7 @@
 
 
 template<typename T>
-Singleton<T>::Singleton(std::shared_ptr<T> ptr):Vec<T>(static_cast<size_t>(1), ptr, static_cast<size_t>(1)) {}
+Singleton<T>::Singleton(std::shared_ptr<T> ptr):SimpleArray<T>(1, ptr) {}
 
 template<typename T>
 Singleton<T> Singleton<T>::create(cudaStream_t stream) {

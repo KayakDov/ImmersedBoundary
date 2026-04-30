@@ -85,21 +85,26 @@ __global__ void solveThomas3dLaplacianKernel(
     );
 }
 
-
 template<typename T>
-void EigenDecompThomas<T>::multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T> &dst, bool transposeE) const {
+void EigenDecompThomas<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    this->multEY(src.layerRowCol(0), this->workSpaceRHSPrime.layerRowCol(0), hand, transposeE);
+    this->eigen.vecs.multCols(b, x, true, hand);
+    this->eigen.vecs.multDepths(x, this->sizeOfB, true, hand);
 
-    this->multEZ(this->workSpaceRHSPrime.layerColDepth(0),  dst.layerColDepth(0), hand, transposeE);
+    this->setUTilde(this->sizeOfB, x, hand);
+
+    this->eigen.vecs.multCols(x, this->sizeOfB, false, hand);
+    this->eigen.vecs.multDepths(this->sizeOfB, x, false, hand);
+
 }
 
+
 template<typename T>
-void EigenDecompThomas<T>::setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handle &hand) const {
+void EigenDecompThomas<T>::setUTilde(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const {
     KernelPrep kpVec( this->dim.layers, this->dim.rows);
     solveThomas3dLaplacianKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, hand>>>(
-        dst.toKernel3d(),
-        src.toKernel3d(),
+        dst.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
+        src.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
         this->eigen.vals.y.toKernel1d(),
         this->eigen.vals.z.toKernel1d(),
         workSpaceSuperPrime.toKernel3d(),

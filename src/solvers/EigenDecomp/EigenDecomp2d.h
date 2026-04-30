@@ -15,7 +15,7 @@ private:
      * @param dst  Output solution in eigen-space.
      * @param hand CUDA cuBLAS/cusolver handle.
      */
-    void eValsLInvMult(const Mat<T> &src, Mat<T> &dst, Handle &hand) const;
+    void eValsLInvMult(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const;
 
 public:
 

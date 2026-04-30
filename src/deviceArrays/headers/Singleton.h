@@ -16,7 +16,7 @@ template<typename T> class Tensor;
  * @tparam T Type of the element.
  */
 template <typename T>
-class Singleton final : public Vec<T> {
+class Singleton final : public SimpleArray<T> {
 private:
     /**
      * @brief Private constructor from shared pointer.

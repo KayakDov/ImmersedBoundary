@@ -31,7 +31,10 @@ protected:
     /** @brief Grid spacing in the Z-direction, used to build the tridiagonal coefficients. */
     double deltaX;
 
-    void multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T> &dst, bool transposeE) const override;
+    void multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T> &dst, bool transposeE) const;
+
+    void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
+
     /**
      * @brief Solves the tridiagonal systems in the eigen-space.
      * * Applies the Thomas algorithm across the "depths" of the tensor. For each (i, j)
@@ -42,7 +45,7 @@ protected:
      * @param dst Output tensor in transformed eigen-space (u-tilde).
      * @param hand CUDA handle for kernel execution.
      */
-    void setUTilde(const Tensor<T> &src, Tensor<T> &dst, Handle &hand) const override;
+    void setUTilde(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const override;
 
 public:
     /**

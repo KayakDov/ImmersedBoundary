@@ -5,6 +5,7 @@
 #include "BoundaryConfig.cuh"
 #include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
+#include "kronecker/KroneckerTriplet.h"
 #include "math/XYZ.h"
 #include "solvers/Event.h"
 
@@ -59,7 +60,7 @@ namespace poisson {
         /**
          * The eigen vectors.
          */
-        const XYZ<SquareMat<T>> vecs;
+        const KroneckerTriplet<T> vecs;
 
         /**
          * Generates the eigenvector matrices.

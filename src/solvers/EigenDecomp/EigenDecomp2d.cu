@@ -19,13 +19,14 @@ __global__ void eValsLInvMultKernel(DeviceData2d<T> dst,
 
 
 template<typename T>
-void EigenDecomp2d<T>::eValsLInvMult(const Mat<T> &src, Mat<T> &dst, Handle &hand) const {
-    KernelPrep kp = src.kernelPrep();
+void EigenDecomp2d<T>::eValsLInvMult(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const {
+    auto srcMat = src.matrix(this->dim.rows);
+    KernelPrep kp = srcMat.kernelPrep();
     eValsLInvMultKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        dst.toKernel2d(),
+        dst.matrix(this->dim.rows).toKernel2d(),
         this->eigen.vals.x.toKernel1d(),
         this->eigen.vals.y.toKernel1d(),
-        src.toKernel2d(),
+        srcMat.toKernel2d(),
         this->isSingular
     );
 }
@@ -38,17 +39,11 @@ EigenDecomp2d<T>::EigenDecomp2d(const BoundaryConfig<T>& boundary, Handle* hand2
 template<typename T>
 void EigenDecomp2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    const auto bM = b.matrix(this->dim.rows);
-    auto temp = this->sizeOfB.matrix(this->dim.rows);
-    auto xM = x.matrix(this->dim.rows);
+    this->eigen.vecs.mult2d(b, this->sizeOfB, true, x, hand);
 
-    this->eigen.vecs.y.mult(bM, &xM, &hand, true, false);
-    xM.mult(this->eigen.vecs.x, &temp, &hand, false, false);
+    eValsLInvMult(this->sizeOfB, x, hand);
 
-    eValsLInvMult(temp, xM, hand);
-
-    this->eigen.vecs.y.mult(xM, &temp, &hand, false, false);
-    temp.mult(this->eigen.vecs.x, &xM, &hand, false, true);
+    this->eigen.vecs.mult2d(x, x, false, this->sizeOfB, hand);
 }
 
 template class EigenDecomp2d<double>;

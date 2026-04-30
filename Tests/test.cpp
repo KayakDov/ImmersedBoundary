@@ -356,8 +356,8 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
     std::vector<T> zCpu ={5, 1, 1, 5};
     Z.set(zCpu.data(), hand);
 
-    XYZ<Mat<T>> mats{X, Y, Z};
-    KroneckerTriplet<T> kt(mats);
+
+    KroneckerTriplet<T> kt(X, Y, Z);
 
     Mat<T> implicitResult = kt.product(hand);
 
