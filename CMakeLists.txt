@@ -68,8 +68,6 @@ list(FILTER LIB_SOURCES EXCLUDE REGEX "[/\\\\]main\\.cu$")
 add_library(CudaBandedLib STATIC
         ${LIB_SOURCES}
         ${SHROUD_SOURCES}
-        src/kronecker/KroneckerTriplet.cpp
-        src/kronecker/KroneckerTriplet.h
 )
 
 set_target_properties(CudaBandedLib PROPERTIES
@@ -104,10 +102,7 @@ enable_testing()
 # We use the source lists directly to ensure GTest macros are compiled into the binary
 file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp")
 
-add_executable(run_unit_tests ${TEST_SOURCES}
-        src/poisson/LaplacianEigenKernels.cu
-        src/math/XYZ.cpp
-        src/math/XYZ.h)
+add_executable(run_unit_tests ${TEST_SOURCES})
 
 set_target_properties(run_unit_tests PROPERTIES
         CUDA_RESOLVE_DEVICE_SYMBOLS ON

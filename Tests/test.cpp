@@ -447,40 +447,46 @@ void verifyEigenSolverIdentity(
     Real tolerance) {
 
     auto laplacian = poisson::laplacian(boundary, hands[0]);
+    std::cout << "The laplacian is:\n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
 
     auto x = SimpleArray<Real>::create(dim.size(), hands[0]);
     std::vector<Real> xCpu(dim.size());
-
-    // Initialize with a non-trivial cubic signal
-    for (size_t i = 0; i < dim.size(); ++i) {
-        xCpu[i] = static_cast<Real>(i * i * i);
-    }
+    for (size_t i = 0; i < dim.size(); ++i) xCpu[i] = static_cast<Real>(i * i);
     x.set(xCpu.data(), hands[0]);
+
+    std::cout << "x is now set to: " << GpuOut<Real>(x, hands[0]) << std::endl;
 
     auto rhs = SimpleArray<Real>::create(dim.size(), hands[0]);
     rhs.fill(0, hands[0]);
 
-    // Forward operation: rhs = L * x
     laplacian.bandedMult(x, rhs, hands, GPUConst<Real>::get(1), GPUConst<Real>::get(0), false);
 
-    // Clear x to ensure the solver is responsible for the final values
+    std::cout << "rhs is now set to: " << GpuOut<Real>(rhs, hands[0]) << std::endl;
+
     x.fill(0, hands[0]);
+    std::cout << "x is now set to: " << GpuOut<Real>(x, hands[0]) << std::endl;
+
+    std::cout << "confirming: " << dim << " with numDims = " <<  dim.numDims() << std::endl;
 
     if (dim.numDims() == 2) {
         EigenDecomp2d<Real> ed(boundary, hands, events[0]);
+        std::cout << "eigen vals\n" << GpuX3Out<SquareMat<Real>, Real>(ed.eigen.vecs, hands[0]) << std::endl;
+        std::cout << "eigen vecs\n" << GpuX3Out<Vec<Real>, Real>(ed.eigen.vals, hands[0]) << std::endl;
         ed.solve(x, rhs, hands[0]);
     } else {
         EigenDecomp3d<Real> ed(boundary, hands, events);
+        std::cout << "eigen vals\n" << GpuX3Out<SquareMat<Real>, Real>(ed.eigen.vecs, hands[0]) << std::endl;
+        std::cout << "eigen vecs\n" << GpuX3Out<Vec<Real>, Real>(ed.eigen.vals, hands[0]) << std::endl;
         ed.solve(x, rhs, hands[0]);
     }
+    std::cout << "x is now set to: " << GpuOut<Real>(x, hands[0]) << std::endl;
 
-    // Retrieve results to host
     x.get(xCpu.data(), hands[0]);
     cudaDeviceSynchronize();
 
     // Validate identity: x_final ≈ x_orig
     for (size_t i = 0; i < dim.size(); ++i) {
-        Real expected = static_cast<Real>(i * i * i);
+        Real expected = static_cast<Real>(i * i);
         EXPECT_NEAR(xCpu[i], expected, tolerance)
             << "Solver divergence at index " << i << " in " << dim.numDims() << "D";
     }

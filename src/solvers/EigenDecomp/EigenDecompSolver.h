@@ -50,10 +50,6 @@
 template<typename T>
 class EigenDecompSolver {
 protected:
-    /**
-     * The eigen vectors and values.
-     */
-    poisson::Eigen<T> eigen;
 
     /**
      * A workspace the size of b = L_cols.  You may store b itself here, but it will be overwritten.
@@ -62,6 +58,11 @@ protected:
 
 
 public:
+    /**
+     * The eigen vectors and values.
+     */
+    poisson::Eigen<T> eigen;
+
     /**
      * The dimensions of the grid.
      */

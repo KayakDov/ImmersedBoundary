@@ -122,10 +122,14 @@ INSTANTIATE_GPU_IO(uint32_t)
 #undef INSTANTIATE_GPU_IO
 #undef INSTANTIATE_GPU_X3_OUT
 
-template class GpuX3Out<Vec<float>, float>;
-template class GpuX3Out<Mat<float>, float>;
 template class GpuX3Out<Vec<double>, double>;
+template class GpuX3Out<Vec<float>, float>;
+
+template class GpuX3Out<Mat<float>, float>;
 template class GpuX3Out<Mat<double>, double>;
 
 template class GpuX3Out<SquareMat<double>, double>;
-template class GpuX3Out<SquareMat<float>, double>;
+template class GpuX3Out<SquareMat<float>, float>;
+
+template class GpuX3Out<SimpleArray<double>, double>;
+template class GpuX3Out<SimpleArray<float>, float>;

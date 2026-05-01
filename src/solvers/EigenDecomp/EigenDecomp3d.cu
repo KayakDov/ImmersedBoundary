@@ -53,12 +53,16 @@ EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event
 template<typename T>
 void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
+    std::cout << "EigenDecomp3d::solve()" << std::endl;
+    std::cout << "incoming x = \n" << GpuOut<T>(x, hand) << "incoming b =\n" << GpuOut<T>(b, hand) << std::endl;
     this->eigen.vecs.mult(b, x, true, this->sizeOfB, hand);
 
+    std::cout << "set u tilde input = \n" << GpuOut<T>(x, hand) << std::endl;
     this->setUTilde(x, this->sizeOfB, hand);
+    std::cout << "set u tilde output = \n" << GpuOut<T>(this->sizeOfB, hand) << std::endl;
 
     this->eigen.vecs.mult(this->sizeOfB, x, false, this->sizeOfB, hand);
-
+    std::cout << "outgoing x = \n" << GpuOut<T>(x, hand) << "outoging b =\n" << GpuOut<T>(b, hand) << std::endl;
 }
 
 template class EigenDecomp3d<double>;
