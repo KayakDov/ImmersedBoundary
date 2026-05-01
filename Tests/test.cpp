@@ -345,15 +345,15 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
     GridDim dim(3, 2, 2);
 
     auto X = SquareMat<T>::create(dim.cols);
-    std::vector<T> xCpu ={2, 1, 1, 2};
+    std::vector<T> xCpu ={2, 1, 7, 2};
     X.set(xCpu.data(), hand);
 
     auto Y = SquareMat<T>::create(dim.rows);
-    std::vector<T> yCpu ={3, 1, 0, 1, 3, 1, 0, 1, 3};
+    std::vector<T> yCpu ={3, 1, 5, 1, 3, 1, 0, 1, 3};
     Y.set(yCpu.data(), hand);
 
     auto Z = SquareMat<T>::create(dim.layers);
-    std::vector<T> zCpu ={5, 1, 1, 5};
+    std::vector<T> zCpu ={5, 2, 1, 5};
     Z.set(zCpu.data(), hand);
 
 
@@ -382,8 +382,6 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
  */
 template<typename T>
 static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, std::string errorMsg, T tol = 1e-6){
-
-
     auto normGpu= Singleton<T>::create(hand);
 
     for (size_t i = 0; i < lambda.size(); ++i) {
@@ -422,8 +420,6 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
             << errorMsg << "\nEigenpair failed at index " << i
             << " residual = " << err;
         }
-
-
 }
 
 /**
@@ -447,39 +443,26 @@ void verifyEigenSolverIdentity(
     Real tolerance) {
 
     auto laplacian = poisson::laplacian(boundary, hands[0]);
-    std::cout << "The laplacian is:\n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
 
     auto x = SimpleArray<Real>::create(dim.size(), hands[0]);
     std::vector<Real> xCpu(dim.size());
     for (size_t i = 0; i < dim.size(); ++i) xCpu[i] = static_cast<Real>(i * i);
     x.set(xCpu.data(), hands[0]);
 
-    std::cout << "x is now set to: " << GpuOut<Real>(x, hands[0]) << std::endl;
-
     auto rhs = SimpleArray<Real>::create(dim.size(), hands[0]);
     rhs.fill(0, hands[0]);
 
     laplacian.bandedMult(x, rhs, hands, GPUConst<Real>::get(1), GPUConst<Real>::get(0), false);
 
-    std::cout << "rhs is now set to: " << GpuOut<Real>(rhs, hands[0]) << std::endl;
-
     x.fill(0, hands[0]);
-    std::cout << "x is now set to: " << GpuOut<Real>(x, hands[0]) << std::endl;
-
-    std::cout << "confirming: " << dim << " with numDims = " <<  dim.numDims() << std::endl;
 
     if (dim.numDims() == 2) {
         EigenDecomp2d<Real> ed(boundary, hands, events[0]);
-        std::cout << "eigen vals\n" << GpuX3Out<SquareMat<Real>, Real>(ed.eigen.vecs, hands[0]) << std::endl;
-        std::cout << "eigen vecs\n" << GpuX3Out<Vec<Real>, Real>(ed.eigen.vals, hands[0]) << std::endl;
         ed.solve(x, rhs, hands[0]);
     } else {
         EigenDecomp3d<Real> ed(boundary, hands, events);
-        std::cout << "eigen vals\n" << GpuX3Out<SquareMat<Real>, Real>(ed.eigen.vecs, hands[0]) << std::endl;
-        std::cout << "eigen vecs\n" << GpuX3Out<Vec<Real>, Real>(ed.eigen.vals, hands[0]) << std::endl;
         ed.solve(x, rhs, hands[0]);
     }
-    std::cout << "x is now set to: " << GpuOut<Real>(x, hands[0]) << std::endl;
 
     x.get(xCpu.data(), hands[0]);
     cudaDeviceSynchronize();
@@ -500,14 +483,14 @@ TEST(LaplacianMath, laplacian) {
     Event event2[2];
     double tolerance = 1e-12;
 
-    size_t j, k, l, m, n, o; j = k = l = n = 0; o = m = 1;
+    // size_t j, k, l, m, n, o; j = k = l = n = 0; o = m = 1;
 
-    // for (size_t j = 0; j < 2; ++j) {
-    //     for (size_t k = 0; k < 2; ++k) {
-    //         for (size_t l = 0; l < 2; ++l) {
-    //             for (size_t m = 1; m < 2; ++m) {
-    //                 for (size_t n = 0; n < 2; ++n) {
-    //                     for (size_t o = 1; o < 2; ++o) {
+    for (size_t j = 0; j < 2; ++j) {
+        for (size_t k = 0; k < 2; ++k) {
+            for (size_t l = 0; l < 2; ++l) {
+                for (size_t m = 0; m < 2; ++m) {
+                    for (size_t n = 0; n < 2; ++n) {
+                        for (size_t o = 0; o < 3; ++o) {
                             GridDim dim(2 + m, 2 + n, 1 + o);
                             std::stringstream ss;
                             ss << "startIsNeuman = " << static_cast<bool>(j)
@@ -538,12 +521,12 @@ TEST(LaplacianMath, laplacian) {
                              //
                              // for (size_t i = 0; i < dim.numDims(); ++i)
                              //     checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
-                         // }
-     //                 }
-     //             }
-     //         }
-     //     }
-     // }
+                          }
+                     }
+                 }
+             }
+         }
+     }
 }
 
 int main(int argc, char **argv) {

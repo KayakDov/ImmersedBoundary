@@ -61,10 +61,9 @@ void KroneckerTriplet<T>::mult(const SimpleArray<T>& other, SimpleArray<T>& resu
 
 template<typename T>
 void KroneckerTriplet<T>::mult(const SimpleArray<T>& other, SimpleArray<T>& result, bool transposeThis, const SimpleArray<T>& resultSizeBuffer, Handle &hand) const{
-
-        multRows(other, result, transposeThis, hand);
+        multCols(other, result, transposeThis, hand);
         multDepths(result, resultSizeBuffer, transposeThis, hand);
-        multCols(resultSizeBuffer, result, transposeThis, hand);
+        multRows(resultSizeBuffer, result, transposeThis, hand);
 }
 
 template<typename T>

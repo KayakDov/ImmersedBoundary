@@ -45,7 +45,7 @@ protected:
      * @param dst Output tensor in transformed eigen-space (u-tilde).
      * @param hand CUDA handle for kernel execution.
      */
-    void setUTilde(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const override;
+    void multLEigenValInverse(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const override;
 
 public:
     /**

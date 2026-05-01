@@ -13,11 +13,11 @@ protected:
     /**
      * @brief Compute ũ = f̃ / (λ_x + λ_y + λ_z).
      *
-     * @param f  Input in eigen-space.
-     * @param u  Output solution in eigen-space.
+     * @param src  Input in eigen-space.
+     * @param dst  Output solution in eigen-space.
      * @param hand CUDA cuBLAS/cusolver handle.
      */
-    virtual void setUTilde(const SimpleArray<T> &f, SimpleArray<T> &u, Handle &hand) const;
+    virtual void multLEigenValInverse(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const;
 
 public:
 

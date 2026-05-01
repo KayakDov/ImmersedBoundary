@@ -107,7 +107,7 @@ public:
      * @param result The output array.
      * @param transposeThis If true, applies the transpose of the entire triplet operator.
      * @param resultSizeBuffer An intermediate scratch buffer equal in size to `result`.  Note, the buffer may be the same
-     * as the src, which will overwrite the src.
+     * as the src, which will overwrite the src with scratch, but should still return the correct result.
      * @param hand CUDA handle.
      */
     void mult(const SimpleArray<T> &other, SimpleArray<T> &result, bool transposeThis, const SimpleArray<T> &resultSizeBuffer, Handle &hand) const;

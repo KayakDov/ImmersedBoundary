@@ -1,31 +1,33 @@
 
 #include "EigenDecomp3d.cuh"
 
-#include "EigenDecompThomas.cuh"
-
-
 template<typename T>
-__global__ void setUTildeKernel3d(DeviceData3d<T> uTilde,
-      const XYZ<DeviceData1d<T>> eVals,
-      const DeviceData3d<T> fTilde,
-      bool isSingular) {
-    if (GridInd3d ind; ind < uTilde) {
+__global__ void setLEigenValInverseKernel3d(
+    DeviceData3d<T> dst,
+    const XYZ<DeviceData1d<T>> eVals,
+    const DeviceData3d<T> src,
+    bool isSingular
+) {
+    if (GridInd3d ind; ind < dst) {
 
         bool den0 = isSingular && ind.layer == 0 && ind.row == 0 && ind.col == 0;
 
-        uTilde[ind] = den0 ? 0 : fTilde[ind] / (eVals.x[ind.col] + eVals.y[ind.row] + eVals.z[ind.layer]);
+        dst[ind] = den0 ? 0 : src[ind] / (eVals.x[ind.col] + eVals.y[ind.row] + eVals.z[ind.layer]);
     }
 }
 
 template<typename T>
-void EigenDecomp3d<T>::setUTilde(const SimpleArray<T> &f, SimpleArray<T> &u, Handle &hand) const {
-    auto uTensor = u.tensor(this->dim.rows, this->dim.layers);
-    KernelPrep kp = uTensor.kernelPrep();
-    setUTildeKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        uTensor.toKernel3d(),
+void EigenDecomp3d<T>::multLEigenValInverse(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const {
+
+    auto srcTensor = src.tensor(this->dim.rows, this->dim.layers);
+
+    KernelPrep kp = srcTensor.kernelPrep();
+    setLEigenValInverseKernel3d<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+        dst.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
         {this->eigen.vals.x.toKernel1d(), this->eigen.vals.y.toKernel1d(), this->eigen.vals.z.toKernel1d()},
-        f.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
-        this->isSingular);
+        srcTensor.toKernel3d(),
+        this->isSingular
+    );
 }
 
 template<typename T>
@@ -53,16 +55,11 @@ EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event
 template<typename T>
 void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    std::cout << "EigenDecomp3d::solve()" << std::endl;
-    std::cout << "incoming x = \n" << GpuOut<T>(x, hand) << "incoming b =\n" << GpuOut<T>(b, hand) << std::endl;
     this->eigen.vecs.mult(b, x, true, this->sizeOfB, hand);
 
-    std::cout << "set u tilde input = \n" << GpuOut<T>(x, hand) << std::endl;
-    this->setUTilde(x, this->sizeOfB, hand);
-    std::cout << "set u tilde output = \n" << GpuOut<T>(this->sizeOfB, hand) << std::endl;
+    this->multLEigenValInverse(x, this->sizeOfB, hand);
 
     this->eigen.vecs.mult(this->sizeOfB, x, false, this->sizeOfB, hand);
-    std::cout << "outgoing x = \n" << GpuOut<T>(x, hand) << "outoging b =\n" << GpuOut<T>(b, hand) << std::endl;
 }
 
 template class EigenDecomp3d<double>;

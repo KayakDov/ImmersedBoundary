@@ -10,7 +10,7 @@ EigenDecompSolver<T>::EigenDecompSolver(const poisson::Eigen<T>& eMatsAndVecs, S
     dim(
         eMatsAndVecs.vecs.y._rows,
         eMatsAndVecs.vecs.x._rows,
-        eMatsAndVecs.vecs.y._rows
+        eMatsAndVecs.vecs.z._rows
     ),
     eigen(eMatsAndVecs),
     sizeOfB(sizeOfB),

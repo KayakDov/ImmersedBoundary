@@ -91,7 +91,7 @@ void EigenDecompThomas<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Han
     this->eigen.vecs.multCols(b, x, true, hand);
     this->eigen.vecs.multDepths(x, this->sizeOfB, true, hand);
 
-    this->setUTilde(this->sizeOfB, x, hand);
+    this->multLEigenValInverse(this->sizeOfB, x, hand);
 
     this->eigen.vecs.multCols(x, this->sizeOfB, false, hand);
     this->eigen.vecs.multDepths(this->sizeOfB, x, false, hand);
@@ -100,7 +100,7 @@ void EigenDecompThomas<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Han
 
 
 template<typename T>
-void EigenDecompThomas<T>::setUTilde(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const {
+void EigenDecompThomas<T>::multLEigenValInverse(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const {
     KernelPrep kpVec( this->dim.layers, this->dim.rows);
     solveThomas3dLaplacianKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, hand>>>(
         dst.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
