@@ -189,6 +189,11 @@ __global__ void fill1dKernel(DeviceData1d<T> a, const T val) {
     if (const size_t idx = blockIdx.x * blockDim.x + threadIdx.x; idx < a.cols) a[idx] = val;
 }
 
+template<typename T>
+__global__ void fill1dKernel(DeviceData1d<T> a, const T* val) {
+    if (const size_t idx = blockIdx.x * blockDim.x + threadIdx.x; idx < a.cols) a[idx] = *val;
+}
+
 
 template<typename T>
 void Vec<T>::fill(T val, cudaStream_t stream) {
@@ -198,6 +203,15 @@ void Vec<T>::fill(T val, cudaStream_t stream) {
         KernelPrep kp = kernelPrep();
         fill1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel1d(), val);
     }
+    CHECK_CUDA_ERROR(cudaGetLastError());
+}
+
+template<typename T>
+void Vec<T>::fill(Singleton<T> val, cudaStream_t stream) {
+
+        KernelPrep kp = kernelPrep();
+        fill1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel1d(), val.data());
+
     CHECK_CUDA_ERROR(cudaGetLastError());
 }
 

@@ -60,6 +60,17 @@ public:
     __device__ inline GridInd3d(): GridInd2d(), layer(blockIdx.z * blockDim.z + threadIdx.z){}
 
     __device__ inline void set(size_t row, size_t col, size_t layer){this->row = row; this->col = col; this->layer = layer;}
+
+    /**
+     * Prints the 3D indices to the standard output from the device.
+     */
+    __device__ inline void print() const {
+        printf("GridInd3d(row: %llu, col: %llu, layer: %llu)\n",
+               (unsigned long long)row,
+               (unsigned long long)col,
+               (unsigned long long)layer
+            );
+    }
 };
 
 class GridDim {

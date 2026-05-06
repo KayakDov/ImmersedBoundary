@@ -344,6 +344,8 @@ public:
      */
     virtual std::ostream &get(std::ostream &output_stream, bool isText, bool printColMajor, Handle &hand) const = 0;
 
+    void add(Singleton<T>& val, cudaStream_t stream);
+
     /**
      * @brief Fills the GpuArray with the specified value on a given CUDA stream.
      *

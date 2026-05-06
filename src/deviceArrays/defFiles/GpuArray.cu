@@ -37,6 +37,17 @@ __global__ void fill2dKernelT(DeviceData2d<T> a, const T val){
     if (const GridInd2dT ind; ind < a) a[ind] = val;
 }
 
+template <typename T>
+__global__ void addKernel(DeviceData2d<T> a, const T* val) {
+    if (const GridInd2d ind; ind < a) a[ind] += *val;
+}
+
+template <typename T>
+void GpuArray<T>::add(Singleton<T>& val, cudaStream_t stream) {
+    KernelPrep kp = kernelPrep();
+    addKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), val.data());
+}
+
 template<typename T>
 void GpuArray<T>::fill(T val, cudaStream_t stream) {
 

@@ -54,7 +54,7 @@ namespace poisson {
         Eigen(const XYZ<Vec<T>>& vals, const XYZ<SquareMat<T>>& vecs);
     public:
         /**
-         * The eigen values.
+         * The eigen values, aka the spectrum.
          */
         const XYZ<Vec<T>> vals;
         /**

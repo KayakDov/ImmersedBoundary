@@ -31,10 +31,6 @@ protected:
     /** @brief Grid spacing in the Z-direction, used to build the tridiagonal coefficients. */
     double deltaX;
 
-    void multiplyEF(Handle &hand, const Tensor<T> &src, const Tensor<T> &dst, bool transposeE) const;
-
-    void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
-
     /**
      * @brief Solves the tridiagonal systems in the eigen-space.
      * * Applies the Thomas algorithm across the "depths" of the tensor. For each (i, j)
@@ -46,6 +42,8 @@ protected:
      * @param hand CUDA handle for kernel execution.
      */
     void multLEigenValInverse(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const override;
+
+
 
 public:
     /**
@@ -77,6 +75,7 @@ public:
      */
     EigenDecompThomas(const BoundaryConfig<T>& boundary, double deltaX, Handle *hand3, Event *event2);
 
+    void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
 };
 
 #endif //CUDABANDED_EIGENDECOMPTHOMAS_CUH

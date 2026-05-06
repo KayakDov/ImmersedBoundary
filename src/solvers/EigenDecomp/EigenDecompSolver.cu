@@ -3,7 +3,23 @@
 #include "../Event.h"
 
 
+template<typename T>
+void EigenDecompSolver<T>::set0Avg(const Vec<T>& src, Vec<T>& dst, Vec<T>& bufferSizeOfB, Handle &hand) const {
+    bufferSizeOfB.fill(1, hand);
 
+    Singleton<T> sum = dst.get(0);
+    src.mult(bufferSizeOfB, sum, &hand);
+
+    Singleton<T> negInvSize = bufferSizeOfB.get(0);
+    negInvSize.set(-1.0/src.size(), hand);
+
+    negInvSize.mult(sum, &hand);
+
+    Singleton<T>& negAvg = negInvSize;
+
+    dst.fill(negAvg, hand);//TODO: we would benefit here from multiple handles.;
+    dst.add(src, &GPUConst<T>::get(1), &hand);
+}
 
 template<typename T>
 EigenDecompSolver<T>::EigenDecompSolver(const poisson::Eigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular) :
@@ -19,7 +35,7 @@ EigenDecompSolver<T>::EigenDecompSolver(const poisson::Eigen<T>& eMatsAndVecs, S
 }
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handle* hands, Event* events, SimpleArray<T> sizeOfB):
+EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handle* hands, Event* events, SimpleArray<T> sizeOfB) :
     EigenDecompSolver(
         poisson::Eigen<T>::make(boundary, hands, events),
         sizeOfB,
@@ -29,8 +45,12 @@ EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handl
 
 template<typename T>
 EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handle* hands, Event* events):
-    EigenDecompSolver(boundary, hands, events, SimpleArray<T>::create(boundary.dim().size(), hands[0]))
-{}
+    EigenDecompSolver(
+        boundary,
+        hands,
+        events,
+        SimpleArray<T>::create(boundary.dim().size(), hands[0])
+    ) {}
 
 template<typename T>
 SquareMat<T> EigenDecompSolver<T>::inverseL(Handle &hand) const {

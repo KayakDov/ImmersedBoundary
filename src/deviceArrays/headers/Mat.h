@@ -58,6 +58,7 @@ public:
     using GpuArray<T>::mult;
     using GpuArray<T>::row;
     using GpuArray<T>::col;
+    using GpuArray<T>::add;
 
     /**
      * @brief Protected constructor. Use static create() method or derived classes.

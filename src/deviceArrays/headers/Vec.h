@@ -37,6 +37,7 @@ template<typename T> void eigenDecompSolver(const T* frontBack,  size_t fbLd,
  */
 template <typename T>
 class Vec : public GpuArray<T> {
+
     using GpuArray<T>::mult;
     using GpuArray<T>::kernelPrep;
 
@@ -66,6 +67,7 @@ protected:
 public:
 
     using GpuArray<T>::col;
+    using GpuArray<T>::add;
     /**
      * @brief Factory method to create a new vector of given length.
      * 
@@ -126,6 +128,8 @@ public:
 
     /// @copydoc GpuArray::fill
     void fill(T val, cudaStream_t stream) override;
+
+    void fill(Singleton<T> val, cudaStream_t stream);
 
     /**
      * @brief Returns a single element as Singleton<T>.

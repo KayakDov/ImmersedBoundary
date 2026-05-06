@@ -19,10 +19,10 @@ void ImmersedEq<Real, Int>::checkNNZ(size_t nnz) const {
 
 
 template<typename Real, typename Int>
-SolverLauncher<Real, Int>::SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real>& gridVecs, Handle* hand2, const Event& event):
+SolverLauncher<Real, Int>::SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real>& gridVecs, Vec<Real> allocated9, Handle* hand2, const Event& event):
     tolerance(tolerance),
     maxIterations(max_iterations),
-    allocated9(Vec<Real>::create(9, hand2[0])),
+    allocated9(allocated9),
     allocatedRHSHeightX7(gridVecs.subMat(0, static_cast<size_t>(GridInd::Count), gridVecs._rows, 7)) {
     allocated9.fill(0, hand2[0]);
     allocatedRHSHeightX7.fill(0, hand2[1]);

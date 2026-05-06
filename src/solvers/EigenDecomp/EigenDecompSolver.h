@@ -4,14 +4,22 @@
 #include "deviceArrays/headers/Mat.h"
 #include "deviceArrays/headers/SquareMat.h"
 #include "deviceArrays/headers/Vec.h"
-#include "../../poisson/PoissonRHS.h"
 #include "../../deviceArrays/headers/Support/Streamable.h"
-
-#include <cstddef>
-#include <vector>
-
 #include "../Event.h"
-#include "math/Real3d.h"
+
+
+
+
+template<typename T>
+class Set0Avg {
+    Vec<T> ones;
+public:
+    Set0Avg(Vec<T> sizeOfArrays, Handle& hand);
+    Set0Avg();
+
+    void operator()(Vec<T> needsAverageSet, Handle &hand) const;
+};
+
 
 /**
  * @brief Direct Poisson solver using eigen-decomposition (Fast Diagonalization Method).
@@ -56,7 +64,6 @@ protected:
      */
     mutable SimpleArray<T> sizeOfB;
 
-
 public:
     /**
      * The eigen vectors and values.
@@ -72,6 +79,18 @@ public:
     virtual ~EigenDecompSolver() = default;
 
     /**
+     * Sets the average of an array to 0
+     * @param src The array that will be translated by its average.
+     * @param dst
+     * @param bufferSizeOfB
+     * @param hand
+     */
+    void set0Avg(const Vec<T> &src, Vec<T> &dst, Vec<T> &bufferSizeOfB, Handle &hand) const;
+
+
+
+
+    /**
      * @brief Construct and immediately solve the Poisson problem.
      *
      * Builds eigenbases for Lx, Ly, Lz, Where L is the left hand side matrix you'd use for solving the Poisson equation.
@@ -82,16 +101,14 @@ public:
      * These matrices will be overwritten.
      * @param eMatsAndVecs The eigen matrices and values for the laplacian.
      * @param sizeOfB An array the size of b = xLength * yLength * zLength that will be overwritten.  You may use b for this.
+     * @param isSingular set to true if singular.
      */
     EigenDecompSolver(const poisson::Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular);
-
-
     /**
      *
      * @param boundary The boundary conditions.
      * @param hands A handle for each dimension.
      * @param events If 3d, then 2 events, if 2d then 1 event.
-     * @param sizeOfB A cratch space that can hold the same number of elements as B.
      */
     EigenDecompSolver(const BoundaryConfig<T> &boundary, Handle *hands, Event *events, SimpleArray<T> sizeOfB);
 

@@ -498,14 +498,14 @@ TEST(LaplacianMath, laplacian) {
     Event event2[2];
     double tolerance = 1e-10;
 
-    // size_t j, k, l, m, n, o; j = k = l = n = 0; o = m = 1;
+    size_t j, k, l, m, n, o; j = k = l; n = 2; m = 2; o = 3;
 
-    for (size_t j = 0; j < 2; ++j) {
-        for (size_t k = 0; k < 2; ++k) {
-            for (size_t l = 0; l < 2; ++l) {
-                for (size_t m = 0; m < 2; ++m) {
-                    for (size_t n = 0; n < 2; ++n) {
-                        for (size_t o = 0; o < 3; ++o) {
+    // for (size_t j = 0; j < 2; ++j) {
+    //     for (size_t k = 0; k < 2; ++k) {
+    //         for (size_t l = 0; l < 2; ++l) {
+    //             for (size_t m = 0; m < 3; ++m) {
+    //                 for (size_t n = 0; n < 3; ++n) {
+                        // for (size_t o = 0; o < 4; ++o) {
                             GridDim dim(2 + m, 2 + n, 1 + o);
                             std::stringstream ss;
                             ss << "startIsNeuman = " << static_cast<bool>(j)
@@ -519,29 +519,30 @@ TEST(LaplacianMath, laplacian) {
 
                             BoundaryConfig<Real> boundary(j, k, l,  dim);
 
+                            poisson::Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
+                            //
+                            // // std::cout << "L 1d matrices:\nx:\n" << GpuOut<Real>(laplacian1d.dense(0, hand3[0]), hand3[0])
+                            // //                                 << "y\n" << GpuOut<Real>(laplacian1d.dense(1, hand3[0]), hand3[0])
+                            // //                                 << "z\n" << GpuOut<Real>(laplacian1d.dense(2, hand3[0]), hand3[0])
+                            // //                                 << std::endl;
+                            //
+                            poisson::Eigen<Real> laplacianEigen = poisson::Eigen<Real>::make(boundary, hand3, event2);
+                            // // std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
+                            // // std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
+                            //
+                            //
+                            for (size_t i = 0; i < dim.numDims(); ++i)
+                                checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
+
+
+
                             verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
-
-
-                             // poisson::Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
-                             //
-                             // // std::cout << "L 1d matrices:\nx:\n" << GpuOut<Real>(laplacian1d.dense(0, hand3[0]), hand3[0])
-                             // //                                 << "y\n" << GpuOut<Real>(laplacian1d.dense(1, hand3[0]), hand3[0])
-                             // //                                 << "z\n" << GpuOut<Real>(laplacian1d.dense(2, hand3[0]), hand3[0])
-                             // //                                 << std::endl;
-                             //
-                             // poisson::Eigen<Real> laplacianEigen = poisson::Eigen<Real>::make(boundary, hand3, event2);
-                             // // std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
-                             // // std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
-                             //
-                             //
-                             // for (size_t i = 0; i < dim.numDims(); ++i)
-                             //     checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
-                          }
-                     }
-                 }
-             }
-         }
-     }
+     // }
+     //                 }
+     //             }
+     //         }
+     //     }
+     // }
 }
 
 int main(int argc, char **argv) {

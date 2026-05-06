@@ -96,6 +96,10 @@ public:
      * @param hand2 The context.
      */
         SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real> &gridVecs, Handle *hand2, const Event &event);
+
+    SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real> &gridVecs, Vec<Real> allocated9,
+                   Handle *hand2,
+                   const Event &event);
     /**
      * @brief Executes the solver logic.
      * @param imEq The system definitions.
