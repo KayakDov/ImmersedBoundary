@@ -55,7 +55,7 @@ public:
 class GridInd3d : public GridInd2d{
 public:
     size_t layer;
-    __device__ inline GridInd3d(size_t row, size_t col, size_t layer): GridInd2d(row, col), layer(layer) {
+    __device__ __host__ inline GridInd3d(size_t row, size_t col, size_t layer): GridInd2d(row, col), layer(layer) {
     }
     __device__ inline GridInd3d(): GridInd2d(), layer(blockIdx.z * blockDim.z + threadIdx.z){}
 
@@ -108,7 +108,7 @@ public:
      * @param layer
      * @return
      */
-    __device__ size_t inline operator()(size_t row, size_t col, size_t layer) const{
+    __device__ __host__ size_t inline operator()(size_t row, size_t col, size_t layer) const{
         return layer * rows + col * rows * layers + row;
     }
 
@@ -121,7 +121,7 @@ public:
      * @param ind
      * @return
      */
-    __device__ [[nodiscard]] size_t inline operator[](const GridInd3d& ind) const{
+    __device__ __host__ [[nodiscard]] size_t inline operator[](const GridInd3d& ind) const{
         return this->operator()(ind.row, ind.col, ind.layer);
     }
 

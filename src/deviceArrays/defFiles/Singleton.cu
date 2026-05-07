@@ -106,8 +106,7 @@ GPUConst<T>::GPUConst(Handle hand):
     base.set(hostConsts.data(), hand);
 }
 
-template <typename T>
-const GPUConst<T> GPUConst<T>::universal = GPUConst<T>();
+template <typename T> const GPUConst<T> GPUConst<T>::universal = GPUConst<T>();
 
 template class Singleton<int32_t>;
 template class Singleton<size_t>;

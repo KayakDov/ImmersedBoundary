@@ -215,32 +215,6 @@ void Vec<T>::fill(Singleton<T> val, cudaStream_t stream) {
     CHECK_CUDA_ERROR(cudaGetLastError());
 }
 
-template<typename T>
-Singleton<T> Vec<T>::get(size_t i) const {
-    return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->toKernel1d() + i * this->_ld));
-}
-
-template<typename T>
-Singleton<T> Vec<T>::operator[](size_t i) const{
-    return get(i);
-}
-
-template<typename T>
-void Vec<T>::add(const Vec<T> &x, const Singleton<T> *alpha, Handle *handle) {
-    if (this->_cols != x._cols)
-        throw std::invalid_argument("Vector lengths do not match for add.");
-
-    std::unique_ptr<Handle> temp_hand_ptr;
-    Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-    std::unique_ptr<Singleton<T> > temp_a_ptr;
-    const Singleton<T> *a = Singleton<T>::_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
-
-    if constexpr (std::is_same_v<T, float>)
-        cublasSaxpy(*h, this->_cols, a->toKernel1d(), x.toKernel1d(), x._ld, this->toKernel1d(), this->_ld);
-    else if constexpr (std::is_same_v<T, double>)
-        cublasDaxpy(*h, this->_cols, a->toKernel1d(), x.toKernel1d(), x._ld, this->toKernel1d(), this->_ld);
-    else throw std::invalid_argument("Vec::add unsupported type.");
-}
 
 /**
  * @brief Fused Multiply-Add kernel: A <- *a * A + *b * B
@@ -520,6 +494,33 @@ __host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, std::vector
     cudaStreamSynchronize(stream);//Don't want diagsCpu to be destroyed before the memory is passed.
 }
 
+
+template<typename T>
+Singleton<T> Vec<T>::get(size_t i) const {
+    return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->toKernel1d() + i * this->_ld));
+}
+
+template<typename T>
+Singleton<T> Vec<T>::operator[](size_t i) const{
+    return get(i);
+}
+
+template<typename T>
+void Vec<T>::add(const Vec<T> &x, const Singleton<T> *alpha, Handle *handle) {
+    if (this->_cols != x._cols)
+        throw std::invalid_argument("Vector lengths do not match for add.");
+
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+    std::unique_ptr<Singleton<T> > temp_a_ptr;
+    const Singleton<T> *a = Singleton<T>::_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
+
+    if constexpr (std::is_same_v<T, float>)
+        cublasSaxpy(*h, this->_cols, a->toKernel1d(), x.toKernel1d(), x._ld, this->toKernel1d(), this->_ld);
+    else if constexpr (std::is_same_v<T, double>)
+        cublasDaxpy(*h, this->_cols, a->toKernel1d(), x.toKernel1d(), x._ld, this->toKernel1d(), this->_ld);
+    else throw std::invalid_argument("Vec::add unsupported type.");
+}
 
 // =========================================================================
 // Explicit Template Instantiations

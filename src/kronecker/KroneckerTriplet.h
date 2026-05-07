@@ -1,6 +1,7 @@
 #ifndef CUDABANDED_KRONECKERTRIPLET_H
 #define CUDABANDED_KRONECKERTRIPLET_H
 #include "deviceArrays/headers/SquareMat.h"
+#include "deviceArrays/headers/Tensor.h"
 
 /**
  * @class KroneckerTriplet

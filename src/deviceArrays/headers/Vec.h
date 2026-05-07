@@ -9,9 +9,8 @@
 
 #ifndef BICGSTAB_VEC_H
 #define BICGSTAB_VEC_H
-#include "GpuArray.h"
-#include "DeviceData.cuh"
-#include  "Tensor.h"
+
+#include "deviceArrays/headers/GpuArray.h"
 
 
 template <typename T> class Mat;

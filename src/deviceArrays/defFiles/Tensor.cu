@@ -119,6 +119,12 @@ std::ostream &Tensor<T>::get(std::ostream &output_stream, bool isText, bool prin
     return utilityMatrix.get(output_stream, isText, printColMajor, hand);
 }
 
+template<typename T>
+SimpleArray<T> Tensor<T>::col(size_t col, size_t layer) {
+    return layerRowCol(layer).col(col);
+}
+
+
 template class Tensor<float>;
 template class Tensor<double>;
 template class Tensor<size_t>;

@@ -1,14 +1,11 @@
 #ifndef BICGSTAB_STREAMABLE_H
 #define BICGSTAB_STREAMABLE_H
 
-// Assuming this header (or headers included by it) provides the definitions for
-// GpuArray<T>, Vec<T>, Tensor<T>, and cudaStream_t
-#include "deviceArrays/headers/SimpleArray.h"
-#include <iostream>
-#include <type_traits> // For std::is_const_v
+#include "deviceArrays/headers/GpuArray.h"
 
-#include "poisson/Laplacian.cuh"
+#include "math/XYZ.h"
 
+class Handle;
 /**
  * @brief Base class for GpuArray streaming, holding common context parameters.
  */

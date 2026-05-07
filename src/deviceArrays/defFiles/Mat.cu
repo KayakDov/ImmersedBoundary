@@ -6,8 +6,6 @@
 #include <stdexcept>
 #include "../headers/Mat.h"
 
-#include <iostream>
-
 #include "../headers/Support/GridDim.hpp"
 #include "deviceArrays/headers/Support/Streamable.h"
 
@@ -596,10 +594,15 @@ cusparseDnMatDescr_t Mat<T>::getDescr() const {
     return dnMatDescr.get();
 }
 
+template<typename T>
+Mat<T> SimpleArray<T>::matrix(size_t height) const{
+    return Mat<T>(height, this->size()/height, height, this->_ptr);
+}
 
 #define INSTANTIATE_MAT_VEC(T) \
 template class Mat<T>; \
 template void Vec<T>::mult(const Mat<T>&, Vec<T>&, Handle*, const Singleton<T>*, const Singleton<T>*, bool) const; \
+template Mat<T> SimpleArray<T>::matrix(size_t) const; \
 template Vec<T>::operator Mat<T>(); \
 template Vec<T>::operator Mat<T>() const;
 

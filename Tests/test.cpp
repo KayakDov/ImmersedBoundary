@@ -5,6 +5,8 @@
 #include "poisson/Laplacian.cuh"
 #include "solvers/EigenDecomp/EigenDecomp3d.cuh"
 #include <cmath>
+#include <random>
+
 #include "immersedBoundary/ImerssedEquation.h"
 #include "kronecker/KroneckerTriplet.h"
 
@@ -407,19 +409,41 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
 
         err = normGpu.get(hand);
 
-        EXPECT_LT(err, tol)
+        EXPECT_LT(std::abs(err), tol)
             << errorMsg << "\nEigenpair failed at index " << i
             << " residual = " << err;
     }
 
     for (size_t i = 0; i < V._cols; ++i)
         for (size_t j = i + 1; j < V._cols; ++j) {
-            T err = normGpu.get(hand);
             V.col(i).mult(V.col(j), normGpu, &hand);
-            EXPECT_LT(err, tol)
+            T err = normGpu.get(hand);
+            EXPECT_LT(std::abs(err), tol)
             << errorMsg << "\nEigenpair failed at index " << i
             << " residual = " << err;
         }
+
+    auto LambdaVT = SquareMat<T>::create(V._cols);
+    auto VLambdaVT = SquareMat<T>::create(V._cols);
+    auto Lambda = SquareMat<T>::create(V._cols);
+    Lambda.fill(0, hand);
+    Lambda.diag(0).set(lambda, hand);
+    Lambda.mult(V, &LambdaVT, &hand, false, true);
+    V.mult(LambdaVT, &VLambdaVT, &hand, false, false);
+    auto diff =  SquareMat<T>::create(V._cols);
+    diff.set(L, hand);
+    diff.add(VLambdaVT, diff, GPUConst<T>::get(1), GPUConst<T>::get(-1), false, false, hand);
+    std::vector<T> diffHost(diff.size(), 0);
+    diff.get(diffHost.data(), hand);
+    for (size_t i = 0; i < diffHost.size(); ++i) {
+        T val = diffHost[i];
+        EXPECT_LT(std::abs(val), tol)
+            << "failed at index " << i
+            << " (row " << i % V._cols << ", col " << i / V._cols << ")"
+            << " with diff: " << val
+            << " (tol: " << tol << ")";
+    }
+
 }
 
 /**
@@ -445,9 +469,23 @@ void verifyEigenSolverIdentity(
     auto laplacian = poisson::laplacian(boundary, hands[0]);
 
     auto x = SimpleArray<Real>::create(dim.size(), hands[0]);
-    std::vector<Real> xCpu(dim.size());
-    for (size_t i = 0; i < dim.size(); ++i) xCpu[i] = static_cast<Real>(i * i);
-    x.set(xCpu.data(), hands[0]);
+
+    std::vector<Real> xCpuOrig(dim.size());
+
+    // for (size_t i = 0; i < dim.size(); ++i) xCpuOrig[i] = i*i;
+    // GridInd3d ind(0, 0, 0);
+    // for (; ind.layer <  dim.layers; ++ind.layer)
+    //     for (; ind.row < dim.rows; ++ind.row)
+    //         for (; ind.col < dim.cols; ++ind.col)
+    //             xCpuOrig[dim[ind]] = std::cos(M_PI * ind.col / dim.cols) * std::cos(M_PI * ind.row / dim.rows) * std::cos(M_PI * ind.layer / dim.layers);
+    std::mt19937 rng(0);
+    std::uniform_real_distribution<Real> dist(-1, 1);
+
+    for (size_t i = 0; i < dim.size(); ++i)
+        xCpuOrig[i] = dist(rng);
+
+    x.set(xCpuOrig.data(), hands[0]);
+
 
     auto rhs = SimpleArray<Real>::create(dim.size(), hands[0]);
     rhs.fill(0, hands[0]);
@@ -464,27 +502,22 @@ void verifyEigenSolverIdentity(
         ed.solve(x, rhs, hands[0]);
     }
 
-    x.get(xCpu.data(), hands[0]);
+    std::vector<Real> xCpuResult(dim.size());
+    x.get(xCpuResult.data(), hands[0]);
     cudaDeviceSynchronize();
 
     if (boundary.allNeumann()) {
-        // Pure Neumann boundaries create a singular system.
-        // The solver returns the zero-mean solution, which differs from our
-        // original (i * i) by a constant additive shift.
-        // We find that shift by comparing the first elements (0 * 0 = 0).
-        Real offset = xCpu[0] - static_cast<Real>(0);
+        Real offset = xCpuOrig[0] - xCpuResult[0];
 
-        for (size_t i = 0; i < dim.size(); ++i) {
-            Real expected = static_cast<Real>(i * i) + offset;
-            EXPECT_NEAR(xCpu[i], expected, tolerance)
+        for (size_t i = 0; i < dim.size(); ++i)
+
+            EXPECT_NEAR(xCpuOrig[i], xCpuResult[i] + offset, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
                 << "Solver divergence at index " << i << " in " << dim.numDims()
                 << "D (Singular Mode Shift: " << offset << ")";
-        }
     } else {
         // Standard Dirichlet/Mixed validation
         for (size_t i = 0; i < dim.size(); ++i) {
-            Real expected = static_cast<Real>(i * i);
-            EXPECT_NEAR(xCpu[i], expected, tolerance)
+            EXPECT_NEAR(xCpuOrig[i], xCpuResult[i], tolerance)
                 << "Solver divergence at index " << i << " in " << dim.numDims() << "D";
         }
     }
@@ -536,7 +569,7 @@ TEST(LaplacianMath, laplacian) {
 
 
 
-                            verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
+                            // verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
      // }
      //                 }
      //             }

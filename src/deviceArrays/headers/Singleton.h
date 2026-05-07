@@ -1,7 +1,7 @@
 #ifndef BICGSTAB_SINGLETON_H
 #define BICGSTAB_SINGLETON_H
 
-#include "SimpleArray.h"
+#include "deviceArrays/headers/SimpleArray.h"
 
 template<typename T> class Mat;
 template<typename T> class Tensor;

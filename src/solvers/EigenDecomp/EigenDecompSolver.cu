@@ -17,8 +17,7 @@ void EigenDecompSolver<T>::set0Avg(const Vec<T>& src, Vec<T>& dst, Vec<T>& buffe
 
     Singleton<T>& negAvg = negInvSize;
 
-    dst.fill(negAvg, hand);//TODO: we would benefit here from multiple handles.;
-    dst.add(src, &GPUConst<T>::get(1), &hand);
+    src.add(negAvg, dst, hand);
 }
 
 template<typename T>

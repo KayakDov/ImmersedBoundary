@@ -4,12 +4,14 @@
 #ifndef GPUARRAY_H
 #define GPUARRAY_H
 
+
 #include "DeviceData.cuh"
 #include <memory> // For std::shared_ptr
 #include "handle.h"
 #include <iomanip>
-#include "DeviceMemory.h"
 #include "Support/KernelPrep.cuh"
+#include <cuda_runtime_api.h>
+
 
 
 
@@ -188,8 +190,7 @@ protected:
      * @note The provided GpuArray instances must be properly initialized. Undefined behavior may occur if they are not.
      * @warning Ensure that handle, alpha, beta, and result pointers are properly allocated and valid before calling.
      */
-    virtual void mult(const GpuArray<T> & other, GpuArray<T> * result, Handle *handle, const Singleton<T> *alpha, const
-                      Singleton<T> *beta, bool transposeA, bool transposeB) const;
+    virtual void mult(const GpuArray<T> & other, GpuArray<T> * result, Handle *handle, const Singleton<T> *alpha, const Singleton<T> *beta, bool transposeA, bool transposeB) const;
 
     
 public:
@@ -344,7 +345,35 @@ public:
      */
     virtual std::ostream &get(std::ostream &output_stream, bool isText, bool printColMajor, Handle &hand) const = 0;
 
-    void add(Singleton<T>& val, cudaStream_t stream);
+    /**
+     * Adds a value to every element of this.
+     * @param val The thing to be added to every element of this.
+     * @param dst The destination.  It can be this.
+     * @param stream
+     */
+    void add(const Singleton<T> &val, GpuArray &dst, cudaStream_t stream) const;
+
+    /**
+     * Adds this matrix to another matrix.
+     * @param other The other matrix that's added to this one.
+     * @param dst Where the result is put.
+     * @param alpha Times this.
+     * @param beta Times the other.
+     * @param transposeThis true to transpose this, false otherwsie.
+     * @param transposeOther true to transpose the other, false otherwise.
+     * @param hand
+     */
+    void add(GpuArray<T>& other, GpuArray<T>& dst, const Singleton<T>& alpha, const Singleton<T>& beta, bool transposeThis, bool transposeOther, Handle& hand) const;
+
+    /**
+     * Adds this matrix to another matrix.
+     * @param other The other matrix that's added to this one.
+     * @param dst Where the result is put.
+     * @param transposeThis true to transpose this, false otherwsie.
+     * @param transposeOther true to transpose the other, false otherwise.
+     * @param hand
+     */
+    void add(GpuArray<T>& other, GpuArray<T>& dst, Handle& hand, bool transposeThis = false, bool transposeOther = false) const;
 
     /**
      * @brief Fills the GpuArray with the specified value on a given CUDA stream.

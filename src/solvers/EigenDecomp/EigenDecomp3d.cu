@@ -1,5 +1,7 @@
 
-#include "EigenDecomp3d.cuh"
+#include "solvers/EigenDecomp/EigenDecomp3d.cuh"
+#include "math/XYZ.h"
+#include "deviceArrays/headers/Support/Streamable.h"
 
 template<typename T>
 __global__ void setLEigenValInverseKernel3d(

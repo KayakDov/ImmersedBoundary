@@ -2,18 +2,9 @@
  * @file deviceArrays.cu
  * @brief Templated classes for managing 1D and 2D arrays on a CUDA device in column-major order.
  */
-#include "../headers/Singleton.h"
-#include <vector>
-#include <numeric>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <cuda_runtime.h>
-#include <cuda_runtime_api.h>
-#include <fstream>
-
-#include "deviceArrays//headers/Support/Streamable.h"
-
+#include "deviceArrays/headers/GpuArray.h"
+#include "deviceArrays/headers/handle.h"
+#include "deviceArrays/headers/Singleton.h"
 
 template<typename T>
 GpuArray<T>::GpuArray(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr):_rows(rows), _cols(cols), _ld(ld), _ptr(_ptr) {
@@ -38,14 +29,38 @@ __global__ void fill2dKernelT(DeviceData2d<T> a, const T val){
 }
 
 template <typename T>
-__global__ void addKernel(DeviceData2d<T> a, const T* val) {
-    if (const GridInd2d ind; ind < a) a[ind] += *val;
+__global__ void addKernel(const DeviceData2d<T> src, DeviceData2d<T> dst, const T* val) {
+    if (const GridInd2d ind; ind < src) dst[ind] = src[ind] + *val;
 }
 
 template <typename T>
-void GpuArray<T>::add(Singleton<T>& val, cudaStream_t stream) {
+void GpuArray<T>::add(const Singleton<T>& val, GpuArray<T>& dst, cudaStream_t stream) const{
     KernelPrep kp = kernelPrep();
-    addKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), val.data());
+    addKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), dst.toKernel2d(), val.data());
+}
+
+template<typename T>
+void GpuArray<T>::add(GpuArray<T> &other, GpuArray<T> &dst, const Singleton<T> &alpha, const Singleton<T> &beta,
+    bool transposeThis, bool transposeOther, Handle &hand) const {
+
+    cublasOperation_t transA = transposeThis ? CUBLAS_OP_T : CUBLAS_OP_N,
+            transB = transposeOther ? CUBLAS_OP_T : CUBLAS_OP_N;
+
+    if constexpr (std::is_same_v<T, float>)
+        CHECK_CUBLAS_ERROR(cublasSgeam(hand,
+        transA, transB,
+        dst._rows, dst._cols,
+        alpha.toKernel1d(), this->data(), this->_ld,
+        other.data(),  beta.toKernel1d(), other._ld,
+        dst.data(), dst._ld));
+    else if constexpr (std::is_same_v<T, double>)
+        CHECK_CUBLAS_ERROR(cublasDgeam(hand,
+        transA, transB,
+        dst._rows, dst._cols,
+        alpha.toKernel1d(), this->data(), this->_ld,
+        other.data(), beta.data(), other._ld,
+        dst.data(), dst._ld));
+    else throw std::invalid_argument("Unsupported type.");
 }
 
 template<typename T>
@@ -192,6 +207,13 @@ GpuArray<T>::operator DeviceData2d<T>() {
 template<typename T>
 GpuArray<T>::operator DeviceData2d<T>() const {
     return toKernel2d();
+}
+
+
+template<typename T>
+void GpuArray<T>::add(GpuArray<T> &other, GpuArray<T> &dst, Handle &hand, bool transposeThis,
+    bool transposeOther) const {
+    add(other, dst, GPUConst<T>::get(1), GPUConst<T>::get(1), transposeThis, transposeOther, hand);
 }
 
 template <typename T>

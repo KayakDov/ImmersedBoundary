@@ -4,7 +4,7 @@
 #include <cusparse.h>
 #include <memory>
 
-#include "../SimpleArray.h"
+#include "deviceArrays/headers/Mat.h"
 
 using SpMatDescrPtr = std::shared_ptr<std::remove_pointer<cusparseSpMatDescr_t>::type>;
 

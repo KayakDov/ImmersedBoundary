@@ -17,7 +17,6 @@
 
 #pragma once
 #include <functional>
-#include <set>
 
 #include "deviceArrays/headers/DeviceData.cuh"
 #include "solvers/Event.h"

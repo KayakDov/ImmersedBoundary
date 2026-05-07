@@ -3,9 +3,7 @@
 #define BICGSTAB_MAT_H
 
 #include "Singleton.h"
-#include "Tensor.h"
-#include "GpuArray.h"
-#include "Vec.h"
+
 
 template<typename T>
 void eigenDecompSolver(const T* frontBack, size_t fbLd,

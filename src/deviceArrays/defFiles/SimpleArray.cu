@@ -3,6 +3,7 @@
 //
 
 #include "../headers/SimpleArray.h"
+#include "deviceArrays/headers/Tensor.h"
 
 
 template<typename T>
@@ -76,6 +77,14 @@ SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr){
     return SimpleArray<T>(this->_rows, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index * this->_ld), initDescr);
 }
 
+template<typename T>
+Tensor<T> SimpleArray<T>::tensor(size_t rows, size_t layers) const{
+    const size_t ld = rows * layers;
+    const size_t cols = this->size()/ld;
+    return Tensor<T>(rows, cols, layers, ld, this->_ptr);
+}
+
+
 template <typename T>
 SimpleArray<T> GpuArray<T>::lastCol(bool initDescr){
     return col(this->_cols - 1, initDescr);
@@ -84,23 +93,6 @@ SimpleArray<T> GpuArray<T>::lastCol(bool initDescr){
 template <typename T>
 SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr) const {
     return SimpleArray<T>((const_cast<GpuArray<T>*>(this))->col(index, initDescr));
-}
-
-template<typename T>
-SimpleArray<T> Tensor<T>::col(size_t col, size_t layer) {
-    return layerRowCol(layer).col(col);
-}
-
-template<typename T>
-Tensor<T> SimpleArray<T>::tensor(size_t rows, size_t layers) const{
-    const size_t ld = rows * layers;
-    const size_t cols = this->size()/ld;
-    return Tensor<T>(rows, cols, layers, ld, this->_ptr);
-}
-
-template<typename T>
-Mat<T> SimpleArray<T>::matrix(size_t height) const{
-    return Mat<T>(height, this->size()/height, height, this->_ptr);
 }
 
 template SimpleArray<float>        GpuArray<float>::col(size_t, bool);
@@ -116,11 +108,6 @@ template SimpleArray<size_t> GpuArray<size_t>::col(size_t, bool) const; // Maps 
 template SimpleArray<int> GpuArray<int>::col(size_t, bool) const;
 template SimpleArray<unsigned char> GpuArray<unsigned char>::col(size_t, bool) const;
 template SimpleArray<uint32_t> GpuArray<uint32_t>::col(size_t, bool) const;
-
-
-template SimpleArray<double> Tensor<double>::col(size_t col, size_t layer);
-template SimpleArray<float> Tensor<float>::col(size_t col, size_t layer);
-
 
 template class SimpleArray<uint32_t>;
 template class SimpleArray<int32_t>;

@@ -2,7 +2,7 @@
 #ifndef CUDABANDED_GPUSIMPLEARRAY_H
 #define CUDABANDED_GPUSIMPLEARRAY_H
 
-#include "Vec.h"
+#include "deviceArrays/headers/Vec.h"
 
 /**
  * @brief Shared-owner wrapper for a cuSPARSE dense vector descriptor.

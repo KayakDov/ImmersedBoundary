@@ -4,10 +4,8 @@
 #include "deviceArrays/headers/Mat.h"
 #include "deviceArrays/headers/SquareMat.h"
 #include "deviceArrays/headers/Vec.h"
-#include "../../deviceArrays/headers/Support/Streamable.h"
 #include "../Event.h"
-
-
+#include "poisson/Laplacian.cuh"
 
 
 template<typename T>
