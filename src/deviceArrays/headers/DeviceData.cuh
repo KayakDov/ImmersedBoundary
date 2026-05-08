@@ -18,7 +18,6 @@ template <typename T> class Tensor;
 template <typename T> class Mat;
 template <typename T> class DeviceData3d;
 
-
 template<typename T>
 class DeviceData1d {
 
@@ -196,17 +195,6 @@ public:
     }
     __device__ T& operator()(const GridInd2d& ind0, const size_t dRow, const size_t dCol) {
         return this->operator()(ind0.row + dRow, ind0.col + dCol);
-    }
-
-    /**
-     * For banded matrices only.
-     * @param ai the adjacency index of the desired column.
-     * @param nodeInd The desired row of the dense version of this matrix.
-     * @return The value with teh given indices.
-     */
-    __device__ T& operator()(size_t nodeInd, AdjacencyInd ai) {
-        if (ai.diag < 0) return this->operator()(nodeInd + ai.diag, ai.col);
-        else return this->operator()(nodeInd, ai.col);
     }
 
 };

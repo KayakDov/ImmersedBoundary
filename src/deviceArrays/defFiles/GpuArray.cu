@@ -58,7 +58,7 @@ void GpuArray<T>::add(GpuArray<T> &other, GpuArray<T> &dst, const Singleton<T> &
         transA, transB,
         dst._rows, dst._cols,
         alpha.toKernel1d(), this->data(), this->_ld,
-        other.data(), beta.data(), other._ld,
+        beta.data(), other.data(), other._ld,
         dst.data(), dst._ld));
     else throw std::invalid_argument("Unsupported type.");
 }

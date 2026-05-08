@@ -211,7 +211,7 @@ public:
      * Modifies the matrix L for a grid point adjacent to the boundary.
      * @return true if a modification is made, false otherwise.
      */
-    __device__ bool setL(T& mainDiagVal, T& leftDiagonal, T& rightDiagonal, const size_t indexInLine) const {
+    __device__ bool setLAtBoundary(T& mainDiagVal, T& leftDiagonal, T& rightDiagonal, const size_t indexInLine) const {
         if (indexInLine == 0) start.setL(mainDiagVal, rightDiagonal);
         else if (indexInLine == dimLength - 1) end.setL(mainDiagVal, leftDiagonal);
         else return false;
@@ -242,7 +242,7 @@ public:
      * @return true if a modification is made, false otherwise.
      */
     __device__ bool setLAndRHS(T& mainDiagVal, T& startDiagVal, T& endDiagonalVal, DeviceData1d<T> rhs, const size_t indexInLine) const {
-        setL(mainDiagVal, startDiagVal, endDiagonalVal, indexInLine);
+        setLAtBoundary(mainDiagVal, startDiagVal, endDiagonalVal, indexInLine);
         return setBoundaryRHS1d(rhs, indexInLine);
     }
 

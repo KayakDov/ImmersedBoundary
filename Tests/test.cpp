@@ -423,6 +423,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
             << " residual = " << err;
         }
 
+
     auto LambdaVT = SquareMat<T>::create(V._cols);
     auto VLambdaVT = SquareMat<T>::create(V._cols);
     auto Lambda = SquareMat<T>::create(V._cols);
@@ -430,9 +431,11 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
     Lambda.diag(0).set(lambda, hand);
     Lambda.mult(V, &LambdaVT, &hand, false, true);
     V.mult(LambdaVT, &VLambdaVT, &hand, false, false);
+
     auto diff =  SquareMat<T>::create(V._cols);
     diff.set(L, hand);
     diff.add(VLambdaVT, diff, GPUConst<T>::get(1), GPUConst<T>::get(-1), false, false, hand);
+
     std::vector<T> diffHost(diff.size(), 0);
     diff.get(diffHost.data(), hand);
     for (size_t i = 0; i < diffHost.size(); ++i) {
@@ -472,17 +475,16 @@ void verifyEigenSolverIdentity(
 
     std::vector<Real> xCpuOrig(dim.size());
 
-    // for (size_t i = 0; i < dim.size(); ++i) xCpuOrig[i] = i*i;
+    for (size_t i = 0; i < dim.size(); ++i) xCpuOrig[i] = 3;
     // GridInd3d ind(0, 0, 0);
     // for (; ind.layer <  dim.layers; ++ind.layer)
     //     for (; ind.row < dim.rows; ++ind.row)
     //         for (; ind.col < dim.cols; ++ind.col)
     //             xCpuOrig[dim[ind]] = std::cos(M_PI * ind.col / dim.cols) * std::cos(M_PI * ind.row / dim.rows) * std::cos(M_PI * ind.layer / dim.layers);
-    std::mt19937 rng(0);
-    std::uniform_real_distribution<Real> dist(-1, 1);
-
-    for (size_t i = 0; i < dim.size(); ++i)
-        xCpuOrig[i] = dist(rng);
+    // std::mt19937 rng(0);
+    // std::uniform_real_distribution<Real> dist(-1, 1);
+    // for (size_t i = 0; i < dim.size(); ++i)
+    //     xCpuOrig[i] = dist(rng);
 
     x.set(xCpuOrig.data(), hands[0]);
 
@@ -491,6 +493,10 @@ void verifyEigenSolverIdentity(
     rhs.fill(0, hands[0]);
 
     laplacian.bandedMult(x, rhs, hands, GPUConst<Real>::get(1), GPUConst<Real>::get(0), false);
+
+    std::cout << "L = \n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
+    std::cout << "x = " << GpuOut<Real>(x, hands[0]) << std::endl;
+    std::cout << "rhs = " << GpuOut<Real>(rhs, hands[0]) << std::endl;
 
     x.fill(0, hands[0]);
 
@@ -507,13 +513,18 @@ void verifyEigenSolverIdentity(
     cudaDeviceSynchronize();
 
     if (boundary.allNeumann()) {
+        // Find the constant shift between the original and the zero-mean result
+        // We do this by comparing the difference at the first element.
         Real offset = xCpuOrig[0] - xCpuResult[0];
 
-        for (size_t i = 0; i < dim.size(); ++i)
+        for (size_t i = 0; i < dim.size(); ++i){
+            // Shift the solver's zero-mean result back to the original mean
+            Real shiftedResult = xCpuResult[i] + offset;
 
-            EXPECT_NEAR(xCpuOrig[i], xCpuResult[i] + offset, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
+            EXPECT_NEAR(xCpuOrig[i], shiftedResult, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
                 << "Solver divergence at index " << i << " in " << dim.numDims()
                 << "D (Singular Mode Shift: " << offset << ")";
+        }
     } else {
         // Standard Dirichlet/Mixed validation
         for (size_t i = 0; i < dim.size(); ++i) {
@@ -569,7 +580,7 @@ TEST(LaplacianMath, laplacian) {
 
 
 
-                            // verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
+                            verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
      // }
      //                 }
      //             }

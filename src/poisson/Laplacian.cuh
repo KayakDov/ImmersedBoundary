@@ -3,10 +3,10 @@
 #define CUDABANDED_POISSONLHS_H
 
 #include "BoundaryConfig.cuh"
-#include "../deviceArrays/headers/sparse/BandedMat.h"
+#include "deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
 #include "kronecker/KroneckerTriplet.h"
-#include "math/XYZ.h"
+#include "math/XYZ.cuh"
 #include "solvers/Event.h"
 
 

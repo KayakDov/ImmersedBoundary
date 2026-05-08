@@ -9,7 +9,7 @@
  * frequency denominators based on the 'isStaggered' boolean. The caller only
  * needs to provide the target device arrays and the physical scaling constants.
  */
-
+//TODO: declare kernels in .h file.
 #ifndef LAPLACIAN_EIGEN_KERNELS_CUH
 #define LAPLACIAN_EIGEN_KERNELS_CUH
 

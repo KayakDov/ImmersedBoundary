@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#include "XYZ.h"
+#include "XYZ.cuh"
 
 class Real3d : public XYZ<double>{
 

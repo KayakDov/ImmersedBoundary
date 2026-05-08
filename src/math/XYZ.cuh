@@ -5,7 +5,8 @@
 #ifndef CUDABANDED_XYZ_H
 #define CUDABANDED_XYZ_H
 
-#include <cstddef>
+#include <cuda_runtime.h>
+
 
 /**
  * Holds data for each dimension, x, y, and z.
@@ -22,28 +23,34 @@ struct XYZ {
      * @param y The value in the y dimension.
      * @param z The value in the z dimension.
      */
-    XYZ(const T& x, const T& y, const T& z);
+    XYZ(const T& x, const T& y, const T& z): x(x), y(y), z(z) {}
 
     /**
      * 0 gets the x value, 1 gets the y value, and 2 gets the z value.
      * @param i The index of the desired value.
      * @return
      */
-    T& operator[](size_t i);
+    __host__ __device__ T& operator[](size_t i) {
+        return i == 0 ? x : (i == 1 ? y : z);
+    }
 
     /**
      * 0 gets the x value, 1 gets the y value, and 2 gets the z value.
      * @param i The index of the desired value.
      * @return
      */
-    const T& operator[](size_t i) const;
+    __host__ __device__ const T& operator[](size_t i) const {
+        return i == 0 ? x : (i == 1 ? y : z);
+    };
 
     /**
      * creates an instance where the value in all the dimensions is uniform.
      * @param i The value for each dimension.
      * @return A new instance with uniform values.
      */
-    static XYZ<T>fill(T i);
+    __host__ __device__ static XYZ<T>fill(T i) {
+        return XYZ<T>(i, i, i);
+    }
 };
 
 

@@ -18,7 +18,7 @@ namespace poisson {
     template<typename T>
     Laplacian1d<T>::Laplacian1d(const BoundaryConfig<T> &boundary, Handle& hand) :
         boundary(boundary),
-        rawBanded(Mat<T>::create(boundary.leftRight.dimLength, 3), Mat<T>::create(boundary.topBottom.dimLength, 3), boundary.dim().numDims() == 3 ? Mat<T>::create(boundary.frontBack.dimLength, 3) : Mat<T>::empty()),
+        rawBanded(Mat<T>::create(boundary.x.dimLength, 3), Mat<T>::create(boundary.y.dimLength, 3), boundary.dim().numDims() == 3 ? Mat<T>::create(boundary.z.dimLength, 3) : Mat<T>::empty()),
         inds(SimpleArray<int32_t>::create(3, hand)){
 
         AdjacencyIndPair prevNext(1, 1);
@@ -33,7 +33,7 @@ namespace poisson {
         );
         CHECK_CUDA_ERROR(cudaGetLastError());
 
-        std::vector<AdjacencyInd> adjacencys = {primary, prevNext.getLeft(), prevNext.getRight()};
+        std::vector<AdjacencyInd> adjacencys = {primary, prevNext.left, prevNext.right};
         AdjacencyPatern::loadMapRowToDiag(inds, adjacencys, hand);
     }
 
@@ -76,8 +76,8 @@ namespace poisson {
 
         GridDim dimension = boundary.dim();
 
-        AdjacencyPatern ap(dimension);
-        ap.loadMapRowToDiag(numDiags, stream);
+        AdjacencyPatern adjPat(dimension);
+        adjPat.loadMapRowToDiag(numDiags, stream);
 
         KernelPrep kp = dimension.kernelPrep();
 
@@ -85,7 +85,7 @@ namespace poisson {
             gridSizeXnumDiags.toKernel2d(),
             dimension,
             boundary,
-            ap
+            adjPat
         );
 
         CHECK_CUDA_ERROR(cudaGetLastError());

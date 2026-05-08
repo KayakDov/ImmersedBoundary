@@ -12,7 +12,7 @@ public:
     /**
      * @brief The 0-based column index in the banded matrix storage array.
      */
-    const size_t col;
+    const size_t colInBanded;
 
     /**
      * @brief The mathematical diagonal offset.
@@ -21,12 +21,23 @@ public:
      */
     const int32_t diag;
 
+
     /**
      * @brief Constructs a new Adjacency Index mapping.
      * @param col The column in the banded buffer.
      * @param diag The diagonal index.
      */
-    __device__ __host__ AdjacencyInd(const size_t col, const int32_t diag) : col(col), diag(diag) {
+    __device__ __host__ AdjacencyInd(const size_t col, const int32_t diag) : colInBanded(col), diag(diag) {
+    }
+
+    /**
+     * Provides the corespondoing index in a banded matrix.
+     * @param denseRow The row of the index in the dense matrix format.
+     * @return Indices for a dense matrix.
+     */
+    __device__ GridInd2d bandedInd(size_t denseRow) const {
+        if (diag < 0) return {denseRow + diag, colInBanded};
+        return {denseRow, colInBanded};
     }
 };
 
@@ -36,33 +47,18 @@ public:
  * descriptors based on a central mapping.
  */
 class AdjacencyIndPair {
-    const size_t firstColOfTwoConsecutive, nextDiagOffset;
+
 public:
+    AdjacencyInd left, right;
     /**
      * @brief Constructs an Adjacency Index Pair.
      * @param firstCol The base column index.  The right diagonal will be stored at this index plus 1, so be sure not to
      * put anything else there.
-     * @param nextDiagOffset The base diagonal offset.  This should be positive.
+     * @param posDiagonalOffset The base diagonal offset.  This should be positive.
      */
-    __host__ AdjacencyIndPair(const size_t firstCol, const size_t nextDiagOffset) :
-        firstColOfTwoConsecutive(firstCol),
-        nextDiagOffset(nextDiagOffset) {}
-
-    /**
-     * @brief Returns the "Left" (mirrored) version of this diagonal.
-     * @return An AdjacencyInd with the same column but a negated diagonal offset.
-     */
-    __host__ __device__ [[nodiscard]] AdjacencyInd getLeft() const {
-        return {this->firstColOfTwoConsecutive, -static_cast<int32_t>(this->nextDiagOffset)};
-    }
-
-    /**
-     * @brief Returns the "Right" version of this diagonal.
-     * @return An AdjacencyInd with the next sequential column and the original diagonal offset.
-     */
-    __host__ __device__ [[nodiscard]] AdjacencyInd getRight() const {
-        return {this->firstColOfTwoConsecutive + 1, static_cast<int32_t>(this->nextDiagOffset)};
-    }
+    __host__ AdjacencyIndPair(const size_t firstCol, const size_t posDiag) :
+        left(firstCol, -static_cast<int32_t>(posDiag)),
+        right(firstCol + 1, posDiag){}
 
     /**
      * @brief Accesses either the left or right diagonal descriptor using a boolean flag.
@@ -70,7 +66,7 @@ public:
      * @return The corresponding AdjacencyInd.
      */
     __host__ __device__ AdjacencyInd operator[](bool isRight) {
-        return isRight ? getRight() : getLeft();
+        return isRight ? right : left;
     }
 };
 
@@ -79,21 +75,23 @@ class Vec;
 /**
 * How the adjacent grid cells are stored in the laplacian. *
  */
-class AdjacencyPatern {//TODO:resolve 3d issues.
+class AdjacencyPatern : public XYZ<AdjacencyIndPair>{
 public:
 
     const bool is3d;
     const AdjacencyInd here;
-    const AdjacencyIndPair upDown, leftRight, frontBack;
+
     /**
      *
      * @param dim The dimensions of the grid.
      */
     __host__ AdjacencyPatern(GridDim dim):
+        XYZ<AdjacencyIndPair>(
+            {3, dim[GridInd3d(0, 1, 0)]},
+            {1, dim[GridInd3d(1, 0, 0)]},
+            {5, dim[GridInd3d(0, 0, 1)]}
+        ),
         here(0, 0),
-        upDown(1, 1),
-        leftRight(3, dim.rows * dim.layers),
-        frontBack(5, dim.rows),
         is3d(dim.numDims() == 3)
     {
 

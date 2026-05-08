@@ -13,11 +13,7 @@
  * Faces can be null if not applicable (e.g., in 2D problems).
  */
 template<typename Real>
-struct BoundaryConfig {
-
-    /// Boundary conditions for each face
-    const BoundaryPair<Real> leftRight, topBottom, frontBack;
-
+struct BoundaryConfig : public XYZ<BoundaryPair<Real>>{
 
     /**
      * A simplified constructor that creates uniform boundary conditions.
@@ -61,37 +57,12 @@ struct BoundaryConfig {
         const Real3d& delta,
         const GridDim& dim,
         bool isStaggered
-    ):
-        leftRight(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
-        topBottom(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
-        frontBack(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers){}
+    ):XYZ<BoundaryPair<Real>>(
+        BoundaryPair(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
+        BoundaryPair(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
+        BoundaryPair(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
+    ){}
 
-    /**
-     * @brief Retrieve a boundary condition by dimension and position.
-     *
-     * @param[in] dim               Dimension: 0=row/y, 1=col/x, 2=layer/z.
-     * @param[in] isEnd           If true, return the boundary at the start (left/top/front).
-     *                              If false, return the boundary at the end (right/bottom/back).
-     *
-     * @return Reference to the requested boundary condition.
-     *
-     * @throws std::out_of_range if dim is not 0, 1, or 2.
-     */
-    __host__ __device__ const BoundaryPair<Real>& operator[](size_t dim) const {
-        switch (dim) {
-            case 0: return leftRight;
-            case 1: return topBottom;
-            case 2: return frontBack;
-            default:
-        #ifdef __CUDA_ARCH__
-                asm("trap;");  // Device-side trap for invalid access
-                return leftRight;   // Unreachable, but satisfies return requirement
-        #else
-                throw std::out_of_range("Invalid dimension: must be 0, 1, or 2");
-        #endif
-        }
-
-    }
 
     /**
      * True if i is the first index that these conditions appear at.
@@ -161,7 +132,7 @@ struct BoundaryConfig {
      * @return True if all the boundary conditions are Neumann.
      */
     __host__ bool allNeumann() const {
-        return leftRight.bothNeumann() && topBottom.bothNeumann() && frontBack.bothNeumann();
+        return this->x.bothNeumann() && this->y.bothNeumann() && this->z.bothNeumann();
     }
 
     /**
@@ -169,7 +140,7 @@ struct BoundaryConfig {
      * @return The dimensions of the grid.
      */
     __host__ __device__ GridDim dim() const {
-        return GridDim(topBottom.dimLength, leftRight.dimLength, frontBack.dimLength);
+        return GridDim(this->y.dimLength, this->x.dimLength, this->z.dimLength);
     }
 
 };

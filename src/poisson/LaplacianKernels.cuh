@@ -53,13 +53,16 @@ public:
         const BoundaryPair<T>& boundaries,
         const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
     ) {
-        T& mainDiag = (*laplacian)(rowL, primary);
-        T& rightDiag = (*laplacian)(rowL, leftRight.getRight());
-        T& leftDiag = (*laplacian)(rowL, leftRight.getLeft());
+        T& mainDiag = (*laplacian)[primary.bandedInd(rowL)];
+        T& rightDiag = (*laplacian)[leftRight.right.bandedInd(rowL)];
 
-        rightDiag = leftDiag = 0;
+        auto leftInd = leftRight.left.bandedInd(rowL);
+        T& leftDiag = (*laplacian)[leftInd];
 
-        if (!boundaries.setL(mainDiag, leftDiag, rightDiag, indexInLine)) {
+        rightDiag = 0;
+        if (leftInd.row < boundaries.dimLength) leftDiag = 0;
+
+        if (!boundaries.setLAtBoundary(mainDiag, leftDiag, rightDiag, indexInLine)) {
             mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
             leftDiag = rightDiag = boundaries.start.inverseDeltaSquared;
         }
@@ -108,7 +111,7 @@ public:
         const BoundaryPair<T>& boundary
     ) {
         lSetter.laplacian = &laplacian;
-        laplacian(lSetter.rowL, primary) = 0;
+        laplacian[primary.bandedInd(lSetter.rowL)] = 0;
         lSetter.setRowInBanded1d(lSetter.rowL, boundary, primary, leftRight);
     }
 };
@@ -129,11 +132,11 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> L, const GridDim dim, const
 
     size_t rowIndex = dim[gridInd];
     LSetter<T> ds(L, rowIndex);
-    L(rowIndex, ap.here) = 0;
+    L[ap.here.bandedInd(rowIndex)] = 0;
 
-    ds.setRowInBanded1d(gridInd.row, boundary.topBottom, ap.here, ap.upDown);
-    ds.setRowInBanded1d(gridInd.col, boundary.leftRight, ap.here, ap.leftRight);
-    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.frontBack, ap.here, ap.frontBack);
+    ds.setRowInBanded1d(gridInd.row, boundary.y, ap.here, ap.y);
+    ds.setRowInBanded1d(gridInd.col, boundary.x, ap.here, ap.x);
+    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z);
 }
 
 /**
@@ -155,21 +158,21 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
 
     if (dim.layers > 1 && ind.row < dim.rows && ind.col < dim.cols) {
         ind3d.set(ind.row, ind.col, 0);
-        boundary.frontBack[0].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.z[0].setBoundaryRHS(rhs[dim[ind3d]]);
         ind3d.layer = dim.layers - 1;
-        boundary.frontBack[1].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.z[1].setBoundaryRHS(rhs[dim[ind3d]]);
     }
     if (ind.row < dim.rows && ind.col < dim.layers) {
         ind3d.set(ind.row, 0, ind.col);
-        boundary.leftRight[0].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.x[0].setBoundaryRHS(rhs[dim[ind3d]]);
         ind3d.col = dim.cols - 1;
-        boundary.leftRight[1].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.x[1].setBoundaryRHS(rhs[dim[ind3d]]);
     }
     if (ind.row < dim.layers && ind.col < dim.cols) {
         ind3d.set(0, ind.col, ind.row);
-        boundary.topBottom[0].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.y[0].setBoundaryRHS(rhs[dim[ind3d]]);
         ind3d.row = dim.rows - 1;
-        boundary.topBottom[1].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.y[1].setBoundaryRHS(rhs[dim[ind3d]]);
     }
 }
 
@@ -208,9 +211,9 @@ __global__ void buildAllL1dKernel(XYZ<DeviceData2d<T>> bandedL, const BoundaryCo
 
     LSetter1d<T> ds(bandedL.x, i, primary, prevNext);
 
-    if (i < bandedL.x.rows) ds.setRowInBanded1d(bandedL.x, boundary.leftRight);
-    if (i < bandedL.y.rows) ds.setRowInBanded1d(bandedL.y, boundary.topBottom);
-    if (bandedL.z.size() > 1 && i < bandedL.z.rows) ds.setRowInBanded1d(bandedL.z, boundary.frontBack);
+    if (i < bandedL.x.rows) ds.setRowInBanded1d(bandedL.x, boundary.x);
+    if (i < bandedL.y.rows) ds.setRowInBanded1d(bandedL.y, boundary.y);
+    if (bandedL.z.size() > 1 && i < bandedL.z.rows) ds.setRowInBanded1d(bandedL.z, boundary.z);
 }
 
 

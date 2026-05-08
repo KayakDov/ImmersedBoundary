@@ -1,6 +1,6 @@
 
 #include "solvers/EigenDecomp/EigenDecomp3d.cuh"
-#include "math/XYZ.h"
+#include "math/XYZ.cuh"
 #include "deviceArrays/headers/Support/Streamable.h"
 
 template<typename T>
@@ -18,16 +18,16 @@ __global__ void setLEigenValInverseKernel3d(
 
         // Cast indices to unsigned long long for %llu and values to double for %f
         // to handle both 'float' and 'double' template instantiations safely.
-        printf("Ind[r:%llu, c:%llu, l:%llu] src: %e | eVals(x:%e, y:%e, z:%e) sum: %e, dst = %e\n",
-               (unsigned long long)ind.row,
-               (unsigned long long)ind.col,
-               (unsigned long long)ind.layer,
-               (double)src[ind],
-               (double)eVals.x[ind.col],
-               (double)eVals.y[ind.row],
-               (double)eVals.z[ind.layer],
-               (double)(eVals.x[ind.col] + eVals.y[ind.row] + eVals.z[ind.layer]),
-               dst[ind]);
+        // printf("Ind[r:%llu, c:%llu, l:%llu] src: %e | eVals(x:%e, y:%e, z:%e) sum: %e, dst = %e\n",
+        //        (unsigned long long)ind.row,
+        //        (unsigned long long)ind.col,
+        //        (unsigned long long)ind.layer,
+        //        (double)src[ind],
+        //        (double)eVals.x[ind.col],
+        //        (double)eVals.y[ind.row],
+        //        (double)eVals.z[ind.layer],
+        //        (double)(eVals.x[ind.col] + eVals.y[ind.row] + eVals.z[ind.layer]),
+        //        dst[ind]);
     }
 }
 
@@ -69,8 +69,6 @@ EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event
 
 template<typename T>
 void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
-
-    std::cout << "EigenDecomp3d::solve()" << GpuX3Out<Vec<T>, T>(this->eigen.vals, hand) <<  std::endl;
 
     if (this->isSingular) this->set0Avg(b, this->sizeOfB, x, hand);
 

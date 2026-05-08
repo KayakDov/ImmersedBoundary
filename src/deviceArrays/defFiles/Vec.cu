@@ -479,17 +479,17 @@ void Vec<T>::permute(Vec<Int> permutation, Vec<T> dst, Handle& hand) {
 }
 
 __host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, cudaStream_t stream) const{
-    std::vector<AdjacencyInd> adjacencies = {here, upDown.getLeft(), upDown.getRight(), leftRight.getLeft(), leftRight.getRight()};
+    std::vector<AdjacencyInd> adjacencies = {here, y.left, y.right, x.left, x.right};
     if (is3d) {
-        adjacencies.push_back(frontBack.getLeft());
-        adjacencies.push_back(frontBack.getRight());
+        adjacencies.push_back(z.left);
+        adjacencies.push_back(z.right);
     }
     loadMapRowToDiag(diags, adjacencies, stream);
 }
 
 __host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, cudaStream_t stream){
     std::vector<int32_t> diagsCpu(diags.size(), 0);
-    for (AdjacencyInd ind : indices) diagsCpu[ind.col] = ind.diag;
+    for (AdjacencyInd ind : indices) diagsCpu[ind.colInBanded] = ind.diag;
     diags.set(diagsCpu.data(), stream);
     cudaStreamSynchronize(stream);//Don't want diagsCpu to be destroyed before the memory is passed.
 }

@@ -3,7 +3,7 @@
 
 #include "deviceArrays/headers/GpuArray.h"
 
-#include "math/XYZ.h"
+#include "math/XYZ.cuh"
 
 class Handle;
 /**
