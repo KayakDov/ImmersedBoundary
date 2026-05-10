@@ -62,7 +62,11 @@ namespace poisson {
         std::shared_ptr<Mat<T>> eigen[3];
         boundary.generateEigen(hands3, events, eigen);
         XYZ<Vec<T>> vals(eigen[0]->lastCol(), eigen[1]->lastCol(), is3d ? eigen[2]->lastCol() : SimpleArray<T>::empty());
-        XYZ<SquareMat<T>> vecs(eigen[0]->sqSubMatFirstBiggest(), eigen[1]->sqSubMatFirstBiggest(), is3d ? eigen[2]->sqSubMatFirstBiggest() : GPUConst<T>::get(0).matrix(1).sqSubMat(0,0,1));
+        XYZ<SquareMat<T>> vecs(
+            eigen[0]->sqSubMatFirstBiggest(),
+            eigen[1]->sqSubMatFirstBiggest(),
+            is3d ? eigen[2]->sqSubMatFirstBiggest() : SquareMat<T>::empty()//GPUConst<T>::get(0).matrix(1).sqSubMat(0,0,1)
+        );
         return Eigen<T>(vals, vecs);
     }
 
@@ -80,6 +84,8 @@ namespace poisson {
         adjPat.loadMapRowToDiag(numDiags, stream);
 
         KernelPrep kp = dimension.kernelPrep();
+
+        gridSizeXnumDiags.fill(0, stream);
 
         buildLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
             gridSizeXnumDiags.toKernel2d(),

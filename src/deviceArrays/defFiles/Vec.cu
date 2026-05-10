@@ -16,7 +16,8 @@ template<typename T>
 Vec<T> Vec<T>::create(size_t length, cudaStream_t stream) {
     T *rawPtr = nullptr;
     cudaMallocAsync(&rawPtr, length * sizeof(T), stream);
-    return Vec<T>(length, std::shared_ptr<T>(rawPtr, cudaFreeDeleter), 1);
+
+    return {length, std::shared_ptr<T>(rawPtr, cudaFreeDeleter), 1};
 }
 
 template<typename T>

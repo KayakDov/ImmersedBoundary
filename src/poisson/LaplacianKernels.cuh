@@ -51,21 +51,38 @@ public:
     __device__ void setRowInBanded1d(
         const size_t indexInLine,
         const BoundaryPair<T>& boundaries,
-        const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
+        const AdjacencyInd& primary, const AdjacencyIndPair& leftRight,
+        const int laplacianNumColumns
     ) {
         T& mainDiag = (*laplacian)[primary.bandedInd(rowL)];
-        T& rightDiag = (*laplacian)[leftRight.right.bandedInd(rowL)];
-
-        auto leftInd = leftRight.left.bandedInd(rowL);
+        GridInd2d rightInd = leftRight.right.bandedInd(rowL);
+        T& rightDiag = (*laplacian)[rightInd];
+        GridInd2d leftInd = leftRight.left.bandedInd(rowL);
         T& leftDiag = (*laplacian)[leftInd];
 
-        rightDiag = 0;
-        if (leftInd.row < boundaries.dimLength) leftDiag = 0;
-
-        if (!boundaries.setLAtBoundary(mainDiag, leftDiag, rightDiag, indexInLine)) {
+        if (indexInLine == 0) {
+            if (leftInd.col < laplacianNumColumns) leftDiag = 0;
+            boundaries.start.setL(mainDiag, rightDiag);
+        } else if (indexInLine == boundaries.dimLength - 1) {
+            if (rightInd.col < laplacianNumColumns) rightDiag = 0;
+            boundaries.end.setL(mainDiag, leftDiag);
+        } else {
             mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
             leftDiag = rightDiag = boundaries.start.inverseDeltaSquared;
         }
+
+
+        // T& rightDiag = (*laplacian)[leftRight.right.bandedInd(rowL)];
+        //
+        // auto leftInd = leftRight.left.bandedInd(rowL);
+        // T& leftDiag = (*laplacian)[leftInd];
+        //
+        // rightDiag = 0;
+        // if (leftInd.row < boundaries.dimLength) leftDiag = 0;
+        //
+        // if (!boundaries.setLAtBoundary(mainDiag, leftDiag, rightDiag, indexInLine)) {
+
+        // }
     }
 };
 
@@ -112,13 +129,13 @@ public:
     ) {
         lSetter.laplacian = &laplacian;
         laplacian[primary.bandedInd(lSetter.rowL)] = 0;
-        lSetter.setRowInBanded1d(lSetter.rowL, boundary, primary, leftRight);
+        lSetter.setRowInBanded1d(lSetter.rowL, boundary, primary, leftRight, laplacian.cols);
     }
 };
 
 
 /**
- * @brief CUDA kernel to set up the staggered grid Laplacian matrix and apply boundary conditions.
+ * @brief CUDA kernel to set up the Laplacian matrix and apply boundary conditions.
  *
  * @param[in,out] L        Banded system matrix (dim.size() × numDiagonals); coefficients are accumulated.
  * @param[in] dim          Grid dimensions.
@@ -134,9 +151,9 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> L, const GridDim dim, const
     LSetter<T> ds(L, rowIndex);
     L[ap.here.bandedInd(rowIndex)] = 0;
 
-    ds.setRowInBanded1d(gridInd.row, boundary.y, ap.here, ap.y);
-    ds.setRowInBanded1d(gridInd.col, boundary.x, ap.here, ap.x);
-    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z);
+    ds.setRowInBanded1d(gridInd.row, boundary.y, ap.here, ap.y, L.cols);
+    ds.setRowInBanded1d(gridInd.col, boundary.x, ap.here, ap.x, L.cols);
+    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z, L.cols);
 }
 
 /**
@@ -202,7 +219,7 @@ __global__ void buildL1dKernel(
     if (i >= bandedL_i.rows) return;
 
     LSetter<T> ds(bandedL_i, i);
-    ds.setRowInBanded1d(i, bandedL_i.rows, condition, primary, prevNext);
+    ds.setRowInBanded1d(i, bandedL_i.rows, condition, primary, prevNext, bandedL_i.cols);
 }
 
 template <typename T>

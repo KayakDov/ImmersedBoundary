@@ -30,12 +30,11 @@ void KroneckerTriplet<T>::multDepths(const SimpleArray<T> &other, SimpleArray<T>
 }
 
 template<typename T>
-KroneckerTriplet<T>::KroneckerTriplet(const XYZ<SquareMat<T>> &mat): XYZ<SquareMat<T>>(mat), dim(mat.y._cols, mat.x._cols, mat.z._cols) {
-    std::cout << dim << std::endl;
+KroneckerTriplet<T>::KroneckerTriplet(const XYZ<SquareMat<T>> &mat): XYZ<SquareMat<T>>(mat), dim(mat.y._cols, mat.x._cols, mat.z.size() == 0 ? 1 : mat.z._cols) {
 }
 
 template<typename T>
-KroneckerTriplet<T>::KroneckerTriplet(const SquareMat<T> x, const SquareMat<T> y, const SquareMat<T> z): XYZ<SquareMat<T>>(x, y, z), dim(y._cols, x._cols, z._cols) {
+KroneckerTriplet<T>::KroneckerTriplet(const SquareMat<T> x, const SquareMat<T> y, const SquareMat<T> z): XYZ<SquareMat<T>>(x, y, z), dim(y._cols, x._cols, z.size() == 0 ? 1 : z._cols) {
 }
 
 template<typename T>

@@ -471,6 +471,9 @@ void verifyEigenSolverIdentity(
 
     auto laplacian = poisson::laplacian(boundary, hands[0]);
 
+    // std::cout << "verifyEigenSolverIdentity banded laplacian = \n" << GpuOut<Real>(laplacian, hands[0]) << std::endl;
+    // std::cout << "verifyEigenSolverIdentity dense laplacian = \n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
+
     auto x = SimpleArray<Real>::create(dim.size(), hands[0]);
 
     std::vector<Real> xCpuOrig(dim.size());
@@ -536,10 +539,10 @@ void verifyEigenSolverIdentity(
 
 TEST(LaplacianMath, laplacian) {
 
-    using Real = double;
-
     Handle hand3[3];
     Event event2[2];
+    using Real = double;
+
     double tolerance = 1e-10;
 
     // size_t j, k, l, m, n, o; j = k = l; n = 1; m = 1; o = 3;
@@ -547,10 +550,10 @@ TEST(LaplacianMath, laplacian) {
     for (size_t j = 0; j < 2; ++j) {
         for (size_t k = 0; k < 2; ++k) {
             for (size_t l = 0; l < 2; ++l) {
-                for (size_t m = 0; m < 2; ++m) {
-                    for (size_t n = 0; n < 2; ++n) {
-                        for (size_t o = 0; o < 3; ++o) {
-                            // cudaDeviceSynchronize();
+                for (size_t m = 0; m < 3; ++m) {
+                    for (size_t n = 0; n < 3; ++n) {
+                        for (size_t o = 0; o < 4; ++o) {
+
                             GridDim dim(2 + m, 2 + n, 1 + o);
                             std::stringstream ss;
                             ss << "startIsNeuman = " << static_cast<bool>(j)
@@ -579,9 +582,8 @@ TEST(LaplacianMath, laplacian) {
                             for (size_t i = 0; i < dim.numDims(); ++i)
                                 checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
 
-
-
                             verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
+
                         }
                      }
                  }

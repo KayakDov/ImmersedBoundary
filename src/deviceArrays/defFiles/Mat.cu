@@ -390,7 +390,7 @@ Mat<T> Mat<T>::create(size_t rows, size_t cols, bool initDescr){
 
     CHECK_CUDA_ERROR(cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols));//Note: there does not seem to be an asynchronos version of this method.
 
-    return Mat<T>(rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter), initDescr);
+    return {rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter), initDescr};
 }
 
 template<typename T>
