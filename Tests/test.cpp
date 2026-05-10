@@ -536,6 +536,26 @@ void verifyEigenSolverIdentity(
                 << "Solver divergence at index " << i << " in " << dim.numDims() << "D";
         }
     }
+
+    if (dim.numDims()== 3) {
+        EigenDecompThomas<Real> ed(boundary, 1, hands, events);
+        ed.solve(x, rhs, hands[0]);
+
+        if (boundary.allNeumann()) {
+            Real offset = xCpuOrig[0] - xCpuResult[0];
+            for (size_t i = 0; i < dim.size(); ++i){
+                Real shiftedResult = xCpuResult[i] + offset;
+                EXPECT_NEAR(xCpuOrig[i], shiftedResult, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
+                    << "Solver divergence at index " << i << " in " << dim.numDims()
+                    << "D (Singular Mode Shift: " << offset << ")";
+            }
+        } else {
+            for (size_t i = 0; i < dim.size(); ++i) {
+                EXPECT_NEAR(xCpuOrig[i], xCpuResult[i], tolerance)
+                    << "Solver divergence at index " << i << " in " << dim.numDims() << "D";
+            }
+        }
+    }
 }
 
 TEST(LaplacianMath, laplacian) {
@@ -548,14 +568,16 @@ TEST(LaplacianMath, laplacian) {
 
     // size_t j, k, l, m, n, o; j = k = l; n = 1; m = 1; o = 3;
 
+    size_t maxDim = 10;
+
     for (size_t j = 0; j < 2; ++j) {
         for (size_t k = 0; k < 2; ++k) {
             for (size_t l = 0; l < 2; ++l) {
-                for (size_t m = 0; m < 3; ++m) {
-                    for (size_t n = 0; n < 3; ++n) {
-                        for (size_t o = 0; o < 4; ++o) {
+                for (size_t rows = 2; rows < maxDim; ++rows) {
+                    for (size_t cols = 2; cols < maxDim; ++cols) {
+                        for (size_t layers = 1; layers < maxDim; ++layers) {
 
-                            GridDim dim(2 + m, 2 + n, 1 + o);
+                            GridDim dim(rows, cols, layers);
                             std::stringstream ss;
                             ss << "startIsNeuman = " << static_cast<bool>(j)
                                << " endIsNeumann = " << static_cast<bool>(k)
@@ -564,7 +586,7 @@ TEST(LaplacianMath, laplacian) {
 
                             std::string locMsg = ss.str();
 
-                            std::cout << locMsg << std::endl;
+                            // std::cout << locMsg << std::endl;
 
                             BoundaryConfig<Real> boundary(j, k, l,  dim);
 
