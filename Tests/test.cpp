@@ -513,6 +513,7 @@ void verifyEigenSolverIdentity(
 
     std::vector<Real> xCpuResult(dim.size());
     x.get(xCpuResult.data(), hands[0]);
+
     cudaDeviceSynchronize();
 
     if (boundary.allNeumann()) {

@@ -55,34 +55,21 @@ public:
         const int laplacianNumColumns
     ) {
         T& mainDiag = (*laplacian)[primary.bandedInd(rowL)];
-        GridInd2d rightInd = leftRight.right.bandedInd(rowL);
-        T& rightDiag = (*laplacian)[rightInd];
-        GridInd2d leftInd = leftRight.left.bandedInd(rowL);
-        T& leftDiag = (*laplacian)[leftInd];
+        GridInd2d rightIndInBanded = leftRight.right.bandedInd(rowL);
+        T& rightDiag = (*laplacian)[rightIndInBanded];
+        GridInd2d leftIndInBanded = leftRight.left.bandedInd(rowL);
+        T& leftDiag = (*laplacian)[leftIndInBanded];
 
         if (indexInLine == 0) {
-            if (leftInd.col < laplacianNumColumns) leftDiag = 0;
+            if (rowL + leftRight.left.diag < laplacianNumColumns) leftDiag = 0;
             boundaries.start.setL(mainDiag, rightDiag);
         } else if (indexInLine == boundaries.dimLength - 1) {
-            if (rightInd.col < laplacianNumColumns) rightDiag = 0;
+            if (rowL + leftRight.right.diag < laplacianNumColumns) rightDiag = 0;
             boundaries.end.setL(mainDiag, leftDiag);
         } else {
             mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
             leftDiag = rightDiag = boundaries.start.inverseDeltaSquared;
         }
-
-
-        // T& rightDiag = (*laplacian)[leftRight.right.bandedInd(rowL)];
-        //
-        // auto leftInd = leftRight.left.bandedInd(rowL);
-        // T& leftDiag = (*laplacian)[leftInd];
-        //
-        // rightDiag = 0;
-        // if (leftInd.row < boundaries.dimLength) leftDiag = 0;
-        //
-        // if (!boundaries.setLAtBoundary(mainDiag, leftDiag, rightDiag, indexInLine)) {
-
-        // }
     }
 };
 
@@ -137,23 +124,26 @@ public:
 /**
  * @brief CUDA kernel to set up the Laplacian matrix and apply boundary conditions.
  *
- * @param[in,out] L        Banded system matrix (dim.size() × numDiagonals); coefficients are accumulated.
+ * @param[in,out] bandedL        Banded system matrix (dim.size() × numDiagonals); coefficients are accumulated.
  * @param[in] dim          Grid dimensions.
  * @param[in] boundary     Boundary conditions for all six faces.
  * @param[in] ap           Adjacency pattern specifying diagonal storage layout.
  */
 template<typename T>
-__global__ void buildLaplacianKernel(DeviceData2d<T> L, const GridDim dim, const BoundaryConfig<T> boundary, const AdjacencyPatern ap) {
+__global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim, const BoundaryConfig<T> boundary, const AdjacencyPatern ap) {
     GridInd3d gridInd;
     if (gridInd >= dim) return;
 
     size_t rowIndex = dim[gridInd];
-    LSetter<T> ds(L, rowIndex);
-    L[ap.here.bandedInd(rowIndex)] = 0;
 
-    ds.setRowInBanded1d(gridInd.row, boundary.y, ap.here, ap.y, L.cols);
-    ds.setRowInBanded1d(gridInd.col, boundary.x, ap.here, ap.x, L.cols);
-    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z, L.cols);
+    LSetter<T> ds(bandedL, rowIndex);
+    bandedL[ap.here.bandedInd(rowIndex)] = 0;
+
+    size_t n = dim.size();
+
+    ds.setRowInBanded1d(gridInd.row, boundary.y, ap.here, ap.y, n);
+    ds.setRowInBanded1d(gridInd.col, boundary.x, ap.here, ap.x, n);
+    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z, n);
 }
 
 /**

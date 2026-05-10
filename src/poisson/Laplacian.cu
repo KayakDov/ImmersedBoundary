@@ -85,8 +85,6 @@ namespace poisson {
 
         KernelPrep kp = dimension.kernelPrep();
 
-        gridSizeXnumDiags.fill(0, stream);
-
         buildLaplacianKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
             gridSizeXnumDiags.toKernel2d(),
             dimension,

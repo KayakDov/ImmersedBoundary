@@ -101,6 +101,10 @@ public:
         return 2 * (layerSize + rows * layers + cols * layers);
     }
 
+    __device__ [[nodiscard]] inline GridInd3d operator()(size_t idx) const{
+        return {idx % rows, (idx / rows) % cols, idx/(layerSize)};
+    }
+    
     /**
      * The flat index for the row, column, and height.  This does not account for leading dimension.
      * @param row
@@ -110,10 +114,6 @@ public:
      */
     __device__ __host__ size_t inline operator()(size_t row, size_t col, size_t layer) const{
         return layer * rows + col * rows * layers + row;
-    }
-
-    __device__ [[nodiscard]] inline GridInd3d operator()(size_t idx) const{
-        return {idx % rows, (idx / rows) % cols, idx/(layerSize)};
     }
 
     /**

@@ -39,7 +39,20 @@ public:
         if (diag < 0) return {denseRow + diag, colInBanded};
         return {denseRow, colInBanded};
     }
+
+    /**
+     * Provides the corespondoing index in a dense matrix.
+     * @param denseRow The row of the index in the dense matrix format.
+     * @return Indices for a dense matrix.
+     */
+    __device__ GridInd2d denseInd(size_t denseRow) const {
+
+        return {denseRow, denseRow + diag};
+    }
 };
+
+
+
 
 /**
  * @brief Helper class for managing symmetric or paired diagonals in a banded operator.
