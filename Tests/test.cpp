@@ -475,16 +475,16 @@ void verifyEigenSolverIdentity(
 
     std::vector<Real> xCpuOrig(dim.size());
 
-    for (size_t i = 0; i < dim.size(); ++i) xCpuOrig[i] = 3;
+    // for (size_t i = 0; i < dim.size(); ++i) xCpuOrig[i] = 3;
     // GridInd3d ind(0, 0, 0);
     // for (; ind.layer <  dim.layers; ++ind.layer)
     //     for (; ind.row < dim.rows; ++ind.row)
     //         for (; ind.col < dim.cols; ++ind.col)
     //             xCpuOrig[dim[ind]] = std::cos(M_PI * ind.col / dim.cols) * std::cos(M_PI * ind.row / dim.rows) * std::cos(M_PI * ind.layer / dim.layers);
-    // std::mt19937 rng(0);
-    // std::uniform_real_distribution<Real> dist(-1, 1);
-    // for (size_t i = 0; i < dim.size(); ++i)
-    //     xCpuOrig[i] = dist(rng);
+    std::mt19937 rng(0);
+    std::uniform_real_distribution<Real> dist(-1, 1);
+    for (size_t i = 0; i < dim.size(); ++i)
+        xCpuOrig[i] = dist(rng);
 
     x.set(xCpuOrig.data(), hands[0]);
 
@@ -494,9 +494,9 @@ void verifyEigenSolverIdentity(
 
     laplacian.bandedMult(x, rhs, hands, GPUConst<Real>::get(1), GPUConst<Real>::get(0), false);
 
-    std::cout << "L = \n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
-    std::cout << "x = " << GpuOut<Real>(x, hands[0]) << std::endl;
-    std::cout << "rhs = " << GpuOut<Real>(rhs, hands[0]) << std::endl;
+    // std::cout << "L = \n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
+    // std::cout << "x = " << GpuOut<Real>(x, hands[0]) << std::endl;
+    // std::cout << "rhs = " << GpuOut<Real>(rhs, hands[0]) << std::endl;
 
     x.fill(0, hands[0]);
 
@@ -542,14 +542,15 @@ TEST(LaplacianMath, laplacian) {
     Event event2[2];
     double tolerance = 1e-10;
 
-    size_t j, k, l, m, n, o; j = k = l; n = 2; m = 2; o = 3;
+    // size_t j, k, l, m, n, o; j = k = l; n = 1; m = 1; o = 3;
 
-    // for (size_t j = 0; j < 2; ++j) {
-    //     for (size_t k = 0; k < 2; ++k) {
-    //         for (size_t l = 0; l < 2; ++l) {
-    //             for (size_t m = 0; m < 3; ++m) {
-    //                 for (size_t n = 0; n < 3; ++n) {
-                        // for (size_t o = 0; o < 4; ++o) {
+    for (size_t j = 0; j < 2; ++j) {
+        for (size_t k = 0; k < 2; ++k) {
+            for (size_t l = 0; l < 2; ++l) {
+                for (size_t m = 0; m < 2; ++m) {
+                    for (size_t n = 0; n < 2; ++n) {
+                        for (size_t o = 0; o < 3; ++o) {
+                            // cudaDeviceSynchronize();
                             GridDim dim(2 + m, 2 + n, 1 + o);
                             std::stringstream ss;
                             ss << "startIsNeuman = " << static_cast<bool>(j)
@@ -581,12 +582,12 @@ TEST(LaplacianMath, laplacian) {
 
 
                             verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
-     // }
-     //                 }
-     //             }
-     //         }
-     //     }
-     // }
+                        }
+                     }
+                 }
+             }
+         }
+     }
 }
 
 int main(int argc, char **argv) {

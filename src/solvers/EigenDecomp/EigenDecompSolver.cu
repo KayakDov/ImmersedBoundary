@@ -1,23 +1,23 @@
 #include "EigenDecompSolver.h"
 
 #include "../Event.h"
+#include "deviceArrays/headers/Support/Streamable.h"
 
 
 template<typename T>
 void EigenDecompSolver<T>::set0Avg(const Vec<T>& src, Vec<T>& dst, Vec<T>& bufferSizeOfB, Handle &hand) const {
+
     bufferSizeOfB.fill(1, hand);
 
     Singleton<T> sum = dst.get(0);
-    src.mult(bufferSizeOfB, sum, &hand);
+    src.mult(bufferSizeOfB, sum, &hand); //dst[0] = sum(src), bufferSizeOfB is not used again for its ones, and it's now safe to write there.
 
     Singleton<T> negInvSize = bufferSizeOfB.get(0);
-    negInvSize.set(-1.0/src.size(), hand);
+    negInvSize.set(-1.0/src.size(), hand); //bufferSizeOfB[0] = -1/N
 
-    negInvSize.mult(sum, &hand);
+    negInvSize.mult(sum, &hand);//bufferSizeOfB[0] = -dst[0]/N, dts[0] is not used again and it's now safe to write to dst.
 
-    Singleton<T>& negAvg = negInvSize;
-
-    src.add(negAvg, dst, hand);
+    src.add(static_cast<const Singleton<T>&>(negInvSize), dst, hand);
 }
 
 template<typename T>
