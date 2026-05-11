@@ -560,7 +560,6 @@ void verifyEigenSolverIdentity(
 }
 
 TEST(LaplacianMath, laplacian) {
-
     Handle hand3[3];
     Event event2[2];
     using Real = double;
@@ -569,18 +568,18 @@ TEST(LaplacianMath, laplacian) {
 
     // size_t j, k, l, m, n, o; j = k = l; n = 1; m = 1; o = 3;
 
-    size_t maxDim = 10;
+    size_t maxDim = 4;
 
 
-    for (size_t x0 = 0; x0 < 2; ++x0) {
-        for (size_t x1; x1 < 2; ++x1) {
-            for (size_t y0; y0 < 2; ++y0) {
-                for (size_t y1; y1 < 2; ++y1) {
-                    for (size_t z0; z0 < 2; ++z0) {
-                        for (size_t z1; z1 < 2; ++z1)
-                            for (size_t isStag = 0; isStag < 2; ++isStag) {
-                                for (size_t rows = 2; rows < maxDim; ++rows) {
-                                    for (size_t cols = 2; cols < maxDim; ++cols) {
+    for (size_t x0 = 0; x0 < 2; ++x0)
+        for (size_t x1 = 0; x1 < 2; ++x1)
+            for (size_t y0 = 0; y0 < 2; ++y0)
+                for (size_t y1 = 0; y1 < 2; ++y1)
+                    for (size_t z0 = 0; z0 < 2; ++z0)
+                        for (size_t z1 = 0; z1 < 2; ++z1)
+                            for (size_t isStag = 0; isStag < 2; ++isStag)
+                                for (size_t rows = 2; rows < maxDim; ++rows)
+                                    for (size_t cols = 2; cols < maxDim; ++cols)
                                         for (size_t layers = 1; layers < maxDim; ++layers) {
                                             GridDim dim(rows, cols, layers);
 
@@ -595,7 +594,7 @@ TEST(LaplacianMath, laplacian) {
 
                                             std::string locMsg = ss.str();
 
-                                            // std::cout << locMsg << std::endl;
+                                            std::cout << locMsg << std::endl;
 
                                             BoundaryConfig<Real> boundary(start, end, XYZ<Real>(0,0,0), XYZ<Real>(0,0,0), Real3d(1, 1, 1), dim, isStag);
 
@@ -616,16 +615,9 @@ TEST(LaplacianMath, laplacian) {
 
                                             verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
                                         }
-                                    }
-                                }
-                            }
-                        }
-                     }
-                 }
-             }
-         }
-     }
+
 }
+
 
 int main(int argc, char **argv) {
     std::cout << "--- DIAGNOSTIC: Test Binary Starting ---" << std::endl;

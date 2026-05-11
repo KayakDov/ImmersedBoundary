@@ -12,10 +12,14 @@
 
 #include "deviceArrays/headers/sparse/SparseCSR.h"
 #include "../deviceArrays/headers/sparse/SparseCSC.cuh"
+#include "poisson/BoundaryConfig.cuh"
 #include "solvers/BiCGSTAB.cuh"
-#include "../solvers/EigenDecomp/EigenDecompSolver.h"
 
-template <typename Real, typename Int> class ImmersedEq;
+
+template <typename Real, typename Int> class ImmersedEqSolver;
+template <typename Real> class EigenDecompSolver;
+
+
 
 /** * @enum GridInd
  * @brief Offsets for multi-column Eulerian (Grid) memory buffers.
@@ -42,70 +46,6 @@ enum class LagrangeInd : size_t {
     fPrime    = 2, ///< Force correction (aliases LHS_Bx)
     UGamma    = 2, ///< Prescribed boundary velocity (aliases LHS_Bx)
     Count     = 3  ///< Number of standard Lagrangian indices
-};
-
-/**
- * @class ImmersedEqSolver
- * @brief Specialized BiCGSTAB implementation for the Immersed Boundary operator.
- * * @tparam Real Floating point precision (float/double).
- * @tparam Int Integer precision for indexing (int32_t/int64_t).
- */
-template <typename Real, typename Int>
-class ImmersedEqSolver:  public BiCGSTAB<Real> {
-
-    ImmersedEq<Real, Int>& imEq;
-
-    /**
-     * @brief Implements the custom linear operator @f$ A \cdot x @f$ for BiCGSTAB.
-     * Overrides the BiCGSTAB base class multiplication interface.
-     */
-    void mult(Vec<Real>& vec, Vec<Real>& product, Singleton<Real> multProduct, Singleton<Real> preMultResult) const override;
-
-public:
-    /**
-     * @brief Constructor for the iterative solver.
-     * @param imEq Reference to the system operator class.
-     * @param allocatedRHSHeightX7 Pre-allocated workspace matrix (Grid height x 7 columns).
-     * @param allocated9 Pre-allocated workspace vector of size 9.
-     * @param events11 Pointer to 11 CUDA events for synchronization.
-     * @param tolerance Convergence threshold.
-     * @param maxIterations Maximum BiCGSTAB iterations.
-     */
-    ImmersedEqSolver(ImmersedEq<Real, Int> &imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> &allocated9, Event* events11, Real tolerance, size_t maxIterations);
-};
-
-/**
- * @class SolverLauncher
- * @brief Helper class to manage solver resources and execution.
- */
-template <typename Real, typename Int>
-class SolverLauncher {
-private:
-    Real tolerance;
-    size_t maxIterations;
-    Vec<Real> allocated9;///< Internal temporary vector storage.
-    Mat<Real> allocatedRHSHeightX7;///< Internal temporary matrix storage.
-
-public:
-    /**
-     * Sets up the launcher for repeated efficient runs.
-     * @param tolerance A number close to 0.
-     * @param max_iterations  The maximum number of BCG iterations before aborting.
-     * @param gridVecs Buffer space for all vectors of length gridSize.  The last 7 of these will be used for
-     * scratch space.
-     * @param allocated9 Contiguoues memory allocated for singletons.
-     * @param hand2 The context.
-     */
-     SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real> &gridVecs, Vec<Real> allocated9,
-                   Handle *hand2, const Event &event);
-    /**
-     * @brief Executes the solver logic.
-     * @param imEq The system definitions.
-     * @param events11 CUDA events for stream management.
-     * @param result GPU array where the solution will be stored.
-     */
-    void launch(ImmersedEq<Real, Int> &imEq, Event *events11, SimpleArray<Real> &result);
-
 };
 
 template <typename Real, typename Int> class ImmersedEqSolver;
@@ -195,7 +135,7 @@ class ImmersedEq {
     /**
      * Used to launch the BCG solver.
      */
-    SolverLauncher<Real, Int> solverLauncher;
+    ImmersedEqSolver<Real, Int> solver;
 
     /**
      * used for eigen decomposition.
@@ -316,6 +256,40 @@ public:
      */
     void solve(Real *resultP, Real *resultF, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR,
                Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real *uStar);
+};
+
+
+/**
+ * @class ImmersedEqSolver
+ * @brief Specialized BiCGSTAB implementation for the Immersed Boundary operator.
+ * * @tparam Real Floating point precision (float/double).
+ * @tparam Int Integer precision for indexing (int32_t/int64_t).
+ */
+template <typename Real, typename Int>
+class ImmersedEqSolver:  public BiCGSTAB<Real> {
+
+    ImmersedEq<Real, Int>& imEq;
+
+protected:
+    /**
+     * @brief Implements the custom linear operator @f$ A \cdot x @f$ for BiCGSTAB.
+     * Overrides the BiCGSTAB base class multiplication interface.
+     */
+    void mult(Vec<Real>& vec, Vec<Real>& product, Singleton<Real> multProduct, Singleton<Real> preMultResult) const override;
+
+
+public:
+    /**
+     * @brief Constructor for the iterative solver.
+     * @param imEq Reference to the system operator class.
+     * @param allocatedRHSHeightX7 Pre-allocated workspace matrix (Grid height x 7 columns).
+     * @param allocated9 Pre-allocated workspace vector of size 9.
+     * @param events11 Pointer to 11 CUDA events for synchronization.
+     * @param tolerance Convergence threshold.
+     * @param maxIterations Maximum BiCGSTAB iterations.
+     */
+    ImmersedEqSolver(ImmersedEq<Real, Int> &imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> allocated9, Event* events11, Real tolerance, size_t maxIterations);
+
 };
 
 #endif //CUDABANDED_YURIFILEREADER_H

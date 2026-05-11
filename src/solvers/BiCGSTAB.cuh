@@ -39,7 +39,6 @@ protected:
 private:
     const T tolerance;
     Event &alphaRAW, &sRAW, &sWAR, &pWAR, &omegaRAW, &rRAW, &xRAW, &rWAR, &tRAW, &tsRAW, &betaRAW, &rhoRAW;
-    const Vec<T> b;
     Mat<T> bHeightX7;
     SimpleArray<T> r, r_tilde, p, v, s, t, h;
     Vec<T> a9;
@@ -103,21 +102,15 @@ protected:
      */
     virtual void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct = GPUConst<T>::get(1), Singleton<T> premultResult = GPUConst<T>::get(0)) const = 0;
 public:
+    const Vec<T> b;
+
     constexpr static size_t numStreams = 4;
     virtual ~BiCGSTAB() = default;
 
     /**
      * @brief Constructor for the BiCGSTAB solver.
      */
-    explicit BiCGSTAB(
-        const Vec<T> &b,
-        Handle* hand4,
-        Event* events12 = nullptr,
-        Mat<T> *allocatedBHeightX7 = nullptr,
-        Vec<T> *allocated9 = nullptr,
-        T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
-        size_t maxIterations = 1500
-    );
+    BiCGSTAB(const Vec<T> &b, Handle *hand4, Event *events12, Mat<T> allocatedBHeightX7, Vec<T> allocated9, T tolerance, size_t maxIterations);
 
     /**
      * @brief Solves the linear system $A\mathbf{x} = \mathbf{b}$ using the
@@ -131,30 +124,22 @@ template<typename T>
 class BCGBanded:  public BiCGSTAB<T>{
     BandedMat<T> A;
 
-
-
     void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct,
               Singleton<T> premultResult) const override;
+
+
 public:
-    BCGBanded(Handle *hand4, BandedMat<T> A, const Vec<T> &b, Event *events11, Mat<T> *bHeightX7, Vec<T> *allocated9, const T &tolerance, size_t maxIterations);
+
 
 
     /**
      * @brief Static method to solve the equation $A\mathbf{x} = \mathbf{b}$.
      */
-    static void solve(
-        Handle* hand4,
-        const BandedMat<T> &A,
-        Vec<T>& result,
-        const Vec<T> &b,
-        Event* events11,
-        Mat<T> *allocatedSizeX7 = nullptr,
-        Vec<T> *allocated9 = nullptr,
-        T tolerance = std::is_same_v<T, double> ? T(1e-15) : T(1e-6),
-        size_t maxIterations = 1500
-    );
+    BCGBanded(Handle *hand4, BandedMat<T> A, const Vec<T> &b, Event *events11, Mat<T> bHeightX7, Vec<T> allocated9,
+              const T &tolerance, size_t maxIterations);
 
-    static void test();
+    void solve(Handle *hand4, const BandedMat<T> &A, Vec<T> &result, const Vec<T> &b, Event *events11,
+               Mat<T> allocatedBHeightX7, Vec<T> allocated9, T tolerance, size_t maxIterations);
 
 };
 
@@ -165,13 +150,13 @@ class BCGDense:  public BiCGSTAB<T>{
     void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct,
               Singleton<T> premultResult) const override;
 public:
-    BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Event* events11, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, T tolerance, size_t maxIterations);
+    BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Event* events11, Mat<T> allocatedBSizeX7, Vec<T> allocated9, T tolerance, size_t maxIterations);
 
     /**
      * @brief Static method to solve the equation $A\mathbf{x} = \mathbf{b}$.
      */
-    static void solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Event *events11, Mat<T> *bHeightX7,
-               Vec<T> *allocated9, T tolerance, size_t maxIterations);
+    static void solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Event *events11, Mat<T> bHeightX7,
+               Vec<T> allocated9, T tolerance, size_t maxIterations);
 
     static void test();
 

@@ -70,29 +70,26 @@ BiCGSTAB<T>::BiCGSTAB(
     const Vec<T> &b,
     Handle* hand4,
     Event* events12,
-    Mat<T> *allocatedBHeightX7,
-    Vec<T> *allocated9,
+    Mat<T> allocatedBHeightX7,
+    Vec<T> allocated9,
     const T tolerance,
     const size_t maxIterations
 ) : hand4(hand4),
     tolerance(tolerance),
     alphaRAW(events12[0]), sRAW(events12[1]), pWAR(events12[2]), omegaRAW(events12[3]), rRAW(events12[4]), xRAW(events12[5]), rWAR(events12[6]), tRAW(events12[7]), tsRAW(events12[8]), betaRAW(events12[9]), rhoRAW(events12[10]), sWAR(events12[11]),
     b(b),
-    bHeightX7(allocatedBHeightX7 ? *allocatedBHeightX7 : Mat<T>::create(b.size(), 7)),
+    bHeightX7(allocatedBHeightX7),
     r(bHeightX7.col(0)), r_tilde(bHeightX7.col(1)), p(bHeightX7.col(2)), v(bHeightX7.col(3)), s(bHeightX7.col(4)), t(bHeightX7.col(5)), h(bHeightX7.col(6)),
-    a9(allocated9 ? *allocated9 : Vec<T>::create(9, hand4[0])),
+    a9(allocated9),
     rho(a9.get(0)), alpha(a9.get(1)), omega(a9.get(2)), rho_new(a9.get(3)), beta(a9.get(4)),
     temp{{a9.get(5), a9.get(6), a9.get(7), a9.get(8)}},
     maxIterations(maxIterations)
 {
     static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
-    if (!allocatedBHeightX7) bHeightX7.fill(0, hand4[0]);
-    if (!allocated9) {
-        a9.fill(0, hand4[1]);
-        record(1, {events12[0]});
-        hold(0, {events12[0]});
-    }
-
+    bHeightX7.fill(0, hand4[0]);
+    a9.fill(0, hand4[1]);
+    record(1, {events12[0]});
+    hold(0, {events12[0]});
 }
 
 template<typename T>
@@ -190,8 +187,9 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
     // std::cout << time << ", ";
 }
 
+
 template<typename T>
-BCGBanded<T>::BCGBanded(Handle* hand4, BandedMat<T> A, const Vec<T> &b, Event* events11, Mat<T> *bHeightX7, Vec<T>* allocated9, const T &tolerance,
+BCGBanded<T>::BCGBanded(Handle* hand4, BandedMat<T> A, const Vec<T> &b, Event* events11, Mat<T> bHeightX7, Vec<T> allocated9, const T &tolerance,
 size_t maxIterations): BiCGSTAB<T>(b, hand4, events11, bHeightX7, allocated9, tolerance, maxIterations), A(A){
 }
 
@@ -208,8 +206,8 @@ void BCGBanded<T>::solve(
     Vec<T>& result,
     const Vec<T> &b,
     Event* events11,
-    Mat<T> *allocatedBHeightX7,
-    Vec<T>* allocated9,
+    Mat<T> allocatedBHeightX7,
+    Vec<T> allocated9,
     const T tolerance,
     const size_t maxIterations
 ) {
@@ -218,49 +216,17 @@ void BCGBanded<T>::solve(
 }
 
 template<typename T>
-void BCGBanded<T>::test() {
-    Handle hand4[4]{};
-
-    size_t n = 5;
-    size_t numDiagonals = 2;
-
-    auto indices = SimpleArray<int32_t>::create(numDiagonals, hand4[0]);
-    std::vector<int32_t>  indicesHost = {0, 1};
-    indices.set(indicesHost.data(), hand4[0]);
-
-    auto banded = BandedMat<double>::create(n, indices);
-    banded.col(0).fill(1, hand4[0]);
-    banded.col(1).fill(2, hand4[0]);
-
-    auto rhs = SimpleArray<double>::create(n, hand4[0]);
-    std::vector<double>  rhsHost = {1,2,10,4,5};
-    rhs.set(rhsHost.data(), hand4[0]);
-
-    Event events11[11];
-
-    BCGBanded<double> bcg(hand4, banded, rhs, events11, nullptr, nullptr, 1e-6, 100);
-
-    auto result = SimpleArray<double>::create(n, hand4[0]);
-    result.fillRandom(hand4);
-
-    bcg.solveUnpreconditioned(result);
-
-    std::cout << "result = " << GpuOut<double>(result, hand4[0]) << std::endl;
-    std::cout << "expected: 85  -42, 22, -6, 5 " << std::endl;
-}
-
-template<typename T>
 void BCGDense<T>::mult(Vec<T> &vec, Vec<T> &product, Singleton<T> multProduct, Singleton<T> premultResult) const {
     A.mult(vec, product, this->hand4, &multProduct, &premultResult, false);
 }
 
 template<typename T>
-BCGDense<T>::BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Event* events11, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, T tolerance, size_t maxIterations): BiCGSTAB<T>(b, hand4, events11, allocatedBSizeX7, allocated9, tolerance, maxIterations), A(A) {
+BCGDense<T>::BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Event* events11, Mat<T> allocatedBSizeX7, Vec<T> allocated9, T tolerance, size_t maxIterations): BiCGSTAB<T>(b, hand4, events11, allocatedBSizeX7, allocated9, tolerance, maxIterations), A(A) {
 
 }
-//(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Mat<T> *allocatedBSizeX7, Vec<T> *allocated9, const T &tolerance, size_t maxIterations);
+
 template<typename T>
-void BCGDense<T>::solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Event* events11, Mat<T> *bHeightX7, Vec<T> *allocated9, T tolerance, size_t maxIterations) {
+void BCGDense<T>::solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Event* events11, Mat<T> bHeightX7, Vec<T> allocated9, T tolerance, size_t maxIterations) {
     BCGDense<T> solver(hand4, A, b, events11, bHeightX7, allocated9, tolerance, maxIterations);
     solver.solveUnpreconditioned(result);
 }

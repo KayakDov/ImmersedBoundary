@@ -19,24 +19,6 @@ void ImmersedEq<Real, Int>::checkNNZ(size_t nnz) const {
 
 
 template<typename Real, typename Int>
-SolverLauncher<Real, Int>::SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real>& gridVecs, Vec<Real> allocated9, Handle* hand2, const Event& event):
-    tolerance(tolerance),
-    maxIterations(max_iterations),
-    allocated9(allocated9),
-    allocatedRHSHeightX7(gridVecs.subMat(0, static_cast<size_t>(GridInd::Count), gridVecs._rows, 7)) {
-    allocated9.fill(0, hand2[0]);
-    allocatedRHSHeightX7.fill(0, hand2[1]);
-    event.record(hand2[1]);
-    event.hold(hand2[0]);
-}
-
-template<typename Real, typename Int>
-void SolverLauncher<Real, Int>::launch(ImmersedEq<Real, Int> &imEq, Event *events11, SimpleArray<Real>& result) {
-    ImmersedEqSolver<Real, Int> solver(imEq, allocatedRHSHeightX7, allocated9, events11, tolerance, maxIterations);
-    solver.solveUnpreconditioned(result);
-}
-
-template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::setSparse(
     std::unique_ptr<SparseMat<Real, Int>>& sparse,
     size_t nnz,
@@ -95,7 +77,7 @@ ImmersedEq<Real, Int>::ImmersedEq(
     maxSparseOffsets(maxSparseOffsets),
     delta(delta),
     dT(dT),
-    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events12[0])
+    solver(*this, gridVecs, SimpleArray<Real>::create(9, hand5[0]), events12, tolerance, maxBCGIterations)
 {
     auto boundaryRHSAdjust = this->gridVec(GridInd::boundRHSAdj);
     poisson::boundaryCorrection(boundary, boundaryRHSAdjust, hand5[0]);
@@ -118,7 +100,7 @@ ImmersedEq<Real, Int>::ImmersedEq(
     boundary(boundary),
     delta(delta),
     dT(Singleton<Real>::create(3/(2 * dT), hand5[0])),
-    solverLauncher(tolerance, maxBCGIterations, gridVecs, hand5, events12[0])
+    solver(*this, gridVecs, SimpleArray<Real>::create(9, hand5[0]), events12, tolerance, maxBCGIterations)
 {
     this->lagrangeVec(LagrangeInd::f).set(f, hand5[0]);
     this->gridVec(GridInd::p).set(p, hand5[0]);
@@ -349,7 +331,7 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve() {
     // baseData.result.fillRandom(&hand5[0]);
 
 
-    solverLauncher.launch(*this, events12, result);
+    solver.solveUnpreconditioned(result);
 
     return result;
 }
@@ -367,41 +349,42 @@ void ImmersedEq<Real, Int>::solve(
     auto resultDevice = solve(nnzB, offsetsB, indsB, valuesB, false);
     resultDevice.get(result, hand5[0]);
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename Real, typename Int>
-ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
-    ImmersedEq<Real, Int>& imEq,
-    Mat<Real> &allocatedRHSHeightX7,
-    Vec<Real> &allocated9,
-    Event* events11,
-    Real tolerance,
-    size_t maxIterations
-):
-    BiCGSTAB<Real>(imEq.gridVec(GridInd::RHS),
-        imEq.hand5,
-        events11,
-        &allocatedRHSHeightX7,
-        &allocated9,
-        tolerance,
-        maxIterations
-    ),
-    imEq(imEq) {
-}
 
 template<typename Real, typename Int>
 void ImmersedEqSolver<Real, Int>::mult(Vec<Real> &vec, Vec<Real> &product, Singleton<Real> multProduct,
                                        Singleton<Real> preMultResult) const {
     SimpleArray<Real> vecSA(vec), productSA(product);
 
-    return imEq.LHSTimes(vecSA, productSA, multProduct, preMultResult);
+    imEq.LHSTimes(vecSA, productSA, multProduct, preMultResult);
 }
 
-template class ImmersedEq<float, int32_t>;
-template class ImmersedEq<double, int32_t>;
-template class ImmersedEq<float, int64_t>;
-template class ImmersedEq<double, int64_t>;
+template<typename Real, typename Int>
+ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
+    ImmersedEq<Real, Int>& imEq,
+    Mat<Real> &gridVecs,
+    Vec<Real> allocated9,
+    Event* events11,
+    Real tolerance,
+    size_t maxIterations
+):
+    BiCGSTAB<Real>(
+        imEq.gridVec(GridInd::RHS),
+        imEq.hand5,
+        events11,
+        gridVecs.subMat(0, static_cast<size_t>(GridInd::Count), gridVecs._rows, 7),
+        allocated9,
+        tolerance,
+        maxIterations
+    ),
+    imEq(imEq) {
+}
 
 template class ImmersedEqSolver<float, int32_t>;
 template class ImmersedEqSolver<double, int32_t>;
 template class ImmersedEqSolver<float, int64_t>;
 template class ImmersedEqSolver<double, int64_t>;
+
+template class ImmersedEq<float, int32_t>;
+template class ImmersedEq<double, int32_t>;
+template class ImmersedEq<float, int64_t>;
+template class ImmersedEq<double, int64_t>;
