@@ -539,6 +539,7 @@ void verifyEigenSolverIdentity(
 
     if (dim.numDims()== 3) {
         EigenDecompThomas<Real> ed(boundary, 1, hands, events);
+        x.fill(0, hands[0]);
         ed.solve(x, rhs, hands[0]);
 
         if (boundary.allNeumann()) {
@@ -570,43 +571,54 @@ TEST(LaplacianMath, laplacian) {
 
     size_t maxDim = 10;
 
-    for (size_t j = 0; j < 2; ++j) {
-        for (size_t k = 0; k < 2; ++k) {
-            for (size_t l = 0; l < 2; ++l) {
-                for (size_t rows = 2; rows < maxDim; ++rows) {
-                    for (size_t cols = 2; cols < maxDim; ++cols) {
-                        for (size_t layers = 1; layers < maxDim; ++layers) {
 
-                            GridDim dim(rows, cols, layers);
-                            std::stringstream ss;
-                            ss << "startIsNeuman = " << static_cast<bool>(j)
-                               << " endIsNeumann = " << static_cast<bool>(k)
-                               << " isStagered = " << static_cast<bool>(l)
-                               << " dim = " << dim;
+    for (size_t x0 = 0; x0 < 2; ++x0) {
+        for (size_t x1; x1 < 2; ++x1) {
+            for (size_t y0; y0 < 2; ++y0) {
+                for (size_t y1; y1 < 2; ++y1) {
+                    for (size_t z0; z0 < 2; ++z0) {
+                        for (size_t z1; z1 < 2; ++z1)
+                            for (size_t isStag = 0; isStag < 2; ++isStag) {
+                                for (size_t rows = 2; rows < maxDim; ++rows) {
+                                    for (size_t cols = 2; cols < maxDim; ++cols) {
+                                        for (size_t layers = 1; layers < maxDim; ++layers) {
+                                            GridDim dim(rows, cols, layers);
 
-                            std::string locMsg = ss.str();
+                                            XYZ<bool> start(x0, y0, z0);
+                                            XYZ<bool> end(x1, y1, z1);
 
-                            // std::cout << locMsg << std::endl;
+                                            std::stringstream ss;
+                                            ss << "startIsNeuman = " << start
+                                               << " endIsNeumann = " << end
+                                               << " isStagered = " << isStag
+                                               << " dim = " << dim;
 
-                            BoundaryConfig<Real> boundary(j, k, l,  dim);
+                                            std::string locMsg = ss.str();
 
-                            poisson::Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
-                            //
-                            // // std::cout << "L 1d matrices:\nx:\n" << GpuOut<Real>(laplacian1d.dense(0, hand3[0]), hand3[0])
-                            // //                                 << "y\n" << GpuOut<Real>(laplacian1d.dense(1, hand3[0]), hand3[0])
-                            // //                                 << "z\n" << GpuOut<Real>(laplacian1d.dense(2, hand3[0]), hand3[0])
-                            // //                                 << std::endl;
-                            //
-                            poisson::Eigen<Real> laplacianEigen = poisson::Eigen<Real>::make(boundary, hand3, event2);
-                            // // std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
-                            // // std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
-                            //
-                            //
-                            for (size_t i = 0; i < dim.numDims(); ++i)
-                                checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
+                                            // std::cout << locMsg << std::endl;
 
-                            verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
+                                            BoundaryConfig<Real> boundary(start, end, XYZ<Real>(0,0,0), XYZ<Real>(0,0,0), Real3d(1, 1, 1), dim, isStag);
 
+                                            poisson::Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
+                                            //
+                                            // // std::cout << "L 1d matrices:\nx:\n" << GpuOut<Real>(laplacian1d.dense(0, hand3[0]), hand3[0])
+                                            // //                                 << "y\n" << GpuOut<Real>(laplacian1d.dense(1, hand3[0]), hand3[0])
+                                            // //                                 << "z\n" << GpuOut<Real>(laplacian1d.dense(2, hand3[0]), hand3[0])
+                                            // //                                 << std::endl;
+                                            //
+                                            poisson::Eigen<Real> laplacianEigen = poisson::Eigen<Real>::make(boundary, hand3, event2);
+                                            // // std::cout << "Eigenvectors:\n" << GpuX3Out<SquareMat<Real>, Real>(laplacianEigen.vecs, hand3[0]) << std::endl;
+                                            // // std::cout << "Eigenvalues:\n" << GpuX3Out<Vec<Real>, Real>(laplacianEigen.vals, hand3[0]) << std::endl;
+                                            //
+                                            //
+                                            for (size_t i = 0; i < dim.numDims(); ++i)
+                                                checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
+
+                                            verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
+                                        }
+                                    }
+                                }
+                            }
                         }
                      }
                  }

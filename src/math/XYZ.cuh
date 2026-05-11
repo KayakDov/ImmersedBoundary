@@ -6,6 +6,7 @@
 #define CUDABANDED_XYZ_H
 
 #include <cuda_runtime.h>
+#include <ostream>
 
 
 /**
@@ -50,6 +51,12 @@ struct XYZ {
      */
     __host__ __device__ static XYZ<T>fill(T i) {
         return XYZ<T>(i, i, i);
+    }
+
+    // Overloaded << operator
+    friend std::ostream& operator<<(std::ostream& os, const XYZ<T>& obj) {
+        os << "(" << obj.x << ", " << obj.y << ", " << obj.z << ")";
+        return os;
     }
 };
 

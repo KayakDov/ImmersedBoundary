@@ -93,13 +93,11 @@ public:
      * @param max_iterations  The maximum number of BCG iterations before aborting.
      * @param gridVecs Buffer space for all vectors of length gridSize.  The last 7 of these will be used for
      * scratch space.
+     * @param allocated9 Contiguoues memory allocated for singletons.
      * @param hand2 The context.
      */
-        SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real> &gridVecs, Handle *hand2, const Event &event);
-
-    SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real> &gridVecs, Vec<Real> allocated9,
-                   Handle *hand2,
-                   const Event &event);
+     SolverLauncher(Real tolerance, size_t max_iterations, const Mat<Real> &gridVecs, Vec<Real> allocated9,
+                   Handle *hand2, const Event &event);
     /**
      * @brief Executes the solver logic.
      * @param imEq The system definitions.

@@ -26,16 +26,16 @@ public:
      * @param dy The distance between grid points in the y direction (rows) in the grid.
      * @param dz The distance between grid points in the z direction (layers) in the grid.
      * @param thomas True if Thomas algorythm should be used for the z direction, false otherwise.
-     * @param x Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
-     * @param b Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
-     * @param adjToB Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
+     * @param sizeOfBForX Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
+     * @param sizeOfBForRHS Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
+     * @param sizeOfBForBAdj Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
      *
      */
     EigenDecompForFortran(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool leftIsNeumann,
                           bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
                           bool frontIsNeumann, Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal,
-                          Real backVal, bool isStaggered, bool thomas, SimpleArray<Real> x, SimpleArray<Real> b,
-                          SimpleArray<Real> adjToB);
+                          Real backVal, bool isStaggered, bool thomas, SimpleArray<Real> sizeOfBForX, SimpleArray<Real> sizeOfBForRHS,
+                          SimpleArray<Real> sizeOfBForBAdj);
     /**
      * Solves the equation L x = b.
      * @param xHost The solution overwrites this array.

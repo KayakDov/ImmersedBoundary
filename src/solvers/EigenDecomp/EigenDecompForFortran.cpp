@@ -8,10 +8,10 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
     Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
     bool isStaggered,
     bool thomas,
-    SimpleArray<Real> x,
-    SimpleArray<Real> b,
-    SimpleArray<Real> adjToB
-) :x(x), b(b), adjToB(adjToB) {
+    SimpleArray<Real> sizeOfBForX,
+    SimpleArray<Real> sizeOfBForRHS,
+    SimpleArray<Real> sizeOfBForBAdj
+) :x(sizeOfBForX), b(sizeOfBForRHS), adjToB(sizeOfBForBAdj) {
 
     Handle hands[3];
     Event events[2];
@@ -26,7 +26,7 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
 
     GridDim dim(rows, cols, layers);
 
-    poisson::boundaryCorrection(boundary, adjToB, hands[0]);
+    poisson::boundaryCorrection(boundary, sizeOfBForBAdj, hands[0]);
 
     if (layers <= 1)
         eds = std::make_unique<EigenDecomp2d<Real>>(boundary, hands, events[0]);
