@@ -132,7 +132,7 @@ struct BoundaryConfig : public XYZ<BoundaryPair<Real>>{
      * @return True if all the boundary conditions are Neumann.
      */
     __host__ bool allNeumann() const {
-        return this->x.bothNeumann() && this->y.bothNeumann() && this->z.bothNeumann();
+        return this->x.bothNeumann() && this->y.bothNeumann() && (this->z.bothNeumann() || this->z.dimLength <= 1);
     }
 
     /**

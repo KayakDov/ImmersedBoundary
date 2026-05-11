@@ -497,7 +497,6 @@ void verifyEigenSolverIdentity(
 
     laplacian.bandedMult(x, rhs, hands, GPUConst<Real>::get(1), GPUConst<Real>::get(0), false);
 
-    // std::cout << "L = \n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
     // std::cout << "x = " << GpuOut<Real>(x, hands[0]) << std::endl;
     // std::cout << "rhs = " << GpuOut<Real>(rhs, hands[0]) << std::endl;
 
@@ -566,7 +565,7 @@ TEST(LaplacianMath, laplacian) {
 
     double tolerance = 1e-10;
 
-    // size_t j, k, l, m, n, o; j = k = l; n = 1; m = 1; o = 3;
+    size_t j, k, l, m, n, o; j = k = l; n = 1; m = 1; o = 3;
 
     size_t maxDim = 4;
 
@@ -594,9 +593,17 @@ TEST(LaplacianMath, laplacian) {
 
                                             std::string locMsg = ss.str();
 
-                                            std::cout << locMsg << std::endl;
+                                            // std::cout << locMsg << std::endl;
 
-                                            BoundaryConfig<Real> boundary(start, end, XYZ<Real>(0,0,0), XYZ<Real>(0,0,0), Real3d(1, 1, 1), dim, isStag);
+                                            BoundaryConfig<Real> boundary(
+                                                start,
+                                                end,
+                                                XYZ<Real>(0,0,0),
+                                                XYZ<Real>(0,0,0),
+                                                Real3d(1, 1, 1),
+                                                dim,
+                                                isStag
+                                            );
 
                                             poisson::Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
                                             //
