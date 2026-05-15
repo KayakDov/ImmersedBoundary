@@ -111,6 +111,9 @@ ImmersedEq<Real, Int>::ImmersedEq(
 template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
 void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) {
 
+    lhsTimes.record(hand5[0]);
+    lhsTimes.hold(hand5[4]);
+
     if (preMultResult.data() == GPUConst<Real>::get(0).data()) result.fill(0, hand5[4]);
     else result.mult(preMultResult, hand5 + 4);
     lhsTimes.record(hand5[4]);

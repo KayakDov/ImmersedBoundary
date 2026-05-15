@@ -2,7 +2,7 @@
 
 This library provides solver for the following system:
 
-$$(L + 2 B^T B)x = B^T f + p$$
+$$(L + 2 B^T B)x = 2 B^T f + p$$
 
 For the later, it uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion ($L^{-1}$) and BiCGSTAB to solve the coupled system. Additionally, the library exposes standalone Direct Eigendecomposition solvers for the discrete Poisson equation with an optional Thomas variant.
 

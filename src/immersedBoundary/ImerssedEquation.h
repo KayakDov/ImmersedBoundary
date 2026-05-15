@@ -2,7 +2,7 @@
 * @file ImmersedEq.h
  * @brief High-performance CUDA implementation of the Immersed Boundary Method linear system.
  * * This file contains the primary operators for solving the pressure-force coupled system:
- * @f[ (L + 2 B^T B)x = B^T f + p @f]
+ * @f[ (L + 2 B^T B)x = 2 B^T f + p@f]
  * * @author E. Dov Neimand
  */
 

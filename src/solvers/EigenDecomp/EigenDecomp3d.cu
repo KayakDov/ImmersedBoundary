@@ -70,24 +70,15 @@ EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event
 template<typename T>
 void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    // std::cout << "EigenDecomp3d::solve() eigenvalues: " << GpuX3Out<Vec<T>, T>(this->eigen.vals, hand) <<  std::endl;
-    // std::cout << "EigenDecomp3d::solve() eigenVectors:\n" << GpuX3Out<SquareMat<T>, T>(this->eigen.vecs, hand) <<  std::endl;
-    // std::cout << "EigenDecomp3d::solve() b = " << GpuOut<T>(b, hand) <<  std::endl;
+    // if (this->isSingular) this->set0Avg(b, this->sizeOfB, x, hand);
 
-    if (this->isSingular) this->set0Avg(b, this->sizeOfB, x, hand);
+    this->eigen.vecs.mult(/*this->isSingular ? this->sizeOfB :*/ b , x, true, this->sizeOfB, hand);
 
-    // std::cout << "EigenDecomp3d::solve() after set0Avg sizeOfB = " << GpuOut<T>(this->sizeOfB, hand) <<  std::endl;
-
-    this->eigen.vecs.mult(this->isSingular ? this->sizeOfB : b , x, true, this->sizeOfB, hand);
-
-    // std::cout << "EigenDecomp3d::solve() after eigenvecs mult x = " << GpuOut<T>(x, hand) <<  std::endl;
 
     this->multLEigenValInverse(x, this->sizeOfB, hand);
 
-    // std::cout << "EigenDecomp3d::solve() after eigenvals inverse mult mult sizeOfB = " << GpuOut<T>(this->sizeOfB, hand) <<  std::endl;
 
     this->eigen.vecs.mult(this->sizeOfB, x, false, this->sizeOfB, hand);
-    // std::cout << "EigenDecomp3d::solve() done, x = " << GpuOut<T>(x, hand) <<  std::endl;
 }
 
 template class EigenDecomp3d<double>;

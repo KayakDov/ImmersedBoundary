@@ -102,225 +102,72 @@
 //     for (size_t i = 0; i < resultF.size(); ++i) EXPECT_NEAR(resultF[i], expectedF[i], 1e-4);
 // }
 
-// TEST(ImmersedEq, SolvesImmeresed_Generic) {
-//
-//     using Real = double;
-//     using Int  = int;
-//
-//     GridDim dim(25, 30, 20);
-//     Real3d delta(1, 0.5, 2);
-//     Handle hand;
-//     BoundaryConfig<Real> boundary(
-//         {true, true, true},
-//         {true, true, true},
-//         {0, 0, 0},
-//         {0, 0, 0},
-//         delta, dim, true
-//     );
-//
-//     std::vector<Int> rowOffsetsB = {0, 1, 2};
-//     std::vector<Int> colIndsB    = {0, 1};
-//     std::vector<Real> valuesB    = {1, 1};
-//     auto B = SparseCSR<Real, Int>::create(valuesB.size(), rowOffsetsB.size() - 1, dim.size(), hand);
-//     B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
-//     auto BDense = Mat<Real>::create(B.rows, B.cols);
-//     B.getDense(BDense, hand);
-//
-//     std::vector<Real> xHost(dim.size(), 0);
-//     for (size_t i = 0; i < xHost.size(); ++i) xHost[i] = i + 1.0;
-//     auto x = SimpleArray<Real>::create(dim.size(), hand);
-//     x.set(xHost.data(), hand);
-//
-//     BandedMat<Real> L = poisson::laplacian(boundary, hand);
-//     auto LDense = SquareMat<Real>::create(dim.size());
-//     L.getDense(LDense, &hand);
-//
-//     auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
-//     LPlus2BTBx.fill(0, hand);
-//
-//     BDense.mult(BDense, &LDense, &hand,&GPUConst<Real>::get(2), &GPUConst<Real>::get(1),  true, false);
-//     LDense.mult(x, LPlus2BTBx, &hand, &GPUConst<Real>::get(1), &GPUConst<Real>::get(0), false);
-//
-//     std::vector<Real> fHost(rowOffsetsB.size() - 1, 0);
-//     fHost[0] = 1;
-//     fHost[1] = 2;
-//     auto f = SimpleArray<Real>::create(fHost.size(), hand);
-//     f.set(fHost.data(), hand);
-//
-//     auto TwoBTF = SimpleArray<Real>::create(dim.size(), hand);
-//     BDense.mult(f, TwoBTF, &hand, &GPUConst<Real>::get(2), &GPUConst<Real>::get(0), true);
-//
-//     LPlus2BTBx.add(TwoBTF, &GPUConst<Real>::get(-1), &hand);
-//
-//     std::vector<Real> p(dim.size(), 0);
-//     LPlus2BTBx.get(p.data(), hand);
-//
-//     std::vector<Real> resultP(dim.size(), 0);
-//     std::vector<Real> resultF(fHost.size(), 0);
-//
-//     ImmersedEq<Real, Int> imEq(boundary, fHost.size(), valuesB.size(), p.data(), fHost.data(), delta, 1, 1e-8, 1000);
-//
-//
-//     imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
-//
-//     cudaDeviceSynchronize();
-//
-//     for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], i + 1, 1e-4);
-//
-// }
-//
-// TEST(EigenDecomp, ThreeD) {
-//
-//     using Real = double;
-//     using Int  = int;
-//     GridDim dim(3, 2, 2);
-//     Real3d delta(1, 1, 1);
-//
-//     Handle hand3[3];
-//
-//     BoundaryConfig<Real> boundary(
-//         {true, true, true},
-//         {true, true, true},
-//         {0, 0, 0},
-//         {0, 0, 0},
-//         delta, dim, true
-//     );
-//
-//     auto x = SimpleArray<Real>::create(dim.size(), hand3[0]);
-//     std::vector<Real> xHost = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-//     x.set(xHost.data(), hand3[0]);
-//
-//     BandedMat<Real> L = poisson::laplacian(boundary, hand3[0]);
-//
-//     auto b = SimpleArray<Real>::create(12, hand3[0]);
-//     b.fill(0, hand3[0]);
-//
-//     L.bandedMult(x, b, &hand3[0]);
-//
-//     x.fill(0, hand3[0]);
-//
-//     x.get(xHost.data(), hand3[0]);
-//
-//     cudaDeviceSynchronize();
-//     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], 0, 1e-10);
-//
-//     Event event3[3];
-//
-//     EigenDecomp3d<Real> eds(boundary, hand3, event3);
-//
-//     eds.solve(x, b, hand3[0]);
-//
-//     x.get(xHost.data(), hand3[0]);
-//
-//     cudaDeviceSynchronize();
-//     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], i + 1, 1e-10);
-//
-//     L.bandedMult(x, b, &hand3[0]);
-//     x.fill(0, hand3[0]);
-//     x.get(xHost.data(), hand3[0]);
-//
-//     cudaDeviceSynchronize();
-//     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], 0, 1e-10);
-//
-//     EigenDecompThomas<Real> edt(boundary, delta.x, hand3, event3);
-//
-//     edt.solve(x, b, hand3[0]);
-//
-//     x.get(xHost.data(), hand3[0]);
-//
-//     cudaDeviceSynchronize();
-//     for (size_t i = 0; i < xHost.size(); ++i)
-//         EXPECT_NEAR(xHost[i], i + 1, 1e-10);
-// }
-//
-//
-// TEST(EigenDecomp, TwoD) {
-//
-//     using Real = double;
-//     using Int  = int;
-//     GridDim dim(3, 2, 1);
-//     Real2d delta(1, 1);
-//
-//     BoundaryConfig<Real> boundary(
-//         {true, true, true},
-//         {true, true, true},
-//         {0, 0, 0},
-//         {0, 0, 0},
-//         delta, dim, true
-//     );
-//
-//     Handle hand2[2];
-//
-//     //ToeplitzLaplacian<Real>::printL(dim, hand3[0], delta);
-//
-//     auto x = SimpleArray<Real>::create(dim.size(), hand2[0]);
-//     std::vector<Real> xHost = {1, 2, 3, 4, 5, 6};
-//     x.set(xHost.data(), hand2[0]);
-//
-//     auto L = poisson::laplacian(boundary, hand2[0]);
-//
-//     auto b = SimpleArray<Real>::create(dim.size(), hand2[0]);
-//     b.fill(0, hand2[0]);
-//
-//     L.bandedMult(x, b, &hand2[0]);
-//
-//     x.fill(0, hand2[0]);
-//
-//     x.get(xHost.data(), hand2[0]);
-//     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], 0, 1e-10);
-//
-//     Event event;
-//
-//     EigenDecomp2d<Real> eds(boundary, hand2,event);
-//
-//     eds.solve(x, b, hand2[0]);
-//
-//     x.get(xHost.data(), hand2[0]);
-//     for (size_t i = 0; i < xHost.size(); ++i) EXPECT_NEAR(xHost[i], i + 1, 1e-10);
-// }
-//
-//
-// TEST(BCGDenseTest, ConvergenceValidation) {
-//     using Real = double;
-//
-//     Handle hand4[4]{};
-//     Event events12[12];
-//     size_t n = 6;
-//     Real tolerance = 1e-6;
-//     size_t maxIterations = 100;
-//
-//     auto A = SquareMat<Real>::create(n);
-//     std::vector<Real> hostA = {
-//          1, 2, 3, 4, 5, 6,
-//          6, 5, 4, 3, 2, 1,
-//          2, 4, 2, 6, 2, 7,
-//          0, 1, 1, 0, 2, 3,
-//          4, 5, 6, 7, 8, -3,
-//          -2, -1, 5, -2, -4, 6
-//     };
-//     A.set(hostA.data(), hand4[0]);
-//
-//     auto result = SimpleArray<Real>::create(n, hand4[0]);
-//     std::vector<Real> resultHost = {1, -1, 2, -2, 3, -3};
-//     result.set(resultHost.data(), hand4[0]);
-//
-//     auto b = SimpleArray<Real>::create(n, hand4[0]);
-//     b.fill(0, hand4[0]);
-//     A.mult(result, b, hand4, &GPUConst<Real>::get(1), &GPUConst<Real>::get(0), false);
-//     result.fill(0, hand4[0]);
-//
-//     auto bHeightX7 = Mat<Real>::create(n, 7);
-//     auto aX9 = SimpleArray<Real>::create(9, hand4[0]);
-//
-//     BCGDense<Real>::solve(hand4, A, result, b, events12, &bHeightX7, &aX9, tolerance, maxIterations);
-//
-//     std::vector<Real> actual(n, 0);
-//     result.get(actual.data(), hand4[0]);
-//
-//     cudaDeviceSynchronize();
-//     for (size_t i = 0; i < n; ++i)
-//         EXPECT_NEAR(actual[i], resultHost[i], 1e-5) << "Mismatch at solution vector index " << i;
-// }
+TEST(ImmersedEq, SolvesImmeresed_Generic) {
+
+    using Real = double;
+    using Int  = int;
+
+    GridDim dim(25, 30, 20);
+    Real3d delta(1, 0.5, 2);
+    Handle hand;
+    BoundaryConfig<Real> boundary(
+        {false, false, false},
+        {false, false, false},
+        {0, 0, 0},
+        {0, 0, 0},
+        delta, dim, true
+    );
+
+    std::vector<Int> rowOffsetsB = {0, 1, 2};
+    std::vector<Int> colIndsB    = {0, 1};
+    std::vector<Real> valuesB    = {1, 1};
+    auto B = SparseCSR<Real, Int>::create(valuesB.size(), rowOffsetsB.size() - 1, dim.size(), hand);
+    B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
+    auto BDense = Mat<Real>::create(B.rows, B.cols);
+    B.getDense(BDense, hand);
+
+    std::vector<Real> xHost(dim.size(), 0);
+    for (size_t i = 0; i < xHost.size(); ++i) xHost[i] = i + 1.0;
+    auto x = SimpleArray<Real>::create(dim.size(), hand);
+    x.set(xHost.data(), hand);
+
+    BandedMat<Real> L = poisson::laplacian(boundary, hand);
+    auto LDense = SquareMat<Real>::create(dim.size());
+    L.getDense(LDense, &hand);
+
+    auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
+    LPlus2BTBx.fill(0, hand);
+
+    BDense.mult(BDense, &LDense, &hand,&GPUConst<Real>::get(2), &GPUConst<Real>::get(1),  true, false);
+    LDense.mult(x, LPlus2BTBx, &hand, &GPUConst<Real>::get(1), &GPUConst<Real>::get(0), false);
+
+    std::vector<Real> fHost(rowOffsetsB.size() - 1, 0);
+    fHost[0] = 1;
+    fHost[1] = 2;
+    auto f = SimpleArray<Real>::create(fHost.size(), hand);
+    f.set(fHost.data(), hand);
+
+    auto TwoBTF = SimpleArray<Real>::create(dim.size(), hand);
+    BDense.mult(f, TwoBTF, &hand, &GPUConst<Real>::get(2), &GPUConst<Real>::get(0), true);
+
+    LPlus2BTBx.add(TwoBTF, &GPUConst<Real>::get(-1), &hand);
+
+    std::vector<Real> p(dim.size(), 0);
+    LPlus2BTBx.get(p.data(), hand);
+
+    std::vector<Real> resultP(dim.size(), 0);
+    std::vector<Real> resultF(fHost.size(), 0);
+
+    ImmersedEq<Real, Int> imEq(boundary, fHost.size(), valuesB.size(), p.data(), fHost.data(), delta, 1, 1e-8, 1000);
+
+
+    imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
+
+    cudaDeviceSynchronize();
+
+    for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], i + 1, 1e-4);
+
+}
 
 
 template<typename T>
@@ -449,6 +296,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
 
 }
 
+
 /**
  * Verifies the numerical identity of the EigenDecomposition solver.
  * Performs a round-trip operation: rhs = L * x_orig, then x_final = L^-1 * rhs.
@@ -516,8 +364,7 @@ void verifyEigenSolverIdentity(
     cudaDeviceSynchronize();
 
     if (boundary.allNeumann()) {
-        // Find the constant shift between the original and the zero-mean result
-        // We do this by comparing the difference at the first element.
+
         Real offset = xCpuOrig[0] - xCpuResult[0];
 
         for (size_t i = 0; i < dim.size(); ++i){
@@ -557,6 +404,96 @@ void verifyEigenSolverIdentity(
         }
     }
 }
+template <typename Real, typename Int>
+void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& hand, Real tolerance, const std::string& locMsg) {
+    GridDim dim = boundary.dim();
+    size_t n = dim.size();
+
+    // 1. Setup a generic Sparse Boundary Matrix (B)
+    std::vector<Int> rowOffsetsB = {0, 1, 2};
+    std::vector<Int> colIndsB    = {0, std::min((Int)1, (Int)(n - 1))};
+    std::vector<Real> valuesB    = {1.0, 1.0};
+    size_t numB = rowOffsetsB.size() - 1;
+
+    auto B = SparseCSR<Real, Int>::create(valuesB.size(), numB, n, hand);
+    B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
+    auto denseB = Mat<Real>::create(numB, n);
+    B.getDense(denseB, hand);
+
+    std::cout << "B dense = \n" << GpuOut<Real>(denseB, hand) << std::endl;
+
+
+    // 2. Select a ground truth x_0
+    std::vector<Real> x0Host(n, 0);
+    for (size_t i = 0; i < n; ++i) x0Host[i] = static_cast<Real>(i + 1.0);
+    auto x0 = SimpleArray<Real>::create(n, hand);
+    x0.set(x0Host.data(), hand);
+
+    std::cout << "x0 = " << GpuOut<Real>(x0, hand) << std::endl;
+
+    // 3. Select arbitrary boundary forces (f)
+    std::vector<Real> fHost(numB, 0);
+    for (size_t i = 0; i < numB; ++i) fHost[i] = static_cast<Real>((i + 1) * (i + 1));
+    auto f = SimpleArray<Real>::create(numB, hand);
+    f.set(fHost.data(), hand);
+
+    std::cout << "f = " << GpuOut<Real>(f, hand) << std::endl;
+
+    // 4. Compute p_0 directly on the GPU
+    // Equation: p_0 = L*x_0 + 2*B^T*(B*x_0) - 2*B^T*f - boundaryCorrection
+    auto p0 = SimpleArray<Real>::create(n, hand);
+    p0.fill(0, hand);
+    std::cout << "p0 init = " << GpuOut<Real>(p0, hand) << std::endl;
+
+    //  a. p_0 = L * x_0
+    BandedMat<Real> L = poisson::laplacian(boundary, hand);
+    L.mult(x0, p0, &hand, &GPUConst<Real>::get(1), &GPUConst<Real>::get(0), false);
+    std::cout << "L = " << GpuOut<Real>(L.getDense(hand), hand) << std::endl;
+    std::cout << "Lx = " << GpuOut<Real>(p0, hand) << std::endl;
+
+    //  b. tempB = B * x_0
+    auto tempB = SimpleArray<Real>::create(numB, hand);
+    size_t wsSizeB = B.multWorkspaceSize(x0, tempB, GPUConst<Real>::get(1), GPUConst<Real>::get(0), false, hand);
+    auto workspaceB = SimpleArray<Real>::create(wsSizeB, hand);
+    B.mult(x0, tempB, GPUConst<Real>::get(1), GPUConst<Real>::get(0), false, workspaceB, hand);
+    std::cout << "Bx  = " << GpuOut<Real>(tempB, hand) << std::endl;
+
+    //  c. p_0 = p_0 + 2 * B^T * tempB
+    size_t wsSizeBt = B.multWorkspaceSize(tempB, p0, GPUConst<Real>::get(2), GPUConst<Real>::get(1), true, hand);
+    auto workspaceBt = SimpleArray<Real>::create(wsSizeBt, hand);
+    B.mult(tempB, p0, GPUConst<Real>::get(2), GPUConst<Real>::get(1), true, workspaceBt, hand);
+    std::cout << "2 B^T B x + Lx = " << GpuOut<Real>(p0, hand) << std::endl;
+
+    //  d. p0 -= 2 * B^T * f
+    size_t wsSizeBtf = B.multWorkspaceSize(f, p0, GPUConst<Real>::get(2), GPUConst<Real>::get(0), true, hand);
+    auto workspaceBtf = SimpleArray<Real>::create(wsSizeBtf, hand);
+    B.mult(f, p0, GPUConst<Real>::get(-2), GPUConst<Real>::get(1), true, workspaceBtf, hand);
+    std::cout << "2 B^T B x + Lx - 2 B^T f = " << GpuOut<Real>(p0, hand) << std::endl;
+
+    //  e. Apply boundaryCorrection
+    auto bc = poisson::boundaryCorrection(boundary, hand);
+
+    //     p_0 = p_0 - bc
+    p0.add(bc, &GPUConst<Real>::get(-1), &hand);
+    std::cout << "2 B^T B x + Lx - 2 B^T f - bc = " << GpuOut<Real>(p0, hand) << std::endl;
+
+    // 5. Download the computed p_0 to the host for the solver initialization
+    std::vector<Real> p0Host(n, 0);
+    p0.get(p0Host.data(), hand);
+
+    // 6. Solve for x given p_0
+    ImmersedEq<Real, Int> imEq(boundary, numB, valuesB.size(), p0Host.data(), fHost.data(), Real3d(1, 1, 1), 1, 1e-8, 1000);
+
+    std::vector<Real> resultX(n, 0);
+    imEq.solve(resultX.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
+
+    cudaDeviceSynchronize();
+
+    // 7. Compare the solved x to the chosen x_0
+    for (size_t i = 0; i < n; ++i) {
+        EXPECT_NEAR(resultX[i], x0Host[i], tolerance) << locMsg << " at flat index " << i;
+    }
+}
 
 TEST(LaplacianMath, laplacian) {
     Handle hand3[3];
@@ -565,21 +502,22 @@ TEST(LaplacianMath, laplacian) {
 
     double tolerance = 1e-10;
 
-    size_t j, k, l, m, n, o; j = k = l; n = 1; m = 1; o = 3;
+    size_t x0 = 0, y0 = 0, z0 = 0, x1 = 0, y1 = 0, z1 = 0, isStag = 0, rows = 2, cols = 2, layers = 1;
 
-    size_t maxDim = 4;
-
-
-    for (size_t x0 = 0; x0 < 2; ++x0)
-        for (size_t x1 = 0; x1 < 2; ++x1)
-            for (size_t y0 = 0; y0 < 2; ++y0)
-                for (size_t y1 = 0; y1 < 2; ++y1)
-                    for (size_t z0 = 0; z0 < 2; ++z0)
-                        for (size_t z1 = 0; z1 < 2; ++z1)
-                            for (size_t isStag = 0; isStag < 2; ++isStag)
-                                for (size_t rows = 2; rows < maxDim; ++rows)
-                                    for (size_t cols = 2; cols < maxDim; ++cols)
-                                        for (size_t layers = 1; layers < maxDim; ++layers) {
+    // size_t maxDim = 3;
+    // size_t startRowsCols = 2;
+    //
+    //
+    // for (size_t x0 = 0; x0 < 2; ++x0)
+    //     for (size_t x1 = 0; x1 < 2; ++x1)
+    //         for (size_t y0 = 0; y0 < 2; ++y0)
+    //             for (size_t y1 = 0; y1 < 2; ++y1)
+    //                 for (size_t z0 = 0; z0 < 2; ++z0)
+    //                     for (size_t z1 = 0; z1 < 2; ++z1)
+    //                         for (size_t isStag = 0; isStag < 2; ++isStag)
+    //                             for (size_t rows = startRowsCols; rows < maxDim; ++rows)
+    //                                 for (size_t cols = startRowsCols; cols < maxDim; ++cols)
+    //                                     for (size_t layers = 1; layers < maxDim; ++layers) {
                                             GridDim dim(rows, cols, layers);
 
                                             XYZ<bool> start(x0, y0, z0);
@@ -621,7 +559,9 @@ TEST(LaplacianMath, laplacian) {
                                                 checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
 
                                             verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
-                                        }
+
+                                            verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg);
+                                        // }
 
 }
 

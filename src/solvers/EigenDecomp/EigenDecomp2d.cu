@@ -39,9 +39,9 @@ EigenDecomp2d<T>::EigenDecomp2d(const BoundaryConfig<T>& boundary, Handle* hand2
 template<typename T>
 void EigenDecomp2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    if (this->isSingular) this->set0Avg(b, x, this->sizeOfB, hand);
+    // if (this->isSingular) this->set0Avg(b, x, this->sizeOfB, hand);
 
-    this->eigen.vecs.mult2d(this->isSingular? x : b, this->sizeOfB, true, x, hand);
+    this->eigen.vecs.mult2d(/*this->isSingular? x : */b, this->sizeOfB, true, x, hand);
 
     eValsLInvMult(this->sizeOfB, x, hand);
 
