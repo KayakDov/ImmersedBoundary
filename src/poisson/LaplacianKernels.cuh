@@ -161,7 +161,7 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim,
 template<typename T>
 __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boundary, DeviceData1d<T> rhs) {
     GridInd2d ind;
-    GridInd3d ind3d;
+    GridInd3d ind3d(0, 0, 0);
 
     if (dim.layers > 1 && ind.row < dim.rows && ind.col < dim.cols) {
         ind3d.set(ind.row, ind.col, 0);

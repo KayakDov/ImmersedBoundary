@@ -107,8 +107,10 @@ namespace poisson {
     }
 
     template<typename T>
-    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T>& correctionGoesHere, cudaStream_t stream) {
+    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T> correctionGoesHere, cudaStream_t stream) {
         GridDim dimension = boundary.dim();
+
+        correctionGoesHere.fill(0, stream);
 
         KernelPrep kp(
             std::max(dimension.rows, dimension.layers),
@@ -137,7 +139,7 @@ namespace poisson {
 
 #define INSTANTIATE_LAPLACIAN(T)                          \
 template SimpleArray<T> poisson::boundaryCorrection<T>(const BoundaryConfig<T>&, cudaStream_t); \
-template void poisson::boundaryCorrection<T>(const BoundaryConfig<T>&, SimpleArray<T>&, cudaStream_t); \
+template void poisson::boundaryCorrection<T>(const BoundaryConfig<T>&, SimpleArray<T>, cudaStream_t); \
 template BandedMat<T> poisson::laplacian<T>(const BoundaryConfig<T>&, cudaStream_t); \
 template class poisson::Laplacian1d<T>; \
 template class poisson::Eigen<T>;

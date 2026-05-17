@@ -325,7 +325,7 @@ void Vec<T>::EBEPow(const Singleton<T> &t, const Singleton<T> &n, cudaStream_t s
 
     KernelPrep kp = this->kernelPrep();
 
-    if (n.data() == GPUConst<T>::get(-1).data())
+    if (n.data() == GPUScalar<T>::get(-1).data())
         EBEInvertKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel1d(), t.data());
     else EBEPowKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
             this->toKernel1d(),

@@ -180,12 +180,6 @@ class ImmersedEq {
                const Real3d &delta, Singleton<Real> dT, Real tolerance, size_t maxBCGIterations);
 
     /**
-     * @brief Debug method to materialize the full LHS matrix.
-     * @warning Extremely memory intensive; for small grids only.
-     */
-    SquareMat<Real> LHSMat();
-
-    /**
      * @brief Prepares the RHS vector based on current state.
      * @param prime Boolean flag for correction system.
      */
@@ -197,6 +191,19 @@ class ImmersedEq {
      */
     SimpleArray<Real> solve();
 public:
+
+
+    /**
+     * @brief Debug method to materialize the full LHS matrix.
+     * @warning Extremely memory intensive; for small grids only.
+     */
+    SquareMat<Real> LHSMat();
+
+    /**
+     * Gets the RHS.
+     * @return
+     */
+    SimpleArray<Real> getRHS(SimpleArray<Real>& p, SimpleArray<Real>& f, SimpleArray<Real>& rhsAdjustment, SparseCSR<Real, Int>& B);
 
     /**
      * @brief Constructor for the ImmersedEq system.

@@ -113,14 +113,14 @@ public:
 };
 
 template <typename T>
-class GPUConst {
+class GPUScalar {
 
-    static const GPUConst<T> universal;
+    static const GPUScalar<T> universal;
     /**
      * Holds the Singleton constants.
      */
     SimpleArray<T> base;
-    GPUConst(Handle hand = Handle());
+    GPUScalar(Handle hand = Handle());
 public:
 
     static const Singleton<T>& get(int32_t i);

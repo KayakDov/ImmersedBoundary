@@ -89,7 +89,7 @@ namespace poisson {
      * @param stream CUDA stream used for asynchronous execution.
      */
     template<typename T>
-    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T>& correctionGoesHere, cudaStream_t stream);
+    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T> correctionGoesHere, cudaStream_t stream);
 
 
 

@@ -35,7 +35,7 @@ Mat<T> Mat<T>::mult(
 
 template<typename T>
 Mat<T> Mat<T>::mult(const Mat<T> &other, Mat<T> *result, Handle *handle, bool transposeA, bool transposeB) const {
-    return mult(other, result, handle, &GPUConst<T>::get(1), &GPUConst<T>::get(0), transposeA, transposeB);
+    return mult(other, result, handle, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), transposeA, transposeB);
 }
 
 
@@ -338,9 +338,9 @@ void Mat<T>::transpose(
             CUBLAS_OP_N, // Don't transpose B (it's not used)
             this->_cols, // Result rows
             this->_rows, // Result columns
-            GPUConst<T>::get(1).toKernel1d(),
+            GPUScalar<T>::get(1).toKernel1d(),
             this->toKernel2d(), this->_ld,
-            GPUConst<T>::get(0).toKernel1d(), nullptr, this->_ld, // B is not referenced since beta=0
+            GPUScalar<T>::get(0).toKernel1d(), nullptr, this->_ld, // B is not referenced since beta=0
             result.toKernel2d(), result._ld
         ));
     } else if constexpr (std::is_same_v<T, double>) {
@@ -350,9 +350,9 @@ void Mat<T>::transpose(
             CUBLAS_OP_N,
             this->_cols,
             this->_rows,
-            GPUConst<T>::get(1).data(),
+            GPUScalar<T>::get(1).data(),
             this->data(), this->_ld,
-            GPUConst<T>::get(0).data(), nullptr, this->_ld,
+            GPUScalar<T>::get(0).data(), nullptr, this->_ld,
             result.data(), result._ld
         ));
     }

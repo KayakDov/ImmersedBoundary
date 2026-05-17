@@ -213,7 +213,7 @@ GpuArray<T>::operator DeviceData2d<T>() const {
 template<typename T>
 void GpuArray<T>::add(GpuArray<T> &other, GpuArray<T> &dst, Handle &hand, bool transposeThis,
     bool transposeOther) const {
-    add(other, dst, GPUConst<T>::get(1), GPUConst<T>::get(1), transposeThis, transposeOther, hand);
+    add(other, dst, GPUScalar<T>::get(1), GPUScalar<T>::get(1), transposeThis, transposeOther, hand);
 }
 
 template <typename T>

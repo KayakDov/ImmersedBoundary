@@ -76,7 +76,7 @@ const Singleton<T>* Singleton<T>::_get_or_create_target(T defaultVal, Handle& ha
 }
 
 template<typename T>
-const Singleton<T> & GPUConst<T>::get(int32_t i) {
+const Singleton<T> & GPUScalar<T>::get(int32_t i) {
     switch (i) {
         case 0: return universal.ZERO;
         case 1: return universal.ONE;
@@ -88,7 +88,7 @@ const Singleton<T> & GPUConst<T>::get(int32_t i) {
 }
 
 template<typename T>
-GPUConst<T>::GPUConst(Handle hand):
+GPUScalar<T>::GPUScalar(Handle hand):
     base(SimpleArray<T>::create(5, hand)),
     ZERO(base.get(0)),
     ONE(base.get(1)),
@@ -106,7 +106,7 @@ GPUConst<T>::GPUConst(Handle hand):
     base.set(hostConsts.data(), hand);
 }
 
-template <typename T> const GPUConst<T> GPUConst<T>::universal = GPUConst<T>();
+template <typename T> const GPUScalar<T> GPUScalar<T>::universal = GPUScalar<T>();
 
 template class Singleton<int32_t>;
 template class Singleton<size_t>;
@@ -116,11 +116,11 @@ template class Singleton<unsigned char>;
 template class Singleton<uint32_t>;
 template class Singleton<long>;
 
-template class GPUConst<int32_t>;
-template class GPUConst<size_t>;
-template class GPUConst<float>;
-template class GPUConst<double>;
-template class GPUConst<unsigned char>;
-template class GPUConst<uint32_t>;
-template class GPUConst<long>;
+template class GPUScalar<int32_t>;
+template class GPUScalar<size_t>;
+template class GPUScalar<float>;
+template class GPUScalar<double>;
+template class GPUScalar<unsigned char>;
+template class GPUScalar<uint32_t>;
+template class GPUScalar<long>;
 

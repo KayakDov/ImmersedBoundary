@@ -25,7 +25,7 @@ void KroneckerTriplet<T>::multDepths(const SimpleArray<T> &other, SimpleArray<T>
         this->z, 0,
         dst1, stride,
         false, !transposeThis, hand,
-        dim.cols, GPUConst<T>::get(1), GPUConst<T>::get(0)
+        dim.cols, GPUScalar<T>::get(1), GPUScalar<T>::get(0)
     );
 }
 
@@ -101,7 +101,7 @@ KroneckerTriplet<T> KroneckerTriplet<T>::zOperator(const GridDim& gridDim, const
 }
 
 template<typename T>
-KroneckerTriplet<T>::KroneckerTriplet(const SquareMat<T> &X, const SquareMat<T> &Y) : KroneckerTriplet<T>(X, Y, GPUConst<T>::get(1).matrix(1).sqSubMat(0,0,1)) {
+KroneckerTriplet<T>::KroneckerTriplet(const SquareMat<T> &X, const SquareMat<T> &Y) : KroneckerTriplet<T>(X, Y, GPUScalar<T>::get(1).matrix(1).sqSubMat(0,0,1)) {
 }
 
 template<typename T>

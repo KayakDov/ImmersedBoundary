@@ -40,7 +40,7 @@ template<typename Real>
 void EigenDecompForFortran<Real>::solve(Real *xHost, Real *bHost)  {
 
     b.set(bHost, hand);
-    b.add(adjToB, &GPUConst<Real>::get(1), &hand);
+    b.add(adjToB, &GPUScalar<Real>::get(1), &hand);
 
     eds->solve(x, b, hand);
     x.get(xHost, hand);
