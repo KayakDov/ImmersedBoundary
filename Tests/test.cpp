@@ -407,13 +407,7 @@ void verifyEigenSolverIdentity(
 
 
 template <typename Real, typename Int>
-void verifyImmersedEqWithBoundary(
-    const BoundaryConfig<Real>& boundary,
-    Handle& hand,
-    Real tolerance,
-    const std::string& locMsg,
-    bool isCout = true)
-{
+void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& hand, Real tolerance, const std::string& locMsg, bool isCout = false){
     GridDim dim = boundary.dim();
     size_t n = dim.size();
 
@@ -612,16 +606,15 @@ void verifyImmersedEqWithBoundary(
     // ============================================================
 
     auto invLRHS = imEq.getRHS(p0, f, bc, B);
+    auto rhsImEq = SimpleArray<Real>::create(n, hand);
+    L.bandedMult(invLRHS, rhsImEq, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+
 
     auto invLLHS = imEq.LHSMat();
-
     auto lhsImEq = SquareMat<Real>::create(n);
-
-    auto rhsImEq = SimpleArray<Real>::create(n, hand);
-
     L.getDense(hand).mult(invLLHS, &lhsImEq, &hand, &GPUScalar<Real>::get(1), &GPUScalar<Real>::get(0), false, false);
 
-    L.bandedMult(invLRHS, rhsImEq, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+
 
     if (isCout) std::cout << "rhs ImEq = " << GpuOut<Real>(rhsImEq, hand) << std::endl;
 
@@ -749,43 +742,43 @@ TEST(LaplacianMath, laplacian) {
     size_t maxDim = 3;
     size_t startRowsCols = 2;
 
-    boundaryBattery<Real>(
-        {0,1,0},
-        {1, 1, 0},
-        {0, 0, 0},
-        {0, 0, 0},
-        {2, 2, 1},
-        1,
-        hand3, event2, tolerance
-    );
+    // boundaryBattery<Real>(
+    //     {0,1,0},
+    //     {1, 1, 0},
+    //     {0, 0, 0},
+    //     {0, 0, 0},
+    //     {2, 2, 1},
+    //     1,
+    //     hand3, event2, tolerance
+    // );
 
 
 
-    // for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
-    //     for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
-    //         for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
-    //             for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
-    //                 for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
-    //                     for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
-    //                         for (size_t isStag = 0; isStag < 2; ++isStag)
-    //                             for (size_t x0Val = 0; x0Val < 2; ++x0Val)
-    //                                 for (size_t x1Val = 0; x1Val < 2; ++x1Val)
-    //                                     for (size_t y0Val = 0; y0Val < 2; ++y0Val)
-    //                                         for (size_t y1Val = 0; y1Val < 2; ++y1Val)
-    //                                             for (size_t z0Val = 0; z0Val < 2; ++z0Val)
-    //                                                 for (size_t z1Val = 0; z1Val < 2; ++z1Val)
-    //                                                     for (size_t rows = startRowsCols; rows < maxDim; ++rows)
-    //                                                         for (size_t cols = startRowsCols; cols < maxDim; ++cols)
-    //                                                             for (size_t layers = 1; layers < maxDim; ++layers)
-    //                                                                 boundaryBattery<Real>(
-    //                                                                     XYZ<bool>(x0IsN, y0IsN, z0IsN),
-    //                                                                     XYZ<bool>(x1IsN, y1IsN, z1IsN),
-    //                                                                     XYZ<Real>(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val)),
-    //                                                                     XYZ<Real>(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val)),
-    //                                                                     GridDim(rows, cols, layers),
-    //                                                                     isStag,
-    //                                                                     hand3, event2, tolerance
-    //                                                                 );
+    for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
+        for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
+            for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
+                for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
+                    for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
+                        for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
+                            for (size_t isStag = 0; isStag < 2; ++isStag)
+                                for (size_t x0Val = 0; x0Val < 2; ++x0Val)
+                                    for (size_t x1Val = 0; x1Val < 2; ++x1Val)
+                                        for (size_t y0Val = 0; y0Val < 2; ++y0Val)
+                                            for (size_t y1Val = 0; y1Val < 2; ++y1Val)
+                                                for (size_t z0Val = 0; z0Val < 2; ++z0Val)
+                                                    for (size_t z1Val = 0; z1Val < 2; ++z1Val)
+                                                        for (size_t rows = startRowsCols; rows < maxDim; ++rows)
+                                                            for (size_t cols = startRowsCols; cols < maxDim; ++cols)
+                                                                for (size_t layers = 1; layers < maxDim; ++layers)
+                                                                    boundaryBattery<Real>(
+                                                                        XYZ<bool>(x0IsN, y0IsN, z0IsN),
+                                                                        XYZ<bool>(x1IsN, y1IsN, z1IsN),
+                                                                        XYZ<Real>(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val)),
+                                                                        XYZ<Real>(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val)),
+                                                                        GridDim(rows, cols, layers),
+                                                                        isStag,
+                                                                        hand3, event2, tolerance
+                                                                    );
 }
 
 
