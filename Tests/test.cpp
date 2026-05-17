@@ -605,21 +605,37 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& 
     // 7. Recover transformed immersed operators
     // ============================================================
 
+    // ============================================================
+    // 7. Recover transformed immersed operators
+    // ============================================================
+
+    // 1. Generate the LHS Matrix (Runs on hand5[0])
+    auto invLLHS = imEq.LHSMat();
+
+    // CRITICAL: Wait for hand5[0] to finish before copying on `hand`
+    cudaDeviceSynchronize();
+
+    // 2. DEEP COPY the LHS matrix so it survives the RHS generation
+    auto invLLHSCopy = SquareMat<Real>::create(n);
+    invLLHSCopy.set(invLLHS, hand);
+    cudaDeviceSynchronize();
+
+    // 3. Generate the RHS Vector (Runs on hand5[0])
+    // This will safely overwrite the shared alias buffer.
     auto invLRHS = imEq.getRHS(p0, f, bc, B);
+
+    // CRITICAL: Wait for hand5[0] to finish before L.bandedMult reads it
+    cudaDeviceSynchronize();
+
+    auto lhsImEq = SquareMat<Real>::create(n);
     auto rhsImEq = SimpleArray<Real>::create(n, hand);
+
+    // 4. Multiply using the safe, isolated copies
+    L.getDense(hand).mult(invLLHSCopy, &lhsImEq, &hand, &GPUScalar<Real>::get(1), &GPUScalar<Real>::get(0), false, false);
     L.bandedMult(invLRHS, rhsImEq, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
 
-
-    auto invLLHS = imEq.LHSMat();
-    auto lhsImEq = SquareMat<Real>::create(n);
-    L.getDense(hand).mult(invLLHS, &lhsImEq, &hand, &GPUScalar<Real>::get(1), &GPUScalar<Real>::get(0), false, false);
-
-
-
     if (isCout) std::cout << "rhs ImEq = " << GpuOut<Real>(rhsImEq, hand) << std::endl;
-
     if (isCout) std::cout << "lhs ImEq = \n" << GpuOut<Real>(lhsImEq, hand) << std::endl;
-
 
     // ============================================================
     // 8. Structural equality checks
@@ -708,7 +724,7 @@ void boundaryBattery(XYZ<bool> startIsN, XYZ<bool> endIsN, XYZ<Real> startVal, X
 
     std::string locMsg = ss.str();
 
-    std::cout << locMsg << std::endl;
+    // std::cout << locMsg << std::endl;
 
     BoundaryConfig<Real> boundary(
         startIsN,
@@ -743,8 +759,8 @@ TEST(LaplacianMath, laplacian) {
     size_t startRowsCols = 2;
 
     // boundaryBattery<Real>(
-    //     {0,1,0},
-    //     {1, 1, 0},
+    //     {0,0,0},
+    //     {0, 0, 0},
     //     {0, 0, 0},
     //     {0, 0, 0},
     //     {2, 2, 1},
