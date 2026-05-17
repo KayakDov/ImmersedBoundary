@@ -599,6 +599,7 @@ Mat<T> SimpleArray<T>::matrix(size_t height) const{
     return Mat<T>(height, this->size()/height, height, this->_ptr);
 }
 
+
 #define INSTANTIATE_MAT_VEC(T) \
 template class Mat<T>; \
 template void Vec<T>::mult(const Mat<T>&, Vec<T>&, Handle*, const Singleton<T>*, const Singleton<T>*, bool) const; \
@@ -615,36 +616,3 @@ INSTANTIATE_MAT_VEC(uint32_t)
 INSTANTIATE_MAT_VEC(unsigned char)
 
 #undef INSTANTIATE_MAT_VEC
-
-
-// template class Mat<float>;
-// template class Mat<double>;
-// template class Mat<size_t>;
-// template class Mat<int32_t>;
-// template class Mat<int64_t>;
-// template class Mat<uint32_t>;
-// template class Mat<unsigned char>;
-//
-// template void Vec<float>::mult(const Mat<float>&, Vec<float>&, Handle*, const Singleton<float>*, const Singleton<float>*, bool) const;
-// template void Vec<double>::mult(const Mat<double>&, Vec<double>&, Handle*, const Singleton<double>*, const Singleton<double>*, bool) const;
-// template void Vec<size_t>::mult(const Mat<size_t>&, Vec<size_t>&, Handle*, const Singleton<size_t>*, const Singleton<size_t>*, bool) const;
-// template void Vec<int32_t>::mult(const Mat<int32_t>&, Vec<int32_t>&, Handle*, const Singleton<int32_t>*, const Singleton<int32_t>*, bool) const;
-// template void Vec<int64_t>::mult(const Mat<int64_t>&, Vec<int64_t>&, Handle*, const Singleton<int64_t>*, const Singleton<int64_t>*, bool) const;
-// template void Vec<unsigned char>::mult(const Mat<unsigned char>&, Vec<unsigned char>&, Handle*, const Singleton<unsigned char>*, const Singleton<unsigned char>*, bool) const;
-// template void Vec<uint32_t>::mult(const Mat<uint32_t>&, Vec<uint32_t>&, Handle*, const Singleton<uint32_t>*, const Singleton<uint32_t>*, bool) const;
-//
-// template Vec<float>::operator Mat<float>();
-// template Vec<double>::operator Mat<double>();
-// template Vec<size_t>::operator Mat<size_t>();
-// template Vec<int32_t>::operator Mat<int32_t>();
-// template Vec<int64_t>::operator Mat<int64_t>();
-// template Vec<unsigned char>::operator Mat<unsigned char>();
-// template Vec<uint32_t>::operator Mat<uint32_t>();
-//
-// template Vec<float>::operator Mat<float>() const;
-// template Vec<double>::operator Mat<double>() const;
-// template Vec<size_t>::operator Mat<size_t>() const;
-// template Vec<int32_t>::operator Mat<int32_t>() const;
-// template Vec<int64_t>::operator Mat<int64_t>() const;
-// template Vec<unsigned char>::operator Mat<unsigned char>() const;
-// template Vec<uint32_t>::operator Mat<uint32_t>() const;

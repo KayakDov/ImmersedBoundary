@@ -523,6 +523,57 @@ void Vec<T>::add(const Vec<T> &x, const Singleton<T> *alpha, Handle *handle) {
     else throw std::invalid_argument("Vec::add unsupported type.");
 }
 
+
+template<typename T>
+__global__ void block_product_kernel(const DeviceData1d<T> src, DeviceData1d<T> dst) {
+    extern __shared__ unsigned char sharedRaw[];
+    T* sdata = reinterpret_cast<T*>(sharedRaw);
+
+    unsigned int tid = threadIdx.x;
+    size_t gid = idx();
+
+    if (gid < src.cols) sdata[tid] = src[gid];
+    else sdata[tid] = 1;
+
+    __syncthreads();
+
+    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if (tid < s) sdata[tid] *= sdata[tid + s];
+        __syncthreads();
+    }
+
+    if (tid == 0) dst[blockIdx.x] = sdata[0];
+}
+
+template<typename T>
+double Vec<T>::productAllElements( Handle& hand) const {
+
+    auto kp = this->kernelPrep();
+    auto blockProds = SimpleArray<T>::create(kp.numBlocks.x, hand);
+    return productAllElements(blockProds, hand);
+}
+
+template<typename T>
+double Vec<T>::productAllElements(SimpleArray<T> bufferNumBlocksSize, Handle& hand) const {
+
+    KernelPrep kp = kernelPrep();
+
+    block_product_kernel<<<kp.numBlocks, kp.threadsPerBlock, kp.threadsPerBlock.x * sizeof(T), hand>>>(
+        toKernel1d(), bufferNumBlocksSize.toKernel1d()
+    );
+
+    double final_product = 1.0f;
+
+    std::vector<T> prods(kp.numBlocks.x, 0);
+
+    bufferNumBlocksSize.get(prods.data(), hand);
+
+    for (int i = 0; i < kp.numBlocks.x; i++) final_product *= prods[i];
+
+    return final_product;
+}
+
+
 // =========================================================================
 // Explicit Template Instantiations
 // =========================================================================

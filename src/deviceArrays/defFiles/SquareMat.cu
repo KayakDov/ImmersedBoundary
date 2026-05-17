@@ -197,6 +197,80 @@ void SquareMat<T>::solve(Vec<T> &b, Handle *handle, Singleton<int32_t> *info, Ve
     solve(mat, handle, info, workspace, rowSwaps);
 }
 
+template<typename T>
+double SquareMat<T>::determinant(Vec<int32_t>& sizeOfNumRows, Singleton<int32_t>& info, Vec<T>& workSpaceForLUDecomp, Handle& handle) {
+    // factorLU(Handle *hand, Vec<int32_t> *rowSwaps, Singleton<int32_t> *info, Vec<T> *workSpace) {
+    this->factorLU(&handle, &sizeOfNumRows, &info, &workSpaceForLUDecomp);
+    int32_t infoHost = info.get(handle);
+
+    if (infoHost != 0) return 0;
+
+    double det = static_cast<T>(1);
+
+    Vec<T> diagonal = this->diag(0);
+
+    det *= diagonal.productAllElements(
+            workSpaceForLUDecomp.subVec(0, static_cast<int32_t>(diagonal.kernelPrep().numBlocks.x)),
+            handle
+        );
+
+    std::vector<int32_t> pivots(this->_rows, 0);
+
+    sizeOfNumRows.get(pivots.data(), handle);
+
+    int32_t numSwaps = 0;
+    for (size_t i = 0; i < this->_rows; ++i) if (pivots[i] != i + 1) ++numSwaps;
+
+    if (numSwaps % 2) det *= -1;
+
+    return det;
+}
+
+
+template<typename T>
+double SquareMat<T>::determinant(Handle& hand) {
+    int lwork = 0;
+
+    if constexpr (std::is_same_v<T, double>)
+        CHECK_CUSOLVER_ERROR(
+            cusolverDnDgetrf_bufferSize(
+                hand,
+                this->_rows,
+                this->_cols,
+                this->toKernel2d(),
+                this->_ld,
+                &lwork));
+
+    else if constexpr (std::is_same_v<T, float>)
+        CHECK_CUSOLVER_ERROR(
+            cusolverDnSgetrf_bufferSize(
+                hand,
+                this->_rows,
+                this->_cols,
+                this->toKernel2d(),
+                this->_ld,
+                &lwork));
+
+    else throw std::invalid_argument("Unsupported type.");
+
+    auto rowSwaps = Vec<int32_t>::create(this->_rows, hand);
+
+    auto info = Singleton<int32_t>::create(hand);
+
+    auto workSpace = Vec<T>::create(
+        std::max(
+            lwork,
+            static_cast<int>(KernelPrep(this->_rows).numBlocks.x)
+        ),
+        hand
+    );
+
+    return determinant(rowSwaps, info, workSpace, hand);
+}
+
+
+
+
 
 // 1. Define the expansion macro
 #define INSTANTIATE_SQUARE_MAT(T) \

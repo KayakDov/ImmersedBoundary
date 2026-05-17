@@ -136,6 +136,23 @@ public:
     void solve(Vec<T> &b, Handle *handle = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workspace = nullptr, Vec<int32_t> *
                        rowSwaps = nullptr);
 
+    /**
+     * Allocates and frees memory.  Gets the determinent using LU facotrization.  Destroys this matrix.
+     * @param hand
+     * @return
+     */
+    double determinant(Handle& hand) ;
+
+    /**
+     * Gets the determinent using LU factorization.  Destorys this matrix.
+     * @param sizeOfNumRows Allocated memory.
+     * @param info info about the LU decomposition will be stored here.
+     * @param workSpaceForLUDecomp A workspace for the LU decomposition
+     * @param handle
+     * @return The deteminant.
+     */
+    double determinant(Vec<int32_t>& sizeOfNumRows, Singleton<int32_t>& info, Vec<T>& workSpaceForLUDecomp, Handle& handle) ;
+
 };
 
 #endif //BICGSTAB_SQUAREMAT_H

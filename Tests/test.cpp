@@ -158,7 +158,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     std::vector<Real> resultP(dim.size(), 0);
     std::vector<Real> resultF(fHost.size(), 0);
 
-    ImmersedEq<Real, Int> imEq(boundary, fHost.size(), valuesB.size(), p.data(), fHost.data(), delta, 1, 1e-8, 1000);
+    ImmersedEq<Real, Int> imEq(boundary, fHost.size(), valuesB.size(), p.data(), fHost.data(), delta, 1, 1e-12, 1000);
 
 
     imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
@@ -407,120 +407,298 @@ void verifyEigenSolverIdentity(
 
 
 template <typename Real, typename Int>
-void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& hand, Real tolerance, const std::string& locMsg) {
+void verifyImmersedEqWithBoundary(
+    const BoundaryConfig<Real>& boundary,
+    Handle& hand,
+    Real tolerance,
+    const std::string& locMsg,
+    bool isCout = true)
+{
     GridDim dim = boundary.dim();
     size_t n = dim.size();
 
-    // 1. Setup a generic Sparse Boundary Matrix (B)
+    // ============================================================
+    // 1. Setup sparse boundary matrix B
+    // ============================================================
+
     std::vector<Int> rowOffsetsB = {0, 1, 2};
     std::vector<Int> colIndsB    = {0, std::min((Int)1, (Int)(n - 1))};
     std::vector<Real> valuesB    = {1.0, 1.0};
+
     size_t numB = rowOffsetsB.size() - 1;
 
     auto B = SparseCSR<Real, Int>::create(valuesB.size(), numB, n, hand);
+
     B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
+
     auto denseB = Mat<Real>::create(numB, n);
     B.getDense(denseB, hand);
 
-    std::cout << "B dense = \n" << GpuOut<Real>(denseB, hand) << std::endl;
+    if (isCout) std::cout << "B dense = \n" << GpuOut<Real>(denseB, hand) << std::endl;
 
 
-    // 2. Select a ground truth x_0
+    // ============================================================
+    // 2. Ground truth solution x0
+    // ============================================================
+
     std::vector<Real> x0Host(n, 0);
+
     for (size_t i = 0; i < n; ++i) x0Host[i] = static_cast<Real>(i + 1.0);
+
     auto x0 = SimpleArray<Real>::create(n, hand);
     x0.set(x0Host.data(), hand);
 
-    std::cout << "x0 = " << GpuOut<Real>(x0, hand) << std::endl;
+    if (isCout) std::cout << "x0 = " << GpuOut<Real>(x0, hand) << std::endl;
 
-    // 3. Select arbitrary boundary forces (f)
+
+    // ============================================================
+    // 3. Boundary force vector f
+    // ============================================================
+
     std::vector<Real> fHost(numB, 0);
+
     for (size_t i = 0; i < numB; ++i) fHost[i] = static_cast<Real>((i + 1) * (i + 1));
+
     auto f = SimpleArray<Real>::create(numB, hand);
     f.set(fHost.data(), hand);
 
-    std::cout << "f = " << GpuOut<Real>(f, hand) << std::endl;
+    if (isCout) std::cout << "f = " << GpuOut<Real>(f, hand) << std::endl;
 
-    // 4. Compute p_0 directly on the GPU
-    // Equation: p_0 = L*x_0 + 2*B^T*(B*x_0) - 2*B^T*f - boundaryCorrection
+
+    // ============================================================
+    // 4. Construct explicit manufactured system
+    //
+    // p0 = Lx + 2 B^T B x - 2 B^T f - bc
+    // ============================================================
+
     auto p0 = SimpleArray<Real>::create(n, hand);
     p0.fill(0, hand);
-    std::cout << "p0 init = " << GpuOut<Real>(p0, hand) << std::endl;
 
+    if (isCout) std::cout << "p0 init = " << GpuOut<Real>(p0, hand) << std::endl;
+
+
+    // ------------------------------------------------------------
+    // Laplacian
+    // ------------------------------------------------------------
 
     auto lhs = SquareMat<Real>::create(n);
 
-    //  a. p_0 = L * x_0
     BandedMat<Real> L = poisson::laplacian(boundary, hand);
-    L.bandedMult(x0, p0, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
-    L.getDense(lhs, &hand);
-    std::cout << "L = \n" << GpuOut<Real>(lhs, hand) << std::endl;
-    std::cout << "Lx = " << GpuOut<Real>(p0, hand) << std::endl;
 
+    L.bandedMult(x0, p0, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+
+    L.getDense(lhs, &hand);
+
+    if (isCout) std::cout << "L = \n" << GpuOut<Real>(lhs, hand) << std::endl;
+
+    if (isCout) std::cout << "Lx = " << GpuOut<Real>(p0, hand) << std::endl;
+
+
+    // ------------------------------------------------------------
+    // Add 2 B^T B
+    // ------------------------------------------------------------
 
     denseB.mult(denseB, &lhs, &hand, &GPUScalar<Real>::get(2), &GPUScalar<Real>::get(1), true, false);
+
     lhs.add(denseB, lhs, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false, false, hand);
 
-    //  b. tempB = B * x_0
-    auto tempB = SimpleArray<Real>::create(numB, hand);
-    size_t wsSizeB = B.multWorkspaceSize(x0, tempB, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false, hand);
-    auto workspaceB = SimpleArray<Real>::create(wsSizeB, hand);
-    B.mult(x0, tempB, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false, workspaceB, hand);
-    std::cout << "Bx  = " << GpuOut<Real>(tempB, hand) << std::endl;
 
-    //  c. p_0 = p_0 + 2 * B^T * tempB
-    size_t wsSizeBt = B.multWorkspaceSize(tempB, p0, GPUScalar<Real>::get(2), GPUScalar<Real>::get(1), true, hand);
+    // ------------------------------------------------------------
+    // tempB = B x0
+    // ------------------------------------------------------------
+
+    auto tempB = SimpleArray<Real>::create(numB, hand);
+
+    size_t wsSizeB = B.multWorkspaceSize(x0, tempB, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false, hand);
+
+    auto workspaceB = SimpleArray<Real>::create(wsSizeB, hand);
+
+    B.mult(x0, tempB, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false, workspaceB, hand);
+
+    if (isCout) std::cout << "Bx = " << GpuOut<Real>(tempB, hand) << std::endl;
+
+
+    // ------------------------------------------------------------
+    // p0 += 2 B^T B x0
+    // ------------------------------------------------------------
+
+    size_t wsSizeBt = B.multWorkspaceSize( tempB, p0, GPUScalar<Real>::get(2), GPUScalar<Real>::get(1), true, hand);
+
     auto workspaceBt = SimpleArray<Real>::create(wsSizeBt, hand);
+
     B.mult(tempB, p0, GPUScalar<Real>::get(2), GPUScalar<Real>::get(1), true, workspaceBt, hand);
-    std::cout << "2 B^T B x + Lx = " << GpuOut<Real>(p0, hand) << std::endl;
+
+    if (isCout) std::cout << "2 B^T B x + Lx = " << GpuOut<Real>(p0, hand) << std::endl;
+
+
+    // ------------------------------------------------------------
+    // p0 -= 2 B^T f
+    // ------------------------------------------------------------
 
     auto rhs = SimpleArray<Real>::create(n, hand);
-    //  d. p0 -= 2 * B^T * f
+
     size_t wsSizeBtf = B.multWorkspaceSize(f, p0, GPUScalar<Real>::get(2), GPUScalar<Real>::get(0), true, hand);
+
     auto workspaceBtf = SimpleArray<Real>::create(wsSizeBtf, hand);
+
     B.mult(f, p0, GPUScalar<Real>::get(-2), GPUScalar<Real>::get(1), true, workspaceBtf, hand);
+
     B.mult(f, rhs, GPUScalar<Real>::get(2), GPUScalar<Real>::get(0), true, workspaceBtf, hand);
-    std::cout << "2 B^T B x + Lx - 2 B^T f = " << GpuOut<Real>(p0, hand) << std::endl;
 
-    //  e. Apply boundaryCorrection
+    if (isCout) std::cout << " 2 B^T f = " << GpuOut<Real>(rhs, hand) << std::endl;
+    if (isCout) std::cout << "2 B^T B x + Lx - 2 B^T f = " << GpuOut<Real>(p0, hand) << std::endl;
+
+
+    // ------------------------------------------------------------
+    // Boundary correction
+    // ------------------------------------------------------------
+
     auto bc = poisson::boundaryCorrection(boundary, hand);
-    std::cout << "bc = " << GpuOut<Real>(bc, hand) << std::endl;
 
-    //     p_0 = p_0 - bc
+    if (isCout) std::cout << "bc = " << GpuOut<Real>(bc, hand) << std::endl;
+
     p0.add(bc, &GPUScalar<Real>::get(-1), &hand);
-    std::cout << "2 B^T B x + Lx - 2 B^T f - bc = " << GpuOut<Real>(p0, hand) << std::endl;
 
-    // 5. Download the computed p_0 to the host for the solver initialization
-    std::vector<Real> p0Host(n, 0);
-    p0.get(p0Host.data(), hand);
+    if (isCout) std::cout << "2 B^T B x + Lx - 2 B^T f - bc = " << GpuOut<Real>(p0, hand) << std::endl;
+
+
+    // ------------------------------------------------------------
+    // Construct explicit RHS
+    // rhs = p0 + 2 B^T f + bc
+    // ------------------------------------------------------------
 
     rhs.add(p0, &GPUScalar<Real>::get(1), &hand);
     rhs.add(bc, &GPUScalar<Real>::get(1), &hand);
 
-    std::cout << "rhs test = " << GpuOut<Real>(rhs, hand) << std::endl;
-    std::cout << "lhs test =\n" << GpuOut<Real>(lhs, hand) << std::endl;
+    if (isCout) std::cout << "rhs test = " << GpuOut<Real>(rhs, hand) << std::endl;
 
-    // 6. Solve for x given p_0
-    ImmersedEq<Real, Int> imEq(boundary, numB, valuesB.size(), p0Host.data(), fHost.data(), Real3d(1, 1, 1), 1, 1e-8, 1000);
+    if (isCout) std::cout << "lhs test =\n" << GpuOut<Real>(lhs, hand) << std::endl;
+
+
+    // ============================================================
+    // 5. Detect singularity using LU
+    // ============================================================
+
+    auto lhsCopy = SquareMat<Real>::create(lhs._cols);
+    lhsCopy.set(lhs, hand);
+
+    double det =  lhsCopy.determinant(hand);
+
+    if (isCout) std::cout << "LU packed matrix = \n" << GpuOut<Real>(lhsCopy, hand) << std::endl;
+
+
+    bool isSingular = (std::abs(det) < 1e-5);
+
+    if (isCout) std::cout << "LHS matrix is " << (isSingular ? "SINGULAR" : "INVERTIBLE") << " (det info = " << det << ")" << std::endl;
+
+
+
+    // ============================================================
+    // 6. Solve using immersed equation
+    // ============================================================
+
+    std::vector<Real> p0Host(n, 0);
+    p0.get(p0Host.data(), hand);
+
+    ImmersedEq<Real, Int> imEq(boundary, numB, valuesB.size(), p0Host.data(), fHost.data(), Real3d(1, 1, 1), 1, 1e-12, 1000);
 
     std::vector<Real> resultX(n, 0);
+
     imEq.solve(resultX.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
 
+
+    // ============================================================
+    // 7. Recover transformed immersed operators
+    // ============================================================
+
     auto invLRHS = imEq.getRHS(p0, f, bc, B);
+
     auto invLLHS = imEq.LHSMat();
 
-    L.getDense(hand).mult(invLLHS, &lhs, &hand, &GPUScalar<Real>::get(1), &GPUScalar<Real>::get(0), false, false);
+    auto lhsImEq = SquareMat<Real>::create(n);
 
-    L.bandedMult(invLRHS, rhs, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+    auto rhsImEq = SimpleArray<Real>::create(n, hand);
 
-    std::cout << "rhs ImEq = " << GpuOut<Real>(rhs, hand) << std::endl;
-    std::cout << "lhs ImEq = \n" << GpuOut<Real>(lhs, hand) << std::endl;
+    L.getDense(hand).mult(invLLHS, &lhsImEq, &hand, &GPUScalar<Real>::get(1), &GPUScalar<Real>::get(0), false, false);
 
-    cudaDeviceSynchronize();
+    L.bandedMult(invLRHS, rhsImEq, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
 
-    // 7. Compare the solved x to the chosen x_0
-    for (size_t i = 0; i < n; ++i) {
-        EXPECT_NEAR(resultX[i], x0Host[i], tolerance) << locMsg << " at flat index " << i;
+    if (isCout) std::cout << "rhs ImEq = " << GpuOut<Real>(rhsImEq, hand) << std::endl;
+
+    if (isCout) std::cout << "lhs ImEq = \n" << GpuOut<Real>(lhsImEq, hand) << std::endl;
+
+
+    // ============================================================
+    // 8. Structural equality checks
+    // ============================================================
+
+    std::vector<Real> lhsHost(n * n, 0);
+    std::vector<Real> lhsImEqHost(n * n, 0);
+
+    lhs.get(lhsHost.data(), hand);
+    lhsImEq.get(lhsImEqHost.data(), hand);
+
+    for (size_t i = 0; i < n * n; ++i)
+        EXPECT_NEAR(lhsHost[i], lhsImEqHost[i], tolerance) << locMsg << " - LHS Matrix mismatch at flat index " << i;
+
+
+    std::vector<Real> rhsHost(n, 0);
+    std::vector<Real> rhsImEqHost(n, 0);
+
+    rhs.get(rhsHost.data(), hand);
+    rhsImEq.get(rhsImEqHost.data(), hand);
+
+    for (size_t i = 0; i < n; ++i)
+        EXPECT_NEAR(rhsHost[i], rhsImEqHost[i], tolerance) << locMsg << " - RHS Vector mismatch at flat index " << i;
+
+
+    // ============================================================
+    // 9. Validate recovered solution
+    // ============================================================
+
+    if (isSingular) {
+
+        // --------------------------------------------------------
+        // Singular systems:
+        //
+        // We only require that the returned solution satisfies:
+        //
+        //     A x = b
+        //
+        // because the solution may not be unique.
+        // --------------------------------------------------------
+
+        auto resultDevice = SimpleArray<Real>::create(n, hand);
+
+        resultDevice.set(resultX.data(), hand);
+
+        auto residual = SimpleArray<Real>::create(n, hand);
+
+        residual.fill(0, hand);
+
+        // residual = A * resultX
+
+        lhs.mult(resultDevice, residual, &hand, &GPUScalar<Real>::get(1), &GPUScalar<Real>::get(0), false);
+
+        // residual -= rhs
+
+        residual.add(rhs, &GPUScalar<Real>::get(-1), &hand);
+
+        std::vector<Real> residualHost(n, 0);
+
+        residual.get(residualHost.data(), hand);
+
+        for (size_t i = 0; i < n; ++i)
+            EXPECT_NEAR(residualHost[i], Real(0), tolerance) << locMsg << " - Singular-system residual mismatch at flat index " << i << " residual = " << residualHost[i];
+    } else {
+
+        // --------------------------------------------------------
+        // Nonsingular systems:
+        // require exact recovery of x0.
+        // --------------------------------------------------------
+
+        for (size_t i = 0; i < n; ++i)
+            EXPECT_NEAR(resultX[i], x0Host[i], tolerance) << locMsg << " - Solution vector mismatch at flat index " << i;
     }
 }
 
@@ -571,43 +749,43 @@ TEST(LaplacianMath, laplacian) {
     size_t maxDim = 3;
     size_t startRowsCols = 2;
 
-    // boundaryBattery<Real>(
-    //     {0,0,0},
-    //     {0, 0, 0},
-    //     {0, 0, 0},
-    //     {0, 0, 0},
-    //     {2, 2, 2},
-    //     false,
-    //     hand3, event2, tolerance
-    // );
+    boundaryBattery<Real>(
+        {0,1,0},
+        {1, 1, 0},
+        {0, 0, 0},
+        {0, 0, 0},
+        {2, 2, 1},
+        1,
+        hand3, event2, tolerance
+    );
 
 
 
-    for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
-        for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
-            for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
-                for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
-                    for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
-                        for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
-                            for (size_t isStag = 0; isStag < 2; ++isStag)
-                                for (size_t x0Val = 0; x0Val < 2; ++x0Val)
-                                    for (size_t x1Val = 0; x1Val < 2; ++x1Val)
-                                        for (size_t y0Val = 0; y0Val < 2; ++y0Val)
-                                            for (size_t y1Val = 0; y1Val < 2; ++y1Val)
-                                                for (size_t z0Val = 0; z0Val < 2; ++z0Val)
-                                                    for (size_t z1Val = 0; z1Val < 2; ++z1Val)
-                                                        for (size_t rows = startRowsCols; rows < maxDim; ++rows)
-                                                            for (size_t cols = startRowsCols; cols < maxDim; ++cols)
-                                                                for (size_t layers = 1; layers < maxDim; ++layers)
-                                                                    boundaryBattery<Real>(
-                                                                        XYZ<bool>(x0IsN, y0IsN, z0IsN),
-                                                                        XYZ<bool>(x1IsN, y1IsN, z1IsN),
-                                                                        XYZ<Real>(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val)),
-                                                                        XYZ<Real>(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val)),
-                                                                        GridDim(rows, cols, layers),
-                                                                        isStag,
-                                                                        hand3, event2, tolerance
-                                                                    );
+    // for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
+    //     for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
+    //         for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
+    //             for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
+    //                 for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
+    //                     for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
+    //                         for (size_t isStag = 0; isStag < 2; ++isStag)
+    //                             for (size_t x0Val = 0; x0Val < 2; ++x0Val)
+    //                                 for (size_t x1Val = 0; x1Val < 2; ++x1Val)
+    //                                     for (size_t y0Val = 0; y0Val < 2; ++y0Val)
+    //                                         for (size_t y1Val = 0; y1Val < 2; ++y1Val)
+    //                                             for (size_t z0Val = 0; z0Val < 2; ++z0Val)
+    //                                                 for (size_t z1Val = 0; z1Val < 2; ++z1Val)
+    //                                                     for (size_t rows = startRowsCols; rows < maxDim; ++rows)
+    //                                                         for (size_t cols = startRowsCols; cols < maxDim; ++cols)
+    //                                                             for (size_t layers = 1; layers < maxDim; ++layers)
+    //                                                                 boundaryBattery<Real>(
+    //                                                                     XYZ<bool>(x0IsN, y0IsN, z0IsN),
+    //                                                                     XYZ<bool>(x1IsN, y1IsN, z1IsN),
+    //                                                                     XYZ<Real>(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val)),
+    //                                                                     XYZ<Real>(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val)),
+    //                                                                     GridDim(rows, cols, layers),
+    //                                                                     isStag,
+    //                                                                     hand3, event2, tolerance
+    //                                                                 );
 }
 
 

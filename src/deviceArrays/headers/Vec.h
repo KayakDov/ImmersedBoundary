@@ -305,7 +305,21 @@ public:
     template<class Int>
     void permute(Vec<Int> permutation, Vec<T> dst, Handle &hand);
 
+    /**
+     * Finds the product of all elements in this array.  This will not be efficient if the number of blocks from kernel
+     * Prep is very large.  If that is the case, a more efficient method should be written.
+     * @param bufferNumBlocksSize An array the size of the numvber of blocks.
+     * @param hand
+     * @return The product of all the elements in this vector.
+     */
+    double productAllElements(SimpleArray<T> bufferNumBlocksSize, Handle& hand) const;
 
+    /**
+     * The product of all the elements in this array.  This will allocate memory.
+     * @param hand
+     * @return
+     */
+    double productAllElements( Handle& hand) const ;
 
 };
 
