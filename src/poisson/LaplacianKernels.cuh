@@ -55,13 +55,12 @@ public:
         const int laplacianNumColumns
     ) {
         T& mainDiag = (*laplacian)[primary.bandedInd(rowL)];
-        GridInd2d rightIndInBanded = leftRight.right.bandedInd(rowL);
-        T& rightDiag = (*laplacian)[rightIndInBanded];
-        GridInd2d leftIndInBanded = leftRight.left.bandedInd(rowL);
-        T& leftDiag = (*laplacian)[leftIndInBanded];
+        T& rightDiag = (*laplacian)[leftRight.right.bandedInd(rowL)];
+        T& leftDiag = (*laplacian)[leftRight.left.bandedInd(rowL)];
 
         if (indexInLine == 0) {
             if (rowL + leftRight.left.diag < laplacianNumColumns) leftDiag = 0;
+
             boundaries.start.setL(mainDiag, rightDiag);
         } else if (indexInLine == boundaries.dimLength - 1) {
             if (rowL + leftRight.right.diag < laplacianNumColumns) rightDiag = 0;

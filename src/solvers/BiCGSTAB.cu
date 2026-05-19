@@ -86,8 +86,6 @@ BiCGSTAB<T>::BiCGSTAB(
     maxIterations(maxIterations)
 {
     static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
-    bHeightX7.fill(0, hand4[0]);
-    a9.fill(0, hand4[1]);
     record(1, {events12[0]});
     hold(0, {events12[0]});
 }

@@ -112,11 +112,12 @@ ImmersedEq<Real, Int>::ImmersedEq(
 template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
 void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) {
 
-    lhsTimes.record(hand5[0]);
-    lhsTimes.hold(hand5[4]);
-
     if (preMultResult.data() == GPUScalar<Real>::get(0).data()) result.fill(0, hand5[4]);
-    else result.mult(preMultResult, hand5 + 4);
+    else {
+        lhsTimes.record(hand5[0]);
+        lhsTimes.hold(hand5[4]);
+        result.mult(preMultResult, hand5 + 4);
+    }
     lhsTimes.record(hand5[4]);
 
     auto Bx = lagrangeVec(LagrangeInd::LHS_Bx);
@@ -142,7 +143,7 @@ SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
     auto result = SquareMat<Real>::create(dim.size());
     for (size_t i = 0; i < dim.size(); ++i) {
         auto col = result.col(i);
-        LHSTimes(id.col(i), static_cast<SimpleArray<Real> &>(col), GPUScalar<Real>::get(1), GPUScalar<Real>::get(0));
+        LHSTimes(id.col(i), col, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0));
     }
     return result;
 }

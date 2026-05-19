@@ -71,7 +71,16 @@ __global__ void multVecKernel(
 
     sumBlock(val);
 
-    if (isValid && bandedCol == 0) result[rowResult] = *alpha * val + *beta * result[rowResult];
+    // if (banded.rows == 64 && isValid && bandedCol == 0 && rowResult == 62) {
+    //     printf("Row: %lu, Col: %lu, Diag: %d, Val: %f, XRow: %d, ResultPtr: %p\n",
+    //            (unsigned long)rowResult, (unsigned long)bandedCol, diags[bandedCol], (double)val, (int)(rowResult + diags[bandedCol]), &result[rowResult]);
+    // }
+
+    if (isValid && bandedCol == 0) result[rowResult] = *alpha * val + (*beta == 0 ? 0 : *beta * result[rowResult]);
+
+    // if (banded.rows == 64 && isValid && bandedCol == 0 && rowResult == 62) {
+    //     printf("final val: %f\n", (double)(result[rowResult]));
+    // }
 }
 
 /**
@@ -102,7 +111,7 @@ void BandedMat<T>::bandedMult(
 
     if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
 
-    multVecKernel<<<this->_rows, this->_cols, 0, *h>>>(
+    multVecKernel<<<this->_rows, 32, 0, *h>>>(
         this->toKernel2d(),
         _indices.toKernel1d().data,
         other.toKernel1d(),
