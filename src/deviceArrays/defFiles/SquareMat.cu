@@ -228,7 +228,7 @@ double SquareMat<T>::determinant(Vec<int32_t>& sizeOfNumRows, Singleton<int32_t>
 
 
 template<typename T>
-double SquareMat<T>::determinant(Handle& hand) {
+double SquareMat<T>::determinant(Handle& hand) { //TODO: This method should call my LU decomp method.
     int lwork = 0;
 
     if constexpr (std::is_same_v<T, double>)
@@ -269,6 +269,68 @@ double SquareMat<T>::determinant(Handle& hand) {
 }
 
 
+template<typename T>
+bool SquareMat<T>::isSingular(double tolerance, Vec<int32_t>& rowSwaps, Singleton<int32_t>& info, Vec<T>& workSpace, Handle& hand) {
+    if (this->_rows == 0) return true;
+
+    // Perform in-place LU decomposition
+    this->factorLU(&hand, &rowSwaps, &info, &workSpace);
+
+    int32_t infoHost = info.get(hand);
+
+    // cuSOLVER getrf sets info > 0 if an exact zero pivot is found (U(i,i) == 0).
+    if (infoHost > 0) return true;
+    if (infoHost < 0) throw std::runtime_error("Illegal parameter passed to LU decomposition.");
+
+    // Extract the main diagonal of the resulting LU packed matrix
+    Vec<T> diagonal = this->diag(0);
+    std::vector<T> diagHost(this->_rows);
+    diagonal.get(diagHost.data(), hand);
+    hand.synch();
+
+    double max_diag = 0.0;
+    double min_diag = std::numeric_limits<double>::max();
+
+    for (size_t i = 0; i < this->_rows; ++i) {
+        double abs_val = std::abs(static_cast<double>(diagHost[i]));
+        if (abs_val > max_diag) max_diag = abs_val;
+        if (abs_val < min_diag) min_diag = abs_val;
+    }
+
+    if (max_diag == 0.0) return true;
+
+    if (tolerance < 0.0) {
+        if constexpr (std::is_same_v<T, float>) tolerance = this->_rows * 1.1920929e-07; // n * flt_epsilon
+        else tolerance = this->_rows * 2.220446049250313e-16; // n * dbl_epsilon
+    }
+
+    // Singularity check: min diagonal is excessively small compared to max diagonal
+    return (min_diag <= tolerance * max_diag);
+}
+
+
+template<typename T>
+bool SquareMat<T>::isSingular(double tolerance, Handle& hand) const {
+    if (this->_rows == 0) return true;
+
+    int lwork = 0;
+
+    if constexpr (std::is_same_v<T, double>) {
+        CHECK_CUSOLVER_ERROR(cusolverDnDgetrf_bufferSize(hand, this->_rows, this->_cols, this->toKernel2d(), this->_ld, &lwork));
+    } else if constexpr (std::is_same_v<T, float>) {
+        CHECK_CUSOLVER_ERROR(cusolverDnSgetrf_bufferSize(hand, this->_rows, this->_cols, this->toKernel2d(), this->_ld, &lwork));
+    } else throw std::invalid_argument("Unsupported type.");
+
+    auto rowSwaps = Vec<int32_t>::create(this->_rows, hand);
+    auto info = Singleton<int32_t>::create(hand);
+    auto workSpace = Vec<T>::create(std::max(lwork, static_cast<int>(KernelPrep(this->_rows).numBlocks.x)), hand);
+
+    // DEEP COPY: factorLU modifies the data in-place, so we must operate on a copy
+    auto copyMat = SquareMat<T>::create(this->_rows);
+    this->get(copyMat, hand);
+
+    return copyMat.isSingular(tolerance, rowSwaps, info, workSpace, hand);
+}
 
 
 

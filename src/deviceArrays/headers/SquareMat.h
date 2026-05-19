@@ -153,6 +153,25 @@ public:
      */
     double determinant(Vec<int32_t>& sizeOfNumRows, Singleton<int32_t>& info, Vec<T>& workSpaceForLUDecomp, Handle& handle) ;
 
+    /**
+     * Checks if the matrix is singular by looking at the eigen values.  Allocates its own memory for each run.
+     * Will destroy this matrix.
+     * @param tolerance
+     * @param hand
+     * @return true if the matrix is singular, false otherwie.
+     */
+    bool isSingular(double tolerance, Handle& hand) const ;
+
+    /**
+     * Checks if the matrix is singular by looking at the eigen values.  Will destory this matrix.
+     * @param tolerance
+     * @param buffer2n A buffer with twice as many elements as this matrix has rows.
+     * @param buffeNXN A buffer the same size as this matrix.
+     * @param hand
+     * @return true if this matrix is singular, false otherwise.
+     */
+    bool isSingular(double tolerance, Vec<int32_t>& rowSwaps, Singleton<int32_t>& info, Vec<T>& workSpace, Handle& hand) ;
+
 };
 
 #endif //BICGSTAB_SQUAREMAT_H

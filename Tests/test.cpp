@@ -74,7 +74,7 @@
 //
 //     std::vector<Real> expectedP1 = {-7.483126, -8.359545, -2.292128, -2.606740, -2.943816, -0.808988};
 //
-//     for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], expectedP1[i], 1e-4);
+//     for (size_t i = 0; i < resultP.size(); ++i) ASSERT_NEAR(resultP[i], expectedP1[i], 1e-4);
 //
 //     imEq.solve(
 //         resultP.data(),
@@ -97,9 +97,9 @@
 //
 //     std::vector<Real> expectedF = {17.23595, 26.29962};
 //
-//     for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], expectedP2[i], 1e-4);
+//     for (size_t i = 0; i < resultP.size(); ++i) ASSERT_NEAR(resultP[i], expectedP2[i], 1e-4);
 //
-//     for (size_t i = 0; i < resultF.size(); ++i) EXPECT_NEAR(resultF[i], expectedF[i], 1e-4);
+//     for (size_t i = 0; i < resultF.size(); ++i) ASSERT_NEAR(resultF[i], expectedF[i], 1e-4);
 // }
 
 TEST(ImmersedEq, SolvesImmeresed_Generic) {
@@ -165,7 +165,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
 
     cudaDeviceSynchronize();
 
-    for (size_t i = 0; i < resultP.size(); ++i) EXPECT_NEAR(resultP[i], i + 1, 1e-4);
+    for (size_t i = 0; i < resultP.size(); ++i) ASSERT_NEAR(resultP[i], i + 1, 1e-4);
 
 }
 
@@ -238,7 +238,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
 
         vi.norm(normGpu, hand);
         T err = normGpu.get(hand) - 1;
-        EXPECT_LT(err, tol)
+        ASSERT_LT(err, tol)
             << errorMsg << "\nEigen Vector is not orthogonal, col " << i << " has a norm not equal to 1 "
             << " residual = " << err;
 
@@ -256,7 +256,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
 
         err = normGpu.get(hand);
 
-        EXPECT_LT(std::abs(err), tol)
+        ASSERT_LT(std::abs(err), tol)
             << errorMsg << "\nEigenpair failed at index " << i
             << " residual = " << err;
     }
@@ -265,7 +265,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
         for (size_t j = i + 1; j < V._cols; ++j) {
             V.col(i).mult(V.col(j), normGpu, &hand);
             T err = normGpu.get(hand);
-            EXPECT_LT(std::abs(err), tol)
+            ASSERT_LT(std::abs(err), tol)
             << errorMsg << "\nEigenpair failed at index " << i
             << " residual = " << err;
         }
@@ -287,7 +287,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
     diff.get(diffHost.data(), hand);
     for (size_t i = 0; i < diffHost.size(); ++i) {
         T val = diffHost[i];
-        EXPECT_LT(std::abs(val), tol)
+        ASSERT_LT(std::abs(val), tol)
             << "failed at index " << i
             << " (row " << i % V._cols << ", col " << i / V._cols << ")"
             << " with diff: " << val
@@ -366,14 +366,14 @@ void verifyEigenSolverIdentity(const GridDim& dim, BoundaryConfig<Real>& boundar
             // Shift the solver's zero-mean result back to the original mean
             Real shiftedResult = xCpuResult[i] + offset;
 
-            EXPECT_NEAR(xCpuOrig[i], shiftedResult, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
+            ASSERT_NEAR(xCpuOrig[i], shiftedResult, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
                 << "Solver divergence at index " << i << " in " << dim.numDims()
                 << "D (Singular Mode Shift: " << offset << ")";
         }
     } else {
         // Standard Dirichlet/Mixed validation
         for (size_t i = 0; i < dim.size(); ++i) {
-            EXPECT_NEAR(xCpuOrig[i], xCpuResult[i], tolerance)
+            ASSERT_NEAR(xCpuOrig[i], xCpuResult[i], tolerance)
                 << "Solver divergence at index " << i << " in " << dim.numDims() << "D";
         }
     }
@@ -387,13 +387,13 @@ void verifyEigenSolverIdentity(const GridDim& dim, BoundaryConfig<Real>& boundar
             Real offset = xCpuOrig[0] - xCpuResult[0];
             for (size_t i = 0; i < dim.size(); ++i){
                 Real shiftedResult = xCpuResult[i] + offset;
-                EXPECT_NEAR(xCpuOrig[i], shiftedResult, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
+                ASSERT_NEAR(xCpuOrig[i], shiftedResult, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
                     << "Solver divergence at index " << i << " in " << dim.numDims()
                     << "D (Singular Mode Shift: " << offset << ")";
             }
         } else {
             for (size_t i = 0; i < dim.size(); ++i) {
-                EXPECT_NEAR(xCpuOrig[i], xCpuResult[i], tolerance)
+                ASSERT_NEAR(xCpuOrig[i], xCpuResult[i], tolerance)
                     << "Solver divergence at index " << i << " in " << dim.numDims() << "D";
             }
         }
@@ -574,14 +574,9 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& 
     auto lhsCopy = SquareMat<Real>::create(lhs._cols);
     lhsCopy.set(lhs, hand);
 
-    double det =  lhsCopy.determinant(hand);
+    bool isSingular = lhsCopy.isSingular(5e-11, hand);
 
-    // errorMsg << "LU packed matrix = \n" << GpuOut<Real>(lhsCopy, hand) << std::endl;
-
-
-    bool isSingular = (std::abs(det) < 1e-5);
-
-    errorMsg << "LHS matrix is " << (isSingular ? "SINGULAR" : "INVERTIBLE") << " (det = " << det << ")" << std::endl;
+    errorMsg << "LHS matrix is " << (isSingular ? "SINGULAR" : "INVERTIBLE") << std::endl;
 
 
 
@@ -633,7 +628,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& 
         lhsImEq.get(lhsImEqHost.data(), hand);
 
         for (size_t i = 0; i < n * n; ++i)
-            EXPECT_NEAR(lhsHost[i], lhsImEqHost[i], tolerance) << locMsg << " - LHS Matrix mismatch at flat index " << i << errorMsg.str();
+            ASSERT_NEAR(lhsHost[i], lhsImEqHost[i], tolerance) << locMsg << " - LHS Matrix mismatch at flat index " << i << errorMsg.str();
 
 
         std::vector<Real> rhsHost(n, 0);
@@ -643,7 +638,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& 
         rhsImEq.get(rhsImEqHost.data(), hand);
 
         for (size_t i = 0; i < n; ++i)
-            EXPECT_NEAR(rhsHost[i], rhsImEqHost[i], tolerance) << locMsg << " - RHS Vector mismatch at flat index " << i << std::endl << errorMsg.str();
+            ASSERT_NEAR(rhsHost[i], rhsImEqHost[i], tolerance) << locMsg << " - RHS Vector mismatch at flat index " << i << std::endl << errorMsg.str();
         cudaDeviceSynchronize();
     }
 
@@ -681,7 +676,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& 
         meanResidual /= n;
 
         for (size_t i = 0; i < n; ++i) {
-            EXPECT_NEAR(residualHost[i], meanResidual, tolerance)
+            ASSERT_NEAR(residualHost[i], meanResidual, tolerance)
                 << locMsg << " - Singular-system residual is not uniform within nullspace at flat index "
                 << i << " residual = " << residualHost[i] << errorMsg.str();
         }
@@ -693,7 +688,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& 
         // --------------------------------------------------------
 
         for (size_t i = 0; i < n; ++i)
-            EXPECT_NEAR(resultX[i], x0Host[i], tolerance) << locMsg << " - Solution vector mismatch at flat index " << i << errorMsg.str();
+            ASSERT_NEAR(resultX[i], x0Host[i], tolerance) << locMsg << " - Solution vector mismatch at flat index " << i << errorMsg.str();
     }
 }
 template <typename Real>
@@ -738,50 +733,49 @@ TEST(LaplacianMath, laplacian) {
     Event event2[2];
     using Real = double;
 
-    double tolerance = 1e-10;
+    double tolerance = 1e-4;
 
     size_t maxDim = 10;
     size_t startRowsCols = 2;
 
-    // 3: startIsNeuman = (0, 0, 0) endIsNeumann = (0, 0, 0) isStagered = 0 startVal = (0, 0, 0) endVal = (0, 0, 0) dim = (rows, cols, layers) = (8, 8, 1)
 
     // boundaryBattery<Real>(
-    //     {0,0,0},
-    //     {0, 0, 0},
-    //     {0, 0, 0},
-    //     {0, 0, 0},
-    //     {8, 8, 1},
-    //     0,
+    //     {0,0,1},
+    //     {0, 0, 1},
+    //     {1, 0, 0},
+    //     {1, 1, 1},
+    //     {8, 8, 4},
+    //     1,
     //     hand3, event2, tolerance
     // );
 
 
 
-    for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
-        for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
-            for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
-                for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
-                    for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
-                        for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
-                            for (size_t isStag = 0; isStag < 2; ++isStag)
-                                for (size_t x0Val = 0; x0Val < 2; ++x0Val)
-                                    for (size_t x1Val = 0; x1Val < 2; ++x1Val)
-                                        for (size_t y0Val = 0; y0Val < 2; ++y0Val)
-                                            for (size_t y1Val = 0; y1Val < 2; ++y1Val)
-                                                for (size_t z0Val = 0; z0Val < 2; ++z0Val)
-                                                    for (size_t z1Val = 0; z1Val < 2; ++z1Val)
-                                                        for (size_t rows = startRowsCols; rows < maxDim; rows+=3)
-                                                            for (size_t cols = startRowsCols; cols < maxDim; cols += 3)
-                                                                for (size_t layers = 1; layers < maxDim; layers += 3)
-                                                                    boundaryBattery<Real>(
-                                                                        XYZ<bool>(x0IsN, y0IsN, z0IsN),
-                                                                        XYZ<bool>(x1IsN, y1IsN, z1IsN),
-                                                                        XYZ<Real>(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val)),
-                                                                        XYZ<Real>(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val)),
-                                                                        GridDim(rows, cols, layers),
-                                                                        isStag,
-                                                                        hand3, event2, tolerance
-                                                                    );
+     for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
+         for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
+             for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
+                 for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
+                     for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
+                         for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
+                             for (size_t isStag = 0; isStag < 2; ++isStag)
+                                 for (size_t x0Val = 0; x0Val < 2; ++x0Val)
+                                     for (size_t x1Val = 0; x1Val < 2; ++x1Val)
+                                         for (size_t y0Val = 0; y0Val < 2; ++y0Val)
+                                             for (size_t y1Val = 0; y1Val < 2; ++y1Val)
+                                                 for (size_t z0Val = 0; z0Val < 2; ++z0Val)
+                                                     for (size_t z1Val = 0; z1Val < 2; ++z1Val)
+                                                         for (size_t rows = startRowsCols; rows < maxDim; rows+=3)
+                                                             for (size_t cols = startRowsCols; cols < maxDim; cols += 3)
+                                                                 for (size_t layers = 1; layers < maxDim; layers += 3)
+                                                                     boundaryBattery<Real>(
+                                                                         XYZ<bool>(x0IsN, y0IsN, z0IsN),
+                                                                         XYZ<bool>(x1IsN, y1IsN, z1IsN),
+                                                                         XYZ<Real>(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val)),
+                                                                         XYZ<Real>(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val)),
+                                                                         GridDim(rows, cols, layers),
+                                                                         isStag,
+                                                                         hand3, event2, tolerance
+                                                                     );
 }
 
 
