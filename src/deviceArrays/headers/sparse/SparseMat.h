@@ -59,6 +59,17 @@ public:
     void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeMat, SimpleArray<Real> &workSpace, Handle &h) const;
 
     /**
+     * This method allocated memory.  To recycyle memory, use the other sparse mult method.
+     * @param vec
+     * @param result
+     * @param multProduct
+     * @param preMultResult
+     * @param transposeMat
+     * @param h
+     */
+    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeMat, Handle &h) const;
+
+    /**
      * Creates a dense version of this matrix.
      * This method creates a buffer, so it can be made more efficient, but since it'll probably only be used for
      * debugging, I skipped that.

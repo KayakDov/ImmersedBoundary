@@ -70,9 +70,7 @@ EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event
 template<typename T>
 void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    // if (this->isSingular) this->set0Avg(b, this->sizeOfB, x, hand);
-
-    this->eigen.vecs.mult(/*this->isSingular ? this->sizeOfB :*/ b , x, true, this->sizeOfB, hand);
+    this->eigen.vecs.mult( b , x, true, this->sizeOfB, hand);
 
 
     this->multLEigenValInverse(x, this->sizeOfB, hand);

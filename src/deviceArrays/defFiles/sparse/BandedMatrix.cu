@@ -71,16 +71,8 @@ __global__ void multVecKernel(
 
     sumBlock(val);
 
-    // if (banded.rows == 64 && isValid && bandedCol == 0 && rowResult == 62) {
-    //     printf("Row: %lu, Col: %lu, Diag: %d, Val: %f, XRow: %d, ResultPtr: %p\n",
-    //            (unsigned long)rowResult, (unsigned long)bandedCol, diags[bandedCol], (double)val, (int)(rowResult + diags[bandedCol]), &result[rowResult]);
-    // }
-
     if (isValid && bandedCol == 0) result[rowResult] = *alpha * val + (*beta == 0 ? 0 : *beta * result[rowResult]);
 
-    // if (banded.rows == 64 && isValid && bandedCol == 0 && rowResult == 62) {
-    //     printf("final val: %f\n", (double)(result[rowResult]));
-    // }
 }
 
 /**
@@ -141,13 +133,12 @@ __global__ void mapToDenseKernel(
 }
 
 template<typename T>
-void BandedMat<T>::getDense(SquareMat<T> dense, Handle *hand) const {
-    std::unique_ptr<Handle> temp_hand_ptr;
-    Handle *h = Handle::_get_or_create_handle(hand, temp_hand_ptr);
-    dense.fill(0, *h);
+void BandedMat<T>::getDense(SquareMat<T> dense, Handle& hand) const {
+
+    dense.fill(0, hand);
     const KernelPrep kp = this->kernelPrep();
 
-    mapToDenseKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, *h>>>(
+    mapToDenseKernel<T><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         dense.toKernel2d(),
         this->toKernel2d(),
         this->_indices.toKernel1d()
@@ -158,7 +149,7 @@ void BandedMat<T>::getDense(SquareMat<T> dense, Handle *hand) const {
 template<typename T>
 SquareMat<T> BandedMat<T>::getDense(Handle& hand) const {
     auto result = SquareMat<T>::create(this->_rows);
-    getDense(result, &hand);
+    getDense(result, hand);
     return result;
 }
 

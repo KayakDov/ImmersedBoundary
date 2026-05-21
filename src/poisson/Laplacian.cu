@@ -46,7 +46,7 @@ namespace poisson {
     SquareMat<T> Laplacian1d<T>::dense(size_t dim, Handle& hand) {
         auto banded = this->banded(dim);
         auto square = SquareMat<T>::create(banded._rows);
-        banded.getDense(square, &hand);
+        banded.getDense(square, hand);
         return square;
     }
 

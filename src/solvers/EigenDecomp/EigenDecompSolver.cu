@@ -5,20 +5,18 @@
 
 
 template<typename T>
-void EigenDecompSolver<T>::set0Avg(const Vec<T>& src, Vec<T>& dst, Vec<T>& bufferSizeOfB, Handle &hand) const {
+bool EigenDecompSolver<T>::isInLColSpace(const Vec<T> &rhs, Vec<T> &bufferSizeOfB, Singleton<T> &bufferSing, double tolerance, Handle &hand) const {
 
     bufferSizeOfB.fill(1, hand);
 
-    Singleton<T> sum = dst.get(0);
-    src.mult(bufferSizeOfB, sum, &hand); //dst[0] = sum(src), bufferSizeOfB is not used again for its ones, and it's now safe to write there.
+    bufferSizeOfB.mult(rhs, bufferSing, &hand);
 
-    Singleton<T> negInvSize = bufferSizeOfB.get(0);
-    negInvSize.set(-1.0/src.size(), hand); //bufferSizeOfB[0] = -1/N
+    T result = bufferSing.get(hand);
 
-    negInvSize.mult(sum, &hand);//bufferSizeOfB[0] = -dst[0]/N, dts[0] is not used again and it's now safe to write to dst.
-
-    src.add(static_cast<const Singleton<T>&>(negInvSize), dst, hand);
+    return std::abs(result) < tolerance;
 }
+
+
 
 template<typename T>
 EigenDecompSolver<T>::EigenDecompSolver(const poisson::Eigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular) :

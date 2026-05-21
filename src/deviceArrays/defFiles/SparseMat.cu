@@ -20,9 +20,7 @@ size_t SparseMat<Real, Int>::multWorkspaceSize(const SimpleArray<Real>& vec, Sim
 }
 
 template <typename Real, typename Int>
-void SparseMat<Real, Int>::mult(const SimpleArray<Real>& vec, SimpleArray<Real>& result,
-                        const Singleton<Real>& multProduct, const Singleton<Real>& preMultResult,
-                        bool transposeMat, SimpleArray<Real>& workSpace, Handle& h) const{
+void SparseMat<Real, Int>::mult(const SimpleArray<Real>& vec, SimpleArray<Real>& result, const Singleton<Real>& multProduct, const Singleton<Real>& preMultResult, bool transposeMat, SimpleArray<Real>& workSpace, Handle& h) const{
 
     cudaDataType valueType = cuValueType<Real>();
     cusparseOperation_t op = cuTranspose(transposeMat);
@@ -32,6 +30,13 @@ void SparseMat<Real, Int>::mult(const SimpleArray<Real>& vec, SimpleArray<Real>&
         multProduct.toKernel1d(), descriptor.get(), vec.getDescr(),
         preMultResult.toKernel1d(), result.getDescr(),
         valueType, CUSPARSE_SPMV_ALG_DEFAULT, workSpace.data()));
+}
+
+template<typename Real, typename Int>
+void SparseMat<Real, Int>::mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeMat, Handle &h) const {
+    size_t n = multWorkspaceSize(vec, result, multProduct, preMultResult, transposeMat, h);
+    auto workSpace = SimpleArray<Real>::create(n, h);
+    mult(vec, result, multProduct, preMultResult, transposeMat, workSpace, h);
 }
 
 template<typename Real, typename Int>

@@ -119,7 +119,6 @@ public:
             else contribution = -this->value * this->inverseDeltaSquared;
         }
 
-
         atomicAdd(&rhsVal, contribution);
     }
     /**

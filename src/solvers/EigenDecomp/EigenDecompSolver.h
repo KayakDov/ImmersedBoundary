@@ -77,15 +77,14 @@ public:
     virtual ~EigenDecompSolver() = default;
 
     /**
-     * Sets the average of an array to 0
-     * @param src The array that will be translated by its average.
-     * @param dst
+     * Checks if the rhs is in the column space of L.
+     * @param rhs
      * @param bufferSizeOfB
+     * @param bufferSing
+     * @param tolerance
      * @param hand
      */
-    void set0Avg(const Vec<T> &src, Vec<T> &dst, Vec<T> &bufferSizeOfB, Handle &hand) const;
-
-
+    bool isInLColSpace(const Vec<T> &rhs, Vec<T> &bufferSizeOfB, Singleton<T> &bufferSing, double tolerance, Handle &hand) const;
 
 
     /**
