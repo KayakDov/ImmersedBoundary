@@ -35,7 +35,7 @@ jobs:
       # We explicitly tell CMake to use the Intel Fortran compiler
       run: |
         cmake -S . -B build -G "Visual Studio 17 2022" `
-          -DCMAKE_Fortran_COMPILER=ifort `
+          -DCMAKE_Fortran_COMPILER=ifx `
           -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build Project
