@@ -175,60 +175,6 @@ void ImmersedEq<Real, Int>::setRHS(bool prime) {
     eds->solve(RHS, p, hand5[0]);
 }
 
-// template<typename Real, typename Int>
-// void ImmersedEq<Real, Int>::setRHS(bool prime) {
-//
-//     std::cout << "\n=========== setRHS BEGIN ===========\n";
-//
-//     auto p = gridVec(prime ? GridInd::RHSPPrime : GridInd::p);
-//     auto f = lagrangeVec(prime ? LagrangeInd::RHSFPrime
-//                                : LagrangeInd::f);
-//
-//     auto boundaryRhsAdj = gridVec(GridInd::boundRHSAdj);
-//
-//     auto RHS = gridVec(GridInd::RHS);
-//
-//
-//     std::cout << "\n--- Initial p ---\n" << GpuOut<Real>(p, hand5[0]) << std::endl;
-//
-//     std::cout << "\n--- Initial f ---\n" << GpuOut<Real>(f, hand5[0]) << std::endl;
-//
-//     std::cout << "\n--- Initial boundaryRhsAdj ---\n" << GpuOut<Real>(boundaryRhsAdj, hand5[0]) << std::endl;
-//
-//     std::cout << "\n--- Initial RHS ---\n" << GpuOut<Real>(RHS, hand5[0]) << std::endl;
-//
-//     std::cout << "\n--- About to apply 2 B^T f ---\n";
-//
-//     multSparse(B, f, p, GPUScalar<Real>::get(2), GPUScalar<Real>::get(1), true);
-//
-//     std::cout << "\n--- After p += 2 B^T f ---\n" << GpuOut<Real>(p, hand5[0]) << std::endl;
-//
-//     std::cout << "\n--- About to apply boundary adjustment ---\n";
-//
-//     p.add(boundaryRhsAdj,
-//           &GPUScalar<Real>::get(1),
-//           hand5);
-//
-//     cudaDeviceSynchronize();
-//
-//     std::cout << "\n--- After boundary adjustment ---\n" << GpuOut<Real>(p, hand5[0]) << std::endl;
-//
-//     std::cout << "\n--- RHS BEFORE eig solve ---\n" << GpuOut<Real>(RHS, hand5[0]) << std::endl;
-//
-//     std::cout << "\n--- p BEFORE eig solve ---\n"
-//               << GpuOut<Real>(p, hand5[0]) << std::endl;
-//
-//     eds->solve(RHS, p, hand5[0]);
-//
-//     cudaDeviceSynchronize();
-//
-//     std::cout << "\n--- RHS AFTER eig solve ---\n" << GpuOut<Real>(RHS, hand5[0]) << std::endl;
-//
-//     std::cout << "\n--- p AFTER eig solve ---\n" << GpuOut<Real>(p, hand5[0]) << std::endl;
-//
-//     std::cout << "\n=========== setRHS END ===========\n";
-// }
-
 /**
  * @brief Computes the discrete divergence (\nabla \cdot u*) on a staggered MAC grid.
  *
