@@ -96,7 +96,7 @@ public:
     /**
      * @copydoc GpuArray::bytes
      */
-    [[nodiscard]] size_t bytes() const;
+    [[nodiscard]] size_t bytes() const override;
     /**
      * @copydoc GpuArray::set
      */
