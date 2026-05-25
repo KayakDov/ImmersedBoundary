@@ -120,7 +120,7 @@ public:
      * @param dense Where the matrix with all the zeroes is stored.  It should be _rows x _rows.
      * @param hand
      */
-    void getDense(SquareMat<T> dense, Handle &hand = nullptr) const;
+    void getDense(SquareMat<T> dense, Handle &hand) const;
 
     /**
      * This method allocates its own ememory.
