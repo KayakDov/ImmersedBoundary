@@ -1,6 +1,7 @@
 #include "../headers/GpuArray.h"
 #include <algorithm>
 #include "../headers/deviceArraySupport.h"
+#include <string>
 
 template <typename T>
 StreamHelper<T>::StreamHelper(size_t rows, size_t cols)
