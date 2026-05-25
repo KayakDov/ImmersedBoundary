@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.22)
 cmake_policy(SET CMP0135 NEW)
 
-if(MSVC)
+if(WIN32)
     add_compile_options(/Oy-)
 else()
     add_compile_options(-fno-omit-frame-pointer)
