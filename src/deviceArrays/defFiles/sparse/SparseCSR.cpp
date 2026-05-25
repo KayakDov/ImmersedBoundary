@@ -3,6 +3,7 @@
 //
 
 #include "../../headers/sparse/SparseCSR.h"
+# include <string>
 
 template<typename Real, typename Int>
 void SparseCSR<Real, Int>::setDescriptor() {

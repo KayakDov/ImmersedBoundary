@@ -1,6 +1,6 @@
 
 #include "../../headers/sparse/SparseCSC.cuh"
-
+# include <string>
 
 template<typename Real, typename Int>
 std::unique_ptr<SparseMat<Real, Int>> SparseCSC<Real, Int>::createWithPointer(SimpleArray<Real> vals, SimpleArray<Int> offsets, SimpleArray<Int> inds) const {
