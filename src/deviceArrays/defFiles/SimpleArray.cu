@@ -4,7 +4,7 @@
 
 #include "../headers/SimpleArray.h"
 #include "deviceArrays/headers/Tensor.h"
-
+#include <string>
 
 template<typename T>
 SimpleArray<T>::SimpleArray(size_t size, std::shared_ptr<T> ptr, bool initDescr): Vec<T>(size, ptr, 1) {

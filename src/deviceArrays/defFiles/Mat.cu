@@ -8,6 +8,7 @@
 
 #include "../headers/Support/GridDim.hpp"
 #include "deviceArrays/headers/Support/Streamable.h"
+#include <string>
 
 template <typename T>
 Mat<T> Mat<T>::mult(
