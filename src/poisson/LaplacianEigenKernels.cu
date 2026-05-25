@@ -24,7 +24,7 @@
 #define PI_CONST
 /** * @brief High-precision constexpr PI for spectral calculations.
  */
-template<typename T> __device__  constexpr T PI = T(3.14159265358979323846L);
+template<typename T> __device__  T PI = T(3.14159265358979323846L);
 #endif
 
 template<typename T>
