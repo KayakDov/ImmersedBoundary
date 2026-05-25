@@ -1,6 +1,6 @@
 #include "../headers/handle.h"
 
-#include <iostream>
+#include <string>
 #include <memory>
 #include <stdexcept>
 #include <cublas_v2.h> // Make sure this is included for cublasStatus_t
