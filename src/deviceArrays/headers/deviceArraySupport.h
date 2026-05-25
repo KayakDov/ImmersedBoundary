@@ -3,6 +3,7 @@
 #define BICGSTAB_DEVICEARRAYSUPPORT_H
 
 #include <vector>
+#include <string>
 /**
  * @brief Utility for incremental streaming of large column-major 2D data.
  *
