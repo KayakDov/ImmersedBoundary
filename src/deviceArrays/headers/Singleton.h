@@ -108,8 +108,6 @@ public:
      * @return A pointer to an existing or newly created target of type `Singleton<T>`.
      */
     static const Singleton<T>* _get_or_create_target(T defaultVal, Handle& hand, const Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique);
-
-    static const Singleton<T> MINUS_TWO;
 };
 
 template <typename T>

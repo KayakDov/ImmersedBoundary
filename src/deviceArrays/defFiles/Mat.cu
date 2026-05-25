@@ -104,7 +104,7 @@ size_t Mat<T>::size() const {
 }
 
 template <typename T>
-size_t Mat<T>::bytes() const override{
+size_t Mat<T>::bytes() const {
     return this->_cols * this->_ld * sizeof(T);
 }
 
