@@ -2,7 +2,12 @@ cmake_minimum_required(VERSION 3.22)
 cmake_policy(SET CMP0135 NEW)
 
 if(WIN32)
-    add_compile_options(/Oy-)
+    # 1. Apply /Oy- ONLY to C and C++ so NVCC ignores it
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Oy->")
+    add_compile_options("$<$<COMPILE_LANGUAGE:C>:/Oy->")
+
+    # 2. Bypass the strict MSVC STL vs. Intel Compiler version check
+    add_compile_definitions(_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
 else()
     add_compile_options(-fno-omit-frame-pointer)
 endif()
