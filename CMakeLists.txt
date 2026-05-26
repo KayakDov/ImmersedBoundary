@@ -14,7 +14,7 @@ endif()
 
 # 1. ARCHITECTURE: Set this BEFORE project() to ensure it applies to all tests
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES all-major) # Better than 'all' for faster compile times
+    set(CMAKE_CUDA_ARCHITECTURES native)
 endif()
 
 # Project
