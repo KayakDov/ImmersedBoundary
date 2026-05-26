@@ -32,6 +32,12 @@ jobs:
       - name: Set up MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
 
+      - name: Add CUDA and Intel to PATH
+        run: |
+          echo "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\bin" >> $env:GITHUB_PATH
+          echo "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\bin" >> $env:GITHUB_PATH
+
+      # Add the Intel bin path here if necessary, usually handled by Intel's setvars.bat
       - name: Configure CMake
         shell: cmd
         run: cmake -S . -B build -G "Ninja" -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_BUILD_TYPE=Debug
