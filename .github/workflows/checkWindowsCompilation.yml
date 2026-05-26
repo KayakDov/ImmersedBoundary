@@ -27,8 +27,19 @@ jobs:
       - name: Install Intel oneAPI (Fortran)
         uses: fortran-lang/setup-fortran@v1
         with:
-          compiler: intel  # Changed from intel-classic to install the modern 'ifx'
+          compiler: intel
           version: '2024.1'
+
+      - name: Remove Git/MSYS from PATH
+        shell: pwsh
+        run: |
+          $filtered = ($env:PATH -split ';') | Where-Object {
+            $_ -notmatch '\\Git\\usr' -and
+            $_ -notmatch '\\Git\\bin' -and
+            $_ -notmatch 'mingw64' -and
+            $_ -notmatch 'msys'
+          }
+          "PATH=$($filtered -join ';')" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Set up MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
