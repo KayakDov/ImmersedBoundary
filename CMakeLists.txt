@@ -78,6 +78,8 @@ add_library(CudaBandedLib STATIC
 set_target_properties(CudaBandedLib PROPERTIES
         Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
         POSITION_INDEPENDENT_CODE ON
+        CUDA_RUNTIME_LIBRARY Shared
+        CUDA_RESOLVE_DEVICE_SYMBOLS ON
 )
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modules")
@@ -111,7 +113,6 @@ add_executable(run_unit_tests ${TEST_SOURCES}
         Tests/testPrimes.h)
 
 set_target_properties(run_unit_tests PROPERTIES
-        CUDA_RESOLVE_DEVICE_SYMBOLS ON
         CUDA_RUNTIME_LIBRARY Shared
 )
 

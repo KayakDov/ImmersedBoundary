@@ -30,6 +30,9 @@ jobs:
           compiler: intel  # Changed from intel-classic to install the modern 'ifx'
           version: '2024.1'
 
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure CMake
         # Switched to Ninja. Ninja is a single-configuration generator,
         # so we must specify Debug here during the configure step.

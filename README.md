@@ -1,16 +1,16 @@
 # User Guide: Eigen Decomposition and Immersed Boundary Method (IBM) CUDA Solver
 
-This library provides solver for the following system:
+This library provides solvers for the following systems:
 
-$L x = b$
+(1) $$L x = b$$
 
-$(L + 2 B^T B)x = 2 B^T F + p + bc$
+(2) $$(L + 2 B^T B)x = 2 B^T F + p + bc$$
 
 and solves the following system for $p'$ and $F'$:
 
-$(L + 2 B^T B)p' = 2 B^T ((\frac{3}{2 \Delta t})R^Tu^* - U^\Gamma) + (\frac{-3}{2 \Delta t})\nabla\cdot u^* + bc$
+(3)$$(L + 2 B^T B)p' = 2 B^T ((\frac{3}{2 \Delta t})R^Tu^* - U^\Gamma) + (\frac{-3}{2 \Delta t})\nabla\cdot u^* + bc$$
 
-$F' = 2(Bp' + (\frac{3}{2 \Delta t})\nabla\cdot u^*)$
+$$F' = 2(Bp' + (\frac{3}{2 \Delta t})\nabla\cdot u^*)$$
 
 Where L is the laplacian and bc is the right hand side modifier do to boundary conditions.
 It uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion ($L^{-1}$) and BiCGSTAB to solve the coupled system. Additionally, the library exposes standalone Direct Eigendecomposition solvers for the discrete Poisson equation with an optional Thomas variant.
