@@ -114,7 +114,7 @@ template class Singleton<float>;
 template class Singleton<double>;
 template class Singleton<unsigned char>;
 template class Singleton<uint32_t>;
-template class Singleton<long>;
+template class Singleton<int64_t>;
 
 template class GPUScalar<int32_t>;
 template class GPUScalar<size_t>;
@@ -122,5 +122,5 @@ template class GPUScalar<float>;
 template class GPUScalar<double>;
 template class GPUScalar<unsigned char>;
 template class GPUScalar<uint32_t>;
-template class GPUScalar<long>;
+template class GPUScalar<int64_t>;
 

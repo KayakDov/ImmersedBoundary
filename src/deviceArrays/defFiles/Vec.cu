@@ -261,12 +261,12 @@ void Vec<T>::mult(const Singleton<T> &alpha, Handle *handle) {
 }
 
 
-extern "C" __global__ void setup_kernel_float(curandState *state, unsigned long long seed, size_t size, size_t stride) {
+extern "C" __global__ void setup_kernel_float(curandState *state, uint64_t seed, size_t size, size_t stride) {
     if (unsigned int id = blockIdx.x * blockDim.x + threadIdx.x; id < size) curand_init(seed, id, 0, &state[id]);
 }
 
 extern "C" __global__ void
-setup_kernel_double(curandState *state, unsigned long long seed, size_t size, size_t stride) {
+setup_kernel_double(curandState *state, uint64_t seed, size_t size, size_t stride) {
     if (unsigned int id = blockIdx.x * blockDim.x + threadIdx.x; id < size) curand_init(seed, id, 0, &state[id]);
 }
 

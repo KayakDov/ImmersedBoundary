@@ -66,9 +66,9 @@ public:
      */
     __device__ inline void print() const {
         printf("GridInd3d(row: %llu, col: %llu, layer: %llu)\n",
-               (unsigned long long)row,
-               (unsigned long long)col,
-               (unsigned long long)layer
+               (uint64_t)row,
+               (uint64_t)col,
+               (uint64_t)layer
             );
     }
 };
