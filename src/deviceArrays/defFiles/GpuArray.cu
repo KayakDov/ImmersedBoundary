@@ -69,7 +69,7 @@ void GpuArray<T>::fill(T val, cudaStream_t stream) {
     if (val == static_cast<T>(0) || sizeof(T) == 1)
         cudaMemset2DAsync(data(), _ld * sizeof(T), val, this->_rows * sizeof(T), this->_cols, stream);
     else {
-        KernelPrep kp = kernelPrep(_rows > _cols);
+        KernelPrep kp = _rows > _cols? kernelPrepTransposed() : kernelPrep();
 
         if (_rows > _cols) fill2dKernelT<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), val);
         else fill2dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel2d(), val);
@@ -185,8 +185,13 @@ const T* GpuArray<T>::data() const {
 }
 
 template<typename T>
-KernelPrep GpuArray<T>::kernelPrep(bool transpose) const {
-    return {this->_cols, this->_rows, transpose};
+KernelPrep GpuArray<T>::kernelPrepTransposed() const {
+    return {this->_cols, this->_rows, true};
+}
+
+template<typename T>
+KernelPrep GpuArray<T>::kernelPrep() const {
+    return {this->_cols, this->_rows, false};
 }
 
 template <typename T>

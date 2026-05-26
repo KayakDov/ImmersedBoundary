@@ -87,11 +87,6 @@ Mat<T>* Mat<T>::_get_or_create_target(const size_t rows, const size_t cols, Mat<
     }
 }
 
-template<typename T>
-KernelPrep Mat<T>::kernelPrep(bool t) const {
-    return GpuArray<T>::kernelPrep(t);
-}
-
 
 template<typename T>
 Mat<T>::Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr, bool initDescr): GpuArray<T>(rows, cols, ld, _ptr) {

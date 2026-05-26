@@ -446,7 +446,15 @@ public:
      * Prepares default grid and block sizes for a kernel.
      * @return
      */
-    [[nodiscard]] virtual KernelPrep kernelPrep(bool transpose = false) const;
+    [[nodiscard]] virtual KernelPrep kernelPrep() const;
+
+    /**
+     * Prepares default grid and block sizes for a kernel.  Flips the x and y dimensions, so be sure the GridDim
+     * created in the kernel also flips them.  Since kernel x dimension can be longer than kernel y dimensions,
+     * it makes sense to call this method for grids that have much longer y than x dimensions.
+     * @return
+     */
+    [[nodiscard]] virtual KernelPrep kernelPrepTransposed() const;
 
     /**
      * @brief Extract a row vector from the matrix.
