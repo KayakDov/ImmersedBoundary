@@ -1,24 +1,38 @@
 cmake_minimum_required(VERSION 3.23)
 cmake_policy(SET CMP0135 NEW)
 
-if(WIN32)
-    # 1. Apply /Oy- ONLY to C and C++ so NVCC ignores it
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Oy->")
-    add_compile_options("$<$<COMPILE_LANGUAGE:C>:/Oy->")
+# =========================
+# Hardware / Toolkit Alignment
+# =========================
+# 1. Point CMake to the root of your SDK
+set(CUDA_SDK_ROOT "/opt/nvidia/hpc_sdk/Linux_x86_64/26.3/cuda")
 
-    # 2. Bypass the strict MSVC STL vs. Intel Compiler version check
-    add_compile_definitions(_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
-else()
-    add_compile_options(-fno-omit-frame-pointer)
-endif()
+# 2. Specify the exact folder version available in your SDK that satisfies your driver limit (<= 12.8)
+set(TARGET_CUDA_VERSION "12.6")
 
-# 1. ARCHITECTURE: Set this BEFORE project() to ensure it applies to all tests
+# 3. Force CMake to use this specific toolkit path (FORCE ensures it overwrites old cache)
+set(CUDAToolkit_ROOT "${CUDA_SDK_ROOT}/${TARGET_CUDA_VERSION}" CACHE PATH "Preferred CUDA version" FORCE)
+
+# 4. ARCHITECTURE: Set this BEFORE project() to ensure it applies globally
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES all-major) # Better than 'all' for faster compile times
 endif()
 
-# Project
+# =========================
+# Project Initialization
+# =========================
 project(CudaBanded LANGUAGES C CXX CUDA Fortran)
+
+if(WIN32)
+    # Apply /Oy- ONLY to C and C++ so NVCC ignores it
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Oy->")
+    add_compile_options("$<$<COMPILE_LANGUAGE:C>:/Oy->")
+
+    # Bypass the strict MSVC STL vs. Intel Compiler version check
+    add_compile_definitions(_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
+else()
+    add_compile_options(-fno-omit-frame-pointer)
+endif()
 
 include(FortranCInterface)
 FortranCInterface_VERIFY(CXX) # Fails build if they can't "talk" to each other
@@ -36,7 +50,7 @@ set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 # =========================
 # Dependencies
 # =========================
-# Find CUDA toolkit (portable)
+# Find CUDA toolkit (This will now rigidly use the 12.6 path defined above)
 find_package(CUDAToolkit REQUIRED)
 
 # Fetch GoogleTest
@@ -126,26 +140,22 @@ include(GoogleTest)
 gtest_discover_tests(run_unit_tests)
 
 # =========================
-# Install the library and Fortran modules for exFternal projects
+# Install the library and Fortran modules for external projects
 # =========================
-
-# Set a standard install directory for libraries and modules
 set(INSTALL_LIB_DIR lib)
 set(INSTALL_MOD_DIR include/fortran_modules)
 
-# Install the static library
 install(TARGETS CudaBandedLib
-        ARCHIVE DESTINATION ${INSTALL_LIB_DIR}       # for STATIC libraries
-        LIBRARY DESTINATION ${INSTALL_LIB_DIR}       # for shared, if ever
-        RUNTIME DESTINATION bin                      # executables
+        ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
+        LIBRARY DESTINATION ${INSTALL_LIB_DIR}
+        RUNTIME DESTINATION bin
 )
 
-# Install Fortran modules
-# CMAKE_Fortran_MODULE_DIRECTORY must match where the .mod files were generated
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
         DESTINATION ${INSTALL_MOD_DIR}
         FILES_MATCHING PATTERN "*.mod"
 )
+
 if(NOT MSVC)
     target_link_options(run_unit_tests PRIVATE "-Wl,--no-undefined")
-endif ()
+endif()
