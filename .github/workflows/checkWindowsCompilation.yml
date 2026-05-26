@@ -13,33 +13,33 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MSYS_NO_PATHCONV: 1  # Protects CUDA nvcc flags from being mangled on Windows CI
-      
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install CUDA Toolkit
-      uses: Jimver/cuda-toolkit@master
-      with:
-        cuda: '13.0.0'
-        method: 'network'
+      - name: Install CUDA Toolkit
+        uses: Jimver/cuda-toolkit@master
+        with:
+          cuda: '13.0.0'
+          method: 'network'
 
-    - name: Install Intel oneAPI (Fortran)
-      uses: fortran-lang/setup-fortran@v1
-      with:
-        compiler: intel  # Changed from intel-classic to install the modern 'ifx'
-        version: '2024.1'
+      - name: Install Intel oneAPI (Fortran)
+        uses: fortran-lang/setup-fortran@v1
+        with:
+          compiler: intel  # Changed from intel-classic to install the modern 'ifx'
+          version: '2024.1'
 
-    - name: Configure CMake
-      # Switched to Ninja. Ninja is a single-configuration generator, 
-      # so we must specify Debug here during the configure step.
-      run: cmake -S . -B build -G "Ninja" -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_BUILD_TYPE=Debug
+      - name: Configure CMake
+        # Switched to Ninja. Ninja is a single-configuration generator,
+        # so we must specify Debug here during the configure step.
+        run: cmake -S . -B build -G "Ninja" -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_BUILD_TYPE=Debug
 
-    - name: Build Project
-      # Ninja already knows to build Debug from the step above, so we drop --config Debug
-      run: cmake --build build -j 4
+      - name: Build Project
+        # Ninja already knows to build Debug from the step above, so we drop --config Debug
+        run: cmake --build build -j 4
 
-    - name: Run Unit Tests
-      working-directory: build
-      # Since Ninja doesn't use Debug/Release subfolders like VS, we drop the -C Debug flag
-      run: ctest --output-on-failure
+      - name: Run Unit Tests
+        working-directory: build
+        # Since Ninja doesn't use Debug/Release subfolders like VS, we drop the -C Debug flag
+        run: ctest --output-on-failure
