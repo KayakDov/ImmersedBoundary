@@ -6,6 +6,7 @@
 #include "../headers/DeviceMemory.h"
 
 #include "deviceArrays/headers/deviceArraySupport.h"
+#include "deviceArrays/headers/Mat.h"
 
 
 template<typename T>
@@ -571,6 +572,15 @@ double Vec<T>::productAllElements(SimpleArray<T> bufferNumBlocksSize, Handle& ha
     for (int i = 0; i < kp.numBlocks.x; i++) final_product *= prods[i];
 
     return final_product;
+}
+
+template<typename T>
+Vec<T>::operator Mat<T>() {
+    return Mat<T>(this->_rows, this->_cols, this->_ld, this->_ptr);
+}
+template<typename T>
+Vec<T>::operator Mat<T>() const{
+    return Mat<T>(this->_rows, this->_cols, this->_ld, this->_ptr);
 }
 
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.23)
 cmake_policy(SET CMP0135 NEW)
 
 if(WIN32)
@@ -14,7 +14,7 @@ endif()
 
 # 1. ARCHITECTURE: Set this BEFORE project() to ensure it applies to all tests
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES native)
+    set(CMAKE_CUDA_ARCHITECTURES all-major) # Better than 'all' for faster compile times
 endif()
 
 # Project

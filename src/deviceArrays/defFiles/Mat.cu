@@ -554,15 +554,6 @@ void Mat<T>::factorLU(Handle *hand, Vec<int32_t> *rowSwaps, Singleton<int32_t> *
 }
 
 template<typename T>
-Vec<T>::operator Mat<T>() {
-    return Mat<T>(this->_rows, this->_cols, this->_ld, this->_ptr);
-}
-template<typename T>
-Vec<T>::operator Mat<T>() const{
-    return Mat<T>(this->_rows, this->_cols, this->_ld, this->_ptr);
-}
-
-template<typename T>
 void Mat<T>::initDescr() const{
     cusparseDnMatDescr_t rawDescr;
     const cudaDataType valueType = sizeof(T) == 8 ? CUDA_R_64F : CUDA_R_32F;;
@@ -600,8 +591,6 @@ Mat<T> SimpleArray<T>::matrix(size_t height) const{
 template class Mat<T>; \
 template void Vec<T>::mult(const Mat<T>&, Vec<T>&, Handle*, const Singleton<T>*, const Singleton<T>*, bool) const; \
 template Mat<T> SimpleArray<T>::matrix(size_t) const; \
-template Vec<T>::operator Mat<T>(); \
-template Vec<T>::operator Mat<T>() const;
 
 INSTANTIATE_MAT_VEC(float)
 INSTANTIATE_MAT_VEC(double)

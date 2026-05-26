@@ -75,7 +75,7 @@ public:
      */
     EigenDecompThomas(const BoundaryConfig<T>& boundary, double deltaX, Handle *hand3, Event *event2);
 
-    void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
+    void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const override;
 };
 
 #endif //CUDABANDED_EIGENDECOMPTHOMAS_CUH

@@ -184,10 +184,14 @@ __global__ void mapDenseToBandedKernel(
     DeviceData2d<T> banded,
     const int32_t *__restrict__ indices
 ) {
-    if (const GridInd2d bandedInd; bandedInd < banded) {
-        if (const DenseInd denseInd(bandedInd, indices); denseInd >= dense) banded[bandedInd] = NAN;
-        else banded[bandedInd] = dense[denseInd];
+    const GridInd2d bandedInd;
+    if (bandedInd >= banded) return;
+
+    if (const DenseInd denseInd(bandedInd, indices); denseInd >= dense) {
+        if constexpr (std::is_floating_point_v<T>) banded[bandedInd] = NAN;
+        else banded[bandedInd] = 0;
     }
+    else banded[bandedInd] = dense[denseInd];
 }
 
 template<typename T>

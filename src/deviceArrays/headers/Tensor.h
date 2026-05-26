@@ -157,7 +157,7 @@ public:
     operator DeviceData3d<T>();
     operator DeviceData3d<T>() const;
 
-    KernelPrep kernelPrep() const;
+    KernelPrep kernelPrep() const override;
 
     /**
      *
