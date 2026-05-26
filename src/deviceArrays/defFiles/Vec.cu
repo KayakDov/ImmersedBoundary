@@ -261,12 +261,12 @@ void Vec<T>::mult(const Singleton<T> &alpha, Handle *handle) {
 }
 
 
-extern "C" __global__ void setup_kernel_float(curandState *state, uint64_t seed, size_t size, size_t stride) {
+extern "C" __global__ void setup_kernel_float(curandState *state, uint64_t seed, size_t size) {
     if (unsigned int id = blockIdx.x * blockDim.x + threadIdx.x; id < size) curand_init(seed, id, 0, &state[id]);
 }
 
 extern "C" __global__ void
-setup_kernel_double(curandState *state, uint64_t seed, size_t size, size_t stride) {
+setup_kernel_double(curandState *state, uint64_t seed, size_t size) {
     if (unsigned int id = blockIdx.x * blockDim.x + threadIdx.x; id < size) curand_init(seed, id, 0, &state[id]);
 }
 
@@ -295,15 +295,13 @@ void Vec<T>::fillRandom(Handle *handle) {
             devStates(rawDevStates, &cudaFreeDeleter);
 
     if constexpr (std::is_same_v<T, float>) {
-        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), 0, this->size(), this->_ld);
+        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), 0, this->size());
         h->synch();
-        fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(
-            this->toKernel1d(), devStates.get());
+        fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(this->toKernel1d(), devStates.get());
     } else if constexpr (std::is_same_v<T, double>) {
-        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), 0, this->size(), this->_ld);
+        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), 0, this->size());
         h->synch();
-        fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, *h>>>(
-            this->toKernel1d(),  devStates.get());
+        fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, *h>>>(this->toKernel1d(),  devStates.get());
     } else throw std::invalid_argument("Unsupported type.");
 }
 
