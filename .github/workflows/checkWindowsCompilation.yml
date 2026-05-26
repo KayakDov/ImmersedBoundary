@@ -34,15 +34,14 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Configure CMake
-        # Switched to Ninja. Ninja is a single-configuration generator,
-        # so we must specify Debug here during the configure step.
+        shell: cmd
         run: cmake -S . -B build -G "Ninja" -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build Project
-        # Ninja already knows to build Debug from the step above, so we drop --config Debug
+        shell: cmd
         run: cmake --build build -j 4
 
       - name: Run Unit Tests
         working-directory: build
-        # Since Ninja doesn't use Debug/Release subfolders like VS, we drop the -C Debug flag
+        shell: cmd
         run: ctest --output-on-failure
