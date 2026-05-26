@@ -31,12 +31,9 @@ jobs:
         compiler: intel-classic
         version: '2021.12' 
 
+
     - name: Configure CMake
-      # We explicitly tell CMake to use the Intel Fortran compiler
-      run: |
-        cmake -S . -B build -G "Visual Studio 17 2022" `
-          -DCMAKE_Fortran_COMPILER=ifort `
-          -DCMAKE_BUILD_TYPE=Debug
+      run: cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_Fortran_COMPILER=ifx
 
     - name: Build Project
       run: cmake --build build --config Debug -j 4
