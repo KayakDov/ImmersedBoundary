@@ -112,7 +112,6 @@ add_executable(run_unit_tests ${TEST_SOURCES}
         Tests/testPrimes.h)
 
 set_target_properties(run_unit_tests PROPERTIES
-        CUDA_RESOLVE_DEVICE_SYMBOLS ON   # device linking happens once, here
         CUDA_RUNTIME_LIBRARY Shared
 )
 
