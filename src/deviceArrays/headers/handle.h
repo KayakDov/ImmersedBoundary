@@ -1,7 +1,6 @@
 #ifndef BICGSTAB_HANDLE_H
 #define BICGSTAB_HANDLE_H
 
-#include <cublas_v2.h>
 #include <cusolverDn.h>
 #include <memory>
 #include <cusparse.h>
