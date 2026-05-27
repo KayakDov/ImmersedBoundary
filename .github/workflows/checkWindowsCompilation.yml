@@ -36,6 +36,7 @@ jobs:
         run: |
           echo "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\bin" >> $env:GITHUB_PATH
           echo "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\bin" >> $env:GITHUB_PATH
+          echo "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler" >> $env:GITHUB_PATH
 
       # Add the Intel bin path here if necessary, usually handled by Intel's setvars.bat
       - name: Configure CMake

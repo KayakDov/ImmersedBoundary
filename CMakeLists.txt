@@ -137,7 +137,7 @@ target_link_libraries(run_unit_tests
 )
 
 include(GoogleTest)
-gtest_discover_tests(run_unit_tests)
+gtest_discover_tests(run_unit_tests DISCOVERY_MODE PRE_TEST)
 
 # =========================
 # Install the library and Fortran modules for external projects
