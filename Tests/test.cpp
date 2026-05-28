@@ -8,9 +8,27 @@
 #include <random>
 
 
-#include "testPrimes.h"
 #include "immersedBoundary/ImerssedEquation.h"
 #include "kronecker/KroneckerTriplet.h"
+
+template <typename Real, typename Int>
+SparseCSR<Real, Int> basics(const BoundaryConfig<Real>& boundary, size_t n, std::vector<Real>& x0Host, SquareMat<Real>& lhsOperator, std::vector<Int>& rowOffsetsB, std::vector<Real>& valuesB, std::vector<Int>& colIndsB, Handle& hand) {
+
+    std::mt19937 rng(42); // Deterministic seed for reproducible testing
+    std::uniform_real_distribution<Real> dist(-5.0, 5.0);
+    for (size_t i = 0; i < n; ++i) x0Host[i] = dist(rng);
+
+    auto B = SparseCSR<Real, Int>::create(valuesB.size(), rowOffsetsB.size() - 1, n, hand);
+    B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
+
+    poisson::laplacian(boundary, hand).getDense(lhsOperator, hand);
+    auto denseB = Mat<Real>::create(rowOffsetsB.size() - 1, n);
+    B.getDense(denseB, hand);
+    denseB.mult(denseB, &lhsOperator, &hand, &GPUScalar<Real>::get(2), &GPUScalar<Real>::get(1), true, false);
+
+    return B;
+}
+
 
 TEST(ImmersedEq, SolvesPrimes_3x2x1) {
 
