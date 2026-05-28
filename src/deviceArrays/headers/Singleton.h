@@ -113,14 +113,24 @@ public:
 template <typename T>
 class GPUScalar {
 
-    static const GPUScalar<T> universal;
+    static std::unique_ptr<GPUScalar<T>> universal;
     /**
      * Holds the Singleton constants.
      */
     SimpleArray<T> base;
-    GPUScalar(Handle hand = Handle());
-public:
 
+public:
+    /**
+     * Sets up a set of GPU scalars integers from -2 to 2 inclusive.
+     * @param hand
+     */
+    GPUScalar(Handle hand = Handle());
+
+    /**
+     * Gets a singleton that holds the desired value without allocating new memory, except for hte first time it's called.
+     * @param i An integer between -2 and 2 inclusive.
+     * @return A singleton containing the requested integer.
+     */
     static const Singleton<T>& get(int32_t i);
 
     const Singleton<T> ONE;       ///< Singleton containing 1

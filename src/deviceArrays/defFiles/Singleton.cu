@@ -77,12 +77,13 @@ const Singleton<T>* Singleton<T>::_get_or_create_target(T defaultVal, Handle& ha
 
 template<typename T>
 const Singleton<T> & GPUScalar<T>::get(int32_t i) {
+    if (!universal) universal = std::make_unique<GPUScalar<T>>();
     switch (i) {
-        case 0: return universal.ZERO;
-        case 1: return universal.ONE;
-        case 2: return universal.TWO;
-        case -1: return universal.MINUS_ONE;
-        case -2: return universal.MINUS_TWO;
+        case 0: return universal->ZERO;
+        case 1: return universal->ONE;
+        case 2: return universal->TWO;
+        case -1: return universal->MINUS_ONE;
+        case -2: return universal->MINUS_TWO;
         default: throw std::out_of_range("");
     }
 }
@@ -106,7 +107,7 @@ GPUScalar<T>::GPUScalar(Handle hand):
     base.set(hostConsts.data(), hand);
 }
 
-template <typename T> const GPUScalar<T> GPUScalar<T>::universal = GPUScalar<T>();
+template <typename T> std::unique_ptr<GPUScalar<T>> GPUScalar<T>::universal = nullptr;
 
 template class Singleton<int32_t>;
 template class Singleton<size_t>;
