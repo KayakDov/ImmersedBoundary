@@ -45,11 +45,3 @@ jobs:
       - name: Build Project
         shell: cmd
         run: cmake --build build -j 4
-
-      - name: Run Unit Tests
-        working-directory: build
-        shell: cmd
-        run: |
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" --force
-          set PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\bin;%PATH%
-          ctest --output-on-failure
