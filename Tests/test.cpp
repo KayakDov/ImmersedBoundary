@@ -8,6 +8,7 @@
 #include <random>
 
 
+#include "deviceArrays/headers/DeviceMemory.h"
 #include "immersedBoundary/ImerssedEquation.h"
 #include "kronecker/KroneckerTriplet.h"
 
@@ -534,9 +535,9 @@ TEST(LaplacianMath, laplacian) {
 
     double tolerance = 1e-7;
 
-    size_t maxDim = 12;
+    size_t maxDim = 21;
     size_t startRowsCols = 10;
-    size_t dimStepSize = 1;
+    size_t dimStepSize = 5;
 
     size_t n = maxDim * maxDim * maxDim;
     auto buffer = Mat<Real>::create(n, n + 5);
@@ -584,7 +585,154 @@ TEST(LaplacianMath, laplacian) {
 }
 
 
+TEST(Benchmark, SolverRuntimes) {
+    using Real = double;
+
+    Handle hands[3];
+    Event events[2];
+    Real3d delta(1, 1, 1);
+
+    std::cout << DeviceMemory() << std::endl;
+
+    std::cout << std::setw(20) << "Grid dim N"
+              << std::setw(20) << "N x N x N"
+              << std::setw(25) << "EigenDecomp3d (ms)"
+              << std::setw(25) << "EigenDecompThomas (ms)"
+              << std::setw(25) << "||x_eigen - x_thomas||"
+              << std::endl;
+    std::cout << std::string(115, '-') << std::endl;
+
+    const size_t reallocEvery = 100;
+
+    size_t bufferN        = 0;
+    size_t bufferTotal    = 0;
+
+    std::optional<SimpleArray<Real>> rhsBuf, xEigenBuf, xThomasBuf, sizeOfBBuf;
+    std::optional<Mat<Real>>         sizeOfBX3Buf;
+    std::optional<Singleton<Real>>   normResult;
+
+    auto reallocBuffers = [&](size_t total) {
+        // 1. Explicitly destroy the old objects to free GPU memory
+        rhsBuf.reset();
+        xEigenBuf.reset();
+        xThomasBuf.reset();
+        sizeOfBBuf.reset();
+        sizeOfBX3Buf.reset();
+        normResult.reset();
+
+        // 2. Allocate the new objects (peak memory is now strictly 'total')
+        rhsBuf     .emplace(SimpleArray<Real>::create(total, hands[0]));
+        xEigenBuf  .emplace(SimpleArray<Real>::create(total, hands[0]));
+        xThomasBuf .emplace(SimpleArray<Real>::create(total, hands[0]));
+        sizeOfBBuf .emplace(SimpleArray<Real>::create(total, hands[0]));
+        sizeOfBX3Buf.emplace(Mat<Real>::create(total, 3));
+        normResult .emplace(Singleton<Real>::create(hands[0]));
+        bufferTotal = total;
+    };
+
+    for (size_t n = 2; ; n += (n < 200 ? 2 : 1)) {
+        size_t total = n * n * n;
+
+        // Reallocate every reallocEvery iterations or if buffer is too small
+        if (!rhsBuf.has_value() || total > bufferTotal) {
+
+            size_t nAhead = n + reallocEvery * 2;
+            size_t aheadTotal = std::min(nAhead * nAhead * nAhead, total * 2);
+            try {
+                reallocBuffers(aheadTotal);
+            } catch (...) {
+                try {
+                    reallocBuffers(total);
+                } catch (...) {
+                    std::cout << "OOM allocating buffers at N=" << n << std::endl;
+                    break;
+                }
+            }
+        }
+
+        GridDim dim(n, n, n);
+        BoundaryConfig<Real> boundary(
+            {false, false, false},
+            {false, false, false},
+            {0, 0, 0},
+            {0, 0, 0},
+            delta, dim, false
+        );
+
+        std::vector<Real> rhsHost(total);
+        std::mt19937 rng(42);
+        std::uniform_real_distribution<Real> dist(-1, 1);
+        for (auto& v : rhsHost) v = dist(rng);
+
+        // Slice sub-arrays from pre-allocated buffers — no new GPU allocation
+        auto rhsSub      = rhsBuf    ->subArray(0, total);
+        auto xEigenSub   = xEigenBuf ->subArray(0, total);
+        auto xThomasSub  = xThomasBuf->subArray(0, total);
+        auto sizeOfBSub  = sizeOfBBuf->subArray(0, total);
+        auto sizeOfBX3Sub = sizeOfBX3Buf->subMat(0, 0, total, 3);
+
+        rhsSub.set(rhsHost.data(), hands[0]);
+
+        // --- EigenDecomp3d ---
+        double eigenMs = -1;
+        try {
+            xEigenSub.fill(0, hands[0]);
+
+            cudaDeviceSynchronize();
+            auto t0 = std::chrono::high_resolution_clock::now();
+            EigenDecomp3d<Real> ed(boundary, hands, events, sizeOfBSub);
+            ed.solve(xEigenSub, rhsSub, hands[0]);
+            cudaDeviceSynchronize();
+            auto t1 = std::chrono::high_resolution_clock::now();
+
+            eigenMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        } catch (...) {
+            std::cout << std::setw(20) << (std::to_string(n))
+                      << std::setw(20) << total
+                      << "  OOM in EigenDecomp3d" << std::endl;
+            break;
+        }
+
+        // --- EigenDecompThomas ---
+        double thomasMs = -1;
+        try {
+
+            xThomasSub.fill(0, hands[0]);
+            cudaDeviceSynchronize();
+
+            auto t0 = std::chrono::high_resolution_clock::now();
+            EigenDecompThomas<Real> ed(boundary, 1.0, hands, events, sizeOfBX3Sub);
+            ed.solve(xThomasSub, rhsSub, hands[0]);
+            cudaDeviceSynchronize();
+            auto t1 = std::chrono::high_resolution_clock::now();
+
+            thomasMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        } catch (...) {
+            std::cout << std::setw(20) << (std::to_string(n))
+                      << std::setw(20) << total
+                      << std::setw(25) << std::fixed << std::setprecision(3) << eigenMs
+                      << "  OOM in EigenDecompThomas" << std::endl;
+            break;
+        }
+
+        // --- Diff norm: xThomas -= xEigen, then ||xThomas|| ---
+        xThomasSub.add(xEigenSub, &GPUScalar<Real>::get(-1), &hands[0]);
+        xThomasSub.norm(*normResult, hands[0]);
+        cudaDeviceSynchronize();
+        double diffNorm = normResult->get(hands[0]);
+
+        std::cout << std::setw(20) << (std::to_string(n))
+                  << std::setw(20) << total
+                  << std::setw(25) << std::fixed    << std::setprecision(3) << eigenMs
+                  << std::setw(25)                                           << thomasMs
+                  << std::setw(25) << std::scientific << std::setprecision(3) << diffNorm
+                  << std::endl;
+    }
+}
+
+
 int main(int argc, char **argv) {
+
     std::cout << "--- DIAGNOSTIC: Test Binary Starting ---" << std::endl;
     testing::InitGoogleTest(&argc, argv);
 

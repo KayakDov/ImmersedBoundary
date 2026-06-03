@@ -21,6 +21,8 @@ endif()
 # =========================
 # Project Initialization
 # =========================
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 project(CudaBanded LANGUAGES C CXX CUDA Fortran)
 
 if(WIN32)
@@ -35,7 +37,7 @@ else()
 endif()
 
 include(FortranCInterface)
-FortranCInterface_VERIFY(CXX) # Fails build if they can't "talk" to each other
+FortranCInterface_VERIFY(CXX)
 
 # =========================
 # Standards
@@ -52,6 +54,26 @@ set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 # =========================
 # Find CUDA toolkit (This will now rigidly use the 12.6 path defined above)
 find_package(CUDAToolkit REQUIRED)
+
+# Discover Intel oneAPI compiler lib dirs dynamically (no hardcoded version number)
+file(GLOB _INTEL_COMPILER_LIB_DIRS
+        "/opt/intel/oneapi/compiler/*/lib"      # system-wide install (Linux standard)
+        "$ENV{HOME}/intel/oneapi/compiler/*/lib" # user-local install
+        "$ENV{ONEAPI_ROOT}/compiler/*/lib"       # if env var is set, also check it
+        "$ENV{ONEAPI_ROOT}/compiler/latest/lib"
+)
+list(SORT _INTEL_COMPILER_LIB_DIRS ORDER DESCENDING) # prefer newest version first
+
+find_library(INTLC_LIB
+        NAMES intlc
+        HINTS ${_INTEL_COMPILER_LIB_DIRS}
+)
+if(INTLC_LIB)
+    get_filename_component(INTLC_LIB_DIR "${INTLC_LIB}" DIRECTORY)
+    message(STATUS "Found libintlc: ${INTLC_LIB}")
+else()
+    message(WARNING "libintlc.so not found — run_unit_tests may fail at runtime.")
+endif()
 
 # Fetch GoogleTest
 include(FetchContent)
@@ -115,6 +137,14 @@ target_link_libraries(CudaBandedLib
 )
 
 # =========================
+# RPATH configuration
+# =========================
+# Force CMake to embed the library paths used during linking into the final executable
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# =========================
 # Unit Test Executable
 # =========================
 enable_testing()
@@ -126,6 +156,7 @@ add_executable(run_unit_tests ${TEST_SOURCES})
 
 set_target_properties(run_unit_tests PROPERTIES
         CUDA_RUNTIME_LIBRARY Shared
+        BUILD_RPATH "${INTLC_LIB_DIR}"
 )
 
 target_link_libraries(run_unit_tests
@@ -156,5 +187,8 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
 )
 
 if(NOT MSVC)
-    target_link_options(run_unit_tests PRIVATE "-Wl,--no-undefined")
+    target_link_options(run_unit_tests PRIVATE
+            "-Wl,--no-undefined"
+            "-Wl,--disable-new-dtags"   # Use DT_RPATH (propagates transitively) not DT_RUNPATH
+    )
 endif()
