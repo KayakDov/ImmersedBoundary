@@ -66,7 +66,7 @@ public:
     /**
      * The eigen vectors and values.
      */
-    poisson::Eigen<T> eigen;
+    poisson::Eigen<T> eigen;//Note, storing the inverse spectral matrix of L would be faster but more memory consuming than storing the eigen values for L_i
 
     /**
      * The dimensions of the grid.

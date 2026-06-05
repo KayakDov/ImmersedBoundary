@@ -32,7 +32,7 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
         eds = std::make_unique<EigenDecomp2d<Real>>(boundary, hands, events[0]);
     else
         eds = thomas ?
-            std::make_unique<EigenDecompThomas<Real>>(boundary, dx, hands, events):
+            std::make_unique<EigenDecompThomas<Real>>(boundary, hands, events):
             std::make_unique<EigenDecomp3d<Real>>(boundary, hands, events);
 }
 

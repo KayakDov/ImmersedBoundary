@@ -15,19 +15,6 @@ __global__ void setLEigenValInverseKernel3d(
         bool den0 = isSingular && ind.layer == 0 && ind.row == 0 && ind.col == 0;
 
         dst[ind] = den0 ? 0 : src[ind] / (eVals.x[ind.col] + eVals.y[ind.row] + eVals.z[ind.layer]);
-
-        // // Cast indices to unsigned long long for %llu and values to double for %f
-        // // to handle both 'float' and 'double' template instantiations safely.
-        // printf("Ind[r:%llu, c:%llu, l:%llu] src: %e | eVals(x:%e, y:%e, z:%e) sum: %e, dst = %e\n",
-        //        (unsigned long long)ind.row,
-        //        (unsigned long long)ind.col,
-        //        (unsigned long long)ind.layer,
-        //        (double)src[ind],
-        //        (double)eVals.x[ind.col],
-        //        (double)eVals.y[ind.row],
-        //        (double)eVals.z[ind.layer],
-        //        (double)(eVals.x[ind.col] + eVals.y[ind.row] + eVals.z[ind.layer]),
-        //        dst[ind]);
     }
 }
 

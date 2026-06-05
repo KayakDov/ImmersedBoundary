@@ -28,8 +28,8 @@ protected:
     /** @brief GPU workspace for the Thomas solver's modified intermediate RHS values. */
     Tensor<T> workSpaceRHSPrime;
 
-    /** @brief Grid spacing in the Z-direction, used to build the tridiagonal coefficients. */
-    double deltaX;
+    /** The boundary conditions for the x dimension. */
+    const BoundaryPair<T>& boundaryX;
 
     /**
      * @brief Solves the tridiagonal systems in the eigen-space.
@@ -49,31 +49,28 @@ public:
     /**
      * @brief Constructs the hybrid solver using existing matrix workspaces.
      * @param eigen The eigen vectors and values.
-     * @param deltaX The distance between x grid points.
      * @param sizeOfBX3 A 3-column matrix providing scratch space for [Solution, SuperPrime, RHSPrime].
      * @param isSingular true if the laplacian is singular.
      */
-    EigenDecompThomas(const poisson::Eigen<T> &eigen, double deltaX, Mat<T> &sizeOfBX3, bool isSingular);
+    EigenDecompThomas(const poisson::Eigen<T> &eigen, const BoundaryPair<T>& boundX, Mat<T> &sizeOfBX3, bool isSingular);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.
      * @param boundary The boundary conditions.
-     * @param deltaX The distance between x grid points.
      * @param hand3 Pointer to array of Handles.
      * @param event2 Event for stream synchronization.
      * @param sizeOfBX3 allocated memory for the right hand side, and the thomas calculations.  It should have as amny rows
      * as there are rows in L, and 3 columns.
      */
-    EigenDecompThomas(const BoundaryConfig<T>& boundary, double deltaX, Handle *hand3, Event *event2, Mat<T> sizeOfBX3);
+    EigenDecompThomas(const BoundaryConfig<T>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.
      * @param boundary The boundary conditions.
-     * @param deltaX The distance between x grid points.
      * @param hand3 Pointer to array of Handles.
      * @param event2 Event for stream synchronization.
      */
-    EigenDecompThomas(const BoundaryConfig<T>& boundary, double deltaX, Handle *hand3, Event *event2);
+    EigenDecompThomas(const BoundaryConfig<T>& boundary, Handle *hand3, Event *event2);
 
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const override;
 };

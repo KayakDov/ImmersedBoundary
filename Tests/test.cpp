@@ -400,9 +400,11 @@ void verifyEigenSolverIdentity(const GridDim& dim, BoundaryConfig<Real>& boundar
     }
 
     if (dim.numDims()== 3) {
-        EigenDecompThomas<Real> ed(boundary, 1, hands, events);
+        EigenDecompThomas<Real> ed(boundary, hands, events);
         x.fill(0, hands[0]);
         ed.solve(x, rhs, hands[0]);
+        x.get(xCpuResult.data(), hands[0]);
+        cudaDeviceSynchronize();
 
         if (boundary.allNeumann()) {
             Real offset = xCpuOrig[0] - xCpuResult[0];
@@ -701,7 +703,7 @@ TEST(Benchmark, SolverRuntimes) {
             cudaDeviceSynchronize();
 
             auto t0 = std::chrono::high_resolution_clock::now();
-            EigenDecompThomas<Real> ed(boundary, 1.0, hands, events, sizeOfBX3Sub);
+            EigenDecompThomas<Real> ed(boundary, hands, events, sizeOfBX3Sub);
             ed.solve(xThomasSub, rhsSub, hands[0]);
             cudaDeviceSynchronize();
             auto t1 = std::chrono::high_resolution_clock::now();
