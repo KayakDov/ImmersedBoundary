@@ -11,7 +11,7 @@ template<typename Real>
 struct TriDiagWithBoundary {
     Real firstRowPrimary, firstRowSecondary, lastRowPrimary, lastRowSecondary, interiorPrimary, interiorSecondary;
     __device__ TriDiagWithBoundary(
-        const BoundaryPair<Real>& boundary,
+        const UniformSegment<Real>& boundary,
         Real eigenContribution,
         Real invDeltaSq
     ):
@@ -92,7 +92,7 @@ __global__ void solveThomas3dLaplacianKernel(//TODO: for the buffers, should I b
     DeviceData1d<Real> eValsZ,
     DeviceData3d<Real> superPrime,
     DeviceData3d<Real> bPrime,
-    BoundaryPair<Real> boundsX,
+    UniformSegment<Real> boundsX,
     bool isSingular
 ) {//width is layers and height is rows
     GridInd3d system(idy(), 0, idx());
@@ -159,7 +159,7 @@ void EigenDecompThomas<T>::multLEigenValInverse(const SimpleArray<T> &src, Simpl
 }
 //EigenDecomp3d(const poisson::Eigen<T> &eigen, SimpleArray<T>& sizeOfB, Vec<T>& size1IfSingular, bool isSingular);
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const poisson::Eigen<T>& eigen, const BoundaryPair<T>& boundX, Mat<T> &sizeOfBX3, bool isSingular):
+EigenDecompThomas<T>::EigenDecompThomas(const poisson::Eigen<T>& eigen, const UniformSegment<T>& boundX, Mat<T> &sizeOfBX3, bool isSingular):
     EigenDecomp3d<T>(
         eigen,
         sizeOfBX3.col(0),

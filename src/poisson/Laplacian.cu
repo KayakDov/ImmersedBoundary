@@ -18,7 +18,11 @@ namespace poisson {
     template<typename T>
     Laplacian1d<T>::Laplacian1d(const BoundaryConfig<T> &boundary, Handle& hand) :
         boundary(boundary),
-        rawBanded(Mat<T>::create(boundary.x.dimLength, 3), Mat<T>::create(boundary.y.dimLength, 3), boundary.dim().numDims() == 3 ? Mat<T>::create(boundary.z.dimLength, 3) : Mat<T>::empty()),
+        rawBanded(
+            Mat<T>::create(boundary.x.dimLength, 3),
+            Mat<T>::create(boundary.y.dimLength, 3),
+            boundary.dim().numDims() == 3 ? Mat<T>::create(boundary.z.dimLength, 3) : Mat<T>::empty()
+        ),
         inds(SimpleArray<int32_t>::create(3, hand)){
 
         AdjacencyIndPair prevNext(1, 1);
@@ -44,10 +48,14 @@ namespace poisson {
 
     template<typename T>
     SquareMat<T> Laplacian1d<T>::dense(size_t dim, Handle& hand) {
-        auto banded = this->banded(dim);
         auto square = SquareMat<T>::create(banded._rows);
-        banded.getDense(square, hand);
+        dense(dim, square, hand);
         return square;
+    }
+
+    template<typename T>
+    void Laplacian1d<T>::dense(size_t dim, SquareMat<T>& denseGoesHere, Handle& hand) {
+        this->banded(dim).banded.getDense(denseGoesHere, hand);
     }
 
     template<typename T>
@@ -107,10 +115,10 @@ namespace poisson {
     }
 
     template<typename T>
-    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T> correctionGoesHere, cudaStream_t stream) {
+    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T> rhsCorrectionGoesHere, cudaStream_t stream) {
         GridDim dimension = boundary.dim();
 
-        correctionGoesHere.fill(0, stream);
+        rhsCorrectionGoesHere.fill(0, stream);
 
         KernelPrep kp(
             std::max(dimension.rows, dimension.layers),
@@ -120,7 +128,7 @@ namespace poisson {
         buildRhsBCKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
             dimension,
             boundary,
-            correctionGoesHere.toKernel1d()
+            rhsCorrectionGoesHere.toKernel1d()
         );
 
         CHECK_CUDA_ERROR(cudaGetLastError());
@@ -134,6 +142,33 @@ namespace poisson {
 
         return rhs;
     }
+
+    template<typename T>
+    void generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const VariableSegment<T> &axisSegment) {
+
+        auto buffer = Mat<T>::create(eVecs._rows, 3 + eVals.size());
+        auto rawBanded = buffer.subMat(0,0,eVals.size(), 3);
+        AdjacencyInd primary(0, 0);
+        AdjacencyIndPair superSub(1, 1);
+        KernelPrep kp(3, eVecs._rows);
+        buildL1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(rawBanded, axisSegment, primary, superSub);
+        CHECK_CUDA_ERROR(cudaGetLastError());
+        auto indices = SimpleArray<int32_t>::create(3, hand);
+
+        std::vector<int32_t> indicesHost(3, 0);
+        indicesHost[primary.colInBanded] = primary.diag;
+        indicesHost[superSub.left.colInBanded] = superSub.left.diag;
+        indicesHost[superSub.right.colInBanded] = superSub.right.diag;
+        indices.set(indicesHost.data(), hand);
+
+        BandedMat<T> banded(rawBanded, indices);
+
+        auto dense = buffer.sqSubMat(0, 3, eVals.size());
+        banded.getDense(dense, hand);
+
+        dense.eigen(eVals, &eVecs, hand);
+    }
+
 }
 
 #define INSTANTIATE_LAPLACIAN(T)                          \

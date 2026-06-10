@@ -15,10 +15,12 @@
 
 #include <cmath>
 #include <cuda_runtime.h>
+
+#include "AxisSegment.cuh"
 #include "deviceArrays/headers/DeviceData.cuh"
 #include "deviceArrays/headers/handle.h"
 #include "deviceArrays/headers/SquareMat.h"
-#include "poisson/BoundaryCondition.cuh"
+#include "poisson/Laplacian.cuh"
 
 #ifndef PI_CONST
 #define PI_CONST
@@ -207,26 +209,26 @@ __global__ void eigenValLKernel_ND(DeviceData1d<T> eVals, const T minFourOverDel
 }
 
 template<typename T>
-void BoundaryPair<T>::generateEigen(cudaStream_t stream, SquareMat<T> eVecs, Vec<T> eVals) const {
+void poisson::generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const UniformSegment<T>& seg) {
 
     KernelPrep vecKP = eVecs.kernelPrep();
     KernelPrep valKP = eVals.kernelPrep();
 
-    T minFourOvDe = -4 * start.inverseDeltaSquared;
-    bool isNodeCent = start.isNodeCentered();
+    T minFourOvDe = -4 * seg.start.inverseDeltaSquared;
+    bool isNodeCent = seg.start.isNodeCentered();
 
-    if (start.isNeumann && end.isNeumann) {
-        eigenMatLKernel_NN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCent);
-        eigenValLKernel_NN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
-    } else if (start.isNeumann && end.isDirichlet()) {
-        eigenMatLKernel_ND<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCent);
-        eigenValLKernel_ND<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
-    } else if (start.isDirichlet() && end.isNeumann) {
-        eigenMatLKernel_DN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>(eVecs.toKernel2d(), isNodeCent);
-        eigenValLKernel_DN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
+    if (seg.start.isNeumann && seg.end.isNeumann) {
+        eigenMatLKernel_NN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, hand>>>(eVecs.toKernel2d(), isNodeCent);
+        eigenValLKernel_NN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, hand>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
+    } else if (seg.start.isNeumann && seg.end.isDirichlet()) {
+        eigenMatLKernel_ND<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, hand>>>(eVecs.toKernel2d(), isNodeCent);
+        eigenValLKernel_ND<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, hand>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
+    } else if (seg.start.isDirichlet() && seg.end.isNeumann) {
+        eigenMatLKernel_DN<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, hand>>>(eVecs.toKernel2d(), isNodeCent);
+        eigenValLKernel_DN<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, hand>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
     } else {
-        eigenMatLKernel_DD<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, stream>>>( eVecs.toKernel2d(), isNodeCent);
-        eigenValLKernel_DD<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, stream>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
+        eigenMatLKernel_DD<<<vecKP.numBlocks, vecKP.threadsPerBlock, 0, hand>>>( eVecs.toKernel2d(), isNodeCent);
+        eigenValLKernel_DD<<<vecKP.numBlocks, valKP.threadsPerBlock, 0, hand>>>(eVals.toKernel1d(), minFourOvDe, isNodeCent);
     }
 
     CHECK_CUDA_ERROR (cudaGetLastError());
@@ -234,7 +236,7 @@ void BoundaryPair<T>::generateEigen(cudaStream_t stream, SquareMat<T> eVecs, Vec
 
 
 
-template class BoundaryPair<float>;
-template class BoundaryPair<double>;
+template class UniformSegment<float>;
+template class UniformSegment<double>;
 
 #endif // LAPLACIAN_EIGEN_KERNELS_CUH

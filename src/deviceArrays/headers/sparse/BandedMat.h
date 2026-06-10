@@ -98,6 +98,8 @@ public:
     */
     void setFromDense(const SquareMat<T> &denseMat, Handle *handle);
 
+    void generateEigenStedc(Handle &hand, SquareMat<T> eVecs, Vec<T> &eVals);
+
     /**
     * @brief Multiplies this banded matrix with a vector: @f$ y = α A x + β y @f$.
     *

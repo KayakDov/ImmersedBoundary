@@ -76,31 +76,26 @@ SquareMat<T> SquareMat<T>::empty() {
     return SquareMat<T>(0, 0, nonOwningGpuPtr<T>(nullptr));
 }
 
-//TODO:Get this working for floats
 template <typename T>
 void SquareMat<T>::eigen(
-    Vec<T>& eVals,     // Real part of eigenvalues
-    SquareMat<T>* eVecs,      // Eigenvectors (stored as real/imaginary parts)  Set to null if vectors should not be computed.
-    Mat<T>* temp,        // Optional pre-allocated temporary matrix to use for the eigenvalue computation.  It should be the same size as this matrix.
-    Handle* handle
+    Vec<T>& eVals,           // Will hold BOTH real (first n) and imaginary (last n) parts
+    SquareMat<T>* eVecs,     // Eigenvectors (stored as real/imaginary parts) Set to null if not computed.
+    Handle hand
 ) const {
     if (this->_rows != this->_cols)
         throw std::invalid_argument("Eigenvalue computation requires a square matrix.");
 
-    std::unique_ptr<Handle> temp_hand_ptr;
-    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
-
     auto n = static_cast<int64_t>(this->_rows);
 
-    std::unique_ptr<Mat<T>> temp_mat_ptr;
-    Mat<T>* copy = Mat<T>::_get_or_create_target(n, n, temp, temp_mat_ptr);
-    this->get(*copy, *h);
-
     std::unique_ptr<Vec<T>> temp_reEVal;
-    Vec<T>* eValsPtr = Vec<T>::_get_or_create_target(2*n, &eVals, temp_reEVal, *h);
 
-    size_t workDeviceBytes, workHostBytes;
+    // FIXED: Replaced undeclared '*h' with the passed 'hand' variable
+    Vec<T>* eValsPtr = Vec<T>::_get_or_create_target(2*n, &eVals, temp_reEVal, hand);
+
+    size_t workDeviceBytes = 0, workHostBytes = 0;
     cudaDataType_t dataType;
+
+    // Your float/double logic is perfectly suited for the 64-bit generic API
     if constexpr (std::is_same_v<T, float>) dataType = CUDA_R_32F;
     else if constexpr (std::is_same_v<T, double>) dataType = CUDA_R_64F;
     else throw std::invalid_argument("Unsupported type for cusolverDnXgeev.");
@@ -108,25 +103,25 @@ void SquareMat<T>::eigen(
     cusolverEigMode_t findVectors = eVecs != nullptr ? CUSOLVER_EIG_MODE_VECTOR : CUSOLVER_EIG_MODE_NOVECTOR;
 
     CHECK_CUSOLVER_ERROR(cusolverDnXgeev_bufferSize(
-        *h, nullptr,
+        hand, nullptr,
         CUSOLVER_EIG_MODE_NOVECTOR, findVectors, n,
-        dataType, copy->toKernel2d(), copy->_ld,
+        dataType, this->toKernel2d(), this->_ld,
         dataType, eValsPtr->toKernel1d(),
         dataType, nullptr, n,
-        dataType, eVecs == nullptr ? nullptr : eVecs->data(), eVecs == nullptr? n : eVecs->_ld,
+        dataType, eVecs == nullptr ? nullptr : eVecs->data(), eVecs == nullptr ? n : eVecs->_ld,
         dataType,
         &workDeviceBytes,
         &workHostBytes
-        ));
+    ));
 
-    Vec<uint8_t> workspaceDevice = Vec<uint8_t>::create(workDeviceBytes, *h);
+    Vec<uint8_t> workspaceDevice = Vec<uint8_t>::create(workDeviceBytes, hand);
     std::vector<uint8_t> workspaceHost(workHostBytes);
-    Singleton<int32_t> info_dev = Singleton<int32_t>::create(*h);
+    Singleton<int32_t> info_dev = Singleton<int32_t>::create(hand);
 
     CHECK_CUSOLVER_ERROR(cusolverDnXgeev(
-        *h, nullptr,
+        hand, nullptr,
         CUSOLVER_EIG_MODE_NOVECTOR, findVectors, n,
-        dataType, copy->toKernel2d(), copy->_ld,
+        dataType, this->toKernel2d(), this->_ld,
         dataType, eValsPtr->toKernel1d(),
         dataType, nullptr, n,
         dataType, eVecs == nullptr ? nullptr : eVecs->data(), eVecs == nullptr ? n : eVecs->_ld,
@@ -140,7 +135,6 @@ void SquareMat<T>::eigen(
 
     // processInfo(info_dev);
 }
-
 
 template<typename T>
 SquareMat<T> SquareMat<T>::setToIdentity(cudaStream_t stream) {

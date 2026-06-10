@@ -3,7 +3,7 @@
 #define CUDABANDED_BOUNDARYCONFIG_CUH
 #include <functional>
 #include "deviceArrays/headers/sparse/BandedMat.h"
-#include "poisson/BoundaryCondition.cuh"
+#include "poisson/AxisSegment.cuh"
 
 /**
  * @struct BoundaryConfig
@@ -13,7 +13,7 @@
  * Faces can be null if not applicable (e.g., in 2D problems).
  */
 template<typename Real>
-struct BoundaryConfig : public XYZ<BoundaryPair<Real>>{
+struct BoundaryConfig : public XYZ<UniformSegment<Real>>{
 
     /**
      * A simplified constructor that creates uniform boundary conditions.
@@ -57,10 +57,10 @@ struct BoundaryConfig : public XYZ<BoundaryPair<Real>>{
         const Real3d& delta,
         const GridDim& dim,
         bool isStaggered
-    ):XYZ<BoundaryPair<Real>>(
-        BoundaryPair(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
-        BoundaryPair(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
-        BoundaryPair(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
+    ):XYZ<UniformSegment<Real>>(
+        UniformSegment(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
+        UniformSegment(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
+        UniformSegment(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
     ){}
 
 
@@ -92,7 +92,7 @@ struct BoundaryConfig : public XYZ<BoundaryPair<Real>>{
      * to be assignable, which is critical for classes with const data members.
      */
     template <typename ResultType>
-    __host__ void createUnique(std::shared_ptr<ResultType> (&outputs)[3], std::function<ResultType(const BoundaryPair<Real>&)> factory) const {
+    __host__ void createUnique(std::shared_ptr<ResultType> (&outputs)[3], std::function<ResultType(const UniformSegment<Real>&)> factory) const {
         size_t numDim = dim().numDims();
         for (size_t i = 0; i <  numDim; ++i) {
             int repeatInd = repeat(i);
@@ -113,7 +113,7 @@ struct BoundaryConfig : public XYZ<BoundaryPair<Real>>{
      */
     __host__ void generateEigen(Handle *hands3, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const{
 
-        createUnique<Mat<Real>>(preAllocatedForL_iX3, [](const BoundaryPair<Real>& c) {
+        createUnique<Mat<Real>>(preAllocatedForL_iX3, [](const UniformSegment<Real>& c) {
             return Mat<Real>::create(c.dimLength, c.dimLength + 1);
         });
 

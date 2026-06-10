@@ -29,7 +29,7 @@ protected:
     Tensor<T> workSpaceRHSPrime;
 
     /** The boundary conditions for the x dimension. */
-    const BoundaryPair<T>& boundaryX;
+    const UniformSegment<T>& boundaryX;
 
     /**
      * @brief Solves the tridiagonal systems in the eigen-space.
@@ -52,7 +52,7 @@ public:
      * @param sizeOfBX3 A 3-column matrix providing scratch space for [Solution, SuperPrime, RHSPrime].
      * @param isSingular true if the laplacian is singular.
      */
-    EigenDecompThomas(const poisson::Eigen<T> &eigen, const BoundaryPair<T>& boundX, Mat<T> &sizeOfBX3, bool isSingular);
+    EigenDecompThomas(const poisson::Eigen<T> &eigen, const UniformSegment<T>& boundX, Mat<T> &sizeOfBX3, bool isSingular);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.

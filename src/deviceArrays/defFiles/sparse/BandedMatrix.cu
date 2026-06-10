@@ -210,6 +210,7 @@ void BandedMat<T>::setFromDense(const SquareMat<T> &denseMat, Handle *handle) {
 }
 
 
+
 template class BandedMat<float>;
 template class BandedMat<double>;
 template class BandedMat<size_t>;

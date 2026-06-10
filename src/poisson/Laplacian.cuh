@@ -41,12 +41,21 @@ namespace poisson {
         BandedMat<T> banded(size_t dim);
 
         /**
-         * The square matrix of the given dimension.
+         * The square matrix of the given dimension.  This method allocated memory.
          * @param dim 0 for x, 1 for y, 2 for z.
          * @param hand
          * @return A square 1d laplacian matrix.
          */
         SquareMat<T> dense(size_t dim, Handle &hand);
+
+        /**
+         * The square matrix of the given dimension.  This method allocated memory.
+         * @param dim 0 for x, 1 for y, 2 for z.
+         * @param squareMatGoesHere The square matrix to be populated.
+         * @param hand
+         * @return A square 1d laplacian matrix.
+         */
+        SquareMat<T> dense(size_t dim, SquareMat<T>& squareMatGoesHere, Handle &hand);
     };
 
     template<typename T>
@@ -85,11 +94,11 @@ namespace poisson {
      * for RHS construction.
      *
      * @tparam T Floating-point type.
-     * @param correctionGoesHere Preallocated device array to store the RHS values.
+     * @param rhsCorrectionGoesHere Preallocated device array to store the RHS values.
      * @param stream CUDA stream used for asynchronous execution.
      */
     template<typename T>
-    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T> correctionGoesHere, cudaStream_t stream);
+    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T> rhsCorrectionGoesHere, cudaStream_t stream);
 
 
 
@@ -137,5 +146,23 @@ namespace poisson {
      */
     template<typename T>
     BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, cudaStream_t stream);
+
+    /**
+     * @brief Dispatches the appropriate Eigen-decomposition kernel to generate the spectral basis.
+     * * Reads the condition types (Dirichlet/Neumann) of the start and end boundaries,
+     * computes the necessary normalization coefficients, and executes the corresponding
+     * analytical eigen-kernel.
+
+     * @param stream The CUDA stream to execute the kernel on.
+     * @param eVecs  The pre-allocated 2D device array to store the eigenvectors.
+     * The dimension $N$ is automatically deduced from `eVecs.cols`.
+     * @param eVals Places the eigen values here.
+     * @param axisSegment the axis segment these eigen values are on.
+     */
+    template<typename T>
+    void generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const UniformSegment<T>& axisSegment) ;
+    template<typename T>
+    void generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const VariableSegment<T>& axisSegment);
+
 }
 #endif //CUDABANDED_POISSONLHS_H

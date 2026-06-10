@@ -88,16 +88,18 @@ public:
 
     /**
      * @brief Computes the eigenvalues and optionally the eigenvectors of the matrix.
+     *
+     * Will overwrite this matrix!
+     * Will allocated and free additional memory.
      * 
      * @param eVals Vector to store the computed eigenvalues.
      * @param eVecs Pointer to a SquareMat to store eigenvectors, or nullptr if eigenvectors are not needed.
-     * @param temp Optional temporary Mat used for internal computations (can be nullptr).  It should be the same size
-     * as this matrix.
-     * @param handle Optional GPU Handle for cuBLAS/cuSOLVER operations (can be nullptr to create a temporary handle).
+     * @param hand
+     * @param hand
      * 
      * @note This function assumes the matrix is square.
      */
-    void eigen(Vec<T> &eVals, SquareMat<T> *eVecs, Mat<T> *temp = nullptr, Handle *handle = nullptr) const;
+    void eigen(Vec<T> &eVals, SquareMat *eVecs, Handle hand) const;
 
     /**
      * Sets this matrix to be the identity matrix.

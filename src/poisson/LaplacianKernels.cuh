@@ -48,27 +48,25 @@ public:
 
 
      */
+    template<typename AxisSegmentT>
     __device__ void setRowInBanded1d(
         const size_t indexInLine,
-        const BoundaryPair<T>& boundaries,
-        const AdjacencyInd& primary, const AdjacencyIndPair& leftRight,
-        const int laplacianNumColumns
+        const AxisSegmentT& boundaries,
+        const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
     ) {
         T& mainDiag = (*laplacian)[primary.bandedInd(rowL)];
         T& rightDiag = (*laplacian)[leftRight.right.bandedInd(rowL)];
         T& leftDiag = (*laplacian)[leftRight.left.bandedInd(rowL)];
 
         if (indexInLine == 0) {
-            if (rowL + leftRight.left.diag < laplacianNumColumns) leftDiag = 0;
-
+            if (rowL + leftRight.left.diag < laplacian->rows) leftDiag = 0;
             boundaries.start.setL(mainDiag, rightDiag);
-        } else if (indexInLine == boundaries.dimLength - 1) {
-            if (rowL + leftRight.right.diag < laplacianNumColumns) rightDiag = 0;
+        } else if (indexInLine == boundaries.numNodes - 1) {
+            if (rowL + leftRight.right.diag < laplacian->rows) rightDiag = 0;
             boundaries.end.setL(mainDiag, leftDiag);
-        } else {
-            mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
-            leftDiag = rightDiag = boundaries.start.inverseDeltaSquared;
-        }
+
+        } else boundaries.setInteriorL(mainDiag, leftDiag, rightDiag, indexInLine);
+
     }
 };
 
@@ -109,13 +107,14 @@ public:
      * to the supplied adjacency pattern and boundary conditions.
      *
      */
+    template<typename SegmentType>
     __device__ void setRowInBanded1d(
         DeviceData2d<T>& laplacian,
-        const BoundaryPair<T>& boundary
+        const SegmentType& boundary
     ) {
         lSetter.laplacian = &laplacian;
         laplacian[primary.bandedInd(lSetter.rowL)] = 0;
-        lSetter.setRowInBanded1d(lSetter.rowL, boundary, primary, leftRight, laplacian.cols);
+        lSetter.setRowInBanded1d(lSetter.rowL, boundary, primary, leftRight);
     }
 };
 
@@ -140,9 +139,9 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim,
 
     size_t n = dim.size();
 
-    ds.setRowInBanded1d(gridInd.row, boundary.y, ap.here, ap.y, n);
-    ds.setRowInBanded1d(gridInd.col, boundary.x, ap.here, ap.x, n);
-    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z, n);
+    ds.setRowInBanded1d(gridInd.row, boundary.y, ap.here, ap.y);
+    ds.setRowInBanded1d(gridInd.col, boundary.x, ap.here, ap.x);
+    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z);
 }
 
 /**
@@ -164,21 +163,21 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
 
     if (dim.layers > 1 && ind.row < dim.rows && ind.col < dim.cols) {
         ind3d.set(ind.row, ind.col, 0);
-        boundary.z[0].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.z.start.setBoundaryRHS(rhs[dim[ind3d]]);
         ind3d.layer = dim.layers - 1;
-        boundary.z[1].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.z.end.setBoundaryRHS(rhs[dim[ind3d]]);
     }
     if (ind.row < dim.rows && ind.col < dim.layers) {
         ind3d.set(ind.row, 0, ind.col);
-        boundary.x[0].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.x.start.setBoundaryRHS(rhs[dim[ind3d]]);
         ind3d.col = dim.cols - 1;
-        boundary.x[1].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.x.end.setBoundaryRHS(rhs[dim[ind3d]]);
     }
     if (ind.row < dim.layers && ind.col < dim.cols) {
         ind3d.set(0, ind.col, ind.row);
-        boundary.y[0].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.y.start.setBoundaryRHS(rhs[dim[ind3d]]);
         ind3d.row = dim.rows - 1;
-        boundary.y[1].setBoundaryRHS(rhs[dim[ind3d]]);
+        boundary.y.end.setBoundaryRHS(rhs[dim[ind3d]]);
     }
 }
 
@@ -197,10 +196,10 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
  * @param[in] prevNext            The indices of the previouse and next element.
 
  */
-template <typename T>
+template <typename T, typename AxisSegmentT>
 __global__ void buildL1dKernel(
     DeviceData2d<T> bandedL_i,
-    const BoundaryPair<T> condition,
+    const AxisSegmentT condition,
     const AdjacencyInd primary,
     const AdjacencyIndPair prevNext
 ) {
@@ -208,7 +207,7 @@ __global__ void buildL1dKernel(
     if (i >= bandedL_i.rows) return;
 
     LSetter<T> ds(bandedL_i, i);
-    ds.setRowInBanded1d(i, bandedL_i.rows, condition, primary, prevNext, bandedL_i.cols);
+    ds.setRowInBanded1d(i,  condition, primary, prevNext);
 }
 
 template <typename T>
