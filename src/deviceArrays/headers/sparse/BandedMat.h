@@ -55,13 +55,13 @@ public:
     /**const
     * @brief Constructs a banded matrix by wrapping an existing dense matrix buffer.
     *
-    * @param copyFrom Existing matrix (device or host-backed) whose memory and dimensions
+    * @param windowTo Existing matrix (device or host-backed) whose memory and dimensions
     *                 are adopted without deep copying.
     * @param indices  Diagonal index vector defining which diagonal each row corresponds to.
     *
     * @note The data pointer is shared; no allocation or element copying is performed.
     */
-    BandedMat(const Mat<T> &copyFrom, const Vec<int32_t> &indices);
+    BandedMat(const Mat<T> &windowTo, const Vec<int32_t> &indices);
 
     /**
     * @brief Allocates a new banded matrix on device memory.

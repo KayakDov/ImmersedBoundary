@@ -5,8 +5,6 @@
 #include "BoundaryConfig.cuh"
 #include "deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
-#include "kronecker/KroneckerTriplet.h"
-#include "math/XYZ.cuh"
 #include "solvers/Event.h"
 
 
@@ -14,77 +12,6 @@
 namespace poisson {
     constexpr size_t numDiagonals3d = 7;
     constexpr size_t numDiagonals2d = 5;
-
-    /**
-     * The one dimensional Laplacians for a 2 or 3d grid.  Note, if a pair of Laplacians have the same dimension size and
-     * boundary conditions, then the pointers may point to the same memory.
-     * @tparam T
-     */
-    template<typename T>
-    class Laplacian1d {
-        SimpleArray<int32_t> inds;
-        const BoundaryConfig<T> boundary;
-
-    public:
-        const XYZ<Mat<T>> rawBanded;
-        /**
-         *
-         * @param boundary The boundary for the 1d laplacians.
-         * @param hand The context.
-         */
-        Laplacian1d(const BoundaryConfig<T> &boundary, Handle &hand);
-        /**
-         * Selects one of the laplacian 1d operators.
-         * @param dim 0 for the x dimension, 1 for the y dimesnion, and 2 for the z dimension.
-         * @return a 1d operator.
-         */
-        BandedMat<T> banded(size_t dim);
-
-        /**
-         * The square matrix of the given dimension.  This method allocated memory.
-         * @param dim 0 for x, 1 for y, 2 for z.
-         * @param hand
-         * @return A square 1d laplacian matrix.
-         */
-        SquareMat<T> dense(size_t dim, Handle &hand);
-
-        /**
-         * The square matrix of the given dimension.  This method allocated memory.
-         * @param dim 0 for x, 1 for y, 2 for z.
-         * @param squareMatGoesHere The square matrix to be populated.
-         * @param hand
-         * @return A square 1d laplacian matrix.
-         */
-        SquareMat<T> dense(size_t dim, SquareMat<T>& squareMatGoesHere, Handle &hand);
-    };
-
-    template<typename T>
-    class Eigen {
-        Eigen(const XYZ<Vec<T>>& vals, const XYZ<SquareMat<T>>& vecs);
-    public:
-        /**
-         * The eigen values, aka the spectrum.
-         */
-        const XYZ<Vec<T>> vals;
-        /**
-         * The eigen vectors.
-         */
-        const KroneckerTriplet<T> vecs;
-
-        /**
-         * Generates the eigenvector matrices.
-         * @param boundary The boundary conditions.
-         * @param hands3 A handle for each dimension.
-         * @param events an event for each dimension - 1
-         * @param hands3
-         * @return The Laplacian's Eigen vector matrices.
-         */
-        static Eigen make(const BoundaryConfig<T> &boundary, Handle *hands3, Event *events);
-
-        [[nodiscard]] GridDim dim() const;
-
-    };
-
 
     /**
      * @brief Builds the RHS vector for the Laplacian/Poisson system (core implementation).
@@ -147,22 +74,6 @@ namespace poisson {
     template<typename T>
     BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, cudaStream_t stream);
 
-    /**
-     * @brief Dispatches the appropriate Eigen-decomposition kernel to generate the spectral basis.
-     * * Reads the condition types (Dirichlet/Neumann) of the start and end boundaries,
-     * computes the necessary normalization coefficients, and executes the corresponding
-     * analytical eigen-kernel.
-
-     * @param stream The CUDA stream to execute the kernel on.
-     * @param eVecs  The pre-allocated 2D device array to store the eigenvectors.
-     * The dimension $N$ is automatically deduced from `eVecs.cols`.
-     * @param eVals Places the eigen values here.
-     * @param axisSegment the axis segment these eigen values are on.
-     */
-    template<typename T>
-    void generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const UniformSegment<T>& axisSegment) ;
-    template<typename T>
-    void generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const VariableSegment<T>& axisSegment);
 
 }
 #endif //CUDABANDED_POISSONLHS_H

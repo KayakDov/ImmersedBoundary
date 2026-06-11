@@ -4,6 +4,7 @@
 #include <functional>
 #include "deviceArrays/headers/sparse/BandedMat.h"
 #include "poisson/AxisSegment.cuh"
+#include "solvers/Event.h"
 
 /**
  * @struct BoundaryConfig
@@ -58,81 +59,17 @@ struct BoundaryConfig : public XYZ<UniformSegment<Real>>{
         const GridDim& dim,
         bool isStaggered
     ):XYZ<UniformSegment<Real>>(
-        UniformSegment(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
-        UniformSegment(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
-        UniformSegment(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
+        UniformSegment<Real>(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
+        UniformSegment<Real>(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
+        UniformSegment<Real>(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
     ){}
 
-
-    /**
-     * True if i is the first index that these conditions appear at.
-     * @param i The index to be checked.
-     * @return the value of the index repeated, or -1 if this is the first appearence.
-     */
-    __host__ int repeat(int i) const {
-        for (size_t j = 0; j < i; ++j) if ((*this)[j] == (*this)[i]) return j;
-        return -1;
-
-    }
-
-    /**
-     * @brief Efficiently creates unique objects based on 1D Laplacian boundary conditions.
-     *
-     * This utility iterates through the X, Y, and Z dimensions of a Laplacian setup.
-     * If the boundary conditions (dimensions, spacing, and types) for two dimensions
-     * are identical, the function reuses the existing object by sharing ownership
-     * via std::shared_ptr. This prevents redundant memory allocations and unnecessary
-     * re-computation of Laplacian matrices or eigenvalue vectors.
-     *
-     * @tparam ResultType The type of object to be created (e.g., Mat<T> or Vec<T>).
-
-     * @param[out] outputs  An array of 3 shared_ptrs to be populated with the results.
-     * @param[in]  factory  A factory function: `ResultType factory(const LaplacianConditions<T>&)`.
-     * * @note Because ResultType is wrapped in a shared_ptr, ResultType does not need
-     * to be assignable, which is critical for classes with const data members.
-     */
-    template <typename ResultType>
-    __host__ void createUnique(std::shared_ptr<ResultType> (&outputs)[3], std::function<ResultType(const UniformSegment<Real>&)> factory) const {
-        size_t numDim = dim().numDims();
-        for (size_t i = 0; i <  numDim; ++i) {
-            int repeatInd = repeat(i);
-            if (repeatInd == -1) outputs[i] = std::make_shared<ResultType>(factory((*this)[i]));
-            else outputs[i] = outputs[repeatInd];
-        }
-        if (numDim == 2) outputs[2] = nullptr;
-    }
-
-
-    /**
-     * Generates, including memory allocation, eigen values and vectors.  The matrices pointed to, that are retruned,
-     * hold the values in the last column, and the vectors in the first nxn cells.
-     * @param hands3 Used to create the different vectors in parrallel.  The number of handles should be equal to the number of dimentisons.
-     * @param events The number of events should be equal to the number of dimesnions.
-     * @param preAllocatedForL_iX3
-     * @return pointers to matrices containing the eigen values and vectors.
-     */
-    __host__ void generateEigen(Handle *hands3, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const{
-
-        createUnique<Mat<Real>>(preAllocatedForL_iX3, [](const UniformSegment<Real>& c) {
-            return Mat<Real>::create(c.dimLength, c.dimLength + 1);
-        });
-
-        (*this)[0].generateEigen(hands3[0], *(preAllocatedForL_iX3[0]));
-
-        for (size_t i = 1; i < dim().numDims(); ++i)
-            if (repeat(i) < 0){
-                (*this)[i].generateEigen(hands3[i], *(preAllocatedForL_iX3[i]));
-                events[i - 1].record(hands3[i]);
-                events[i - 1].hold(hands3[0]);
-            }
-
-    }
     /**
      * Checks if all the boundary oncdiitons are Neumann resulting in a singular laplacian.
      * @return True if all the boundary conditions are Neumann.
      */
     __host__ bool allNeumann() const {
-        return this->x.bothNeumann() && this->y.bothNeumann() && (this->z.bothNeumann() || this->z.dimLength <= 1);
+        return this->x.bothNeumann() && this->y.bothNeumann() && (this->z.bothNeumann() || this->z.numNodes <= 1);
     }
 
     /**
@@ -140,7 +77,7 @@ struct BoundaryConfig : public XYZ<UniformSegment<Real>>{
      * @return The dimensions of the grid.
      */
     __host__ __device__ GridDim dim() const {
-        return GridDim(this->y.dimLength, this->x.dimLength, this->z.dimLength);
+        return GridDim(this->y.numNodes, this->x.numNodes, this->z.numNodes);
     }
 
 };
