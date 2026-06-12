@@ -34,7 +34,7 @@ void EigenDecomp3d<T>::multLEigenValInverse(const SimpleArray<T> &src, SimpleArr
 
 template<typename T>
 EigenDecomp3d<T>::EigenDecomp3d(
-    const poisson::Eigen<T>& eigen,
+    const Eigen<T>& eigen,
     SimpleArray<T> sizeOfB,
     bool isSingular
 ) : EigenDecompSolver<T>(eigen, sizeOfB, isSingular) {

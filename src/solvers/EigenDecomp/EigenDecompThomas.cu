@@ -159,7 +159,7 @@ void EigenDecompThomas<T>::multLEigenValInverse(const SimpleArray<T> &src, Simpl
 }
 //EigenDecomp3d(const poisson::Eigen<T> &eigen, SimpleArray<T>& sizeOfB, Vec<T>& size1IfSingular, bool isSingular);
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const poisson::Eigen<T>& eigen, const UniformSegment<T>& boundX, Mat<T> &sizeOfBX3, bool isSingular):
+EigenDecompThomas<T>::EigenDecompThomas(const Eigen<T>& eigen, const UniformSegment<T>& boundX, Mat<T> &sizeOfBX3, bool isSingular):
     EigenDecomp3d<T>(
         eigen,
         sizeOfBX3.col(0),

@@ -80,7 +80,7 @@ template <typename T>
 void SquareMat<T>::eigen(
     Vec<T>& eVals,           // Will hold BOTH real (first n) and imaginary (last n) parts
     SquareMat<T>* eVecs,     // Eigenvectors (stored as real/imaginary parts) Set to null if not computed.
-    Handle hand
+    Handle& hand
 ) const {
     if (this->_rows != this->_cols)
         throw std::invalid_argument("Eigenvalue computation requires a square matrix.");

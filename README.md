@@ -142,10 +142,10 @@ Pre-calculates the spectral basis for the Laplacian on the given grid.
 ### Solve Routine (`solve_eigen_decomp_*`)
 Performs the spectral solve on the GPU.
 
-| Argument | Type | Description |
-| :--- | :--- | :--- |
-| x | real array | Output: The solved field. |
-| b | real array | Input: The source term (RHS). |
+| Argument | Type | Description                                                                          |
+| :--- | :--- |:-------------------------------------------------------------------------------------|
+| x | real array | Output: The solved field.                                                            |
+| b | real array | Input: The source term (RHS).  Be sure this is in the column space of the laplacian. |
 
 ---
 

@@ -99,7 +99,7 @@ public:
      * 
      * @note This function assumes the matrix is square.
      */
-    void eigen(Vec<T> &eVals, SquareMat *eVecs, Handle hand) const;
+    void eigen(Vec<T> &eVals, SquareMat *eVecs, Handle& hand) const;
 
     /**
      * Sets this matrix to be the identity matrix.

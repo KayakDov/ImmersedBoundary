@@ -2,6 +2,7 @@
 #ifndef CUDABANDED_LAPLACIANKERNELS_CUH
 #define CUDABANDED_LAPLACIANKERNELS_CUH
 #include "deviceArrays/headers/DeviceData.cuh"
+#include "poisson/Laplacian1d.cuh"
 
 
 
@@ -118,15 +119,6 @@ public:
     }
 };
 
-
-/**
- * @brief CUDA kernel to set up the Laplacian matrix and apply boundary conditions.
- *
- * @param[in,out] bandedL        Banded system matrix (dim.size() × numDiagonals); coefficients are accumulated.
- * @param[in] dim          Grid dimensions.
- * @param[in] boundary     Boundary conditions for all six faces.
- * @param[in] ap           Adjacency pattern specifying diagonal storage layout.
- */
 template<typename T>
 __global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim, const BoundaryConfig<T> boundary, const AdjacencyPatern ap) {
     GridInd3d gridInd;
@@ -144,20 +136,9 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim,
     if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z);
 }
 
-/**
- * @brief CUDA kernel to assemble boundary-condition contributions to the RHS.
- *
- * Uses a 2D thread grid where each thread handles up to 6 boundary faces.
- * Threads are launched with dimensions max(rows, cols, layers) to efficiently
- * cover all faces without underutilization. Atomic operations safely handle
- * corners/edges where contributions from multiple faces accumulate.
- *
- * @param[in] dim        Grid dimensions.
- * @param[in] boundary   Boundary conditions for all six faces.
- * @param[in,out] rhs    Right-hand side vector; accumulates boundary contributions.
- */
+
 template<typename T>
-__global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boundary, DeviceData1d<T> rhs) {
+__global__ void buildRhsBoundaryCorrectionKernel(const GridDim dim, const BoundaryConfig<T> boundary, DeviceData1d<T> rhs) {
     GridInd2d ind;
     GridInd3d ind3d(0, 0, 0);
 
@@ -181,6 +162,23 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
     }
 }
 
+
+template <typename T, typename AxisSegmentT>
+__global__ void buildL1dKernel(
+    DeviceData2d<T> bandedL_i,
+    const AxisSegmentT condition,
+    const AdjacencyInd primary,
+    const AdjacencyIndPair prevNext
+) {
+    size_t i = idx();
+    if (i >= bandedL_i.rows) return;
+
+    LSetter<T> ds(bandedL_i, i);
+    ds.setRowInBanded1d(i,  condition, primary, prevNext);
+}
+
+
+
 /**
  * @brief CUDA kernel to build a 1D banded Laplacian operator.
  *
@@ -196,19 +194,6 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
  * @param[in] prevNext            The indices of the previouse and next element.
 
  */
-template <typename T, typename AxisSegmentT>
-__global__ void buildL1dKernel(
-    DeviceData2d<T> bandedL_i,
-    const AxisSegmentT condition,
-    const AdjacencyInd primary,
-    const AdjacencyIndPair prevNext
-) {
-    size_t i = idx();
-    if (i >= bandedL_i.rows) return;
-
-    LSetter<T> ds(bandedL_i, i);
-    ds.setRowInBanded1d(i,  condition, primary, prevNext);
-}
 
 template <typename T>
 __global__ void buildAllL1dKernel(XYZ<DeviceData2d<T>> bandedL, const BoundaryConfig<T> boundary, const AdjacencyInd primary, const AdjacencyIndPair prevNext) {
@@ -220,7 +205,6 @@ __global__ void buildAllL1dKernel(XYZ<DeviceData2d<T>> bandedL, const BoundaryCo
     if (i < bandedL.y.rows) ds.setRowInBanded1d(bandedL.y, boundary.y);
     if (bandedL.z.size() > 1 && i < bandedL.z.rows) ds.setRowInBanded1d(bandedL.z, boundary.z);
 }
-
 
 
 #endif //CUDABANDED_LAPLACIANKERNELS_CUH

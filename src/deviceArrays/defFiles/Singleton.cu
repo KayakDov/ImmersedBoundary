@@ -92,17 +92,17 @@ template<typename T>
 GPUScalar<T>::GPUScalar(Handle hand):
     base(SimpleArray<T>::create(5, hand)),
     ZERO(base.get(0)),
-    ONE(base.get(1)),
-    MINUS_ONE(base.get(2)),
-    TWO(base.get(3)),
-    MINUS_TWO(base.get(4))
+    ONE(base.get(2)),
+    MINUS_ONE(base.get(1)),
+    TWO(base.get(4)),
+    MINUS_TWO(base.get(3))
 {
     std::vector<T> hostConsts = {
         static_cast<T>(0),
-        static_cast<T>(1),
         static_cast<T>(-1),
-        static_cast<T>(2),
-        static_cast<T>(-2)
+        static_cast<T>(1),
+        static_cast<T>(-2),
+        static_cast<T>(2)
     };
     base.set(hostConsts.data(), hand);
 }

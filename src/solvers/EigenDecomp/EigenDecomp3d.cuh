@@ -30,7 +30,7 @@ public:
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
      * @param isSingular Is the laplacian singular (all boundary conditions are Neumann)
      */
-    EigenDecomp3d(const poisson::Eigen<T> &eigen, SimpleArray<T> sizeOfB, bool isSingular);
+    EigenDecomp3d(const Eigen<T> &eigen, SimpleArray<T> sizeOfB, bool isSingular);
 
     /**
      * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.

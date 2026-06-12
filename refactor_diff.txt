@@ -1,0 +1,774 @@
+diff --git a/src/poisson/AxisSegment.cuh b/src/poisson/AxisSegment.cuh
+new file mode 100644
+index 0000000..257f1aa
+--- /dev/null
++++ b/src/poisson/AxisSegment.cuh
+@@ -0,0 +1,188 @@
++//
++// Created by usr on 6/10/26.
++//
++
++#ifndef CUDABANDED_AXISSEGMENT_CUH
++#define CUDABANDED_AXISSEGMENT_CUH
++
++#include "deviceArrays/headers/SimpleArray.h"
++#include "poisson/BoundaryCondition.cuh"
++
++template<typename Real, typename SpacingTypeStart, typename SpacingTypeEnd>
++class AxisSegment {
++public:
++    /**
++     * The number of nodes in this dimension.
++     */
++    size_t numNodes;
++
++    /** @brief The condition applied at the start (lower index) of the segment. */
++    const SpacingTypeStart start;
++
++    /** @brief The condition applied at the end (higher index) of the segment. */
++    const SpacingTypeEnd end;
++
++    /**
++     * returns the start or the end.
++     * @param isEnd true if you want the end boundary condition, false if you want the start.
++     * @return the desired boundary condition.
++     */
++    __host__ __device__ const BoundaryCondition<Real>& operator[](bool isEnd) const {
++        return isEnd ? end : start;
++    }
++
++    AxisSegment(size_t numNodes, const SpacingTypeStart& start, const SpacingTypeEnd& end) :
++        numNodes(numNodes),
++        start(start),
++        end(end){}
++
++    /**
++     * @brief Apply boundary condition contribution to system.
++     *
++     * Modifies the matrix L for a grid point adjacent to the boundary.
++     * @return true if a modification is made, false otherwise.
++     */
++    __device__ bool setBoundaryL(Real& mainDiagVal, Real& leftDiagonal, Real& rightDiagonal, const size_t indexInLine) const {
++        if (indexInLine == 0) this->start.setL(mainDiagVal, rightDiagonal);
++        else if (indexInLine == this->numNodes - 1) this->end.setL(mainDiagVal, leftDiagonal);
++        else return false;
++        return true;
++    }
++
++
++    /**
++     * @brief Apply boundary condition contribution to RHS only.
++     *
++     * Adds the boundary-condition-induced contribution to the right-hand side
++     * vector, assuming the operator (L) is assembled independently.
++     *
++     * @param rhs Right-hand side vector (modisfied in place)
++     * @param indexInLine  The index of this point in this dimension.
++     * @return true if a modification is made, false otherwise.
++     */
++    __device__ bool setBoundaryRHS1d(DeviceData1d<Real>& rhs, const size_t indexInLine) const {
++        if (indexInLine == 0) this->start.setBoundaryRHS(rhs[0]);
++        else if (indexInLine == this->numNodes - 1) this->end.setBoundaryRHS(rhs[this->numNodes - 1]);
++        else return false;
++        return true;
++    }
++
++    /**
++     * @brief Apply boundary condition contribution to system.
++     *
++     * Modifies the matrix L and RHS vector b for a grid point adjacent to the boundary.
++     * @return true if a modification is made, false otherwise.
++     * @return true if a modification is made, false otherwise.
++     */
++    __device__ bool setLAndRHS(Real& mainDiagVal, Real& startDiagVal, Real& endDiagonalVal, DeviceData1d<Real> rhs, const size_t indexInLine) const {
++        setBoundaryL(mainDiagVal, startDiagVal, endDiagonalVal, indexInLine);
++        return setBoundaryRHS1d(rhs, indexInLine);
++    }
++
++
++    __host__ __device__ bool isUndefined() const {
++        return numNodes == static_cast<size_t>(0);
++    }
++
++
++    /**
++     * Are both conditions Neumann resulting in singular 1d matrix?
++     * @return true if both conditions are neumann.
++     */
++    __host__ bool bothNeumann() const {
++        return start.isNeumann && end.isNeumann;
++    }
++
++};
++
++template<typename T>
++class VariableSegment : public AxisSegment<T, VariableBoundary<T, false>, VariableBoundary<T, true>> {
++public:
++    const DeviceData1d<T> delta;
++
++    VariableSegment(bool beginIsNeumann, bool endIsNeumann, T beginVal, T endVal, const SimpleArray<T>& delta) :
++        AxisSegment<T, VariableBoundary<T, false>, VariableBoundary<T, true>>(
++            delta.size() - 1,
++            VariableBoundary<T, false>(beginIsNeumann, beginVal, delta.subArray(0, 2)),
++            VariableBoundary<T, true>(endIsNeumann, endVal, delta.subArray(delta.size() - 2, 2))
++        ),
++        delta(delta) {}
++
++    __device__ void setInteriorL(T& mainDiagVal, T& prevVal, T& nextVal, const size_t indexInLine) const {
++
++        T distTerm = 2/(delta[indexInLine] + delta[indexInLine + 1]);
++        prevVal = distTerm/delta[indexInLine];
++        nextVal = distTerm/delta[indexInLine + 1];
++        mainDiagVal -= 2 / (delta[indexInLine + 1] * delta[indexInLine]);
++
++    }
++};
++
++/**
++ * @class UniformSegment
++ * @brief Encapsulates the boundary conditions for both ends of a 1D grid segment.
++ *
++ * This class stores the physical and numerical constraints for the start and end
++ * of a dimension (e.g., Left/Right, Top/Bottom). By storing these by value,
++ * the pair maintains its own valid copy of the conditions, preventing dangling
++ * references during kernel execution.
++ * * @tparam T The floating-point type (float or double).
++ */
++template<typename T>
++class UniformSegment : public AxisSegment<T, UniformBoundary<T>, UniformBoundary<T>> {
++public:
++    T inverseDeltaSq;
++
++    /**
++    * @brief Construct by providing raw parameters for both boundaries.
++     * This constructor initializes the internal BoundaryCondition objects directly.
++     *
++     * @param beginIsNeumann Is the beggin condition Neuman.  Set to false for Dirichlet.
++     * @param endIsNeumann Is the end condition Neumann.  Set to false for Dirichlet.
++     * @param beginVal The value at the beginning condition.
++     * @param endVal The value at the end condition.
++     * @param isStaggered True if the grid is staggered, false if it's node centered.
++     * @param delta The distance between grid points.
++     * @param numNodes The numver of grid points in this dimension.
++     */
++    __device__ __host__ UniformSegment(
++        bool beginIsNeumann,
++        bool endIsNeumann,
++        T beginVal,
++        T endVal,
++        bool isStaggered,
++        T delta,
++        size_t numNodes
++    ) :
++        AxisSegment<T, UniformBoundary<T>, UniformBoundary<T>>(
++            numNodes,
++            UniformBoundary<T>(beginVal, delta, beginIsNeumann, isStaggered),
++            UniformBoundary<T>((endIsNeumann ? -endVal : endVal), delta, endIsNeumann, isStaggered)
++        ),
++        inverseDeltaSq(1/(delta * delta))
++    {}
++
++    /**
++     * @brief Equality operator for condition pairs.
++     * Required for deduplication in spectral or multi-dimensional setups.
++     */
++    __host__ __device__ friend bool operator==(const UniformSegment& lhs,
++                                               const UniformSegment& rhs) {
++        return (lhs.start == rhs.start) && (lhs.end == rhs.end) && (lhs.numNodes == rhs.numNodes);
++    }
++
++    __host__ __device__ friend bool operator!=(const UniformSegment& lhs,
++                                               const UniformSegment& rhs) {
++        return !(lhs == rhs);
++    }
++
++    __device__ void setInteriorL(T& mainDiagVal, T& prevVal, T& nextVal, const size_t indexInAxisSegment) const {
++
++        prevVal = nextVal = inverseDeltaSq;
++        mainDiagVal -= 2 * inverseDeltaSq;
++
++    }
++};
++
++
++#endif //CUDABANDED_AXISSEGMENT_CUH
+diff --git a/src/poisson/BoundaryCondition.cuh b/src/poisson/BoundaryCondition.cuh
+index 8b1225d..b62bf14 100644
+--- a/src/poisson/BoundaryCondition.cuh
++++ b/src/poisson/BoundaryCondition.cuh
+@@ -16,15 +16,80 @@
+  */
+ 
+ #pragma once
+-#include <functional>
+ 
+-#include "deviceArrays/headers/DeviceData.cuh"
+-#include "solvers/Event.h"
+-#include <limits>
++#include "deviceArrays/headers/SimpleArray.h"
+ 
++template<typename Real>
++class BoundaryCondition {
++public:
++    /// Boundary value (Dirichlet value or Neumann gradient)
++    const Real value;
++    const bool isNeumann;
++
++    BoundaryCondition(Real value, bool isNeumann): value(value), isNeumann(isNeumann) {};
++
++    __host__ __device__ bool isDirichlet() const { return !isNeumann;}
++
++};
++
++template<typename Real, bool isEnd>
++class VariableBoundary: public BoundaryCondition<Real> {
++public:
++    const DeviceData1d<Real> deltaPM;
++
++    /**
++     *
++     * @param isNeumann
++     * @param val
++     * @param deltaPM If isEnd is false (we're at te beginning), then the first value should be the distance to the beggining boundary and the
++     * second should be the distance between the first two elements.  If isEnd is true, then the first value should
++     * be the distance between the last two elements, and the second mvalue should be the distance between the last
++     * element and the clsoing boundary.
++     */
++    VariableBoundary(bool isNeumann, Real val, const SimpleArray<Real>& deltaPM) :
++        BoundaryCondition<Real>(val, isNeumann),
++        deltaPM(deltaPM)
++    {}
++
++    __device__ void setL(Real& mainDiagVal, Real& offDiagVal) const {
++        Real dp = deltaPM[1], dm = deltaPM[0];
++        Real distTerm = 2/(dp + dm);
++
++        if (this->isNeumann) {
++            if constexpr (isEnd) mainDiagVal -= (offDiagVal = distTerm/dm);
++            else mainDiagVal -= (offDiagVal = distTerm/dp);
++        } else {
++            if constexpr (isEnd) offDiagVal = distTerm / dm;
++            else offDiagVal = distTerm / dp;
++            mainDiagVal -= 2/(dp * dm);
++        }
++    }
++
++    __device__ void setBoundaryRHS(Real& rhsVal) const {
++        Real contribution = 0;
++
++        Real dp = deltaPM[1], dm = deltaPM[0];
++        Real distTerm = 2/(dp + dm);
++
++        if (this->isNeumann) {
++            if constexpr (isEnd) contribution = this->value * distTerm;
++            else contribution = -this->value * distTerm;
++        } else {
++            if constexpr (isEnd) contribution = -distTerm * this->value/dp;
++            else contribution = -distTerm * this->value/dm;
++        }
++
++        atomicAdd(&rhsVal, contribution);
++    }
++
++    __device__ __host__ bool isUndefined() const {
++        return deltaPM.cols != 2;
++    }
++
++};
+ 
+ /**
+- * @class BoundaryCondition
++ * @class UniformBoundary
+  * @brief Abstract base class for boundary condition enforcement.
+  *
+  * Provides a unified interface for modifying the system matrix and RHS vector
+@@ -34,10 +99,8 @@
+  * @tparam Real Floating-point type (e.g., float, double)
+  */
+ template<typename Real>
+-class BoundaryCondition {
++class UniformBoundary : public BoundaryCondition<Real>{
+ public:
+-    /// Boundary value (Dirichlet value or Neumann gradient)
+-    const Real value;
+ 
+     /// Precomputed 1 / (delta^2)
+     const Real inverseDeltaSquared;
+@@ -45,9 +108,7 @@ public:
+     /// Precomputed 1 / delta
+     const Real inverseDelta;
+ 
+-    const bool isNeumann;
+     const bool isStaggered;
+-    __host__ __device__ bool isDirichlet() const { return !isNeumann;}
+     __host__ __device__ bool isNodeCentered() const { return !isStaggered;}
+ 
+     /**
+@@ -60,12 +121,20 @@ public:
+      * @param isNeumann Neumann or Dirichlet
+      * @param isStaggered Staggered or node centered.
+      */
+-    __device__ __host__ BoundaryCondition(Real value, Real delta, bool isNeumann, bool isStaggered) : value(value), inverseDeltaSquared(1/(delta*delta)), inverseDelta(1/delta), isNeumann(isNeumann), isStaggered(isStaggered) {};
++    __device__ __host__ UniformBoundary(Real value, Real delta, bool isNeumann, bool isStaggered) :
++        BoundaryCondition<Real>(value, isNeumann),
++        inverseDeltaSquared(1/(delta*delta)),
++        inverseDelta(1/delta),
++        isStaggered(isStaggered) {};
+ 
+     /**
+      * An empty conditon, similar to a null pointer.
+      */
+-    __device__ __host__ BoundaryCondition() : value(0), inverseDeltaSquared(0), inverseDelta(0), isNeumann(false), isStaggered(false) {};
++    __device__ __host__ UniformBoundary() :
++        BoundaryCondition<Real>(0, false),
++        inverseDeltaSquared(0),
++        inverseDelta(0),
++        isStaggered(false) {};
+ 
+     /**
+      * @brief Apply boundary condition contribution to system.
+@@ -74,7 +143,7 @@ public:
+      *
+      */
+     __device__ void setL(Real& mainDiagVal, Real& offDiagVal) const {
+-        if (isNeumann)
++        if (this-> isNeumann)
+             mainDiagVal -= this->inverseDeltaSquared;
+         else {
+             if (isStaggered) mainDiagVal -= 3*this->inverseDeltaSquared;
+@@ -86,17 +155,15 @@ public:
+     * @brief Equality operator implemented as a hidden friend.
+     * Compares all precomputed factors and the condition type.
+     */
+-    __host__ __device__ friend bool operator==(const BoundaryCondition& lhs, const BoundaryCondition& rhs) {
++    __host__ __device__ friend bool operator==(const UniformBoundary& lhs, const UniformBoundary& rhs) {
+         return (lhs.isNeumann == rhs.isNeumann) &&
+-               (lhs.isStaggered == rhs.isStaggered) &&
+-               (lhs.value == rhs.value) &&
+-               (lhs.inverseDelta == rhs.inverseDelta);
++               (lhs.value == rhs.value) ;
+     }
+ 
+     /**
+      * @brief Inequality operator.
+      */
+-    __host__ __device__ friend bool operator!=(const BoundaryCondition& lhs, const BoundaryCondition& rhs) {
++    __host__ __device__ friend bool operator!=(const UniformBoundary& lhs, const UniformBoundary& rhs) {
+         return !(lhs == rhs);
+     }
+ 
+@@ -113,171 +180,19 @@ public:
+     __device__ void setBoundaryRHS(Real& rhsVal) const {
+         Real contribution = 0;
+ 
+-        if (isNeumann) contribution = -this->value * this->inverseDelta;
++        if (this->isNeumann) contribution = -this->value * this->inverseDelta;
+         else {
+             if (isStaggered) contribution = -2*this->value * this->inverseDeltaSquared;
+             else contribution = -this->value * this->inverseDeltaSquared;
+         }
+-
+         atomicAdd(&rhsVal, contribution);
+     }
+-    /**
+-     * @brief Apply boundary condition contribution to system.
+-     *
+-     * Modifies the matrix L and RHS vector b for a grid point adjacent to the boundary.
+-     */
+-    __device__ void setLAndRHS(Real& mainDiagVal, Real& offDiagVal, Real& rhsVal) const {
+-        setL(mainDiagVal, offDiagVal);
+-        setBoundaryRHS(rhsVal);
+-    }
+ 
+-    /**
+-     * It's possible to create an undefined boundary condition.  This is to allow for flexabuility between 2 and 3 dimesnional creations.
+-     * @return true if this us undefined, false otherwise.
+-     */
+     __device__ __host__ bool isUndefined() const{
+         return inverseDelta == 0;
+     }
+-};
+-
+-/**
+- * @class BoundaryPair
+- * @brief Encapsulates the boundary conditions for both ends of a 1D grid segment.
+- *
+- * This class stores the physical and numerical constraints for the start and end
+- * of a dimension (e.g., Left/Right, Top/Bottom). By storing these by value,
+- * the pair maintains its own valid copy of the conditions, preventing dangling
+- * references during kernel execution.
+- * * @tparam T The floating-point type (float or double).
+- */
+-template<typename T>
+-class BoundaryPair {
+-public:
+-    /** @brief The condition applied at the start (lower index) of the segment. */
+-    const BoundaryCondition<T> start;
+-
+-    /** @brief The condition applied at the end (higher index) of the segment. */
+-    const BoundaryCondition<T> end;
+ 
+-    /** @brief The length of the dimension.*/
+-    const size_t dimLength;
+-
+-    /**
+-    * @brief Construct by providing raw parameters for both boundaries.
+-     * This constructor initializes the internal BoundaryCondition objects directly.
+-     *
+-     * @param beginIsNeumann Is the beggin condition Neuman.  Set to false for Dirichlet.
+-     * @param endIsNeumann Is the end condition Neumann.  Set to false for Dirichlet.
+-     * @param beginVal The value at the beginning condition.
+-     * @param endVal The value at the end condition.
+-     * @param isStaggered True if the grid is staggered, false if it's node centered.
+-     * @param delta The distance between grid points.
+-     * @param dimLength The numver of grid points in this dimension.
+-     */
+-    __device__ __host__ BoundaryPair(bool beginIsNeumann, bool endIsNeumann, T beginVal, T endVal, bool isStaggered, double delta, size_t dimLength) :
+-        start(beginVal, delta, beginIsNeumann, isStaggered),
+-        end((endIsNeumann ? -endVal : endVal), delta, endIsNeumann, isStaggered),
+-        dimLength(dimLength)
+-    {}
+-
+-    /**
+-     * @brief Equality operator for condition pairs.
+-     * Required for deduplication in spectral or multi-dimensional setups.
+-     */
+-    __host__ __device__ friend bool operator==(const BoundaryPair& lhs,
+-                                               const BoundaryPair& rhs) {
+-        return (lhs.start == rhs.start) && (lhs.end == rhs.end) && (lhs.dimLength == rhs.dimLength);
+-    }
+-
+-    __host__ __device__ friend bool operator!=(const BoundaryPair& lhs,
+-                                               const BoundaryPair& rhs) {
+-        return !(lhs == rhs);
+-    }
+-
+-
+-    /**
+-     * returns the start or the end.
+-     * @param isEnd true if you want the end boundary condition, false if you want the start.
+-     * @return the desired boundary condition.
+-     */
+-    __host__ __device__ const BoundaryCondition<T>& operator[](bool isEnd) const {
+-        return isEnd ? end : start;
+-    }
+-
+-    /**
+-     * @brief Apply boundary condition contribution to system.
+-     *
+-     * Modifies the matrix L for a grid point adjacent to the boundary.
+-     * @return true if a modification is made, false otherwise.
+-     */
+-    __device__ bool setLAtBoundary(T& mainDiagVal, T& leftDiagonal, T& rightDiagonal, const size_t indexInLine) const {
+-        if (indexInLine == 0) start.setL(mainDiagVal, rightDiagonal);
+-        else if (indexInLine == dimLength - 1) end.setL(mainDiagVal, leftDiagonal);
+-        else return false;
+-        return true;
+-    }
+-
+-    /**
+-     * @brief Apply boundary condition contribution to RHS only.
+-     *
+-     * Adds the boundary-condition-induced contribution to the right-hand side
+-     * vector, assuming the operator (L) is assembled independently.
+-     *
+-     * @param rhs Right-hand side vector (modisfied in place)
+-     * @param indexInLine  The index of this point in this dimension.
+-     * @return true if a modification is made, false otherwise.
+-     */
+-    __device__ bool setBoundaryRHS1d(DeviceData1d<T>& rhs, const size_t indexInLine) const {
+-        if (indexInLine == 0) start.setBoundaryRHS(rhs[0]);
+-        else if (indexInLine == dimLength - 1) end.setBoundaryRHS(rhs[dimLength - 1]);
+-        else return false;
+-        return true;
+-    }
+-    /**
+-     * @brief Apply boundary condition contribution to system.
+-     *
+-     * Modifies the matrix L and RHS vector b for a grid point adjacent to the boundary.
+-     * @return true if a modification is made, false otherwise.
+-     * @return true if a modification is made, false otherwise.
+-     */
+-    __device__ bool setLAndRHS(T& mainDiagVal, T& startDiagVal, T& endDiagonalVal, DeviceData1d<T> rhs, const size_t indexInLine) const {
+-        setLAtBoundary(mainDiagVal, startDiagVal, endDiagonalVal, indexInLine);
+-        return setBoundaryRHS1d(rhs, indexInLine);
+-    }
+-
+-    /**
+-     * @brief Dispatches the appropriate Eigen-decomposition kernel to generate the spectral basis.
+-     * * Reads the condition types (Dirichlet/Neumann) of the start and end boundaries,
+-     * computes the necessary normalization coefficients, and executes the corresponding
+-     * analytical eigen-kernel.
+-     * @param stream The CUDA stream to execute the kernel on.
+-     * @param eVecs  The pre-allocated 2D device array to store the eigenvectors.
+-     * The dimension $N$ is automatically deduced from `eVecs.cols`.
+-     * @param eVals Places the eigen values here.
+-     */
+-    void generateEigen(cudaStream_t stream, SquareMat<T> eVecs, Vec<T> eVals) const;
+-
+-
+-    /**
+-     * Builds the eigenvecotrs and eigenvalues.
+-     * @param stream
+-     * @param lengthXLengthPlus1 The eigenvecotrs are places in the beggining, and the last column gets the eigenvalues.
+-     */
+-    void generateEigen(cudaStream_t stream, Mat<T>& lengthXLengthPlus1) const {
+-        generateEigen(stream, lengthXLengthPlus1.sqSubMatFirstBiggest(), lengthXLengthPlus1.lastCol());
+-    }
+-
+-    __host__ __device__ bool isUndefined() {
+-        return dimLength == static_cast<size_t>(-1);
+-    }
+-
+-    /**
+-     * Are both conditions Neumann resulting in singular 1d matrix?
+-     * @return true if both conditions are neumann.
+-     */
+-    __host__ bool bothNeumann() const {
+-        return start.isNeumann && end.isNeumann;
+-    }
+ };
+ 
+ 
++
+diff --git a/src/poisson/BoundaryConfig.cuh b/src/poisson/BoundaryConfig.cuh
+index 8cb7bd6..436a3e7 100644
+--- a/src/poisson/BoundaryConfig.cuh
++++ b/src/poisson/BoundaryConfig.cuh
+@@ -3,7 +3,8 @@
+ #define CUDABANDED_BOUNDARYCONFIG_CUH
+ #include <functional>
+ #include "deviceArrays/headers/sparse/BandedMat.h"
+-#include "poisson/BoundaryCondition.cuh"
++#include "poisson/AxisSegment.cuh"
++#include "solvers/Event.h"
+ 
+ /**
+  * @struct BoundaryConfig
+@@ -13,7 +14,7 @@
+  * Faces can be null if not applicable (e.g., in 2D problems).
+  */
+ template<typename Real>
+-struct BoundaryConfig : public XYZ<BoundaryPair<Real>>{
++struct BoundaryConfig : public XYZ<UniformSegment<Real>>{
+ 
+     /**
+      * A simplified constructor that creates uniform boundary conditions.
+@@ -57,82 +58,18 @@ struct BoundaryConfig : public XYZ<BoundaryPair<Real>>{
+         const Real3d& delta,
+         const GridDim& dim,
+         bool isStaggered
+-    ):XYZ<BoundaryPair<Real>>(
+-        BoundaryPair(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
+-        BoundaryPair(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
+-        BoundaryPair(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
++    ):XYZ<UniformSegment<Real>>(
++        UniformSegment<Real>(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
++        UniformSegment<Real>(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
++        UniformSegment<Real>(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
+     ){}
+ 
+-
+-    /**
+-     * True if i is the first index that these conditions appear at.
+-     * @param i The index to be checked.
+-     * @return the value of the index repeated, or -1 if this is the first appearence.
+-     */
+-    __host__ int repeat(int i) const {
+-        for (size_t j = 0; j < i; ++j) if ((*this)[j] == (*this)[i]) return j;
+-        return -1;
+-
+-    }
+-
+-    /**
+-     * @brief Efficiently creates unique objects based on 1D Laplacian boundary conditions.
+-     *
+-     * This utility iterates through the X, Y, and Z dimensions of a Laplacian setup.
+-     * If the boundary conditions (dimensions, spacing, and types) for two dimensions
+-     * are identical, the function reuses the existing object by sharing ownership
+-     * via std::shared_ptr. This prevents redundant memory allocations and unnecessary
+-     * re-computation of Laplacian matrices or eigenvalue vectors.
+-     *
+-     * @tparam ResultType The type of object to be created (e.g., Mat<T> or Vec<T>).
+-
+-     * @param[out] outputs  An array of 3 shared_ptrs to be populated with the results.
+-     * @param[in]  factory  A factory function: `ResultType factory(const LaplacianConditions<T>&)`.
+-     * * @note Because ResultType is wrapped in a shared_ptr, ResultType does not need
+-     * to be assignable, which is critical for classes with const data members.
+-     */
+-    template <typename ResultType>
+-    __host__ void createUnique(std::shared_ptr<ResultType> (&outputs)[3], std::function<ResultType(const BoundaryPair<Real>&)> factory) const {
+-        size_t numDim = dim().numDims();
+-        for (size_t i = 0; i <  numDim; ++i) {
+-            int repeatInd = repeat(i);
+-            if (repeatInd == -1) outputs[i] = std::make_shared<ResultType>(factory((*this)[i]));
+-            else outputs[i] = outputs[repeatInd];
+-        }
+-        if (numDim == 2) outputs[2] = nullptr;
+-    }
+-
+-
+-    /**
+-     * Generates, including memory allocation, eigen values and vectors.  The matrices pointed to, that are retruned,
+-     * hold the values in the last column, and the vectors in the first nxn cells.
+-     * @param hands3 Used to create the different vectors in parrallel.  The number of handles should be equal to the number of dimentisons.
+-     * @param events The number of events should be equal to the number of dimesnions.
+-     * @param preAllocatedForL_iX3
+-     * @return pointers to matrices containing the eigen values and vectors.
+-     */
+-    __host__ void generateEigen(Handle *hands3, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) const{
+-
+-        createUnique<Mat<Real>>(preAllocatedForL_iX3, [](const BoundaryPair<Real>& c) {
+-            return Mat<Real>::create(c.dimLength, c.dimLength + 1);
+-        });
+-
+-        (*this)[0].generateEigen(hands3[0], *(preAllocatedForL_iX3[0]));
+-
+-        for (size_t i = 1; i < dim().numDims(); ++i)
+-            if (repeat(i) < 0){
+-                (*this)[i].generateEigen(hands3[i], *(preAllocatedForL_iX3[i]));
+-                events[i - 1].record(hands3[i]);
+-                events[i - 1].hold(hands3[0]);
+-            }
+-
+-    }
+     /**
+      * Checks if all the boundary oncdiitons are Neumann resulting in a singular laplacian.
+      * @return True if all the boundary conditions are Neumann.
+      */
+     __host__ bool allNeumann() const {
+-        return this->x.bothNeumann() && this->y.bothNeumann() && (this->z.bothNeumann() || this->z.dimLength <= 1);
++        return this->x.bothNeumann() && this->y.bothNeumann() && (this->z.bothNeumann() || this->z.numNodes <= 1);
+     }
+ 
+     /**
+@@ -140,7 +77,7 @@ struct BoundaryConfig : public XYZ<BoundaryPair<Real>>{
+      * @return The dimensions of the grid.
+      */
+     __host__ __device__ GridDim dim() const {
+-        return GridDim(this->y.dimLength, this->x.dimLength, this->z.dimLength);
++        return GridDim(this->y.numNodes, this->x.numNodes, this->z.numNodes);
+     }
+ 
+ };
+diff --git a/src/poisson/LaplacianKernels.cuh b/src/poisson/LaplacianKernels.cuh
+index 3e2c375..d49fef6 100644
+--- a/src/poisson/LaplacianKernels.cuh
++++ b/src/poisson/LaplacianKernels.cuh
+@@ -48,27 +48,25 @@ public:
+ 
+ 
+      */
++    template<typename AxisSegmentT>
+     __device__ void setRowInBanded1d(
+         const size_t indexInLine,
+-        const BoundaryPair<T>& boundaries,
+-        const AdjacencyInd& primary, const AdjacencyIndPair& leftRight,
+-        const int laplacianNumColumns
++        const AxisSegmentT& boundaries,
++        const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
+     ) {
+         T& mainDiag = (*laplacian)[primary.bandedInd(rowL)];
+         T& rightDiag = (*laplacian)[leftRight.right.bandedInd(rowL)];
+         T& leftDiag = (*laplacian)[leftRight.left.bandedInd(rowL)];
+ 
+         if (indexInLine == 0) {
+-            if (rowL + leftRight.left.diag < laplacianNumColumns) leftDiag = 0;
+-
++            if (rowL + leftRight.left.diag < laplacian->rows) leftDiag = 0;
+             boundaries.start.setL(mainDiag, rightDiag);
+-        } else if (indexInLine == boundaries.dimLength - 1) {
+-            if (rowL + leftRight.right.diag < laplacianNumColumns) rightDiag = 0;
++        } else if (indexInLine == boundaries.numNodes - 1) {
++            if (rowL + leftRight.right.diag < laplacian->rows) rightDiag = 0;
+             boundaries.end.setL(mainDiag, leftDiag);
+-        } else {
+-            mainDiag -= 2 * boundaries.start.inverseDeltaSquared;
+-            leftDiag = rightDiag = boundaries.start.inverseDeltaSquared;
+-        }
++
++        } else boundaries.setInteriorL(mainDiag, leftDiag, rightDiag, indexInLine);
++
+     }
+ };
+ 
+@@ -109,13 +107,14 @@ public:
+      * to the supplied adjacency pattern and boundary conditions.
+      *
+      */
++    template<typename SegmentType>
+     __device__ void setRowInBanded1d(
+         DeviceData2d<T>& laplacian,
+-        const BoundaryPair<T>& boundary
++        const SegmentType& boundary
+     ) {
+         lSetter.laplacian = &laplacian;
+         laplacian[primary.bandedInd(lSetter.rowL)] = 0;
+-        lSetter.setRowInBanded1d(lSetter.rowL, boundary, primary, leftRight, laplacian.cols);
++        lSetter.setRowInBanded1d(lSetter.rowL, boundary, primary, leftRight);
+     }
+ };
+ 
+@@ -140,9 +139,9 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim,
+ 
+     size_t n = dim.size();
+ 
+-    ds.setRowInBanded1d(gridInd.row, boundary.y, ap.here, ap.y, n);
+-    ds.setRowInBanded1d(gridInd.col, boundary.x, ap.here, ap.x, n);
+-    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z, n);
++    ds.setRowInBanded1d(gridInd.row, boundary.y, ap.here, ap.y);
++    ds.setRowInBanded1d(gridInd.col, boundary.x, ap.here, ap.x);
++    if (dim.layers > 1) ds.setRowInBanded1d(gridInd.layer, boundary.z, ap.here, ap.z);
+ }
+ 
+ /**
+@@ -164,21 +163,21 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
+ 
+     if (dim.layers > 1 && ind.row < dim.rows && ind.col < dim.cols) {
+         ind3d.set(ind.row, ind.col, 0);
+-        boundary.z[0].setBoundaryRHS(rhs[dim[ind3d]]);
++        boundary.z.start.setBoundaryRHS(rhs[dim[ind3d]]);
+         ind3d.layer = dim.layers - 1;
+-        boundary.z[1].setBoundaryRHS(rhs[dim[ind3d]]);
++        boundary.z.end.setBoundaryRHS(rhs[dim[ind3d]]);
+     }
+     if (ind.row < dim.rows && ind.col < dim.layers) {
+         ind3d.set(ind.row, 0, ind.col);
+-        boundary.x[0].setBoundaryRHS(rhs[dim[ind3d]]);
++        boundary.x.start.setBoundaryRHS(rhs[dim[ind3d]]);
+         ind3d.col = dim.cols - 1;
+-        boundary.x[1].setBoundaryRHS(rhs[dim[ind3d]]);
++        boundary.x.end.setBoundaryRHS(rhs[dim[ind3d]]);
+     }
+     if (ind.row < dim.layers && ind.col < dim.cols) {
+         ind3d.set(0, ind.col, ind.row);
+-        boundary.y[0].setBoundaryRHS(rhs[dim[ind3d]]);
++        boundary.y.start.setBoundaryRHS(rhs[dim[ind3d]]);
+         ind3d.row = dim.rows - 1;
+-        boundary.y[1].setBoundaryRHS(rhs[dim[ind3d]]);
++        boundary.y.end.setBoundaryRHS(rhs[dim[ind3d]]);
+     }
+ }
+ 
+@@ -197,10 +196,10 @@ __global__ void buildRhsBCKernel(const GridDim dim, const BoundaryConfig<T> boun
+  * @param[in] prevNext            The indices of the previouse and next element.
+ 
+  */
+-template <typename T>
++template <typename T, typename AxisSegmentT>
+ __global__ void buildL1dKernel(
+     DeviceData2d<T> bandedL_i,
+-    const BoundaryPair<T> condition,
++    const AxisSegmentT condition,
+     const AdjacencyInd primary,
+     const AdjacencyIndPair prevNext
+ ) {
+@@ -208,7 +207,7 @@ __global__ void buildL1dKernel(
+     if (i >= bandedL_i.rows) return;
+ 
+     LSetter<T> ds(bandedL_i, i);
+-    ds.setRowInBanded1d(i, bandedL_i.rows, condition, primary, prevNext, bandedL_i.cols);
++    ds.setRowInBanded1d(i,  condition, primary, prevNext);
+ }
+ 
+ template <typename T>

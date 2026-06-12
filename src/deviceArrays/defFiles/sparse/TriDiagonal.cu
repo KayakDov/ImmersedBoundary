@@ -4,6 +4,8 @@
 
 #include "../../headers/sparse/TriDiagonal.cuh"
 
+#include "deviceArrays/headers/Support/Streamable.h"
+
 template<typename T>
 const Vec<int32_t>& TriDiagonal<T>::getSharedIndices(Handle &hand) {
     // Magic static ensures safe thread initialization once per compilation target
@@ -25,7 +27,7 @@ TriDiagonal<T>::TriDiagonal(size_t denseSqMatDim, Handle &hand)
 template<typename T>
 TriDiagonal<T>::TriDiagonal(const Mat<T> &copyFrom, Handle &hand)
     : BandedMat<T>(copyFrom, getSharedIndices(hand)) {
-    if (copyFrom._cols != 3)
+    if (copyFrom._cols != 3 && copyFrom._rows != 0)
         throw std::invalid_argument("Cannot construct TriDiagonal: Matrix payload must contain exactly 3 columns.");
 
 }

@@ -8,7 +8,6 @@
 #include "solvers/Event.h"
 
 
-
 namespace poisson {
     constexpr size_t numDiagonals3d = 7;
     constexpr size_t numDiagonals2d = 5;

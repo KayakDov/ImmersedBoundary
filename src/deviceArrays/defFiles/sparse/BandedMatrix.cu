@@ -161,7 +161,7 @@ BandedMat<T>::BandedMat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> 
 template<typename T>
 BandedMat<T>::BandedMat(const Mat<T> &windowTo, const Vec<int32_t> &indices) : BandedMat(
     windowTo._rows, windowTo._cols, windowTo._ld, windowTo.ptr(), indices) {
-    if (indices.size() != windowTo._cols) throw std::invalid_argument(
+    if (indices.size() != windowTo._cols && windowTo._rows != 0) throw std::invalid_argument(
         "indices must be the same length as the number of rows in the matrix");
 }
 

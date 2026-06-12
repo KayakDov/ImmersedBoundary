@@ -7,6 +7,8 @@
 
          Module Numbers
              Integer :: Nx, Nx1, Nx2, Ny, Ny1, Ny2, Nz, Nz1, Nz2
+             ! Boundary condition flags: 0 = Dirichlet, 1 = Neumann
+             Integer :: EVD_BCx, EVD_BCy, EVD_BCz
          End Module Numbers
 
          Module Grid
@@ -15,6 +17,8 @@
            Real(kind=8) X(0:Nxx1), X12(0:Nxx2), Hx12(0:Nxx), HPx(0:Nxx1)
            Real(kind=8) Y(0:Nyy1), Y12(0:Nyy2), Hy12(0:Nyy), HPy(0:Nyy1)
            Real(kind=8) Z(0:Nzz1), Z12(0:Nzz2), Hz12(0:Nzz), HPz(0:Nzz1)
+           ! Domain dimensions (aspect ratios)
+           Real(kind=8) :: AspRa, WidRa
          End Module Grid
 
          Module Variables

@@ -19,7 +19,7 @@ bool EigenDecompSolver<T>::isInLColSpace(const Vec<T> &rhs, Vec<T> &bufferSizeOf
 
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(const poisson::Eigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular) :
+EigenDecompSolver<T>::EigenDecompSolver(const Eigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular) :
     dim(
         eMatsAndVecs.vecs.y._rows,
         eMatsAndVecs.vecs.x._rows,
@@ -34,7 +34,7 @@ EigenDecompSolver<T>::EigenDecompSolver(const poisson::Eigen<T>& eMatsAndVecs, S
 template<typename T>
 EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handle* hands, Event* events, SimpleArray<T> sizeOfB) :
     EigenDecompSolver(
-        poisson::Eigen<T>::make(boundary, hands, events),
+        Eigen<T>::make(boundary, hands, events),
         sizeOfB,
         boundary.allNeumann()
     ){

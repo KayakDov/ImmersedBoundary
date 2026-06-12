@@ -4,10 +4,9 @@
 
 #include "Laplacian1d.cuh"
 #include "BoundaryConfig.cuh"
-#include "deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
-#include "kronecker/KroneckerTriplet.h"
-#include "solvers/Event.h"
+#include "poisson/LaplacianKernels.cuh"
+
 
 template<typename T>
 Laplacian1d<T>::Laplacian1d(const BoundaryConfig<T> &boundary, Handle& hand) :
@@ -37,8 +36,29 @@ SquareMat<T> Laplacian1d<T>::dense(size_t dim, Handle& hand) {
 
 template<typename T>
 void Laplacian1d<T>::dense(size_t dim, SquareMat<T>& denseGoesHere, Handle& hand) {
-    this->banded(dim).getDense(denseGoesHere, hand);
+    (*this)[dim].getDense(denseGoesHere, hand);
 }
+
+template<typename T>
+template<typename AxisSegmentT>
+void Laplacian1d<T>::create(const AxisSegmentT &segment, TriDiagonal<T> mat, Handle &hand) {
+    KernelPrep kp(3, mat._rows);
+    buildL1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(mat.toKernel2d(), segment, mat.primary, mat.prevNext);
+    CHECK_CUDA_ERROR(cudaGetLastError());
+}
+
+template<typename T>
+template<typename AxisSegmentT>
+TriDiagonal<T> Laplacian1d<T>::create(const AxisSegmentT &segment, Handle &hand) {
+    TriDiagonal<T> mat(segment.numNodes(), hand);
+    create(segment, mat, hand);
+    return mat;
+}
+
+template void Laplacian1d<float>::create<UniformSegment<float>>(const UniformSegment<float>&, TriDiagonal<float>, Handle&);
+template void Laplacian1d<double>::create<UniformSegment<double>>(const UniformSegment<double>&, TriDiagonal<double>, Handle&);
+template void Laplacian1d<float>::create<VariableSegment<float>>(const VariableSegment<float>&, TriDiagonal<float>, Handle&);
+template void Laplacian1d<double>::create<VariableSegment<double>>(const VariableSegment<double>&, TriDiagonal<double>, Handle&);
 
 template class Laplacian1d<float>;
 template class Laplacian1d<double>;

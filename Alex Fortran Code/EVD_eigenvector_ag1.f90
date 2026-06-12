@@ -55,7 +55,7 @@ Subroutine Vgeev (Mat,E,E_inv,Lamb,Ne)
 
 !=======  Checking Inverse matrix ===============================
 
-   flag=1
+   flag=0
    if (flag==1) then
 			VL = 0.D0
 			do i=1,Ne

@@ -1,11 +1,11 @@
 #ifndef EIGENDECOMPSOLVER_H
 #define EIGENDECOMPSOLVER_H
 
-#include "deviceArrays/headers/Mat.h"
 #include "deviceArrays/headers/SquareMat.h"
 #include "deviceArrays/headers/Vec.h"
 #include "../Event.h"
-#include "poisson/Laplacian.cuh"
+#include "poisson/Eigen.cuh"
+#include "poisson/Poisson.cuh"
 
 
 template<typename T>
@@ -66,7 +66,7 @@ public:
     /**
      * The eigen vectors and values.
      */
-    poisson::Eigen<T> eigen;//Note, storing the inverse spectral matrix of L would be faster but more memory consuming than storing the eigen values for L_i
+    Eigen<T> eigen;//Note, storing the inverse spectral matrix of L would be faster but more memory consuming than storing the eigen values for L_i
 
     /**
      * The dimensions of the grid.
@@ -100,7 +100,7 @@ public:
      * @param sizeOfB An array the size of b = xLength * yLength * zLength that will be overwritten.  You may use b for this.
      * @param isSingular set to true if singular.
      */
-    EigenDecompSolver(const poisson::Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular);
+    EigenDecompSolver(const Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular);
     /**
      *
      * @param boundary The boundary conditions.

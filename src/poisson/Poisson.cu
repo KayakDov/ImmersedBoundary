@@ -2,7 +2,7 @@
 // Created by usr on 12/24/25.
 //
 
-#include "poisson/Laplacian.cuh"
+#include "poisson/Poisson.cuh"
 
 #include <vector>
 
@@ -53,12 +53,13 @@ namespace poisson {
 
         rhsCorrectionGoesHere.fill(0, stream);
 
+
         KernelPrep kp(
             std::max(dimension.rows, dimension.layers),
             std::max(dimension.layers, dimension.cols)
         );
 
-        buildRhsBCKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
+        buildRhsBoundaryCorrectionKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
             dimension,
             boundary,
             rhsCorrectionGoesHere.toKernel1d()
@@ -79,11 +80,11 @@ namespace poisson {
 
 }
 
-#define INSTANTIATE_LAPLACIAN(T)                          \
-template SimpleArray<T> poisson::boundaryCorrection<T>(const BoundaryConfig<T>&, cudaStream_t); \
-template void poisson::boundaryCorrection<T>(const BoundaryConfig<T>&, SimpleArray<T>, cudaStream_t); \
-template BandedMat<T> poisson::laplacian<T>(const BoundaryConfig<T>&, cudaStream_t); \
-template class poisson::Laplacian1d<T>; \
+#define INSTANTIATE_LAPLACIAN(T)                                                                       \
+template SimpleArray<T> poisson::boundaryCorrection<T>(const BoundaryConfig<T>&, cudaStream_t);        \
+template void poisson::boundaryCorrection<T>(const BoundaryConfig<T>&, SimpleArray<T>, cudaStream_t);  \
+template BandedMat<T> poisson::laplacian<T>(const BoundaryConfig<T>&, cudaStream_t);                   \
+template BandedMat<T> poisson::laplacian<T>(const BoundaryConfig<T>&, Mat<T>&, Vec<int32_t>&, cudaStream_t);
 
 INSTANTIATE_LAPLACIAN(float)
 INSTANTIATE_LAPLACIAN(double)

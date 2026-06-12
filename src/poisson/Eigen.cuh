@@ -5,13 +5,17 @@
 #ifndef CUDABANDED_EIGEN_CUH
 #define CUDABANDED_EIGEN_CUH
 
-
+#include "BoundaryConfig.cuh"
+#include "deviceArrays/headers/SquareMat.h"
+#include "kronecker/KroneckerTriplet.h"
+#include "math/XYZ.cuh"
+#include "solvers/Event.h"
 
 template<typename T>
     class Eigen {
     Eigen(const XYZ<Vec<T>>& vals, const XYZ<SquareMat<T>>& vecs);
 
-    static void generateEigen(const BoundaryConfig<T> boundary, const Handle *hands3, Event *events, std::shared_ptr<Mat<T>> (&preAllocatedForL_iX3)[3]);
+    static void generateEigen(const BoundaryConfig<T>& boundary, Handle *hands3, Event *events, std::shared_ptr<Mat<T>> (&preAllocatedForL_iX3)[3]);
 public:
     /**
      * The eigen values, aka the spectrum.
@@ -51,6 +55,17 @@ public:
     static void generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const UniformSegment<T>& axisSegment) ;
 
     static void generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const VariableSegment<T>& axisSegment);
+
+    /**
+     * Assigns the eigenvectors and eigen values.
+     * @tparam axisSegmentT Should either be a VariableSegment or a UniformSegment.
+     * @param hand
+     * @param eigins the first n columns will have eigen vectors assigned to them, and the last column will
+     * have all the eigenvalues assigned to it.
+     * @param axisSegment Boundary conditions and spacing.
+     */
+    template<typename axisSegmentT>
+    static void generateEigen(Handle& hand, Mat<T> eigins, const axisSegmentT& axisSegment) ;
 
 };
 

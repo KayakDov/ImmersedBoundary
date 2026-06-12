@@ -48,8 +48,25 @@ public:
      */
     void dense(size_t dim, SquareMat<T>& squareMatGoesHere, Handle &hand);
 
-    
+    /**
+     * Creates a 1 dimensional laplacian.
+     * @tparam AxisSegmentT Either a UniformSegment or a VariableSegment.
+     * @param segment The boundary conditions and spacing of the matrix.
+     * @param mat The laplacian will fill this matrix.
+     * @param hand
+     */
+    template<typename  AxisSegmentT>
+    static void create(const AxisSegmentT &segment, TriDiagonal<T> mat, Handle &hand);
 
+    /**
+     * Creates a 1 dimensional laplacian.
+     * This method allocated memory.
+     * @tparam AxisSegmentT Either a UniformSegment or a VariableSegment.
+     * @param segment The boundary conditions and spacing of the matrix.
+     * @param hand
+     */
+    template<class AxisSegmentT>
+    TriDiagonal<T> create(const AxisSegmentT &segment, Handle &hand);
 };
 
 #endif //CUDABANDED_LAPLACIAN1D_H

@@ -114,12 +114,13 @@ template <typename T>
 class GPUScalar {
 
     static std::unique_ptr<GPUScalar<T>> universal;
+
+public:
     /**
      * Holds the Singleton constants.
      */
     SimpleArray<T> base;
 
-public:
     /**
      * Sets up a set of GPU scalars integers from -2 to 2 inclusive.
      * @param hand
