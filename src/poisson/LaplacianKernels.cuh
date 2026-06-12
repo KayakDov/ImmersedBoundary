@@ -119,8 +119,8 @@ public:
     }
 };
 
-template<typename T>
-__global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim, const BoundaryConfig<T> boundary, const AdjacencyPatern ap) {
+template<typename T, typename BoundaryConfigT>
+__global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim, const BoundaryConfigT boundary, const AdjacencyPatern ap) {
     GridInd3d gridInd;
     if (gridInd >= dim) return;
 
@@ -137,8 +137,8 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim,
 }
 
 
-template<typename T>
-__global__ void buildRhsBoundaryCorrectionKernel(const GridDim dim, const BoundaryConfig<T> boundary, DeviceData1d<T> rhs) {
+template<typename T, typename BoundaryConfigT>
+__global__ void buildRhsBoundaryCorrectionKernel(const GridDim dim, const BoundaryConfigT boundary, DeviceData1d<T> rhs) {
     GridInd2d ind;
     GridInd3d ind3d(0, 0, 0);
 

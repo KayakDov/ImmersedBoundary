@@ -25,7 +25,8 @@ public:
      * @param hand2 2 contexts.
      * @param event an empty event.
      */
-    EigenDecomp2d(const BoundaryConfig<T> &boundary, Handle *hand2, Event &event);
+    template<typename BoundaryConfigT>
+    EigenDecomp2d(const BoundaryConfigT &boundary, Handle *hand2, Event &event);
 
 
     /**

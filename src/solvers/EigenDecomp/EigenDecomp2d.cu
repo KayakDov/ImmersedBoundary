@@ -32,7 +32,8 @@ void EigenDecomp2d<T>::eValsLInvMult(const SimpleArray<T> &src, SimpleArray<T> &
 }
 
 template<typename T>
-EigenDecomp2d<T>::EigenDecomp2d(const BoundaryConfig<T>& boundary, Handle* hand2, Event& event) :
+template<typename BoundaryConfigT>
+EigenDecomp2d<T>::EigenDecomp2d(const BoundaryConfigT& boundary, Handle* hand2, Event& event) :
     EigenDecompSolver<T>(boundary, hand2, &event) {
 }
 

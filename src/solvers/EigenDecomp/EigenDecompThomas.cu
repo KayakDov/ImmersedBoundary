@@ -172,7 +172,8 @@ EigenDecompThomas<T>::EigenDecompThomas(const Eigen<T>& eigen, const UniformSegm
 }
 
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const BoundaryConfig<T> &boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3):
+template<typename BoundaryConfigT>
+EigenDecompThomas<T>::EigenDecompThomas(const BoundaryConfigT &boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3):
     EigenDecomp3d<T>(boundary, hand3, event2, sizeOfBX3.col(0)),
     workSpaceSuperPrime(sizeOfBX3.col(1).tensor(boundary.dim().rows, boundary.dim().layers)),
     workSpaceRHSPrime(sizeOfBX3.col(2).tensor(boundary.dim().rows, boundary.dim().layers)),
@@ -180,7 +181,8 @@ EigenDecompThomas<T>::EigenDecompThomas(const BoundaryConfig<T> &boundary, Handl
 {}
 
 template<typename T>
-EigenDecompThomas<T>::EigenDecompThomas(const BoundaryConfig<T> &boundary, Handle *hand3, Event *event2):
+template<typename BoundaryConfigT>
+EigenDecompThomas<T>::EigenDecompThomas(const BoundaryConfigT &boundary, Handle *hand3, Event *event2):
     EigenDecompThomas(boundary, hand3, event2, Mat<T>::create(boundary.dim().size(), 3))
 {
 }

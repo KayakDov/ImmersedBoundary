@@ -41,16 +41,15 @@ EigenDecomp3d<T>::EigenDecomp3d(
 }
 
 template<typename T>
-EigenDecomp3d<T>::EigenDecomp3d(
-    BoundaryConfig<T> boundary,
-    Handle* hand3,
-    Event* event2
-) : EigenDecompSolver<T>(boundary, hand3, event2) {
+template<typename BoundaryConfigT>
+EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfigT boundary, Handle* hand3, Event* event2) :
+    EigenDecompSolver<T>(boundary, hand3, event2) {
 
 }
 
 template<typename T>
-EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB) :
+template<typename BoundaryConfigT>
+EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB) :
     EigenDecompSolver<T>(boundary, hand3, event2, sizeOfB){
 }
 

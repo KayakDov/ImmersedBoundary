@@ -23,8 +23,8 @@ namespace poisson {
      * @param rhsCorrectionGoesHere Preallocated device array to store the RHS values.
      * @param stream CUDA stream used for asynchronous execution.
      */
-    template<typename T>
-    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T> rhsCorrectionGoesHere, cudaStream_t stream);
+    template<typename T, typename BoundaryConfigT>
+    void boundaryCorrection(const BoundaryConfigT& boundary, SimpleArray<T> rhsCorrectionGoesHere, cudaStream_t stream);
 
 
 
@@ -38,8 +38,8 @@ namespace poisson {
      * @param stream CUDA stream used for asynchronous execution.
      * @return Device array containing the computed RHS vector.
      */
-    template<typename T>
-    SimpleArray<T> boundaryCorrection(const BoundaryConfig<T>& boundary, cudaStream_t stream) ;
+    template<typename T, typename BoundaryConfigT>
+    SimpleArray<T> boundaryCorrection(const BoundaryConfigT& boundary, cudaStream_t stream) ;
 
 
     /**
@@ -54,8 +54,8 @@ namespace poisson {
      * @param stream CUDA stream used for asynchronous execution.
      * @return Fully constructed banded Laplacian operator.
      */
-    template<typename T>
-    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, cudaStream_t stream);
+    template<typename T, typename BoundaryConfigT>
+    BandedMat<T> laplacian(const BoundaryConfigT& boundary, cudaStream_t stream);
 
     /**
      * @brief Constructs the sparse/banded Laplacian operator matrix.
@@ -70,8 +70,8 @@ namespace poisson {
      * @param stream CUDA stream used for asynchronous execution.
      * @return Fully constructed banded Laplacian operator.
      */
-    template<typename T>
-    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, cudaStream_t stream);
+    template<typename T, typename BoundaryConfigT>
+    BandedMat<T> laplacian(const BoundaryConfigT& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, cudaStream_t stream);
 
 
 }

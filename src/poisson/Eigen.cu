@@ -299,7 +299,8 @@ void createUnique(const BoundaryConfig<Real>& boundaryConfig, std::shared_ptr<Re
 * @return pointers to matrices containing the eigen values and vectors.
 */
 template<typename Real>
-void Eigen<Real>::generateEigen(const BoundaryConfig<Real>& boundary, Handle *hands3, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) {
+template<typename BoundaryConfigT>
+void Eigen<Real>::generateEigen(const BoundaryConfigT& boundary, Handle *hands3, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) {
 
     createUnique(
         boundary,
@@ -322,9 +323,9 @@ template<typename T>
 Eigen<T>::Eigen(const XYZ<Vec<T>> &vals, const XYZ<SquareMat<T>> &vecs) :
     vals(vals), vecs(vecs) {}
 
-
 template<typename T>
-Eigen<T> Eigen<T>::make(const BoundaryConfig<T>& boundary, Handle* hands3, Event* events) {
+template<typename BoundaryConfigT>
+Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* events) {
 
     bool is3d = boundary.dim().numDims() == 3;
     std::shared_ptr<Mat<T>> eigen[3];

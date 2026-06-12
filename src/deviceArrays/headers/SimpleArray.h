@@ -94,6 +94,18 @@ public:
     static SimpleArray create(size_t size, cudaStream_t stream, bool initDescr = false);
 
     /**
+     * @brief Allocates a new GPU array.
+     *
+     * @param hostData host data to be placed on the device.
+     * @param size Number of scalar elements to allocate.
+     * @param stream CUDA stream used for allocation/initialization.
+     * @param initDescr If true, initializes the cuSPARSE dense-vector
+     *                  descriptor before returning.
+     * @return A newly allocated @c SimpleArray<T>.
+     */
+    static SimpleArray<T> create(std::vector<T> hostData, cudaStream_t stream, bool initDescr = false);
+
+    /**
     * @brief Creates an empty simple array.
     *
     * @return A @c SimpleArray<T> with size zero, leading dimension one through

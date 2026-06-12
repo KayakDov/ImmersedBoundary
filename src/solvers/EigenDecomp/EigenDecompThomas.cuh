@@ -62,7 +62,8 @@ public:
      * @param sizeOfBX3 allocated memory for the right hand side, and the thomas calculations.  It should have as amny rows
      * as there are rows in L, and 3 columns.
      */
-    EigenDecompThomas(const BoundaryConfig<T>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3);
+    template<typename BoundaryConfigT>
+    EigenDecompThomas(const BoundaryConfigT& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.
@@ -70,7 +71,8 @@ public:
      * @param hand3 Pointer to array of Handles.
      * @param event2 Event for stream synchronization.
      */
-    EigenDecompThomas(const BoundaryConfig<T>& boundary, Handle *hand3, Event *event2);
+    template<typename BoundaryConfigT>
+    EigenDecompThomas(const BoundaryConfigT& boundary, Handle *hand3, Event *event2);
 
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const override;
 };

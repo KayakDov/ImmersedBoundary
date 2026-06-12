@@ -19,11 +19,7 @@ protected:
      */
     virtual void multLEigenValInverse(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const;
 
-
-
 public:
-
-
     /**
      * @brief Creates an eigen decomposition solver for a 3D staggered MAC grid.
      * @param eigen The eigens.
@@ -38,7 +34,8 @@ public:
      * @param hand3 3 contexts for parallel streaming
      * @param event2 an event for controlling stream dependency.
      */
-    EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event *event2);
+    template<typename BoundaryConfigT>
+    EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2);
 
 
 
@@ -50,7 +47,8 @@ public:
      * @param sizeOfB A scratch space the size of the RHS.  This will be overwritten.
      * @param event2 an event for controlling stream dependency.
      */
-    EigenDecomp3d(BoundaryConfig<T> boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB);
+    template<typename BoundaryConfigT>
+    EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB);
 
     /**
      * Be sure that b is in the column space of L.  Otheriwise you will receive a projection onto the column space

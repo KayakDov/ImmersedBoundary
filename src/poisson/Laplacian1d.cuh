@@ -20,8 +20,6 @@
 template<typename T>
 class Laplacian1d :public XYZ<TriDiagonal<T>>{
 
-    const BoundaryConfig<T> boundary;
-
 public:
 
     /**
@@ -29,7 +27,8 @@ public:
      * @param boundary The boundary for the 1d laplacians.
      * @param hand The context.
      */
-    Laplacian1d(const BoundaryConfig<T> &boundary, Handle &hand);
+    template<typename BoundaryConfigT>
+    Laplacian1d(const BoundaryConfigT &boundary, Handle &hand);
 
     /**
      * The square matrix of the given dimension.  This method allocated memory.

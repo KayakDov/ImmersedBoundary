@@ -37,8 +37,8 @@ namespace poisson {
         return BandedMat<T>(gridSizeXnumDiags, numDiags);
     }
 
-    template<typename T>
-    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, cudaStream_t stream) {
+    template<typename T, typename BoundaryConfigT>
+    BandedMat<T> laplacian(const BoundaryConfigT& boundary, cudaStream_t stream) {
         GridDim dim = boundary.dim();
         size_t numDiags = dim.numDims() == 3 ? numDiagonals3d : numDiagonals2d;
         auto mat = Mat<T>::create(dim.size(), numDiags);

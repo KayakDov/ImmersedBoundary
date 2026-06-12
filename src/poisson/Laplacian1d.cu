@@ -9,7 +9,8 @@
 
 
 template<typename T>
-Laplacian1d<T>::Laplacian1d(const BoundaryConfig<T> &boundary, Handle& hand) :
+template<typename BoundaryConfigT>
+Laplacian1d<T>::Laplacian1d(const BoundaryConfigT &boundary, Handle& hand) :
     XYZ<TriDiagonal<T>>(
         {boundary.x.numNodes, hand},
         {boundary.y.numNodes, hand},

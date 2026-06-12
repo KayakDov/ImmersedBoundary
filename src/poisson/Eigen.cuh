@@ -15,7 +15,8 @@ template<typename T>
     class Eigen {
     Eigen(const XYZ<Vec<T>>& vals, const XYZ<SquareMat<T>>& vecs);
 
-    static void generateEigen(const BoundaryConfig<T>& boundary, Handle *hands3, Event *events, std::shared_ptr<Mat<T>> (&preAllocatedForL_iX3)[3]);
+    template<typename BoundaryConfigT>
+    static void generateEigen(const BoundaryConfigT& boundary, Handle *hands3, Event *events, std::shared_ptr<Mat<T>> (&preAllocatedForL_iX3)[3]);
 public:
     /**
      * The eigen values, aka the spectrum.
@@ -34,7 +35,8 @@ public:
      * @param hands3
      * @return The Laplacian's Eigen vector matrices.
      */
-    static Eigen make(const BoundaryConfig<T> &boundary, Handle *hands3, Event *events);
+    template<typename BoundaryConfigT>
+    static Eigen make(const BoundaryConfigT &boundary, Handle *hands3, Event *events);
 
     [[nodiscard]] GridDim dim() const;
 

@@ -107,7 +107,8 @@ public:
      * @param hands A handle for each dimension.
      * @param events If 3d, then 2 events, if 2d then 1 event.
      */
-    EigenDecompSolver(const BoundaryConfig<T> &boundary, Handle *hands, Event *events, SimpleArray<T> sizeOfB);
+    template<typename BoundaryConfigT>
+    EigenDecompSolver(const BoundaryConfigT &boundary, Handle *hands, Event *events, SimpleArray<T> sizeOfB);
 
     /**
      * Created an eigen decomposition solver where all memory is owned by this object.
@@ -115,7 +116,8 @@ public:
      * @param hands A handle for each dimension.
      * @param events 2 for 3d and 1 for 2d.
      */
-    EigenDecompSolver(const BoundaryConfig<T> &boundary, Handle *hands, Event *events);
+    template<typename BoundaryConfigT>
+    EigenDecompSolver(const BoundaryConfigT &boundary, Handle *hands, Event *events);
 
     /**
      * Solves for A x = b

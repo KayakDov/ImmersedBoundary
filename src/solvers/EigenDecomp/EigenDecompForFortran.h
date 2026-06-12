@@ -31,11 +31,13 @@ public:
      * @param sizeOfBForBAdj Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
      *
      */
-    EigenDecompForFortran(size_t rows, size_t cols, size_t layers, double dx, double dy, double dz, bool leftIsNeumann,
-                          bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
-                          bool frontIsNeumann, Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal,
-                          Real backVal, bool isStaggered, bool thomas, SimpleArray<Real> sizeOfBForX, SimpleArray<Real> sizeOfBForRHS,
-                          SimpleArray<Real> sizeOfBForBAdj);
+    EigenDecompForFortran(
+        size_t rows, size_t cols, size_t layers,
+        const std::vector<Real> &dx, const std::vector<Real> &dy, const std::vector<Real> &dz,
+        bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+        Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
+        bool isStaggered, bool thomas,
+        SimpleArray<Real> sizeOfBForX, SimpleArray<Real> sizeOfBForRHS, SimpleArray<Real> sizeOfBForBAdj);
     /**
      * Solves the equation L x = b.
      * @param xHost The solution overwrites this array.

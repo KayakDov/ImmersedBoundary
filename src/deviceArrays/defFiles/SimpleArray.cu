@@ -17,6 +17,13 @@ SimpleArray<T> SimpleArray<T>::create(size_t size, cudaStream_t stream, bool ini
 }
 
 template<typename T>
+SimpleArray<T> SimpleArray<T>::create(std::vector<T> hostData, cudaStream_t stream, bool initDescr) {
+    auto deviceData = SimpleArray<T>::create(hostData.size(), stream, initDescr);
+    deviceData.set(hostData.data(), stream);
+    return deviceData;
+}
+
+template<typename T>
 SimpleArray<T> SimpleArray<T>::empty() {
     return SimpleArray<T>(0, nonOwningGpuPtr<T>(nullptr));
 }

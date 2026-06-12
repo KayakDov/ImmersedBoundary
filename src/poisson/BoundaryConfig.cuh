@@ -1,6 +1,6 @@
-
 #ifndef CUDABANDED_BOUNDARYCONFIG_CUH
 #define CUDABANDED_BOUNDARYCONFIG_CUH
+
 #include <functional>
 #include "deviceArrays/headers/sparse/BandedMat.h"
 #include "poisson/AxisSegment.cuh"
@@ -10,75 +10,121 @@
  * @struct BoundaryConfig
  * @brief Stores boundary condition configuration for a 3D domain.
  *
- * Holds pointers to boundary condition objects for each face of the domain.
- * Faces can be null if not applicable (e.g., in 2D problems).
+ * This version forces the user to explicitly define the segment type 
+ * for each axis (X, Y, and Z), accommodating any mixture of uniform 
+ * and variable boundary conditions.
  */
-template<typename Real>
-struct BoundaryConfig : public XYZ<UniformSegment<Real>>{
+template<typename Real, typename SegX, typename SegY, typename SegZ>
+struct BoundaryConfig {
+
+    /** @brief Boundary segment handler for the X-axis */
+    SegX x;
+
+    /** @brief Boundary segment handler for the Y-axis */
+    SegY y;
+
+    /** @brief Boundary segment handler for the Z-axis */
+    SegZ z;
 
     /**
-     * A simplified constructor that creates uniform boundary conditions.
-     * @param isNeumann
-     * @param isStaggered
-     * @param dim
+     * @brief Explicit constructor requiring all 3 axis segments.
+     * * This forces the user to instantiate the segments (Uniform or Variable)
+     * beforehand and pass them in directly.
      */
-    __host__ __device__ BoundaryConfig(bool isNeumann, bool isStaggered, const GridDim& dim, const Real3d delta = Real3d(1, 1, 1)):
-        BoundaryConfig(isNeumann, isNeumann,isStaggered, dim, delta){}
+    __host__ __device__ BoundaryConfig(const SegX& axisX, const SegY& axisY, const SegZ& axisZ)
+        : x(axisX), y(axisY), z(axisZ) {}
 
     /**
-     * A simplified constructor that creates identical boundary conditions for each dimensions.
-     * @param startIsNeumann
-     * @param endIsNeumann
-     * @param dim
-     * @param isStaggered
-     */
-    __host__  BoundaryConfig( bool startIsNeumann,  const bool endIsNeumann, bool isStaggered, const GridDim& dim, const Real3d delta = Real3d(1, 1, 1)):
-        BoundaryConfig(
-            XYZ<bool>::fill(startIsNeumann),
-            XYZ<bool>::fill(endIsNeumann),
-            XYZ<Real>::fill(startIsNeumann),
-            XYZ<Real>::fill(endIsNeumann),
-            delta,
-            dim, isStaggered)
-    {}
-
-    /**
+     * @brief Backwards compatible constructor for uniform-everywhere configurations.
      *
-     * @param startIsNeumann The condition for the bginning of each dimesnion, true for Neumann and false for Dirichlet.
-     * @param endIsNeumann The condition for the end of each dimension.
-     * @param startVal The value for the condition at the beginning of each dimension: Neumann -> d/d_delta at boundary, Dirichlet -> const value for all boundary
-     * @param endVal The valued for the condition at the end of each dimension.
-     * @param delta The distance between grid points.
-     * @param dim The shape of the grid.
-     * @param isStaggered True for staggered grids, false for node centered grids.
+     * This allows you to keep using the old initialization logic. It initializes
+     * x, y, and z axes using the uniform parameters provided.
      */
     __host__ __device__ BoundaryConfig(
-        const XYZ<bool>& startIsNeumann,  const XYZ<bool>& endIsNeumann,
+        const XYZ<bool>& startIsNeumann, const XYZ<bool>& endIsNeumann,
         const XYZ<Real>& startVal, const XYZ<Real>& endVal,
         const Real3d& delta,
         const GridDim& dim,
         bool isStaggered
-    ):XYZ<UniformSegment<Real>>(
-        UniformSegment<Real>(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
-        UniformSegment<Real>(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
-        UniformSegment<Real>(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
-    ){}
+    ) : x(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
+        y(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
+        z(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
+    {}
 
     /**
-     * Checks if all the boundary oncdiitons are Neumann resulting in a singular laplacian.
-     * @return True if all the boundary conditions are Neumann.
+     * Checks if all the boundary conditions are Neumann, which results in a singular Laplacian.
+     * @return True if all axes have Neumann conditions on both ends.
      */
     __host__ bool allNeumann() const {
-        return this->x.bothNeumann() && this->y.bothNeumann() && (this->z.bothNeumann() || this->z.numNodes <= 1);
+        return this->x.bothNeumann() && 
+               this->y.bothNeumann() && 
+               (this->z.bothNeumann() || this->z.numNodes <= 1); // [cite: 254]
     }
 
     /**
-     *
+     * @brief Deduces the full 3D grid dimensions from the segments themselves.
      * @return The dimensions of the grid.
      */
     __host__ __device__ GridDim dim() const {
-        return GridDim(this->y.numNodes, this->x.numNodes, this->z.numNodes);
+        return GridDim(this->y.numNodes, this->x.numNodes, this->z.numNodes); // [cite: 257]
     }
-
 };
-#endif //CUDABANDED_BOUNDARYCONFIG_CUH
+
+/**
+ * @brief A factory that deduces boundary types at runtime and injects the
+ * strongly-typed BoundaryConfig into a provided callback.
+ * * @param dim The dimensions of the grid (rows=Y, cols=X, layers=Z).
+ * @param deltas XYZ struct containing the delta vectors for each axis.
+ * @param startIsNeumann XYZ struct of Neumann flags for the start boundaries.
+ * @param endIsNeumann XYZ struct of Neumann flags for the end boundaries.
+ * @param startVal XYZ struct of boundary values for the start boundaries.
+ * @param endVal XYZ struct of boundary values for the end boundaries.
+ * @param isStaggered True if using a staggered grid discretization.
+ * @param stream CUDA stream used for asynchronous GPU allocations.
+ * @param launchParams The lambda callback to execute once types are deduced.  This is a lambda expression that takes in a single boundaryConfig, and does something with it.
+ */
+template<typename Real, typename Callback>
+void buildBoundaryConfigAndLaunch(
+    const GridDim& dim,
+    const XYZ<std::vector<Real>>& deltas,
+    const XYZ<bool>& startIsNeumann,
+    const XYZ<bool>& endIsNeumann,
+    const XYZ<Real>& startVal,
+    const XYZ<Real>& endVal,
+    bool isStaggered,
+    cudaStream_t stream,
+    Callback&& launchParams
+) {
+    auto dispatchZ = [&](const auto& segX, const auto& segY) {
+        if (deltas.z.size() == 1) {
+            UniformSegment<Real> segZ(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, deltas.z[0], dim.layers);
+            launchParams(BoundaryConfig<Real, decltype(segX), decltype(segY), UniformSegment<Real>>(segX, segY, segZ));
+        } else {
+            SimpleArray<Real> arrayZ = SimpleArray<Real>::create(deltas.z, stream);
+            VariableSegment<Real> segZ(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, arrayZ);
+            launchParams(BoundaryConfig<Real, decltype(segX), decltype(segY), VariableSegment<Real>>(segX, segY, segZ));
+        }
+    };
+
+    auto dispatchY = [&](const auto& segX) {
+        if (deltas.y.size() == 1) {
+            UniformSegment<Real> segY(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, deltas.y[0], dim.rows);
+            dispatchZ(segX, segY);
+        } else {
+            SimpleArray<Real> arrayY = SimpleArray<Real>::create(deltas.y, stream);
+            VariableSegment<Real> segY(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, arrayY);
+            dispatchZ(segX, segY);
+        }
+    };
+
+    if (deltas.x.size() == 1) {
+        UniformSegment<Real> segX(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, deltas.x[0], dim.cols);
+        dispatchY(segX);
+    } else {
+        SimpleArray<Real> arrayX = SimpleArray<Real>::create(deltas.x, stream);
+        VariableSegment<Real> segX(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, arrayX);
+        dispatchY(segX);
+    }
+}
+
+#endif // CUDABANDED_BOUNDARYCONFIG_CUH

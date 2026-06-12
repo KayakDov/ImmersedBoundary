@@ -32,7 +32,8 @@ EigenDecompSolver<T>::EigenDecompSolver(const Eigen<T>& eMatsAndVecs, SimpleArra
 }
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handle* hands, Event* events, SimpleArray<T> sizeOfB) :
+template<typename BoundaryConfigT>
+EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfigT& boundary, Handle* hands, Event* events, SimpleArray<T> sizeOfB) :
     EigenDecompSolver(
         Eigen<T>::make(boundary, hands, events),
         sizeOfB,
@@ -41,7 +42,8 @@ EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handl
 }
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfig<T>& boundary, Handle* hands, Event* events):
+template<typename BoundaryConfigT>
+EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfigT& boundary, Handle* hands, Event* events):
     EigenDecompSolver(
         boundary,
         hands,
