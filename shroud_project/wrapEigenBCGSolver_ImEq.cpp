@@ -17,8 +17,9 @@ void EIG_ImEq_initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth,
     bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
     bool frontIsNeumann, double leftVal, double rightVal, double topVal,
     double bottomVal, double frontVal, double backVal, bool isStaggered,
-    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
-    double deltaY, double deltaZ, double dt, double tolerance,
+    size_t fSize, size_t nnzMaxB, double *p, double *f, double *dx,
+    double *dy, double *dz, double dt, bool uniformDeltaX,
+    bool uniformDeltaY, bool uniformDeltaZ, double tolerance,
     size_t maxBCGIterations)
 {
     // splicer begin namespace.ImEq.function.initImmersedEq_d_i32
@@ -26,7 +27,8 @@ void EIG_ImEq_initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth,
         leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann,
         backIsNeumann, frontIsNeumann, leftVal, rightVal, topVal,
         bottomVal, frontVal, backVal, isStaggered, fSize, nnzMaxB, p, f,
-        deltaX, deltaY, deltaZ, dt, tolerance, maxBCGIterations);
+        dx, dy, dz, dt, uniformDeltaX, uniformDeltaY, uniformDeltaZ,
+        tolerance, maxBCGIterations);
     // splicer end namespace.ImEq.function.initImmersedEq_d_i32
 }
 
@@ -35,8 +37,9 @@ void EIG_ImEq_initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth,
     bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
     bool frontIsNeumann, double leftVal, double rightVal, double topVal,
     double bottomVal, double frontVal, double backVal, bool isStaggered,
-    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
-    double deltaY, double deltaZ, double dt, double tolerance,
+    size_t fSize, size_t nnzMaxB, float *p, float *f, float *dx,
+    float *dy, float *dz, double dt, bool uniformDeltaX,
+    bool uniformDeltaY, bool uniformDeltaZ, double tolerance,
     size_t maxBCGIterations)
 {
     // splicer begin namespace.ImEq.function.initImmersedEq_s_i32
@@ -44,7 +47,8 @@ void EIG_ImEq_initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth,
         leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann,
         backIsNeumann, frontIsNeumann, leftVal, rightVal, topVal,
         bottomVal, frontVal, backVal, isStaggered, fSize, nnzMaxB, p, f,
-        deltaX, deltaY, deltaZ, dt, tolerance, maxBCGIterations);
+        dx, dy, dz, dt, uniformDeltaX, uniformDeltaY, uniformDeltaZ,
+        tolerance, maxBCGIterations);
     // splicer end namespace.ImEq.function.initImmersedEq_s_i32
 }
 
@@ -53,8 +57,9 @@ void EIG_ImEq_initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth,
     bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
     bool frontIsNeumann, double leftVal, double rightVal, double topVal,
     double bottomVal, double frontVal, double backVal, bool isStaggered,
-    size_t fSize, size_t nnzMaxB, double *p, double *f, double deltaX,
-    double deltaY, double deltaZ, double dt, double tolerance,
+    size_t fSize, size_t nnzMaxB, double *p, double *f, double *dx,
+    double *dy, double *dz, double dt, bool uniformDeltaX,
+    bool uniformDeltaY, bool uniformDeltaZ, double tolerance,
     size_t maxBCGIterations)
 {
     // splicer begin namespace.ImEq.function.initImmersedEq_d_i64
@@ -62,7 +67,8 @@ void EIG_ImEq_initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth,
         leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann,
         backIsNeumann, frontIsNeumann, leftVal, rightVal, topVal,
         bottomVal, frontVal, backVal, isStaggered, fSize, nnzMaxB, p, f,
-        deltaX, deltaY, deltaZ, dt, tolerance, maxBCGIterations);
+        dx, dy, dz, dt, uniformDeltaX, uniformDeltaY, uniformDeltaZ,
+        tolerance, maxBCGIterations);
     // splicer end namespace.ImEq.function.initImmersedEq_d_i64
 }
 
@@ -71,8 +77,9 @@ void EIG_ImEq_initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth,
     bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann,
     bool frontIsNeumann, double leftVal, double rightVal, double topVal,
     double bottomVal, double frontVal, double backVal, bool isStaggered,
-    size_t fSize, size_t nnzMaxB, float *p, float *f, double deltaX,
-    double deltaY, double deltaZ, double dt, double tolerance,
+    size_t fSize, size_t nnzMaxB, float *p, float *f, float *dx,
+    float *dy, float *dz, double dt, bool uniformDeltaX,
+    bool uniformDeltaY, bool uniformDeltaZ, double tolerance,
     size_t maxBCGIterations)
 {
     // splicer begin namespace.ImEq.function.initImmersedEq_s_i64
@@ -80,7 +87,8 @@ void EIG_ImEq_initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth,
         leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann,
         backIsNeumann, frontIsNeumann, leftVal, rightVal, topVal,
         bottomVal, frontVal, backVal, isStaggered, fSize, nnzMaxB, p, f,
-        deltaX, deltaY, deltaZ, dt, tolerance, maxBCGIterations);
+        dx, dy, dz, dt, uniformDeltaX, uniformDeltaY, uniformDeltaZ,
+        tolerance, maxBCGIterations);
     // splicer end namespace.ImEq.function.initImmersedEq_s_i64
 }
 

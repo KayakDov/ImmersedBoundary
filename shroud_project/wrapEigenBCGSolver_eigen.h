@@ -28,14 +28,16 @@ extern "C" {
 // splicer end namespace.eigen.C_declarations
 
 void EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
-    size_t layers, double dx, double dy, double dz, bool leftIsNeumann,
-    bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
-    bool backIsNeumann, bool frontIsNeumann, double leftVal,
-    double rightVal, double topVal, double bottomVal, double frontVal,
-    double backVal, bool isStaggered, bool thomas);
+    size_t layers, double *dx, double *dy, double *dz,
+    bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
+    bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann,
+    bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+    double leftVal, double rightVal, double topVal, double bottomVal,
+    double frontVal, double backVal, bool isStaggered, bool thomas);
 
 void EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
-    size_t layers, double dx, double dy, double dz, bool leftIsNeumann,
+    size_t layers, float *dx, float *dy, float *dz, bool uniformDeltaX,
+    bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann,
     bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
     bool backIsNeumann, bool frontIsNeumann, float leftVal,
     float rightVal, float topVal, float bottomVal, float frontVal,

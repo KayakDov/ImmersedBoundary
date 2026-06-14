@@ -17,6 +17,7 @@ module eigenbcgsolver_eigen_mod
     interface
 
         subroutine c_init_eigen_decomp_d(rows, cols, layers, dx, dy, dz, &
+                uniformDeltaX, uniformDeltaY, uniformDeltaZ, &
                 leftIsNeumann, rightIsNeumann, topIsNeumann, &
                 bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
                 rightVal, topVal, bottomVal, frontVal, backVal, &
@@ -27,9 +28,12 @@ module eigenbcgsolver_eigen_mod
             integer(C_SIZE_T), value, intent(IN) :: rows
             integer(C_SIZE_T), value, intent(IN) :: cols
             integer(C_SIZE_T), value, intent(IN) :: layers
-            real(C_DOUBLE), value, intent(IN) :: dx
-            real(C_DOUBLE), value, intent(IN) :: dy
-            real(C_DOUBLE), value, intent(IN) :: dz
+            real(C_DOUBLE), intent(IN) :: dx(*)
+            real(C_DOUBLE), intent(IN) :: dy(*)
+            real(C_DOUBLE), intent(IN) :: dz(*)
+            logical(C_BOOL), value, intent(IN) :: uniformDeltaX
+            logical(C_BOOL), value, intent(IN) :: uniformDeltaY
+            logical(C_BOOL), value, intent(IN) :: uniformDeltaZ
             logical(C_BOOL), value, intent(IN) :: leftIsNeumann
             logical(C_BOOL), value, intent(IN) :: rightIsNeumann
             logical(C_BOOL), value, intent(IN) :: topIsNeumann
@@ -47,19 +51,23 @@ module eigenbcgsolver_eigen_mod
         end subroutine c_init_eigen_decomp_d
 
         subroutine c_init_eigen_decomp_s(rows, cols, layers, dx, dy, dz, &
+                uniformDeltaX, uniformDeltaY, uniformDeltaZ, &
                 leftIsNeumann, rightIsNeumann, topIsNeumann, &
                 bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
                 rightVal, topVal, bottomVal, frontVal, backVal, &
                 isStaggered, thomas) &
                 bind(C, name="EIG_eigen_initEigenDecomp_s")
-            use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
+            use iso_c_binding, only : C_BOOL, C_FLOAT, C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: rows
             integer(C_SIZE_T), value, intent(IN) :: cols
             integer(C_SIZE_T), value, intent(IN) :: layers
-            real(C_DOUBLE), value, intent(IN) :: dx
-            real(C_DOUBLE), value, intent(IN) :: dy
-            real(C_DOUBLE), value, intent(IN) :: dz
+            real(C_FLOAT), intent(IN) :: dx(*)
+            real(C_FLOAT), intent(IN) :: dy(*)
+            real(C_FLOAT), intent(IN) :: dz(*)
+            logical(C_BOOL), value, intent(IN) :: uniformDeltaX
+            logical(C_BOOL), value, intent(IN) :: uniformDeltaY
+            logical(C_BOOL), value, intent(IN) :: uniformDeltaZ
             logical(C_BOOL), value, intent(IN) :: leftIsNeumann
             logical(C_BOOL), value, intent(IN) :: rightIsNeumann
             logical(C_BOOL), value, intent(IN) :: topIsNeumann
@@ -109,17 +117,20 @@ module eigenbcgsolver_eigen_mod
 contains
 
     subroutine init_eigen_decomp_d(rows, cols, layers, dx, dy, dz, &
-            leftIsNeumann, rightIsNeumann, topIsNeumann, &
-            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
-            rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
-            thomas)
+            uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann, &
+            rightIsNeumann, topIsNeumann, bottomIsNeumann, &
+            backIsNeumann, frontIsNeumann, leftVal, rightVal, topVal, &
+            bottomVal, frontVal, backVal, isStaggered, thomas)
         use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: rows
         integer(C_SIZE_T), value, intent(IN) :: cols
         integer(C_SIZE_T), value, intent(IN) :: layers
-        real(C_DOUBLE), value, intent(IN) :: dx
-        real(C_DOUBLE), value, intent(IN) :: dy
-        real(C_DOUBLE), value, intent(IN) :: dz
+        real(C_DOUBLE), intent(IN) :: dx(:)
+        real(C_DOUBLE), intent(IN) :: dy(:)
+        real(C_DOUBLE), intent(IN) :: dz(:)
+        logical, value, intent(IN) :: uniformDeltaX
+        logical, value, intent(IN) :: uniformDeltaY
+        logical, value, intent(IN) :: uniformDeltaZ
         logical, value, intent(IN) :: leftIsNeumann
         logical, value, intent(IN) :: rightIsNeumann
         logical, value, intent(IN) :: topIsNeumann
@@ -135,6 +146,9 @@ contains
         logical, value, intent(IN) :: isStaggered
         logical, value, intent(IN) :: thomas
         ! splicer begin namespace.eigen.function.init_eigen_decomp_d
+        logical(C_BOOL) :: SHT_uniformDeltaX_cxx
+        logical(C_BOOL) :: SHT_uniformDeltaY_cxx
+        logical(C_BOOL) :: SHT_uniformDeltaZ_cxx
         logical(C_BOOL) :: SHT_leftIsNeumann_cxx
         logical(C_BOOL) :: SHT_rightIsNeumann_cxx
         logical(C_BOOL) :: SHT_topIsNeumann_cxx
@@ -143,6 +157,9 @@ contains
         logical(C_BOOL) :: SHT_frontIsNeumann_cxx
         logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_thomas_cxx
+        SHT_uniformDeltaX_cxx = uniformDeltaX  ! coerce to C_BOOL
+        SHT_uniformDeltaY_cxx = uniformDeltaY  ! coerce to C_BOOL
+        SHT_uniformDeltaZ_cxx = uniformDeltaZ  ! coerce to C_BOOL
         SHT_leftIsNeumann_cxx = leftIsNeumann  ! coerce to C_BOOL
         SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
         SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
@@ -152,26 +169,31 @@ contains
         SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SHT_thomas_cxx = thomas  ! coerce to C_BOOL
         call c_init_eigen_decomp_d(rows, cols, layers, dx, dy, dz, &
-            SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
-            SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
-            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
-            rightVal, topVal, bottomVal, frontVal, backVal, &
-            SHT_isStaggered_cxx, SHT_thomas_cxx)
+            SHT_uniformDeltaX_cxx, SHT_uniformDeltaY_cxx, &
+            SHT_uniformDeltaZ_cxx, SHT_leftIsNeumann_cxx, &
+            SHT_rightIsNeumann_cxx, SHT_topIsNeumann_cxx, &
+            SHT_bottomIsNeumann_cxx, SHT_backIsNeumann_cxx, &
+            SHT_frontIsNeumann_cxx, leftVal, rightVal, topVal, &
+            bottomVal, frontVal, backVal, SHT_isStaggered_cxx, &
+            SHT_thomas_cxx)
         ! splicer end namespace.eigen.function.init_eigen_decomp_d
     end subroutine init_eigen_decomp_d
 
     subroutine init_eigen_decomp_s(rows, cols, layers, dx, dy, dz, &
-            leftIsNeumann, rightIsNeumann, topIsNeumann, &
-            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
-            rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
-            thomas)
-        use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
+            uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann, &
+            rightIsNeumann, topIsNeumann, bottomIsNeumann, &
+            backIsNeumann, frontIsNeumann, leftVal, rightVal, topVal, &
+            bottomVal, frontVal, backVal, isStaggered, thomas)
+        use iso_c_binding, only : C_BOOL, C_FLOAT, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: rows
         integer(C_SIZE_T), value, intent(IN) :: cols
         integer(C_SIZE_T), value, intent(IN) :: layers
-        real(C_DOUBLE), value, intent(IN) :: dx
-        real(C_DOUBLE), value, intent(IN) :: dy
-        real(C_DOUBLE), value, intent(IN) :: dz
+        real(C_FLOAT), intent(IN) :: dx(:)
+        real(C_FLOAT), intent(IN) :: dy(:)
+        real(C_FLOAT), intent(IN) :: dz(:)
+        logical, value, intent(IN) :: uniformDeltaX
+        logical, value, intent(IN) :: uniformDeltaY
+        logical, value, intent(IN) :: uniformDeltaZ
         logical, value, intent(IN) :: leftIsNeumann
         logical, value, intent(IN) :: rightIsNeumann
         logical, value, intent(IN) :: topIsNeumann
@@ -187,6 +209,9 @@ contains
         logical, value, intent(IN) :: isStaggered
         logical, value, intent(IN) :: thomas
         ! splicer begin namespace.eigen.function.init_eigen_decomp_s
+        logical(C_BOOL) :: SHT_uniformDeltaX_cxx
+        logical(C_BOOL) :: SHT_uniformDeltaY_cxx
+        logical(C_BOOL) :: SHT_uniformDeltaZ_cxx
         logical(C_BOOL) :: SHT_leftIsNeumann_cxx
         logical(C_BOOL) :: SHT_rightIsNeumann_cxx
         logical(C_BOOL) :: SHT_topIsNeumann_cxx
@@ -195,6 +220,9 @@ contains
         logical(C_BOOL) :: SHT_frontIsNeumann_cxx
         logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_thomas_cxx
+        SHT_uniformDeltaX_cxx = uniformDeltaX  ! coerce to C_BOOL
+        SHT_uniformDeltaY_cxx = uniformDeltaY  ! coerce to C_BOOL
+        SHT_uniformDeltaZ_cxx = uniformDeltaZ  ! coerce to C_BOOL
         SHT_leftIsNeumann_cxx = leftIsNeumann  ! coerce to C_BOOL
         SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
         SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
@@ -204,11 +232,13 @@ contains
         SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SHT_thomas_cxx = thomas  ! coerce to C_BOOL
         call c_init_eigen_decomp_s(rows, cols, layers, dx, dy, dz, &
-            SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
-            SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
-            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
-            rightVal, topVal, bottomVal, frontVal, backVal, &
-            SHT_isStaggered_cxx, SHT_thomas_cxx)
+            SHT_uniformDeltaX_cxx, SHT_uniformDeltaY_cxx, &
+            SHT_uniformDeltaZ_cxx, SHT_leftIsNeumann_cxx, &
+            SHT_rightIsNeumann_cxx, SHT_topIsNeumann_cxx, &
+            SHT_bottomIsNeumann_cxx, SHT_backIsNeumann_cxx, &
+            SHT_frontIsNeumann_cxx, leftVal, rightVal, topVal, &
+            bottomVal, frontVal, backVal, SHT_isStaggered_cxx, &
+            SHT_thomas_cxx)
         ! splicer end namespace.eigen.function.init_eigen_decomp_s
     end subroutine init_eigen_decomp_s
 
