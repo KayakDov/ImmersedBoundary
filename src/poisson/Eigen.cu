@@ -277,7 +277,7 @@ void createUnique(const BoundaryConfigT& boundaryConfig, std::shared_ptr<ResultT
 
     if (boundaryConfig.dim().numDims() == 3) {
         if (boundaryConfig.z == boundaryConfig.x) outputs[2] = outputs[0];
-        else if (boundaryConfig.z == boundaryConfig.x) outputs[2] = outputs[1];
+        else if (boundaryConfig.z == boundaryConfig.y) outputs[2] = outputs[1];
         else outputs[2] = std::make_shared<ResultType>(factory(boundaryConfig.z));
     }
     else outputs[2] = nullptr;

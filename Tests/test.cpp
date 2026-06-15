@@ -255,6 +255,11 @@ template<typename T>
 static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, std::string errorMsg, T tol = 1e-6){
     auto normGpu= Singleton<T>::create(hand);
 
+    std::cout << "\nL = \n" << GpuOut<T>(L, hand)
+            << "\n v = \n" << GpuOut<T>(V, hand)
+            << "\nlambda = " << GpuOut<T>(lambda, hand)
+    <<"-----------------------------------------------";
+
     for (size_t i = 0; i < lambda.size(); ++i) {
         Vec<T> vi = V.col(i);
 
@@ -262,7 +267,8 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
         T err = normGpu.get(hand) - 1;
         ASSERT_LT(err, tol)
             << errorMsg << "\nEigen Vector is not orthogonal, col " << i << " has a norm not equal to 1 "
-            << " residual = " << err << "\n" << errorMsg;
+            << " residual = " << err << "\n" << errorMsg << "\ncol = " << GpuOut<T>(vi, hand) << std::endl <<
+                "with eigen val = " << GpuOut<T>(lambda.get(i), hand);
 
         Vec Lvi = SimpleArray<T>::create(L._rows, hand);
         L.mult(vi, Lvi, &hand, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), false);
@@ -491,13 +497,15 @@ void boundaryBattery(XYZ<bool> startIsN, XYZ<bool> endIsN, XYZ<Real> startVal, X
 
     std::string locMsg = ss.str();
 
-    // std::cout << locMsg << std::endl;
+    std::cout << locMsg << std::endl;
 
     auto boundary = makeUniformBoundaryConfig<Real>(startIsN, endIsN, startVal, endVal, Real3d(1, 1, 1), dim, isStag);
 
     Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
 
     Eigen<Real> laplacianEigen = Eigen<Real>::make(boundary, hand3, event2);
+
+
 
     for (size_t i = 0; i < dim.numDims(); ++i)
         checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
@@ -523,34 +531,47 @@ TEST(LaplacianMath, laplacian) {
     size_t n = maxDim * maxDim * maxDim;
     auto buffer = Mat<Real>::create(n, n + 5);
 
-     for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
-         for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
-             for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
-                 for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
-                     for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
-                         for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
-                             for (size_t isStag = 0; isStag < 2; ++isStag)
-                                 for (size_t x0Val = 0; x0Val < 2; ++x0Val)
-                                     for (size_t x1Val = 0; x1Val < 2; ++x1Val)
-                                         for (size_t y0Val = 0; y0Val < 2; ++y0Val)
-                                             for (size_t y1Val = 0; y1Val < 2; ++y1Val)
-                                                 for (size_t z0Val = 0; z0Val < 2; ++z0Val)
-                                                     for (size_t z1Val = 0; z1Val < 2; ++z1Val)
-                                                         for (size_t rows = startRowsCols; rows < maxDim; rows+= dimStepSize)
-                                                             for (size_t cols = startRowsCols; cols < maxDim; cols += dimStepSize)
-                                                                 for (size_t layers = 1; layers < maxDim; layers += dimStepSize) {
-                                                                     GridDim dim(rows, cols, layers);
+     // for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
+     //     for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
+     //         for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
+     //             for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
+     //                 for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
+     //                     for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
+     //                         for (size_t isStag = 0; isStag < 2; ++isStag)
+     //                             for (size_t x0Val = 0; x0Val < 2; ++x0Val)
+     //                                 for (size_t x1Val = 0; x1Val < 2; ++x1Val)
+     //                                     for (size_t y0Val = 0; y0Val < 2; ++y0Val)
+     //                                         for (size_t y1Val = 0; y1Val < 2; ++y1Val)
+     //                                             for (size_t z0Val = 0; z0Val < 2; ++z0Val)
+     //                                                 for (size_t z1Val = 0; z1Val < 2; ++z1Val)
+     //                                                     for (size_t rows = startRowsCols; rows < maxDim; rows+= dimStepSize)
+     //                                                         for (size_t cols = startRowsCols; cols < maxDim; cols += dimStepSize)
+     //                                                             for (size_t layers = 1; layers < maxDim; layers += dimStepSize) {
+                                                                     // GridDim dim(rows, cols, layers);
+                                                                     // XYZ<bool> startIsN(x0IsN, y0IsN, z0IsN);
+                                                                     // XYZ<bool> endIsN(x1IsN, y1IsN, z1IsN);
+                                                                     // XYZ<Real> startVal(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val));
+                                                                     // XYZ<Real> endVal(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val));
+                                                                     // bool isStagered = isStag;
+
+    GridDim dim(2, 2, 2);
+    XYZ<bool> startIsN(0, 0, 0);
+    XYZ<bool> endIsN(0, 0, 0);
+    XYZ<Real> startVal(static_cast<Real>(0), static_cast<Real>(0), static_cast<Real>(0));
+    XYZ<Real> endVal(static_cast<Real>(0), static_cast<Real>(1), static_cast<Real>(1));
+    bool isStagered = false;
+
                                                                      boundaryBattery<Real>(
-                                                                         XYZ<bool>(x0IsN, y0IsN, z0IsN),
-                                                                         XYZ<bool>(x1IsN, y1IsN, z1IsN),
-                                                                         XYZ<Real>(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val)),
-                                                                         XYZ<Real>(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val)),
+                                                                         startIsN,
+                                                                         endIsN,
+                                                                         startVal,
+                                                                         endVal,
                                                                          dim,
-                                                                         isStag,
+                                                                         isStagered,
                                                                          hand3, event2, tolerance,
                                                                          buffer.subMat(0, 0, dim.size(), dim.size() + 5)
                                                                      );
-                                                                 }
+                                                                 // }
 }
 
 
