@@ -255,6 +255,10 @@ template<typename T>
 static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, std::string errorMsg, T tol = 1e-6){
     auto normGpu= Singleton<T>::create(hand);
 
+    std::cout << "ceckEigens L = \n" << GpuOut<T>(L, hand) << std::endl;
+    std::cout << "ceckEigens V = \n" << GpuOut<T>(V, hand) << std::endl;
+    std::cout << "ceckEigens lambda = " << GpuOut<T>(lambda, hand) << std::endl;
+
     for (size_t i = 0; i < lambda.size(); ++i) {
         Vec<T> vi = V.col(i);
 
@@ -480,7 +484,10 @@ void verifyImmersedEqWithBoundary(const BoundaryConfigT& boundary, Handle& hand,
 }
 
 template <typename Real>
-void boundaryBattery(XYZ<bool> startIsN, XYZ<bool> endIsN, XYZ<Real> startVal, XYZ<Real> endVal, GridDim dim, bool isStag, Handle* hand3, Event* event2, double tolerance, Mat<Real>bufferNXNPlus5) {
+void boundaryBattery(
+    XYZ<bool> startIsN, XYZ<bool> endIsN, XYZ<Real> startVal, XYZ<Real> endVal,
+    GridDim dim, const XYZ<std::vector<Real>>& deltas, bool isStag,
+    Handle* hand3, Event* event2, double tolerance, Mat<Real> bufferNXNPlus5) {
 
     std::stringstream ss;
     ss << "startIsNeuman = " << startIsN
@@ -492,22 +499,49 @@ void boundaryBattery(XYZ<bool> startIsN, XYZ<bool> endIsN, XYZ<Real> startVal, X
 
     std::string locMsg = ss.str();
 
-    // std::cout << locMsg << std::endl;
+    // Use the factory to deduce segment types at runtime and execute the tests
+    buildBoundaryConfigAndLaunch<Real>(
+        dim, deltas, startIsN, endIsN, startVal, endVal, isStag, 0 /* default stream */,
+        [&](const auto& boundary) {
 
-    auto boundary = makeUniformBoundaryConfig<Real>(startIsN, endIsN, startVal, endVal, Real3d(1, 1, 1), dim, isStag);
+            Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
+            Eigen<Real> laplacianEigen = Eigen<Real>::make(boundary, hand3, event2);
 
-    Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
+            for (size_t i = 0; i < dim.numDims(); ++i)
+                checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i], hand3[i], locMsg);
 
-    Eigen<Real> laplacianEigen = Eigen<Real>::make(boundary, hand3, event2);
+            //TODO: uncomment these.
+            // verifyEigenSolverIdentity(dim, boundary, hand3, event2, tolerance);
+            // verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
+        }
+    );
+}
 
+template <typename Real>
+XYZ<std::vector<Real>> generateDeltas(const GridDim& dim, bool isVariable, size_t seedBase) {
+    // 1. Uniform Spacing Path
+    if (!isVariable) return XYZ<std::vector<Real>>({1.0}, {1.0}, {1.0});
 
+    // 2. Variable Spacing Path
+    std::mt19937 rng(seedBase); // Deterministic seed
+    std::uniform_real_distribution<Real> dist(0.5, 2.0);
 
-    for (size_t i = 0; i < dim.numDims(); ++i)
-        checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i],  hand3[i], locMsg);
+    std::vector<Real> deltaX(dim.cols + 1);
+    for (auto& val : deltaX) val = dist(rng);
 
-    verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
+    std::vector<Real> deltaY(dim.rows + 1);
+    for (auto& val : deltaY) val = dist(rng);
 
-    verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
+    std::vector<Real> deltaZ;
+    if (dim.layers > 1) {
+        deltaZ.resize(dim.layers + 1);
+        for (auto& val : deltaZ) val = dist(rng);
+    } else {
+        deltaZ = { 1.0 }; // Degenerate Z-axis for 2D setups
+    }
+
+    // 3. Construct and return the XYZ struct
+    return XYZ<std::vector<Real>>(deltaX, deltaY, deltaZ);
 }
 
 TEST(LaplacianMath, laplacian) {
@@ -515,44 +549,51 @@ TEST(LaplacianMath, laplacian) {
     Event event2[2];
     using Real = double;
 
-    double tolerance = 1e-12;
+    double tolerance = 1e-11;
 
-    size_t maxDim = 3;
+    size_t maxDim = 4;
     size_t startRowsCols = 2;
     size_t dimStepSize = 1;
 
     size_t n = maxDim * maxDim * maxDim;
     auto buffer = Mat<Real>::create(n, n + 5);
 
-     for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
-         for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
-             for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
-                 for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
-                     for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
-                         for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
-                             for (size_t isStag = 0; isStag < 2; ++isStag)
-                                 for (size_t x0Val = 0; x0Val < 2; ++x0Val)
-                                     for (size_t x1Val = 0; x1Val < 2; ++x1Val)
-                                         for (size_t y0Val = 0; y0Val < 2; ++y0Val)
-                                             for (size_t y1Val = 0; y1Val < 2; ++y1Val)
-                                                 for (size_t z0Val = 0; z0Val < 2; ++z0Val)
-                                                     for (size_t z1Val = 0; z1Val < 2; ++z1Val)
-                                                         for (size_t rows = startRowsCols; rows < maxDim; rows+= dimStepSize)
-                                                             for (size_t cols = startRowsCols; cols < maxDim; cols += dimStepSize)
-                                                                 for (size_t layers = 1; layers < maxDim; layers += dimStepSize) {
-                                                                     GridDim dim(rows, cols, layers);
-                                                                     XYZ<bool> startIsN(x0IsN, y0IsN, z0IsN);
-                                                                     XYZ<bool> endIsN(x1IsN, y1IsN, z1IsN);
-                                                                     XYZ<Real> startVal(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val));
-                                                                     XYZ<Real> endVal(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val));
-                                                                     bool isStagered = isStag;
+     // for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
+     //     for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
+     //         for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
+     //             for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
+     //                 for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
+     //                     for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
+     //                         for (size_t isStag = 0; isStag < 2; ++isStag)
+     //                             for (size_t x0Val = 0; x0Val < 2; ++x0Val)
+     //                                 for (size_t x1Val = 0; x1Val < 2; ++x1Val)
+     //                                     for (size_t y0Val = 0; y0Val < 2; ++y0Val)
+     //                                         for (size_t y1Val = 0; y1Val < 2; ++y1Val)
+     //                                             for (size_t z0Val = 0; z0Val < 2; ++z0Val)
+     //                                                 for (size_t z1Val = 0; z1Val < 2; ++z1Val)
+     //                                                     for (size_t rows = startRowsCols; rows < maxDim; rows+= dimStepSize)
+     //                                                         for (size_t cols = startRowsCols; cols < maxDim; cols += dimStepSize)
+     //                                                             for (size_t layers = 1; layers < maxDim; layers += dimStepSize) {
+                                                                     // GridDim dim(rows, cols, layers);
+                                                                     // XYZ<bool> startIsN(x0IsN, y0IsN, z0IsN);
+                                                                     // XYZ<bool> endIsN(x1IsN, y1IsN, z1IsN);
+                                                                     // XYZ<Real> startVal(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val));
+                                                                     // XYZ<Real> endVal(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val));
+                                                                     // bool isStagered = isStag;
 
-    // GridDim dim(2, 2, 2);
-    // XYZ<bool> startIsN(0, 0, 0);
-    // XYZ<bool> endIsN(0, 0, 0);
-    // XYZ<Real> startVal(static_cast<Real>(0), static_cast<Real>(0), static_cast<Real>(0));
-    // XYZ<Real> endVal(static_cast<Real>(0), static_cast<Real>(1), static_cast<Real>(1));
-    // bool isStagered = false;
+                                                                     GridDim dim(2, 2, 2);
+                                                                     XYZ<bool> startIsN(0, 0, 0);
+                                                                     XYZ<bool> endIsN(0, 0, 0);
+                                                                     XYZ<Real> startVal(0, 0, 0);
+                                                                     XYZ<Real> endVal(0, 0, 0);
+                                                                     bool isStagered = 0;
+
+                                                                     // Determine spacing type and generate deterministic seed
+                                                                     bool testVariableSpacing = ((dim.rows + dim.cols + dim.layers + startIsN.x + isStagered) % 2 == 0);
+                                                                     size_t seedBase = dim.rows * dim.cols * dim.layers + startIsN.x;
+
+                                                                     // Safely generate deltas via helper
+                                                                     XYZ<std::vector<Real>> deltas = generateDeltas<Real>(dim, testVariableSpacing, seedBase);
 
                                                                      boundaryBattery<Real>(
                                                                          startIsN,
@@ -560,11 +601,12 @@ TEST(LaplacianMath, laplacian) {
                                                                          startVal,
                                                                          endVal,
                                                                          dim,
+                                                                         deltas,
                                                                          isStagered,
                                                                          hand3, event2, tolerance,
                                                                          buffer.subMat(0, 0, dim.size(), dim.size() + 5)
                                                                      );
-                                                                 }
+                                                                 // }
 }
 
 

@@ -42,6 +42,7 @@ void Laplacian1d<T>::dense(size_t dim, SquareMat<T>& denseGoesHere, Handle& hand
 template<typename T>
 template<typename AxisSegmentT>
 void Laplacian1d<T>::create(const AxisSegmentT &segment, TriDiagonal<T> mat, Handle &hand) {
+    mat.col(mat.primary.colInBanded).fill(0, hand);
     KernelPrep kp(3, mat._rows);
     buildL1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(mat.toKernel2d(), segment, mat.primary, mat.prevNext);
     CHECK_CUDA_ERROR(cudaGetLastError());
