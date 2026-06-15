@@ -22,7 +22,7 @@
 namespace ImEq {
 
     template<typename Real, typename Int>
-    std::unique_ptr<ImmersedEq<Real, Int> > eq = nullptr;
+    std::unique_ptr<ImmersedEq<Real, Int>> eq = nullptr;
 
     template<typename Real, typename Int>
     void initImmersedEq(
@@ -33,19 +33,40 @@ namespace ImEq {
         size_t forceSize,
         size_t nnzMax,
         Real *p, Real *f,
-        double dx, double dy, double dz, double dt,
+        Real* dx, Real* dy, Real* dz, double dt,
+        bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
         double tol, size_t maxIterations
     ) {
-        Real3d delta(dx, dy, dz);
-
-        BoundaryConfig<Real> boundary(
-            {leftIsNeumann, topIsNeumann, frontIsNeumann}, {rightIsNeumann, bottomIsNeumann, backIsNeumann},
-            {leftVal, topVal, frontVal}, {rightVal, bottomVal, backVal},
-            delta,
-            GridDim(gridHeight, gridWidth, gridDepth),
-            isStaggered
+        XYZ<std::vector<Real>> delta(
+            std::vector<Real>(dx, dx + (uniformDeltaX ? 1 : gridWidth + 1)),
+            std::vector<Real>(dy, dy + (uniformDeltaY ? 1 : gridHeight + 1)),
+            std::vector<Real>(dz, dz + (uniformDeltaZ ? 1 : gridDepth + 1))
         );
-        eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(boundary, forceSize, nnzMax, p, f, delta, dt, tol, maxIterations);
+
+        buildBoundaryConfigAndLaunch(
+            GridDim(gridHeight, gridWidth, gridDepth),
+            delta,
+            XYZ<bool>(leftIsNeumann, topIsNeumann, frontIsNeumann),
+            XYZ<bool>(rightIsNeumann, bottomIsNeumann, backIsNeumann),
+            XYZ<Real>(leftVal, topVal, frontVal),
+            XYZ<Real>(rightVal, bottomVal, backVal),
+            isStaggered,
+            0,
+            [&](const auto& boundary) {
+                    eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int>>(boundary, forceSize, nnzMax, p, f, dt, tol, maxIterations);
+                }
+        );
+
+        //The old code.
+        // BoundaryConfig<Real> boundary(
+        //     {leftIsNeumann, topIsNeumann, frontIsNeumann},
+        //     {rightIsNeumann, bottomIsNeumann, backIsNeumann},
+        //     {leftVal, topVal, frontVal}, {rightVal, bottomVal, backVal},
+        //     delta,
+        //     GridDim(gridHeight, gridWidth, gridDepth),
+        //     isStaggered
+        // );
+        // eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int> >(boundary, forceSize, nnzMax, p, f, delta, dt, tol, maxIterations);
     }
 
     template<typename Real, typename Int>
@@ -76,7 +97,8 @@ namespace ImEq {
             size_t forceSize,
             size_t nnzMax,
             double *p, double *f,
-            double dx, double dy, double dz, double dt,
+            double* dx, double* dy, double* dz, double dt,
+            bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
             double tol, size_t maxIterations
         ) {
             initImmersedEq<double, int32_t>(
@@ -88,6 +110,7 @@ namespace ImEq {
                 nnzMax,
                 p, f,
                 dx, dy, dz, dt,
+                uniformDeltaX, uniformDeltaY, uniformDeltaZ,
                 tol, maxIterations
             );
         }
@@ -100,7 +123,8 @@ namespace ImEq {
             size_t forceSize,
             size_t nnzMax,
             float *p, float *f,
-            double dx, double dy, double dz, double dt,
+            float* dx, float* dy, float* dz, double dt,
+            bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
             double tol, size_t maxIterations
         ) {
             initImmersedEq<float, int32_t>(
@@ -112,6 +136,7 @@ namespace ImEq {
                 nnzMax,
                 p, f,
                 dx, dy, dz, dt,
+                uniformDeltaX, uniformDeltaY, uniformDeltaZ,
                 tol, maxIterations
             );
         }
@@ -124,7 +149,8 @@ namespace ImEq {
             size_t forceSize,
             size_t nnzMax,
             double *p, double *f,
-            double dx, double dy, double dz, double dt,
+            double* dx, double* dy, double* dz, double dt,
+            bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
             double tol, size_t maxIterations
         ) {
             initImmersedEq<double, int64_t>(
@@ -136,6 +162,7 @@ namespace ImEq {
                 nnzMax,
                 p, f,
                 dx, dy, dz, dt,
+                uniformDeltaX, uniformDeltaY, uniformDeltaZ,
                 tol, maxIterations
             );
         }
@@ -148,7 +175,8 @@ namespace ImEq {
             size_t forceSize,
             size_t nnzMax,
             float *p, float *f,
-            double dx, double dy, double dz, double dt,
+            float* dx, float* dy, float* dz, double dt,
+            bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
             double tol, size_t maxIterations
         ) {
             initImmersedEq<float, int64_t>(
@@ -160,6 +188,7 @@ namespace ImEq {
                 nnzMax,
                 p, f,
                 dx, dy, dz, dt,
+                uniformDeltaX, uniformDeltaY, uniformDeltaZ,
                 tol, maxIterations
             );
         }
@@ -222,16 +251,22 @@ namespace eigen {
     template<typename Real>
     void initEigenDecompSolver(
         size_t rows, size_t cols, size_t layers,
-        double dx, double dy, double dz,
+        Real* dx, Real* dy, Real* dz,
+        bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
         bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
         Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
         bool isStaggered,
         bool thomas
     ) {
         auto xb = Mat<Real>::create(rows * cols * layers, 3);
+
+
+
         eds<Real> = std::make_unique<EigenDecompForFortran<Real>>(
             rows, cols, layers,
-            dx, dy, dz,
+            std::vector<Real>(dx, dx + (uniformDeltaX ? 1 : cols + 1)),
+            std::vector<Real>(dy, dy + (uniformDeltaY ? 1 : rows + 1)),
+            std::vector<Real>(dz, dz + (uniformDeltaZ ? 1 : layers + 1)),
             leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
             leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
             isStaggered,
@@ -255,7 +290,8 @@ namespace eigen {
     extern "C" {
         inline void initEigenDecomp_d(
             size_t rows, size_t cols, size_t layers,
-            double dx, double dy, double dz,
+            double* dx, double* dy, double* dz,
+            bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
             bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
             double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
             bool isStaggered,
@@ -264,6 +300,7 @@ namespace eigen {
             initEigenDecompSolver<double>(
                 rows, cols, layers,
                 dx, dy, dz,
+                uniformDeltaX, uniformDeltaX, uniformDeltaZ,
                 leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
                 isStaggered, thomas);
@@ -271,7 +308,8 @@ namespace eigen {
 
         inline void initEigenDecomp_s(
             size_t rows, size_t cols, size_t layers,
-            double dx, double dy, double dz,
+            float* dx, float* dy, float* dz,
+            bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
             bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
             float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal,
             bool isStaggered,
@@ -280,6 +318,7 @@ namespace eigen {
             initEigenDecompSolver<float>(
                 rows, cols, layers,
                 dx, dy, dz,
+                uniformDeltaX, uniformDeltaX, uniformDeltaZ,
                 leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
                 isStaggered, thomas

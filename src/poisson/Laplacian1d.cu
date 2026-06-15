@@ -15,14 +15,13 @@ Laplacian1d<T>::Laplacian1d(const BoundaryConfigT &boundary, Handle& hand) :
         {boundary.x.numNodes, hand},
         {boundary.y.numNodes, hand},
         {boundary.dim().numDims() == 3 ? Mat<T>::create(boundary.z.numNodes, 3) : Mat<T>::empty(), hand}
-    ),
-    boundary(boundary){
+    ){
 
     KernelPrep kp(std::max(std::max(this->x._rows, this->y._rows), this->z._rows));
 
     buildAllL1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        {this->x.toKernel2d(), this->y.toKernel2d(), this->z.toKernel2d()},
-        this->boundary,
+        XYZ<DeviceData2d<T>>(this->x.toKernel2d(), this->y.toKernel2d(), this->z.toKernel2d()),
+        boundary,
         TriDiagonal<T>::primary, TriDiagonal<T>::prevNext
     );
     CHECK_CUDA_ERROR(cudaGetLastError());
@@ -63,3 +62,20 @@ template void Laplacian1d<double>::create<VariableSegment<double>>(const Variabl
 
 template class Laplacian1d<float>;
 template class Laplacian1d<double>;
+
+#define INSTANTIATE_LAPLACIAN1D_BOUNDARY(Real, SegX, SegY, SegZ) \
+template Laplacian1d<Real>::Laplacian1d( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle&);
+
+#define INSTANTIATE_LAPLACIAN1D_ALL(Real) \
+INSTANTIATE_LAPLACIAN1D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_LAPLACIAN1D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_LAPLACIAN1D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_LAPLACIAN1D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
+INSTANTIATE_LAPLACIAN1D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_LAPLACIAN1D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_LAPLACIAN1D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_LAPLACIAN1D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
+
+INSTANTIATE_LAPLACIAN1D_ALL(float)
+INSTANTIATE_LAPLACIAN1D_ALL(double)

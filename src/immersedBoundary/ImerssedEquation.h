@@ -48,7 +48,6 @@ enum class LagrangeInd : size_t {
     Count     = 3  ///< Number of standard Lagrangian indices
 };
 
-template <typename Real, typename Int> class ImmersedEqSolver;
 /**
  * @class ImmersedEq
  * @brief Represents the Immersed Boundary linear system operators.
@@ -56,9 +55,9 @@ template <typename Real, typename Int> class ImmersedEqSolver;
 template <typename Real, typename Int>
 class ImmersedEq {
 
-    const BoundaryConfig<Real> boundary;
+    const XYZ<Delta1d<Real>> delta;
 
-    const GridDim dim = boundary.dim();
+    const GridDim dim;
 
     mutable Handle hand5[5]{}; ///< Array of 5 CUDA Handles for multi-streaming.
     mutable std::unique_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr; ///< A buffer space for sparse vector multiplication.  The space grows as needed.
@@ -82,8 +81,6 @@ class ImmersedEq {
     std::unique_ptr<SparseMat<Real, Int>> B = std::make_unique<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
     /// CSC matrix mapping Lagrangian space to discretized staggered vector field space ($R$).
     std::unique_ptr<SparseMat<Real, Int>> R = std::make_unique<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
-
-    const Real3d delta; ///< Grid spacing $(\Delta x, \Delta y, \Delta z)$.
 
     const Singleton<Real> dT; ///< Time step size ($\Delta t$).
 
@@ -140,7 +137,7 @@ class ImmersedEq {
     /**
      * used for eigen decomposition.
      */
-    std::shared_ptr<EigenDecompSolver<Real>> eds = createEDS(boundary, &hand5[0], events12);
+    std::shared_ptr<EigenDecompSolver<Real>> eds;// = createEDS(boundary, &hand5[0], events12);
 
     /**
      * @brief Computes the Left-Hand Side (LHS) operation: $x = A \cdot b$.
@@ -175,9 +172,6 @@ class ImmersedEq {
      */
     void multSparse(const std::unique_ptr<SparseMat<Real, Int>> &mat, const SimpleArray<Real> &vec, SimpleArray<Real> &result, const
                     Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const;
-
-    ImmersedEq(SimpleArray<Int> maxSparseInds, SimpleArray<Int> maxSparseOffsets, const BoundaryConfig<Real> &boundary,
-               const Real3d &delta, Singleton<Real> dT, Real tolerance, size_t maxBCGIterations);
 
     /**
      * @brief Prepares the RHS vector based on current state.
@@ -219,17 +213,8 @@ public:
      * @param tolerance        Convergence threshold for the BiCGSTAB iterative solver.
      * @param maxBCGIterations Maximum iterations permitted for the BiCGSTAB solver.
      */
-    ImmersedEq(
-        const BoundaryConfig<Real> &boundary,
-        size_t fSize,
-        size_t nnzMax,
-        Real *p,
-        Real *f,
-        const Real3d &delta,
-        double dT,
-        Real tolerance,
-        size_t maxBCGIterations
-    );
+    template<typename BoundaryConfigT>
+    ImmersedEq(const BoundaryConfigT &boundary, size_t fSize, size_t nnzMax, Real *p, Real *f, double dT, Real tolerance, size_t maxBCGIterations);
 
     /**
      * @brief Solves the pressure-correction system for the Eulerian grid.
@@ -263,6 +248,9 @@ public:
      */
     void solve(Real *resultP, Real *resultF, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR,
                Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real *uStar);
+
+    template<class BoundaryConfigT>
+    ImmersedEq(BoundaryConfigT boundary, SimpleArray<Int> maxSparseInds, SimpleArray<Int> maxSparseOffsets, Singleton<Real> dT, Real tolerance, size_t maxBCGIterations);
 };
 
 

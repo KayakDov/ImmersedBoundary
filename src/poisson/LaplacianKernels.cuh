@@ -195,8 +195,8 @@ __global__ void buildL1dKernel(
 
  */
 
-template <typename T>
-__global__ void buildAllL1dKernel(XYZ<DeviceData2d<T>> bandedL, const BoundaryConfig<T> boundary, const AdjacencyInd primary, const AdjacencyIndPair prevNext) {
+template <typename T, typename BoundaryConfigT>
+__global__ void buildAllL1dKernel(XYZ<DeviceData2d<T>> bandedL, const BoundaryConfigT boundary, const AdjacencyInd primary, const AdjacencyIndPair prevNext) {
     size_t i = idx();
 
     LSetter1d<T> ds(bandedL.x, i, primary, prevNext);

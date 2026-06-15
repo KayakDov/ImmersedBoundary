@@ -49,3 +49,20 @@ void EigenDecomp2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle 
 
 template class EigenDecomp2d<double>;
 template class EigenDecomp2d<float>;
+
+#define INSTANTIATE_EIGEN2D_BOUNDARY(Real, SegX, SegY, SegZ) \
+template EigenDecomp2d<Real>::EigenDecomp2d( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event&);
+
+#define INSTANTIATE_EIGEN2D_ALL(Real) \
+INSTANTIATE_EIGEN2D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_EIGEN2D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_EIGEN2D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_EIGEN2D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
+INSTANTIATE_EIGEN2D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_EIGEN2D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_EIGEN2D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_EIGEN2D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
+
+INSTANTIATE_EIGEN2D_ALL(float)
+INSTANTIATE_EIGEN2D_ALL(double)

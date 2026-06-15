@@ -35,23 +35,6 @@ struct BoundaryConfig {
         : x(axisX), y(axisY), z(axisZ) {}
 
     /**
-     * @brief Backwards compatible constructor for uniform-everywhere configurations.
-     *
-     * This allows you to keep using the old initialization logic. It initializes
-     * x, y, and z axes using the uniform parameters provided.
-     */
-    __host__ __device__ BoundaryConfig(
-        const XYZ<bool>& startIsNeumann, const XYZ<bool>& endIsNeumann,
-        const XYZ<Real>& startVal, const XYZ<Real>& endVal,
-        const Real3d& delta,
-        const GridDim& dim,
-        bool isStaggered
-    ) : x(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
-        y(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
-        z(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
-    {}
-
-    /**
      * Checks if all the boundary conditions are Neumann, which results in a singular Laplacian.
      * @return True if all axes have Neumann conditions on both ends.
      */
@@ -67,6 +50,10 @@ struct BoundaryConfig {
      */
     __host__ __device__ GridDim dim() const {
         return GridDim(this->y.numNodes, this->x.numNodes, this->z.numNodes); // [cite: 257]
+    }
+
+    XYZ<Delta1d<Real>> delta() const {
+        return {x.getDelta(), y.getDelta(), z.getDelta()};
     }
 };
 
@@ -98,11 +85,15 @@ void buildBoundaryConfigAndLaunch(
     auto dispatchZ = [&](const auto& segX, const auto& segY) {
         if (deltas.z.size() == 1) {
             UniformSegment<Real> segZ(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, deltas.z[0], dim.layers);
-            launchParams(BoundaryConfig<Real, decltype(segX), decltype(segY), UniformSegment<Real>>(segX, segY, segZ));
+            launchParams(
+                BoundaryConfig<Real, decltype(segX), decltype(segY), UniformSegment<Real>>(segX, segY, segZ)
+            );
         } else {
             SimpleArray<Real> arrayZ = SimpleArray<Real>::create(deltas.z, stream);
             VariableSegment<Real> segZ(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, arrayZ);
-            launchParams(BoundaryConfig<Real, decltype(segX), decltype(segY), VariableSegment<Real>>(segX, segY, segZ));
+            launchParams(
+                BoundaryConfig<Real, decltype(segX), decltype(segY), VariableSegment<Real>>(segX, segY, segZ)
+            );
         }
     };
 
@@ -127,4 +118,22 @@ void buildBoundaryConfigAndLaunch(
     }
 }
 
+/**
+     * @brief Backwards compatible constructor for uniform-everywhere configurations.
+     *
+     * This allows you to keep using the old initialization logic. It initializes
+     * x, y, and z axes using the uniform parameters provided.
+     */
+template<typename T>
+static auto makeUniformBoundaryConfig(
+    const XYZ<bool>& startIsNeumann, const XYZ<bool>& endIsNeumann,
+    const XYZ<T>& startVal, const XYZ<T>& endVal,
+    const Real3d& delta, const GridDim& dim, bool isStaggered
+) {
+    return BoundaryConfig<T, UniformSegment<T>, UniformSegment<T>, UniformSegment<T>>(
+        UniformSegment<T>(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
+        UniformSegment<T>(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
+        UniformSegment<T>(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
+    );
+}
 #endif // CUDABANDED_BOUNDARYCONFIG_CUH

@@ -48,15 +48,15 @@ SimpleArray<Real> ImmersedEq<Real, Int>::gridVec(GridInd ind) const{
     return gridVecs.col(static_cast<size_t>(ind));
 }
 
-template<typename Real>
-std::shared_ptr<EigenDecompSolver<Real>> createEDS(const BoundaryConfig<Real> &bounary, Handle *hand, Event* event) {
+template<typename Real, typename  BoundaryConfigT>
+std::shared_ptr<EigenDecompSolver<Real>> createEDS(const BoundaryConfigT &bounary, Handle *hand, Event* event) {
 
     if (bounary.dim().numDims() == 3) return std::make_shared<EigenDecomp3d<Real>>(bounary, hand, event);
     return std::make_shared<EigenDecomp2d<Real>>(bounary, hand, event[0]);
 
 }
 
-template<typename Real, typename Int>//TODO: chnage this so it can mult B or R.
+template<typename Real, typename Int>
 void ImmersedEq<Real, Int>::multSparse(const std::unique_ptr<SparseMat<Real, Int>>& mat, const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const {
 
     const size_t multBufferSizeNeeded = mat->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeB, hand5[0]);
@@ -67,17 +67,19 @@ void ImmersedEq<Real, Int>::multSparse(const std::unique_ptr<SparseMat<Real, Int
 }
 
 template<typename Real, typename Int>
+template<typename BoundaryConfigT>
 ImmersedEq<Real, Int>::ImmersedEq(
+    BoundaryConfigT boundary,
     SimpleArray<Int> maxSparseInds,
     SimpleArray<Int> maxSparseOffsets,
-    const BoundaryConfig<Real> &boundary,
-    const Real3d &delta,
-    Singleton<Real> dT, Real tolerance, size_t maxBCGIterations
+    Singleton<Real> dT, Real tolerance,
+    size_t maxBCGIterations
 ):
-    boundary(boundary),
+    dim(boundary.dim()),
+    delta(boundary.delta()),
+    eds(createEDS<Real>(boundary, hand5, events12)),
     maxSparseInds(maxSparseInds),
     maxSparseOffsets(maxSparseOffsets),
-    delta(delta),
     dT(dT),
     solver(*this, gridVecs, SimpleArray<Real>::create(9, hand5[0]), events12, tolerance, maxBCGIterations)
 {
@@ -86,21 +88,22 @@ ImmersedEq<Real, Int>::ImmersedEq(
 }
 
 template<typename Real, typename Int>
+template<typename BoundaryConfigT>
 ImmersedEq<Real, Int>::ImmersedEq(
-    const BoundaryConfig<Real> &boundary,
+    const BoundaryConfigT &boundary,
     size_t fSize,
     size_t nnzMax,
     Real *p,
     Real *f,
-    const Real3d &delta,
     double dT,
     Real tolerance,
     size_t maxBCGIterations
 ) :
+    delta(boundary.delta()),
+    dim(boundary.dim()),
+    eds(createEDS<Real>(boundary, hand5, events12)),
     maxSparseInds(SimpleArray<Int>::create(nnzMax + fSize + 1, hand5[0]).subArray(0, nnzMax)),
     maxSparseOffsets(maxSparseInds.subArray(nnzMax, fSize + 1)),
-    boundary(boundary),
-    delta(delta),
     dT(Singleton<Real>::create(3/(2 * dT), hand5[0])),
     solver(*this, gridVecs, SimpleArray<Real>::create(9, hand5[0]), events12, tolerance, maxBCGIterations)
 {
@@ -189,11 +192,7 @@ void ImmersedEq<Real, Int>::setRHS(bool prime) {
  * @param u           The x-velocity component grid (staggered).
  * @param v           The y-velocity component grid (staggered).
  * @param w           The z-velocity component grid (staggered).
- * @param dst         Output scalar grid (cell centers) where divergence is stored.
- * @param deltaCols   The grid spacing in the x-direction (dx).
- * @param deltaRows   The grid spacing in the y-direction (dy).
- * @param deltaLayers The grid spacing in the z-direction (dz).
- *
+ * @param dst         Output scalar grid (cell centers) where divergence is stored
  * @note **Grid Dimension Requirements:**
  * To ensure every cell center in @p dst has a bounding pair of faces:
  * - @p u must have dimensions (dst.cols + 1, dst.rows, dst.layers).
@@ -206,21 +205,17 @@ void ImmersedEq<Real, Int>::setRHS(bool prime) {
  */
 template <typename Real>
 __global__ void divergenceKernel3d(
-    DeviceData3d<Real> u,
-    DeviceData3d<Real> v,
-    DeviceData3d<Real> w,
+    XYZ<DeviceData3d<Real>> u,
     DeviceData3d<Real> dst,
-    const double deltaCols,
-    const double deltaRows,
-    const double deltaLayers,
+    const XYZ<Delta1d<Real>> delta,
     const Real* scalar
 ) {
     if (GridInd3d ind; ind < dst)
         dst[ind] = -(*scalar) * (
-            (u(ind, 0, 1, 0) - u[ind])/deltaCols +
-            (v(ind, 1, 0, 0) - v[ind])/deltaRows +
-            (w(ind, 0, 0, 1) - w[ind])/deltaLayers);
-
+            (u.x(ind, 0, 1, 0) - u.x[ind])/delta.x[ind.col + 1] +
+            (u.y(ind, 1, 0, 0) - u.y[ind])/delta.y[ind.row + 1] +
+            (u.z(ind, 0, 0, 1) - u.z[ind])/delta.z[ind.layer + 1]
+        );
 }
 
 /**
@@ -230,19 +225,17 @@ __global__ void divergenceKernel3d(
  * @param u The x-velocity component grid.
  * @param v The y-velocity component grid.
  * @param dst Output scalar grid (cell centers) for divergence results.
- * @param deltaCols Grid spacing in x (dx).
- * @param deltaRows Grid spacing in y (dy).
  *
  * @note **Requirement:** @p u and @p v must have 1 more element in their
  * respective staggered dimension than @p dst.
  */
 template <typename Real>
-__global__ void divergenceKernel2d(DeviceData2d<Real> u, DeviceData2d<Real> v, DeviceData2d<Real> dst, const double deltaCols, const double deltaRows, const Real* scalar) {
+__global__ void divergenceKernel2d(DeviceData2d<Real> u, DeviceData2d<Real> v, DeviceData2d<Real> dst, const XYZ<Delta1d<Real>> delta, const Real* scalar) {
 
     if(GridInd2d ind;ind < dst)
         dst[ind] = *scalar * (
-            (u(ind, 0, 1) - u[ind])/deltaCols +
-            (v(ind, 1, 0) - v[ind])/deltaRows
+            (u(ind, 0, 1) - u[ind])/delta.x[ind.col + 1] +
+            (v(ind, 1, 0) - v[ind])/delta.y[ind.row + 1]
         );
 }
 
@@ -258,18 +251,20 @@ void ImmersedEq<Real, Int>::setRHSPPrime(Handle &hand) {
     const KernelPrep kp = RHSPPrime.kernelPrep();
 
     if (dim.layers > 1) divergenceKernel3d<Real><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-            u.tensor(dim.rows, dim.layers).toKernel3d(),
-            v.tensor(dim.rows, dim.layers).toKernel3d(),
-            w.tensor(dim.rows, dim.layers).toKernel3d(),
+            {
+                u.tensor(dim.rows, dim.layers).toKernel3d(),
+                v.tensor(dim.rows, dim.layers).toKernel3d(),
+                w.tensor(dim.rows, dim.layers).toKernel3d()
+            },
             RHSPPrime.tensor(dim.rows, dim.layers).toKernel3d(),
-            delta.x, delta.y, delta.z,
+            delta,
             dT.data()
         );
     else divergenceKernel2d<Real><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
             u.matrix(dim.rows).toKernel2d(),
             v.matrix(dim.rows).toKernel2d(),
             RHSPPrime.matrix(dim.rows).toKernel2d(),
-            delta.x, delta.y,
+            delta,
             dT.data()
         );
 
@@ -395,6 +390,27 @@ ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
     ),
     imEq(imEq) {
 }
+
+
+#define INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, SegX, SegY, SegZ) \
+template ImmersedEq<Real, Int>::ImmersedEq( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, \
+size_t, size_t, Real*, Real*, double, Real, size_t);
+
+#define INSTANTIATE_FOR_SEG_COMBO(Real, Int) \
+INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
+INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
+
+INSTANTIATE_FOR_SEG_COMBO(float,  int32_t)
+INSTANTIATE_FOR_SEG_COMBO(double, int32_t)
+INSTANTIATE_FOR_SEG_COMBO(float,  int64_t)
+INSTANTIATE_FOR_SEG_COMBO(double, int64_t)
 
 template class ImmersedEqSolver<float, int32_t>;
 template class ImmersedEqSolver<double, int32_t>;

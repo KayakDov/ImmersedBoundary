@@ -16,8 +16,8 @@
 
 namespace poisson {
 
-    template<typename T>
-    BandedMat<T> laplacian(const BoundaryConfig<T>& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, cudaStream_t stream) {
+    template<typename T, typename BoundaryConfigT>
+    BandedMat<T> laplacian(const BoundaryConfigT& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, cudaStream_t stream) {
 
         GridDim dimension = boundary.dim();
 
@@ -47,8 +47,8 @@ namespace poisson {
         return BandedMat<T>(mat, indices);
     }
 
-    template<typename T>
-    void boundaryCorrection(const BoundaryConfig<T>& boundary, SimpleArray<T> rhsCorrectionGoesHere, cudaStream_t stream) {
+    template<typename T, typename BoundaryConfigT>
+    void boundaryCorrection(const BoundaryConfigT& boundary, SimpleArray<T> rhsCorrectionGoesHere, cudaStream_t stream) {
         GridDim dimension = boundary.dim();
 
         rhsCorrectionGoesHere.fill(0, stream);
@@ -68,8 +68,8 @@ namespace poisson {
         CHECK_CUDA_ERROR(cudaGetLastError());
     }
 
-    template<typename T>
-    SimpleArray<T> boundaryCorrection(const BoundaryConfig<T>& boundary, cudaStream_t stream) {
+    template<typename T, typename BoundaryConfigT>
+    SimpleArray<T> boundaryCorrection(const BoundaryConfigT& boundary, cudaStream_t stream) {
         SimpleArray<T> rhs = SimpleArray<T>::create(boundary.dim().size(), stream);
 
         boundaryCorrection(boundary, rhs, stream);
@@ -80,11 +80,29 @@ namespace poisson {
 
 }
 
-#define INSTANTIATE_LAPLACIAN(T)                                                                       \
-template SimpleArray<T> poisson::boundaryCorrection<T>(const BoundaryConfig<T>&, cudaStream_t);        \
-template void poisson::boundaryCorrection<T>(const BoundaryConfig<T>&, SimpleArray<T>, cudaStream_t);  \
-template BandedMat<T> poisson::laplacian<T>(const BoundaryConfig<T>&, cudaStream_t);                   \
-template BandedMat<T> poisson::laplacian<T>(const BoundaryConfig<T>&, Mat<T>&, Vec<int32_t>&, cudaStream_t);
+#define INSTANTIATE_POISSON_BOUNDARY(Real, SegX, SegY, SegZ) \
+template BandedMat<Real> poisson::laplacian<Real, BoundaryConfig<Real, SegX, SegY, SegZ>>( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, cudaStream_t); \
+template SimpleArray<Real> poisson::boundaryCorrection<Real, BoundaryConfig<Real, SegX, SegY, SegZ>>( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, cudaStream_t); \
+template void poisson::boundaryCorrection<Real, BoundaryConfig<Real, SegX, SegY, SegZ>>( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, SimpleArray<Real>, cudaStream_t);
 
-INSTANTIATE_LAPLACIAN(float)
-INSTANTIATE_LAPLACIAN(double)
+#define INSTANTIATE_POISSON_ALL(Real) \
+INSTANTIATE_POISSON_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_POISSON_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_POISSON_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_POISSON_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
+INSTANTIATE_POISSON_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_POISSON_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_POISSON_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_POISSON_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
+
+INSTANTIATE_POISSON_ALL(float)
+INSTANTIATE_POISSON_ALL(double)
+
+#define INSTANTIATE_LAPLACIAN(T)                                                                       \
+template SimpleArray<T> poisson::boundaryCorrection<T, BoundaryConfigT>(const BoundaryConfigT&, cudaStream_t);        \
+template void poisson::boundaryCorrection<T, BoundaryConfigT>(const BoundaryConfigT&, SimpleArray<T>, cudaStream_t);  \
+template BandedMat<T> poisson::laplacian<T, BoundaryConfigT>(const BoundaryConfigT&, cudaStream_t);                   \
+template BandedMat<T> poisson::laplacian<T, BoundaryConfigT>(const BoundaryConfigT&, Mat<T>&, Vec<int32_t>&, cudaStream_t);

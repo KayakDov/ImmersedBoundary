@@ -8,6 +8,20 @@
 #include "deviceArrays/headers/SimpleArray.h"
 #include "poisson/BoundaryCondition.cuh"
 
+template<typename Real>
+struct Delta1d {
+    const DeviceData1d<Real> deltaVar;
+    const bool isUniform;
+
+    __host__ __device__ Delta1d(bool isUniform, const DeviceData1d<Real>& deltaVar)
+    : deltaVar(deltaVar), isUniform(isUniform) {}
+
+    __device__ Real operator[](size_t i) const{
+        return isUniform ? deltaVar[0] : deltaVar[i];
+    }
+};
+
+
 template<typename Real, typename SpacingTypeStart, typename SpacingTypeEnd>
 class AxisSegment {
 public:
@@ -116,6 +130,20 @@ public:
         mainDiagVal -= 2 / (delta[indexInLine + 1] * delta[indexInLine]);
 
     }
+
+    Delta1d<T> getDelta() const{
+        return Delta1d<T>(false, delta);
+    }
+
+    __host__ __device__ friend bool operator==(const VariableSegment& lhs,
+                                               const VariableSegment& rhs) {
+        return (lhs.start == rhs.start) && (lhs.end == rhs.end) && (lhs.numNodes == rhs.numNodes) && lhs.delta.data == rhs.delta.data;
+    }
+
+    __host__ __device__ friend bool operator!=(const VariableSegment& lhs,
+                                               const VariableSegment& rhs) {
+        return !(lhs == rhs);
+    }
 };
 
 /**
@@ -131,7 +159,8 @@ public:
 template<typename T>
 class UniformSegment : public AxisSegment<T, UniformBoundary<T>, UniformBoundary<T>> {
 public:
-    T inverseDeltaSq;
+    const T inverseDeltaSq;
+    const T delta;
 
     /**
     * @brief Construct by providing raw parameters for both boundaries.
@@ -159,7 +188,8 @@ public:
             UniformBoundary<T>(beginVal, delta, beginIsNeumann, isStaggered),
             UniformBoundary<T>((endIsNeumann ? -endVal : endVal), delta, endIsNeumann, isStaggered)
         ),
-        inverseDeltaSq(1/(delta * delta))
+        inverseDeltaSq(1/(delta * delta)),
+        delta(delta)
     {}
 
     /**
@@ -177,12 +207,42 @@ public:
     }
 
     __device__ void setInteriorL(T& mainDiagVal, T& prevVal, T& nextVal, const size_t indexInAxisSegment) const {
-
         prevVal = nextVal = inverseDeltaSq;
         mainDiagVal -= 2 * inverseDeltaSq;
+    }
 
+    Delta1d<T> getDelta() const {
+        return Delta1d<T>(true, SimpleArray<T>::empty());
     }
 };
+
+template<typename T>
+__host__ __device__
+bool operator==(const UniformSegment<T>&,
+                const VariableSegment<T>&) {
+    return false;
+}
+
+template<typename T>
+__host__ __device__
+bool operator==(const VariableSegment<T>&,
+                const UniformSegment<T>&) {
+    return false;
+}
+
+template<typename T>
+__host__ __device__
+bool operator!=(const UniformSegment<T>& lhs,
+                const VariableSegment<T>& rhs) {
+    return !(lhs == rhs);
+}
+
+template<typename T>
+__host__ __device__
+bool operator!=(const VariableSegment<T>& lhs,
+                const UniformSegment<T>& rhs) {
+    return !(lhs == rhs);
+}
 
 
 #endif //CUDABANDED_AXISSEGMENT_CUH

@@ -252,18 +252,6 @@ void Eigen<T>::generateEigen(Handle &hand, Mat<T> eigins, const axisSegmentT &ax
 }
 
 /**
-* True if i is the first index that these conditions appear at.
-* @param i The index to be checked.
-* @return the value of the index repeated, or -1 if this is the first appearence.
-*/
-template <typename Real>
-int repeat(const BoundaryConfig<Real>& boundary, int i) {
-    for (size_t j = 0; j < i; ++j) if (boundary[j] == boundary[i]) return j;
-    return -1;
-
-}
-
-/**
  * @brief Efficiently creates unique objects based on 1D Laplacian boundary conditions.
  *
  * This utility iterates through the X, Y, and Z dimensions of a Laplacian setup.
@@ -279,15 +267,20 @@ int repeat(const BoundaryConfig<Real>& boundary, int i) {
  * * @note Because ResultType is wrapped in a shared_ptr, ResultType does not need
  * to be assignable, which is critical for classes with const data members.
  */
-template <typename Real, typename ResultType, typename F>
-void createUnique(const BoundaryConfig<Real>& boundaryConfig, std::shared_ptr<ResultType> (&outputs)[3], F factory) {
-    size_t numDim = boundaryConfig.dim().numDims();
-    for (size_t i = 0; i < numDim; ++i) {
-        int repeatInd = repeat(boundaryConfig, i);
-        if (repeatInd == -1) outputs[i] = std::make_shared<ResultType>(factory(boundaryConfig[i]));
-        else outputs[i] = outputs[repeatInd];
+template <typename ResultType, typename F, typename BoundaryConfigT>
+void createUnique(const BoundaryConfigT& boundaryConfig, std::shared_ptr<ResultType> (&outputs)[3], F factory) {
+
+    outputs[0] = std::make_shared<ResultType>(factory(boundaryConfig.x));
+
+    if (boundaryConfig.y == boundaryConfig.x) outputs[1] = outputs[0];
+    else outputs[1] = std::make_shared<ResultType>(factory(boundaryConfig.y));
+
+    if (boundaryConfig.dim().numDims() == 3) {
+        if (boundaryConfig.z == boundaryConfig.x) outputs[2] = outputs[0];
+        else if (boundaryConfig.z == boundaryConfig.x) outputs[2] = outputs[1];
+        else outputs[2] = std::make_shared<ResultType>(factory(boundaryConfig.z));
     }
-    if (numDim == 2) outputs[2] = nullptr;
+    else outputs[2] = nullptr;
 }
 
 /**
@@ -305,17 +298,23 @@ void Eigen<Real>::generateEigen(const BoundaryConfigT& boundary, Handle *hands3,
     createUnique(
         boundary,
         preAllocatedForL_iX3,
-        [](const UniformSegment<Real>& c) {return Mat<Real>::create(c.numNodes, c.numNodes + 1);}
+        [](const auto& c) {return Mat<Real>::create(c.numNodes, c.numNodes + 1);}
     );
 
-    Eigen<Real>::generateEigen(hands3[0], *(preAllocatedForL_iX3[0]), boundary[0]);
+    Eigen<Real>::generateEigen(hands3[0], *(preAllocatedForL_iX3[0]), boundary.x);
 
-    for (size_t i = 1; i < boundary.dim().numDims(); ++i)
-    if (repeat(boundary, i) < 0){
-        Eigen<Real>::generateEigen(hands3[i], *(preAllocatedForL_iX3[i]), boundary[i]);
-        events[i - 1].record(hands3[i]);
-        events[i - 1].hold(hands3[0]);
+    if (boundary.y != boundary.x) {
+        Eigen<Real>::generateEigen(hands3[1], *(preAllocatedForL_iX3[1]), boundary.y);
+        events[0].record(hands3[1]);
+        events[0].hold(hands3[0]);
     }
+
+    if (boundary.dim().numDims() == 3 && boundary.z != boundary.x && boundary.z != boundary.y) {
+        Eigen<Real>::generateEigen(hands3[2], *(preAllocatedForL_iX3[2]), boundary.z);
+        events[1].record(hands3[2]);
+        events[1].hold(hands3[0]);
+    }
+
 }
 
 
@@ -353,3 +352,20 @@ template void Eigen<double>::generateEigen<VariableSegment<double>>(Handle&, Mat
 
 template class Eigen<float>;
 template class Eigen<double>;
+
+#define INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, SegX, SegY, SegZ) \
+template Eigen<Real> Eigen<Real>::make<BoundaryConfig<Real, SegX, SegY, SegZ>>( \
+    const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*);
+
+#define INSTANTIATE_EIGEN_ALL(Real) \
+INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
+INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>) \
+
+INSTANTIATE_EIGEN_ALL(float)
+INSTANTIATE_EIGEN_ALL(double)

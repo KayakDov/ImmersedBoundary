@@ -19,7 +19,7 @@
  * 2. You want to reduce the number of high-latency matrix multiplications (multEZ) required.
  * * @tparam T Floating-point type (float or double).
  */
-template<typename T>
+template<typename T, typename SegmentT>
 class EigenDecompThomas : public EigenDecomp3d<T> {
 protected:
     /** @brief GPU workspace for the Thomas solver's modified super-diagonal coefficients. */
@@ -29,7 +29,7 @@ protected:
     Tensor<T> workSpaceRHSPrime;
 
     /** The boundary conditions for the x dimension. */
-    const UniformSegment<T>& boundaryX;
+    const SegmentT& boundaryX;
 
     /**
      * @brief Solves the tridiagonal systems in the eigen-space.
@@ -52,7 +52,7 @@ public:
      * @param sizeOfBX3 A 3-column matrix providing scratch space for [Solution, SuperPrime, RHSPrime].
      * @param isSingular true if the laplacian is singular.
      */
-    EigenDecompThomas(const Eigen<T> &eigen, const UniformSegment<T>& boundX, Mat<T> &sizeOfBX3, bool isSingular);
+    EigenDecompThomas(const Eigen<T> &eigen, const SegmentT& boundX, Mat<T> &sizeOfBX3, bool isSingular);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.

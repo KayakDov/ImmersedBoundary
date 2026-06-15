@@ -8,11 +8,11 @@ This library provides solvers for the following systems:
 
 and solves the following system for $p'$ and $F'$:
 
-(3)$$(L + 2 B^T B)p' = 2 B^T ((\frac{3}{2 \Delta t})R^Tu^* - U^\Gamma) + (\frac{-3}{2 \Delta t})\nabla\cdot u^* + bc$$
+(3) $$(L + 2 B^T B)p' = 2 B^T ((\frac{3}{2 \Delta t})R^Tu^* - U^\Gamma) + (\frac{-3}{2 \Delta t})\nabla\cdot u^* + bc$$
 
 $$F' = 2(Bp' + (\frac{3}{2 \Delta t})\nabla\cdot u^*)$$
 
-Where L is the laplacian and bc is the right hand side modifier do to boundary conditions.
+Where $L$ is the laplacian and $bc$ is the right hand side modifier do to boundary conditions.
 It uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion ($L^{-1}$) and BiCGSTAB to solve the coupled system. Additionally, the library exposes standalone Direct Eigendecomposition solvers for the discrete Poisson equation with an optional Thomas variant.
 
 ---
@@ -89,13 +89,18 @@ Allocates GPU memory and pre-computes the Laplacian Eigen Decomposition.
 
 | Argument | Type | Description |
 | :--- | :--- |:-------------------------------------------|
-| height, width, depth | integer(C_SIZE_T) | Grid dimensions (Y, X, Z). |
-| nnz | integer(C_SIZE_T) | Max non-zeros allowed in matrix B. |
+| gridHeight, gridWidth, gridDepth | integer(C_SIZE_T) | Grid dimensions (Y, X, Z). |
+| leftIsNeumann ... frontIsNeumann | logical | Boundary condition type flags (`.true.` = Neumann, `.false.` = Dirichlet). |
+| leftVal ... backVal | real | Boundary condition values (derivative or constant). |
+| isStaggered | logical | `.true.` if using a staggered grid discretization. |
+| nnzMaxB | integer(C_SIZE_T) | Max non-zeros allowed in matrix $B$. |
 | p | real array | Pressure vector (Size: H*W*D). |
-| f | real array | Force vector. (Size heightB) |
-| dx, dy, dz | real(C_DOUBLE) | Physical grid spacing. |
-| tolerance | real(C_DOUBLE) | Solver convergence threshold. |
-| maxIter | integer(C_SIZE_T) | Max iterations for the BiCGSTAB solver. |
+| f | real array | Force vector (Size: heightB). |
+| dx, dy, dz | real array | Physical grid spacing arrays (Size 1 if uniform, otherwise axis dimension + 1). |
+| dt | real | Time step size. |
+| uniformDeltaX, Y, Z | logical | `.true.` if the corresponding delta array is uniform (single element). |
+| tolerance | real | Solver convergence threshold. |
+| maxBCGIterations | integer(C_SIZE_T) | Max iterations for the BiCGSTAB solver. |
 
 ### Solve Routine (`solve_immersed_eq_*`)
 Executes the iterative solver for a specific state of CSR matrix $B$ or CSC of $B^T$.
@@ -136,7 +141,11 @@ Pre-calculates the spectral basis for the Laplacian on the given grid.
 | Argument | Type | Description |
 | :--- | :--- | :--- |
 | rows, cols, layers | integer(C_SIZE_T) | Grid dimensions. |
-| dx, dy, dz | real(C_DOUBLE) | Grid spacing. |
+| dx, dy, dz | real array | Grid spacing arrays (Size 1 if uniform, otherwise axis dimension + 1). |
+| uniformDeltaX, Y, Z | logical | `.true.` if the corresponding delta array is uniform (single element). |
+| leftIsNeumann ... frontIsNeumann | logical | Boundary condition type flags (`.true.` = Neumann, `.false.` = Dirichlet). |
+| leftVal ... backVal | real | Boundary condition values (derivative or constant). |
+| isStaggered | logical | `.true.` if using a staggered grid discretization. |
 | thomas | logical | `.true.` to use optimized Thomas algorithm. |
 
 ### Solve Routine (`solve_eigen_decomp_*`)

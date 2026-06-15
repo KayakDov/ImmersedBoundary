@@ -42,14 +42,14 @@ EigenDecomp3d<T>::EigenDecomp3d(
 
 template<typename T>
 template<typename BoundaryConfigT>
-EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfigT boundary, Handle* hand3, Event* event2) :
+EigenDecomp3d<T>::EigenDecomp3d(const BoundaryConfigT& boundary, Handle* hand3, Event* event2) :
     EigenDecompSolver<T>(boundary, hand3, event2) {
 
 }
 
 template<typename T>
 template<typename BoundaryConfigT>
-EigenDecomp3d<T>::EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB) :
+EigenDecomp3d<T>::EigenDecomp3d(const BoundaryConfigT& boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB) :
     EigenDecompSolver<T>(boundary, hand3, event2, sizeOfB){
 }
 
@@ -67,3 +67,23 @@ void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle 
 
 template class EigenDecomp3d<double>;
 template class EigenDecomp3d<float>;
+
+#define INSTANTIATE_EIGEN3D_BOUNDARY(Real, SegX, SegY, SegZ) \
+template EigenDecomp3d<Real>::EigenDecomp3d( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*); \
+template EigenDecomp3d<Real>::EigenDecomp3d( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*, SimpleArray<Real>);
+
+#define INSTANTIATE_EIGEN3D_ALL(Real) \
+INSTANTIATE_EIGEN3D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_EIGEN3D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_EIGEN3D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_EIGEN3D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
+INSTANTIATE_EIGEN3D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
+INSTANTIATE_EIGEN3D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
+INSTANTIATE_EIGEN3D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
+INSTANTIATE_EIGEN3D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
+
+INSTANTIATE_EIGEN3D_ALL(float)
+INSTANTIATE_EIGEN3D_ALL(double)
+

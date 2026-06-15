@@ -29,6 +29,22 @@ public:
     BoundaryCondition(Real value, bool isNeumann): value(value), isNeumann(isNeumann) {};
 
     __host__ __device__ bool isDirichlet() const { return !isNeumann;}
+    /**
+    * @brief Equality operator implemented as a hidden friend.
+    * Compares all precomputed factors and the condition type.
+    */
+    __host__ __device__ friend bool operator==(const BoundaryCondition& lhs, const BoundaryCondition& rhs) {
+        return (lhs.isNeumann == rhs.isNeumann) &&
+               (lhs.value == rhs.value) ;
+    }
+
+    /**
+     * @brief Inequality operator.
+     */
+    __host__ __device__ friend bool operator!=(const BoundaryCondition& lhs, const BoundaryCondition& rhs) {
+        return !(lhs == rhs);
+    }
+
 
 };
 
@@ -151,22 +167,6 @@ public:
         }
         offDiagVal = this->inverseDeltaSquared;
     }
-    /**
-    * @brief Equality operator implemented as a hidden friend.
-    * Compares all precomputed factors and the condition type.
-    */
-    __host__ __device__ friend bool operator==(const UniformBoundary& lhs, const UniformBoundary& rhs) {
-        return (lhs.isNeumann == rhs.isNeumann) &&
-               (lhs.value == rhs.value) ;
-    }
-
-    /**
-     * @brief Inequality operator.
-     */
-    __host__ __device__ friend bool operator!=(const UniformBoundary& lhs, const UniformBoundary& rhs) {
-        return !(lhs == rhs);
-    }
-
 
     /**
      * @brief Apply boundary condition contribution to RHS only.

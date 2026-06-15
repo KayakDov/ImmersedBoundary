@@ -13,8 +13,8 @@
 #include "kronecker/KroneckerTriplet.h"
 #include "poisson/Laplacian1d.cuh"
 
-template <typename Real, typename Int>
-SparseCSR<Real, Int> basics(const BoundaryConfig<Real>& boundary, size_t n, std::vector<Real>& x0Host, SquareMat<Real>& lhsOperator, std::vector<Int>& rowOffsetsB, std::vector<Real>& valuesB, std::vector<Int>& colIndsB, Handle& hand) {
+template <typename Real, typename Int, typename BoundaryConfigT>
+SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vector<Real>& x0Host, SquareMat<Real>& lhsOperator, std::vector<Int>& rowOffsetsB, std::vector<Real>& valuesB, std::vector<Int>& colIndsB, Handle& hand) {
 
     std::mt19937 rng(42); // Deterministic seed for reproducible testing
     std::uniform_real_distribution<Real> dist(-5.0, 5.0);
@@ -23,7 +23,7 @@ SparseCSR<Real, Int> basics(const BoundaryConfig<Real>& boundary, size_t n, std:
     auto B = SparseCSR<Real, Int>::create(valuesB.size(), rowOffsetsB.size() - 1, n, hand);
     B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
 
-    poisson::laplacian(boundary, hand).getDense(lhsOperator, hand);
+    poisson::laplacian<Real>(boundary, hand).getDense(lhsOperator, hand);
     auto denseB = Mat<Real>::create(rowOffsetsB.size() - 1, n);
     B.getDense(denseB, hand);
     denseB.mult(denseB, &lhsOperator, &hand, &GPUScalar<Real>::get(2), &GPUScalar<Real>::get(1), true, false);
@@ -41,7 +41,7 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
     Real3d delta(1, 1, 1);
     Handle hand;
 
-    BoundaryConfig<Real> boundary(
+    auto boundary = makeUniformBoundaryConfig<Real>(
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
@@ -88,7 +88,7 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
 
     // ToeplitzLaplacian<Real>::printL(dim, hand, delta);
 
-    ImmersedEq<Real, Int> imEq(boundary, f.size(), valsR.size(), p.data(), f.data(), delta, deltaT, 1e-8, 1000);
+    ImmersedEq<Real, Int> imEq(boundary, f.size(), valsR.size(), p.data(), f.data(), deltaT, 1e-8, 1000);
 
     imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
 
@@ -132,7 +132,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     GridDim dim(25, 30, 20);
     Real3d delta(1, 0.5, 2);
     Handle hand;
-    BoundaryConfig<Real> boundary(
+    auto boundary = makeUniformBoundaryConfig<Real>(
         {false, false, false},
         {false, false, false},
         {0, 0, 0},
@@ -153,7 +153,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     auto x = SimpleArray<Real>::create(dim.size(), hand);
     x.set(xHost.data(), hand);
 
-    BandedMat<Real> L = poisson::laplacian(boundary, hand);
+    BandedMat<Real> L = poisson::laplacian<double>(boundary, hand);
     auto LDense = SquareMat<Real>::create(dim.size());
     L.getDense(LDense, hand);
 
@@ -180,7 +180,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     std::vector<Real> resultP(dim.size(), 0);
     std::vector<Real> resultF(fHost.size(), 0);
 
-    ImmersedEq<Real, Int> imEq(boundary, fHost.size(), valuesB.size(), p.data(), fHost.data(), delta, 1, 1e-12, 5);
+    ImmersedEq<Real, Int> imEq(boundary, fHost.size(), valuesB.size(), p.data(), fHost.data(), 1, 1e-12, 5);
 
 
     imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
@@ -331,10 +331,10 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
  * @param events Array of events for synchronization.
  * @param  Maximum allowable difference for numerical validation.
  */
-template<typename Real>
-void verifyEigenSolverIdentity(const GridDim& dim, BoundaryConfig<Real>& boundary, Handle* hands, Event* events, Real tolerance) {
+template<typename Real, typename BoundaryConfigT>
+void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& boundary, Handle* hands, Event* events, Real tolerance) {
 
-    auto laplacian = poisson::laplacian(boundary, hands[0]);
+    auto laplacian = poisson::laplacian<double>(boundary, hands[0]);
 
     // std::cout << "verifyEigenSolverIdentity banded laplacian = \n" << GpuOut<Real>(laplacian, hands[0]) << std::endl;
     // std::cout << "verifyEigenSolverIdentity dense laplacian = \n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
@@ -401,7 +401,8 @@ void verifyEigenSolverIdentity(const GridDim& dim, BoundaryConfig<Real>& boundar
     }
 
     if (dim.numDims()== 3) {
-        EigenDecompThomas<Real> ed(boundary, hands, events);
+        using SegXType = std::decay_t<decltype(boundary.x)>;
+        EigenDecompThomas<Real, SegXType> ed(boundary, hands, events);
         x.fill(0, hands[0]);
         ed.solve(x, rhs, hands[0]);
         x.get(xCpuResult.data(), hands[0]);
@@ -426,8 +427,8 @@ void verifyEigenSolverIdentity(const GridDim& dim, BoundaryConfig<Real>& boundar
 
 
 
-template <typename Real, typename Int>
-void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& hand, Real tolerance, const std::string& locMsg, Mat<Real> bufferNXNPlus5) {
+template <typename Real, typename Int, typename BoundaryConfigT>
+void verifyImmersedEqWithBoundary(const BoundaryConfigT& boundary, Handle& hand, Real tolerance, const std::string& locMsg, Mat<Real> bufferNXNPlus5) {
     std::stringstream errorMsg;
     errorMsg << locMsg << '\n';
     const size_t n = boundary.dim().size();
@@ -452,7 +453,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& 
 
     // 3. Construct explicit manufactured system: p0 = L x0 + 2 B^T B x0 - 2 B^T f - bc
     auto p0 = bufferNXNPlus5.col(1);
-    poisson::laplacian(boundary, hand).bandedMult(x0, p0, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+    poisson::laplacian<Real>(boundary, hand).bandedMult(x0, p0, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
 
     auto rhs = bufferNXNPlus5.col(2);
 
@@ -465,7 +466,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& 
 
     B.mult(f, rhs, GPUScalar<Real>::get(2), GPUScalar<Real>::get(0), true, sparseWorkSpace, hand);           // p0 -= 2 B^T f
 
-    SimpleArray<Real> bc = poisson::boundaryCorrection(boundary, hand);
+    SimpleArray<Real> bc = poisson::boundaryCorrection<Real>(boundary, hand);
     p0.add(bc, &GPUScalar<Real>::get(-1), &hand); // p0 -= bc
 
     rhs.add(bc, &GPUScalar<Real>::get(1), &hand);
@@ -480,7 +481,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real>& boundary, Handle& 
     p0.get(p0Host.data(), hand);
     cudaDeviceSynchronize();
 
-    ImmersedEq<Real, Int> imEq(boundary, numB, B.values.size(), p0Host.data(), fHost.data(), Real3d(1, 1, 1), 1, 1e-13, 1000);
+    ImmersedEq<Real, Int> imEq(boundary, numB, B.values.size(), p0Host.data(), fHost.data(), 1, 1e-13, 1000);
     imEq.solve(resultX.data(), B.values.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
     cudaDeviceSynchronize();
 
@@ -515,7 +516,7 @@ void boundaryBattery(XYZ<bool> startIsN, XYZ<bool> endIsN, XYZ<Real> startVal, X
 
     // std::cout << locMsg << std::endl;
 
-    BoundaryConfig<Real> boundary(startIsN, endIsN, startVal, endVal, Real3d(1, 1, 1), dim, isStag);
+    auto boundary = makeUniformBoundaryConfig<Real>(startIsN, endIsN, startVal, endVal, Real3d(1, 1, 1), dim, isStag);
 
     Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
 
