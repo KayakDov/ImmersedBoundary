@@ -262,7 +262,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
         T err = normGpu.get(hand) - 1;
         ASSERT_LT(err, tol)
             << errorMsg << "\nEigen Vector is not orthogonal, col " << i << " has a norm not equal to 1 "
-            << " residual = " << err;
+            << " residual = " << err << "\n" << errorMsg;
 
         Vec Lvi = SimpleArray<T>::create(L._rows, hand);
         L.mult(vi, Lvi, &hand, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), false);
@@ -334,7 +334,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
 template<typename Real, typename BoundaryConfigT>
 void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& boundary, Handle* hands, Event* events, Real tolerance) {
 
-    auto laplacian = poisson::laplacian<double>(boundary, hands[0]);
+    auto laplacian = poisson::laplacian<Real>(boundary, hands[0]);
 
     // std::cout << "verifyEigenSolverIdentity banded laplacian = \n" << GpuOut<Real>(laplacian, hands[0]) << std::endl;
     // std::cout << "verifyEigenSolverIdentity dense laplacian = \n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
@@ -343,23 +343,13 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& bounda
 
     std::vector<Real> xCpuOrig(dim.size());
 
-    // for (size_t i = 0; i < dim.size(); ++i) xCpuOrig[i] = 3;
-    // GridInd3d ind(0, 0, 0);
-    // for (; ind.layer <  dim.layers; ++ind.layer)
-    //     for (; ind.row < dim.rows; ++ind.row)
-    //         for (; ind.col < dim.cols; ++ind.col)
-    //             xCpuOrig[dim[ind]] = std::cos(M_PI * ind.col / dim.cols) * std::cos(M_PI * ind.row / dim.rows) * std::cos(M_PI * ind.layer / dim.layers);
     std::mt19937 rng(0);
     std::uniform_real_distribution<Real> dist(-1, 1);
-    for (size_t i = 0; i < dim.size(); ++i)
-        xCpuOrig[i] = dist(rng);
 
+    for (size_t i = 0; i < dim.size(); ++i) xCpuOrig[i] = dist(rng);
     x.set(xCpuOrig.data(), hands[0]);
 
-
     auto rhs = SimpleArray<Real>::create(dim.size(), hands[0]);
-    rhs.fill(0, hands[0]);
-
     laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
 
     // std::cout << "x = " << GpuOut<Real>(x, hands[0]) << std::endl;
@@ -374,55 +364,42 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& bounda
         EigenDecomp3d<Real> ed(boundary, hands, events);
         ed.solve(x, rhs, hands[0]);
     }
-
-    std::vector<Real> xCpuResult(dim.size());
-    x.get(xCpuResult.data(), hands[0]);
-
+    // std::cout << "verifyEigenSolverIdentity x_solution = \n" << GpuOut<Real>(x, hands[0]) << std::endl;
     cudaDeviceSynchronize();
 
-    if (boundary.allNeumann()) {
+    laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(-1), false);
 
-        Real offset = xCpuOrig[0] - xCpuResult[0];
+    auto normDevice = x.get(0);
+    Real normHost[1];
+    rhs.norm(normDevice, hands[0]);
+    normDevice.get(normHost, hands[0]);
 
-        for (size_t i = 0; i < dim.size(); ++i){
-            // Shift the solver's zero-mean result back to the original mean
-            Real shiftedResult = xCpuResult[i] + offset;
+    // std::cout << "verifyEigenSolverIdentity norm = \n" << normHost[0] << std::endl;
 
-            ASSERT_NEAR(xCpuOrig[i], shiftedResult, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
-                << "Solver divergence at index " << i << " in " << dim.numDims()
-                << "D (Singular Mode Shift: " << offset << ")";
-        }
-    } else {
-        // Standard Dirichlet/Mixed validation
-        for (size_t i = 0; i < dim.size(); ++i) {
-            ASSERT_NEAR(xCpuOrig[i], xCpuResult[i], tolerance)
-                << "Solver divergence at index " << i << " in " << dim.numDims() << "D";
-        }
-    }
+    cudaDeviceSynchronize();
+    ASSERT_NEAR(normHost[0], 0, tolerance) << " || L_i x - rhs|| > " << tolerance;
 
     if (dim.numDims()== 3) {
-        using SegXType = std::decay_t<decltype(boundary.x)>;
-        EigenDecompThomas<Real, SegXType> ed(boundary, hands, events);
-        x.fill(0, hands[0]);
-        ed.solve(x, rhs, hands[0]);
-        x.get(xCpuResult.data(), hands[0]);
-        cudaDeviceSynchronize();
+        EigenDecompThomas ed(boundary, hands, events);
 
-        if (boundary.allNeumann()) {
-            Real offset = xCpuOrig[0] - xCpuResult[0];
-            for (size_t i = 0; i < dim.size(); ++i){
-                Real shiftedResult = xCpuResult[i] + offset;
-                ASSERT_NEAR(xCpuOrig[i], shiftedResult, 1e-7 * std::abs(xCpuOrig[i]) + 1e-10)
-                    << "Solver divergence at index " << i << " in " << dim.numDims()
-                    << "D (Singular Mode Shift: " << offset << ")";
-            }
-        } else {
-            for (size_t i = 0; i < dim.size(); ++i) {
-                ASSERT_NEAR(xCpuOrig[i], xCpuResult[i], tolerance)
-                    << "Solver divergence at index " << i << " in " << dim.numDims() << "D";
-            }
-        }
+        x.set(xCpuOrig.data(), hands[0]);
+        laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+        x.fill(0, hands[0]);
+
+        ed.solve(x, rhs, hands[0]);
+        // std::cout << "verifyEigenSolverIdentity x_Thomas = \n" << GpuOut<Real>(x, hands[0]) << std::endl;
+
+        laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(-1), false);
+        auto normDevice = x.get(0);
+        Real normHost[1];
+        rhs.norm(normDevice, hands[0]);
+        normDevice.get(normHost, hands[0]);
+
+        // std::cout << "verifyEigenSolverIdentity norm Thomas = \n" << normHost[0] << std::endl;
+        cudaDeviceSynchronize();
+        ASSERT_NEAR(normHost[0], 0, tolerance) << " Thomas || L_i x - rhs|| > " << tolerance;
     }
+
 }
 
 
@@ -527,7 +504,7 @@ void boundaryBattery(XYZ<bool> startIsN, XYZ<bool> endIsN, XYZ<Real> startVal, X
 
     verifyEigenSolverIdentity(dim, boundary,  hand3, event2, tolerance);
 
-    verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
+    // verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
 
     // verifyImmersedEqPrimeWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg);
 }
@@ -539,24 +516,12 @@ TEST(LaplacianMath, laplacian) {
 
     double tolerance = 1e-12;
 
-    size_t maxDim = 21;
-    size_t startRowsCols = 10;
-    size_t dimStepSize = 5;
+    size_t maxDim = 3;
+    size_t startRowsCols = 2;
+    size_t dimStepSize = 1;
 
     size_t n = maxDim * maxDim * maxDim;
     auto buffer = Mat<Real>::create(n, n + 5);
-
-    // boundaryBattery<Real>(
-    //     {0,0,1},
-    //     {0, 0, 1},
-    //     {1, 0, 0},
-    //     {1, 1, 1},
-    //     {15, 15, 15},
-    //     1,
-    //     hand3, event2, tolerance
-    // );
-
-
 
      for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
          for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)

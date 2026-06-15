@@ -77,4 +77,15 @@ public:
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const override;
 };
 
+
+// Guide for Constructor 2 (Without Mat workspace)
+template<typename Real, typename SegX, typename SegY, typename SegZ>
+EigenDecompThomas(const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*)
+    -> EigenDecompThomas<Real, SegX>;
+
+// Guide for Constructor 1 (With Mat workspace)
+template<typename Real, typename SegX, typename SegY, typename SegZ>
+EigenDecompThomas(const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>)
+    -> EigenDecompThomas<Real, SegX>;
+
 #endif //CUDABANDED_EIGENDECOMPTHOMAS_CUH

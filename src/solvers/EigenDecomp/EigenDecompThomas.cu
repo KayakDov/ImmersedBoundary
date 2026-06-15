@@ -24,6 +24,7 @@ __device__ void solveThomas3dLap(
     DeviceData1d<Real>& superPrimeBuffer,
     DeviceData1d<Real>& rhsPrimeBuffer,
     const SegmentT& seg,
+    const Real eigenSum,
     const bool singular
     ) {
 
@@ -34,6 +35,7 @@ __device__ void solveThomas3dLap(
         superPrimeBuffer[0] = 0;
         rhsPrimeBuffer[0] = 0;
     }else {
+        row[0] = eigenSum;
         seg.start.setL(row[0], row[1]);
         superPrimeBuffer[0] = row[1] / row[0];
         rhsPrimeBuffer[0] = rhs[0] / row[0];
@@ -41,11 +43,13 @@ __device__ void solveThomas3dLap(
 
     size_t n = x.cols - 1;
     for (size_t i = 1; i < n; i++) {
+        row[0] = eigenSum;
         seg.setInteriorL(row[0], row[-1], row[1], i);
         Real denom = 1 / (row[0] - row[-1] * superPrimeBuffer[i - 1]);
         superPrimeBuffer[i] = row[1] * denom;
         rhsPrimeBuffer[i] = (rhs[i] - row[-1] * rhsPrimeBuffer[i - 1]) * denom;
     }
+    row[0] = eigenSum;
     seg.end.setL(row[0], row[-1]);
     Real denom = 1 / (row[0] - row[-1] * superPrimeBuffer[n - 1]);
     rhsPrimeBuffer[n] = (rhs[n] - row[-1] * rhsPrimeBuffer[n - 1]) * denom;
@@ -97,6 +101,7 @@ __global__ void solveThomas3dLaplacianKernel(//TODO: for the buffers, should I b
         colSuperPrime,
         colRHSPrime,
         seg,
+        eValsY[system.row] + eValsZ[system.layer],
         isSingular && system.row == 0 && system.layer == 0
     );
 }
@@ -141,6 +146,7 @@ EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const S
     boundaryX(boundX)
 {
 }
+
 
 template<typename T, typename SegmentT>
 template<typename BoundaryConfigT>
