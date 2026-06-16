@@ -255,9 +255,9 @@ template<typename T>
 static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, std::string errorMsg, T tol = 1e-6){
     auto normGpu= Singleton<T>::create(hand);
 
-    std::cout << "ceckEigens L = \n" << GpuOut<T>(L, hand) << std::endl;
-    std::cout << "ceckEigens V = \n" << GpuOut<T>(V, hand) << std::endl;
-    std::cout << "ceckEigens lambda = " << GpuOut<T>(lambda, hand) << std::endl;
+    // std::cout << "ceckEigens L = \n" << GpuOut<T>(L, hand) << std::endl;
+    // std::cout << "ceckEigens V = \n" << GpuOut<T>(V, hand) << std::endl;
+    // std::cout << "ceckEigens lambda = " << GpuOut<T>(lambda, hand) << std::endl;
 
     for (size_t i = 0; i < lambda.size(); ++i) {
         Vec<T> vi = V.col(i);

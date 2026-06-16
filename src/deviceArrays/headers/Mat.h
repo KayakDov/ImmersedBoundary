@@ -340,6 +340,16 @@ public:
     DeviceData2d<T> toKernel2d() const;
 
 
+
+
+    /**
+     * Calculates the size of the buffer ofr LU decomposition.  This is the number of elements of type T.
+     * @param hand
+     * @return
+     */
+    template<class Int>
+    size_t factorLUBufferSize(Handle &hand);
+
     /**
      * @brief Performs the in-place LU factorization ($A=LU$) of the current matrix using cuSOLVER's cusolverDnDgetrf.
      * @warning Automatic Memory Management (Leak-Free): If any pointer parameter (hand, reorderRecord, info, or
@@ -355,8 +365,8 @@ public:
      * @post The internal data of the matrix object (this) is overwritten with the L and U factors.
      *
      */
-    void factorLU(Handle *hand = nullptr, Vec<int32_t> *rowSwaps = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workSpace =
-                          nullptr);
+    template<class Int>
+    void factorLU(Handle &hand, SimpleArray<Int> &rowSwaps, Singleton<int32_t> &info, SimpleArray<T> &workSpace);
 
     void initDescr() const;
 

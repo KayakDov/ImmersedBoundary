@@ -40,11 +40,11 @@ EigenDecomp2d<T>::EigenDecomp2d(const BoundaryConfigT& boundary, Handle* hand2, 
 template<typename T>
 void EigenDecomp2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    this->eigen.vecs.mult2d(b, this->sizeOfB, true, x, hand);
+    this->eigen.vecs.mult2d(b, this->sizeOfB, x, hand);
 
     eValsLInvMult(this->sizeOfB, x, hand);
 
-    this->eigen.vecs.mult2d(x, x, false, this->sizeOfB, hand);
+    this->eigen.vecs.mult2d(x, x, this->sizeOfB, hand);
 }
 
 template class EigenDecomp2d<double>;

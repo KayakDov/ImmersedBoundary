@@ -521,36 +521,87 @@ DeviceData2d<T> Mat<T>::toKernel2d() { return DeviceData2d<T>(this->_rows, this-
 template <typename T>
 DeviceData2d<T> Mat<T>::toKernel2d() const { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
 
+// 1. You must update the signature to accept the Int template parameter
 template<typename T>
-void Mat<T>::factorLU(Handle *hand, Vec<int32_t> *rowSwaps, Singleton<int32_t> *info, Vec<T> *workSpace) {
+template<typename Int>
+size_t Mat<T>::factorLUBufferSize(Handle& hand) {
+    int32_t lwork32 = 0;
+    size_t workspaceInBytesOnDevice = 0;
+    size_t workspaceInBytesOnHost = 0;
 
-    std::unique_ptr<Handle> temp_hand_ptr;
-    auto h = Handle::_get_or_create_handle(hand, temp_hand_ptr);
-
-
-    int32_t lwork = workSpace?workSpace->size():0;
-
-    if (!workSpace) {
+    if constexpr (std::is_same_v<Int, int32_t>) {
         if constexpr (std::is_same_v<T, double>)
-            CHECK_CUSOLVER_ERROR(cusolverDnDgetrf_bufferSize(*h, this->_rows, this->_cols, this->toKernel2d(), this->_ld, &lwork));
+            CHECK_CUSOLVER_ERROR(cusolverDnDgetrf_bufferSize(hand, this->_rows, this->_cols, this->data(), this->_ld, &lwork32));
         else if constexpr (std::is_same_v<T, float>)
-            CHECK_CUSOLVER_ERROR(cusolverDnSgetrf_bufferSize(*h, this->_rows, this->_cols, this->toKernel2d(), this->_ld, &lwork));
-        else throw std::invalid_argument("Unsupported type.");
+            CHECK_CUSOLVER_ERROR(cusolverDnSgetrf_bufferSize(hand, this->_rows, this->_cols, this->data(), this->_ld, &lwork32));
+
+        // Legacy returns size in elements of T
+        return static_cast<size_t>(lwork32);
     }
+    else if constexpr (std::is_same_v<Int, int64_t>) {
+        cudaDataType_t dataType = std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
+        cusolverDnParams_t params;
+        CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
 
-    std::unique_ptr<Vec<T>> temp_workSpace_ptr;
-    auto ws = Vec<T>::_get_or_create_target( lwork, workSpace, temp_workSpace_ptr, *h);
+        // Generic API returns workspace sizes directly in BYTES
+        CHECK_CUSOLVER_ERROR(cusolverDnXgetrf_bufferSize(
+            hand, params, this->_rows, this->_cols,
+            dataType, this->data(), this->_ld,
+            dataType, &workspaceInBytesOnDevice, &workspaceInBytesOnHost
+        ));
 
-    std::unique_ptr<Vec<int32_t>> temp_rr;
-    auto rr = Vec<int32_t>::_get_or_create_target(this->_rows, rowSwaps, temp_rr, *h);
+        CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
 
-    std::unique_ptr<Singleton<int32_t>> temp_info;
-    auto inf = Singleton<int32_t>::_get_or_create_target(info, temp_info, *h);
+        // Convert bytes back to elements of T to keep your upstream allocations consistent
+        return (workspaceInBytesOnDevice + sizeof(T) - 1) / sizeof(T);
+    }
+}
 
-    if constexpr (std::is_same_v<T, double>)
-        CHECK_CUSOLVER_ERROR(cusolverDnDgetrf(*h, this->_rows, this->_cols, this->data(), this->_ld, ws->data(), rr->data(), inf->data()));
-    else if constexpr (std::is_same_v<T, float>)
-        CHECK_CUSOLVER_ERROR(cusolverDnSgetrf(*h, this->_rows, this->_cols, this->data(), this->_ld, ws->data(), rr->data(), inf->data()));
+// 2. The Factorization Method
+template<typename T>
+template<typename Int>
+void Mat<T>::factorLU(Handle& hand, SimpleArray<Int>& rowSwaps, Singleton<int32_t>& info, SimpleArray<T>& workSpace) {
+    if constexpr (!std::is_floating_point_v<T>) {
+        throw std::runtime_error("LU Factorization is not defined for non-floating point types.");
+        return;
+    }
+    if constexpr (std::is_same_v<Int, int32_t>) {
+        // Pure 32-bit library execution path
+        if constexpr (std::is_same_v<T, double>)
+            CHECK_CUSOLVER_ERROR(cusolverDnDgetrf(hand, this->_rows, this->_cols, this->data(), this->_ld, workSpace.data(), rowSwaps.data(), info.data()));
+        else if constexpr (std::is_same_v<T, float>)
+            CHECK_CUSOLVER_ERROR(cusolverDnSgetrf(hand, this->_rows, this->_cols, this->data(), this->_ld, workSpace.data(), rowSwaps.data(), info.data()));
+    }
+    else if constexpr (std::is_same_v<Int, int64_t>) {
+        // Pure 64-bit library execution path
+        cudaDataType_t dataType = std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
+
+        cusolverDnParams_t params;
+        CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
+
+        // We have to query the sizes again to know how much Host memory to allocate
+        size_t workspaceInBytesOnDevice = 0;
+        size_t workspaceInBytesOnHost = 0;
+        CHECK_CUSOLVER_ERROR(cusolverDnXgetrf_bufferSize(
+            hand, params, this->_rows, this->_cols,
+            dataType, this->data(), this->_ld,
+            dataType, &workspaceInBytesOnDevice, &workspaceInBytesOnHost
+        ));
+
+        // Allocate the mandatory CPU/Host workspace required by Xgetrf
+        std::vector<uint8_t> hostWorkspace(workspaceInBytesOnHost);
+
+        CHECK_CUSOLVER_ERROR(cusolverDnXgetrf(
+            hand, params, this->_rows, this->_cols,
+            dataType, this->data(), this->_ld,
+            rowSwaps.data(), // Flawlessly accepts int64_t*
+            dataType, workSpace.data(), workspaceInBytesOnDevice,
+            hostWorkspace.data(), hostWorkspace.size(),
+            info.data() // Flawlessly accepts int32_t*
+        ));
+
+        CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
+    }
 }
 
 template<typename T>
@@ -586,6 +637,19 @@ Mat<T> SimpleArray<T>::matrix(size_t height) const{
     return Mat<T>(height, this->size()/height, height, this->_ptr);
 }
 
+// --- 32-bit Instantiations ---
+template size_t Mat<float>::factorLUBufferSize<int32_t>(Handle&);
+template size_t Mat<double>::factorLUBufferSize<int32_t>(Handle&);
+
+template void Mat<float>::factorLU<int32_t>(Handle&, SimpleArray<int32_t>&, Singleton<int32_t>&, SimpleArray<float>&);
+template void Mat<double>::factorLU<int32_t>(Handle&, SimpleArray<int32_t>&, Singleton<int32_t>&, SimpleArray<double>&);
+
+// --- 64-bit Instantiations ---
+template size_t Mat<float>::factorLUBufferSize<int64_t>(Handle&);
+template size_t Mat<double>::factorLUBufferSize<int64_t>(Handle&);
+
+template void Mat<float>::factorLU<int64_t>(Handle&, SimpleArray<int64_t>&, Singleton<int32_t>&, SimpleArray<float>&);
+template void Mat<double>::factorLU<int64_t>(Handle&, SimpleArray<int64_t>&, Singleton<int32_t>&, SimpleArray<double>&);
 
 #define INSTANTIATE_MAT_VEC(T) \
 template class Mat<T>; \

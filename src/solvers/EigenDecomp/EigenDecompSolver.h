@@ -7,18 +7,6 @@
 #include "poisson/Eigen.cuh"
 #include "poisson/Poisson.cuh"
 
-
-template<typename T>
-class Set0Avg {
-    Vec<T> ones;
-public:
-    Set0Avg(Vec<T> sizeOfArrays, Handle& hand);
-    Set0Avg();
-
-    void operator()(Vec<T> needsAverageSet, Handle &hand) const;
-};
-
-
 /**
  * @brief Direct Poisson solver using eigen-decomposition (Fast Diagonalization Method).
  *

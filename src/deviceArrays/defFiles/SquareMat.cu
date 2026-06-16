@@ -155,46 +155,79 @@ SquareMat<T> Mat<T>::sqSubMatFirstBiggest() const {
 }
 
 template<typename T>
-void SquareMat<T>::solveLUDecomposed(Mat<T> &b, Vec<int32_t>& rowSwaps, Handle *handle, Singleton<int32_t>* info, bool transpose) {
+template<typename Int>
+void SquareMat<T>::solveLUDecomposed(Mat<T> &b, Vec<Int>& rowSwaps, Handle& handle, Singleton<int32_t>& info, bool transpose) {
 
-    std::unique_ptr<Handle> tempHand;
-    auto h = Handle::_get_or_create_handle(handle, tempHand);
-    std::unique_ptr<Singleton<int32_t>> tempinfo;
-    auto inf = Singleton<int32_t>::_get_or_create_target(info, tempinfo, *h);
+    const cublasOperation_t transp = transpose ? CUBLAS_OP_T : CUBLAS_OP_N;
 
-    const cublasOperation_t transp = transpose ? CUBLAS_OP_T: CUBLAS_OP_N;
+    // 32-bit Integer Path (Standard typed API)
+    if constexpr (std::is_same_v<Int, int32_t>) {
+        if constexpr (std::is_same_v<T, double>) {
+            CHECK_CUSOLVER_ERROR(cusolverDnDgetrs(
+                handle, transp, this->_rows, b._cols,
+                this->data(), this->_ld,
+                rowSwaps.data(),
+                b.data(), b._ld,
+                info.toKernel1d()
+            ));
+        } else if constexpr (std::is_same_v<T, float>) {
+            CHECK_CUSOLVER_ERROR(cusolverDnSgetrs(
+                handle, transp, this->_rows, b._cols,
+                this->data(), this->_ld,
+                rowSwaps.data(),
+                b.data(), b._ld,
+                info.toKernel1d()
+            ));
+        } else {
+            throw std::invalid_argument("Unsupported floating-point type for 32-bit cuSOLVER getrs.");
+        }
+    }
+    else if constexpr (std::is_same_v<Int, int64_t>) {
+        cudaDataType_t dataType;
+        if constexpr (std::is_same_v<T, float>) dataType = CUDA_R_32F;
+        else if constexpr (std::is_same_v<T, double>) dataType = CUDA_R_64F;
+        else throw std::invalid_argument("Unsupported floating-point type for 64-bit cuSOLVER getrs.");
 
-    if constexpr(std::is_same_v<T, double>)
-        CHECK_CUSOLVER_ERROR(cusolverDnDgetrs(*h, transp, this->_rows, b._cols, this -> data(), this -> _ld, rowSwaps.data(), b.data(), b._ld, inf->toKernel1d()));
-    else if constexpr(std::is_same_v<T, float>)
-        CHECK_CUSOLVER_ERROR(cusolverDnSgetrs(*h, transp, this->_rows, b._cols, this -> data(), this -> _ld, rowSwaps.data(), b.data(), b._ld, inf->toKernel1d()));
-    else throw std::invalid_argument("Unsupported type.");
+        CHECK_CUSOLVER_ERROR(cusolverDnXgetrs(
+            handle, nullptr, transp,
+            static_cast<int64_t>(this->_rows),
+            static_cast<int64_t>(b._cols),
+            dataType, this->data(), static_cast<int64_t>(this->_ld),
+            rowSwaps.data(),
+            dataType, b.data(), static_cast<int64_t>(b._ld),
+            info.toKernel1d()
+        ));
+    }
+    // Failsafe for invalid types
+    else {
+        static_assert(sizeof(Int) == 0, "Int template parameter must be int32_t or int64_t.");
+    }
 }
 
 template<typename T>
-void SquareMat<T>::solve(Mat<T>& b, Handle *handle, Singleton<int32_t> *info, Vec<T> *workspace, Vec<int32_t> *rowSwaps) {
-    std::unique_ptr<Handle> tempHand;
-    auto h = Handle::_get_or_create_handle(handle, tempHand);
-    std::unique_ptr<Singleton<int32_t>> tempinfo;
-    auto inf = Singleton<int32_t>::_get_or_create_target(info, tempinfo, *h);
-    std::unique_ptr<Vec<int32_t>> tempRowSwapsPointer;
-    auto rs = Vec<int32_t>::_get_or_create_target(this->_rows ,rowSwaps, tempRowSwapsPointer, *h);
-
-    this->factorLU(h, rs, inf, workspace);
-    solveLUDecomposed(b, *rs, h, inf, false);
+template<typename Int>
+void SquareMat<T>::inverse(SquareMat<T> &result, SimpleArray<Int>& rowSwaps, Handle& handle, Singleton<int32_t>& info, SimpleArray<T>& buffer, bool transpose) {
+    result.setToIdentity(handle);
+    solve(result, handle, info, buffer, rowSwaps, transpose);
 }
 
 template<typename T>
-void SquareMat<T>::solve(Vec<T> &b, Handle *handle, Singleton<int32_t> *info, Vec<T> *workspace,
-    Vec<int32_t> *rowSwaps) {
-    Mat<T> mat = static_cast<Mat<T>>(b);
-    solve(mat, handle, info, workspace, rowSwaps);
+template<typename Int>
+void SquareMat<T>::solve(Mat<T>& b, Handle& handle, Singleton<int32_t>& info, SimpleArray<T>& buffer, SimpleArray<Int>& rowSwaps, bool transpose) {
+
+    this->factorLU(handle, rowSwaps, info, buffer);
+    solveLUDecomposed(b, rowSwaps, handle, info, transpose);
 }
 
+
 template<typename T>
-double SquareMat<T>::determinant(Vec<int32_t>& sizeOfNumRows, Singleton<int32_t>& info, Vec<T>& workSpaceForLUDecomp, Handle& handle) {
-    // factorLU(Handle *hand, Vec<int32_t> *rowSwaps, Singleton<int32_t> *info, Vec<T> *workSpace) {
-    this->factorLU(&handle, &sizeOfNumRows, &info, &workSpaceForLUDecomp);
+double SquareMat<T>::determinant(SimpleArray<int32_t>& sizeOfNumRows, Singleton<int32_t>& info, SimpleArray<T>& workSpaceForLUDecomp, Handle& handle) {
+    if constexpr (!std::is_floating_point_v<T>) {
+        throw std::runtime_error("Determinant is not defined for non-floating point types.");
+        return 0.0; // Unreachable
+    }
+
+    this->factorLU(handle, sizeOfNumRows, info, workSpaceForLUDecomp);
     int32_t infoHost = info.get(handle);
 
     if (infoHost != 0) return 0;
@@ -247,11 +280,11 @@ double SquareMat<T>::determinant(Handle& hand) { //TODO: This method should call
 
     else throw std::invalid_argument("Unsupported type.");
 
-    auto rowSwaps = Vec<int32_t>::create(this->_rows, hand);
+    auto rowSwaps = SimpleArray<int32_t>::create(this->_rows, hand);
 
     auto info = Singleton<int32_t>::create(hand);
 
-    auto workSpace = Vec<T>::create(
+    auto workSpace = SimpleArray<T>::create(
         std::max(
             lwork,
             static_cast<int>(KernelPrep(this->_rows).numBlocks.x)
@@ -264,11 +297,15 @@ double SquareMat<T>::determinant(Handle& hand) { //TODO: This method should call
 
 
 template<typename T>
-bool SquareMat<T>::isSingular(double tolerance, Vec<int32_t>& rowSwaps, Singleton<int32_t>& info, Vec<T>& workSpace, Handle& hand) {
+bool SquareMat<T>::isSingular(double tolerance, SimpleArray<int32_t>& rowSwaps, Singleton<int32_t>& info, SimpleArray<T>& workSpace, Handle& hand) {
+    if constexpr (!std::is_floating_point_v<T>) {
+        throw std::runtime_error("isSingular is not defined for non-floating point types.");
+        return true; // Unreachable
+    }
     if (this->_rows == 0) return true;
 
     // Perform in-place LU decomposition
-    this->factorLU(&hand, &rowSwaps, &info, &workSpace);
+    this->factorLU(hand, rowSwaps, info, workSpace);
 
     int32_t infoHost = info.get(hand);
 
@@ -315,9 +352,9 @@ bool SquareMat<T>::isSingular(double tolerance, Handle& hand) const {
         CHECK_CUSOLVER_ERROR(cusolverDnSgetrf_bufferSize(hand, this->_rows, this->_cols, this->toKernel2d(), this->_ld, &lwork));
     } else throw std::invalid_argument("Unsupported type.");
 
-    auto rowSwaps = Vec<int32_t>::create(this->_rows, hand);
+    auto rowSwaps = SimpleArray<int32_t>::create(this->_rows, hand);
     auto info = Singleton<int32_t>::create(hand);
-    auto workSpace = Vec<T>::create(std::max(lwork, static_cast<int>(KernelPrep(this->_rows).numBlocks.x)), hand);
+    auto workSpace = SimpleArray<T>::create(std::max(lwork, static_cast<int>(KernelPrep(this->_rows).numBlocks.x)), hand);
 
     // DEEP COPY: factorLU modifies the data in-place, so we must operate on a copy
     auto copyMat = SquareMat<T>::create(this->_rows);
@@ -327,7 +364,29 @@ bool SquareMat<T>::isSingular(double tolerance, Handle& hand) const {
 }
 
 
+// ============================================================================
+// --- 32-bit Integer Instantiations ---
+// ============================================================================
+template void SquareMat<float>::solveLUDecomposed<int32_t>(Mat<float>&, Vec<int32_t>&, Handle&, Singleton<int32_t>&, bool);
+template void SquareMat<double>::solveLUDecomposed<int32_t>(Mat<double>&, Vec<int32_t>&, Handle&, Singleton<int32_t>&, bool);
 
+template void SquareMat<float>::solve<int32_t>(Mat<float>&, Handle&, Singleton<int32_t>&, SimpleArray<float>&, SimpleArray<int32_t>&, bool);
+template void SquareMat<double>::solve<int32_t>(Mat<double>&, Handle&, Singleton<int32_t>&, SimpleArray<double>&, SimpleArray<int32_t>&, bool);
+
+template void SquareMat<float>::inverse<int32_t>(SquareMat<float>&, SimpleArray<int32_t>&, Handle&, Singleton<int32_t>&, SimpleArray<float>&, bool);
+template void SquareMat<double>::inverse<int32_t>(SquareMat<double>&, SimpleArray<int32_t>&, Handle&, Singleton<int32_t>&, SimpleArray<double>&, bool);
+
+// ============================================================================
+// --- 64-bit Integer Instantiations ---
+// ============================================================================
+template void SquareMat<float>::solveLUDecomposed<int64_t>(Mat<float>&, Vec<int64_t>&, Handle&, Singleton<int32_t>&, bool);
+template void SquareMat<double>::solveLUDecomposed<int64_t>(Mat<double>&, Vec<int64_t>&, Handle&, Singleton<int32_t>&, bool);
+
+template void SquareMat<float>::solve<int64_t>(Mat<float>&, Handle&, Singleton<int32_t>&, SimpleArray<float>&, SimpleArray<int64_t>&, bool);
+template void SquareMat<double>::solve<int64_t>(Mat<double>&, Handle&, Singleton<int32_t>&, SimpleArray<double>&, SimpleArray<int64_t>&, bool);
+
+template void SquareMat<float>::inverse<int64_t>(SquareMat<float>&, SimpleArray<int64_t>&, Handle&, Singleton<int32_t>&, SimpleArray<float>&, bool);
+template void SquareMat<double>::inverse<int64_t>(SquareMat<double>&, SimpleArray<int64_t>&, Handle&, Singleton<int32_t>&, SimpleArray<double>&, bool);
 // 1. Define the expansion macro
 #define INSTANTIATE_SQUARE_MAT(T) \
 template class SquareMat<T>; \

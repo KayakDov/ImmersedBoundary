@@ -109,13 +109,13 @@ __global__ void solveThomas3dLaplacianKernel(//TODO: for the buffers, should I b
 template<typename T, typename SegmentT>
 void EigenDecompThomas<T, SegmentT>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    this->eigen.vecs.multCols(b, x, true, hand);
-    this->eigen.vecs.multDepths(x, this->sizeOfB, true, hand);
+    this->eigen.vecs.multCols(b, x, hand);
+    this->eigen.vecs.multDepths(x, this->sizeOfB, hand);
 
     this->multLEigenValInverse(this->sizeOfB, x, hand);
 
-    this->eigen.vecs.multCols(x, this->sizeOfB, false, hand);
-    this->eigen.vecs.multDepths(this->sizeOfB, x, false, hand);
+    this->eigen.vecs.multCols(x, this->sizeOfB, hand);
+    this->eigen.vecs.multDepths(this->sizeOfB, x, hand);
 }
 
 

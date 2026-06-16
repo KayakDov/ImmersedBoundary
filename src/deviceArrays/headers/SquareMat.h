@@ -26,6 +26,7 @@
 template <typename T>
 class SquareMat : public Mat<T> {
     friend class Mat<T>;
+
 private:
     /**
      * @brief Private constructor for internal use.
@@ -40,6 +41,7 @@ private:
     SquareMat(size_t rowsCols, size_t ld, std::shared_ptr<T> _ptr);
 
 public:
+    using Mat<T>::factorLUBufferSize;
     /**
      * @brief Factory method to create a SquareMat of given size.
      * 
@@ -109,7 +111,10 @@ public:
 
 
     /**
-     * @brief Solves the linear system $A\mathbf{x} = \mathbf{b}$ for $\mathbf{x}$, assuming $A$ is already factored
+     * @brief Solves the linear system $A\mathbf{x} = \mathbf{b}$ for $\mathbf{x}$. assuming $A$ is already factored
+     *
+     * Only call if this is already LU decomposed!  todo: create sepereate lu decompposed object.
+     *
      * into $LU$.This method uses cuSOLVER's cusolverDn[D/S]getrs to perform the forward and backward substitution steps.
      * The solution $\mathbf{x}$ overwrites the right-hand side matrix $\mathbf{b}$.@warning Automatic Memory
      * Management (Leak-Free): If any pointer parameter (handle or info) is nullptr, the necessary resource is
@@ -127,16 +132,39 @@ public:
      * otherwise, solves $A\mathbf{x} = \mathbf{b}$ (uses CUBLAS_OP_N).
      * @pre The current matrix (this) must contain the $LU$ factors produced by factorLU.
      * @pre The dimensions must match: this->_rows (N) must equal rowSwaps.size() and b._rows.
-     * @post The matrix b contains the solution vector(s) $\mathbf{x}$.*/
-    void solveLUDecomposed(Mat<T> &b, Vec<int32_t> &rowSwaps, Handle *handle = nullptr, Singleton<int32_t> *info = nullptr, bool transpose = false);
+     * @post The matrix b contains the solution vector(s) $\mathbf{x}$.
+     */
+    template<class Int>
+    void solveLUDecomposed(Mat<T> &b, Vec<Int> &rowSwaps, Handle &handle, Singleton<int32_t> &info, bool transpose);
 
 
 
-    void solve(Mat<T> &b, Handle *handle = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workspace = nullptr, Vec<int32_t> *
-                       rowSwaps = nullptr);
+    /**
+     * Destroys/overwrites this matrix.  Computes the inverse of this matrix.
+     * @tparam Int
+     * @param result The inverse will be placed here.
+     * @param rowSwaps row swaps information for lu decomposition.
+     * @param handle
+     * @param info info for lu deocmposition.
+     * @param buffer Get size infor for LU decomposition buffer size.
+     * @param transpose True to transpose the lhs operator.
+     */
+    template<class Int>
+    void inverse(SquareMat<T> &result, SimpleArray<Int> &rowSwaps, Handle &handle, Singleton<int32_t> &info, SimpleArray<T> &buffer, bool transpose);
 
-    void solve(Vec<T> &b, Handle *handle = nullptr, Singleton<int32_t> *info = nullptr, Vec<T> *workspace = nullptr, Vec<int32_t> *
-                       rowSwaps = nullptr);
+
+    /**
+     * Destroys/overwrites this matrix! Destroys rhs vector!
+     * Solves the equation Ax = b
+     * @param b The rhs of the equation.  It will be replaced  by the soltion, x.
+     * @param handle
+     * @param info
+     * @param buffer
+     * @param rowSwaps
+     * @param transpose
+     */
+    template<class Int>
+    void solve(Mat<T> &b, Handle &handle, Singleton<int32_t> &info, SimpleArray<T> &buffer, SimpleArray<Int> &rowSwaps, bool transpose);
 
     /**
      * Allocates and frees memory.  Gets the determinent using LU facotrization.  Destroys this matrix.
@@ -144,7 +172,6 @@ public:
      * @return
      */
     double determinant(Handle& hand) ;
-
     /**
      * Gets the determinent using LU factorization.  Destorys this matrix.
      * @param sizeOfNumRows Allocated memory.
@@ -153,7 +180,8 @@ public:
      * @param handle
      * @return The deteminant.
      */
-    double determinant(Vec<int32_t>& sizeOfNumRows, Singleton<int32_t>& info, Vec<T>& workSpaceForLUDecomp, Handle& handle) ;
+    double determinant(SimpleArray<int32_t> &sizeOfNumRows, Singleton<int32_t> &info, SimpleArray<T> &workSpaceForLUDecomp, Handle &handle);
+
 
     /**
      * Checks if the matrix is singular by looking at the eigen values.  Allocates its own memory for each run.
@@ -172,7 +200,8 @@ public:
      * @param hand
      * @return true if this matrix is singular, false otherwise.
      */
-    bool isSingular(double tolerance, Vec<int32_t>& rowSwaps, Singleton<int32_t>& info, Vec<T>& workSpace, Handle& hand) ;
+    bool isSingular(double tolerance, SimpleArray<int32_t> &rowSwaps, Singleton<int32_t> &info, SimpleArray<T> &workSpace, Handle &hand);
+
 
 };
 
