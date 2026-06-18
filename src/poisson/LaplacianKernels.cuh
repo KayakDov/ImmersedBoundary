@@ -201,9 +201,20 @@ __global__ void buildAllL1dKernel(XYZ<DeviceData2d<T>> bandedL, const BoundaryCo
 
     LSetter1d<T> ds(bandedL.x, i, primary, prevNext);
 
+
     if (i < bandedL.x.rows) ds.setRowInBanded1d(bandedL.x, boundary.x);
     if (i < bandedL.y.rows) ds.setRowInBanded1d(bandedL.y, boundary.y);
-    if (bandedL.z.size() > 1 && i < bandedL.z.rows) ds.setRowInBanded1d(bandedL.z, boundary.z);
+    if (i < bandedL.z.rows) ds.setRowInBanded1d(bandedL.z, boundary.z);
+}
+
+template <typename T>
+__global__ void setSymetrizationMatrix(XYZ<DeviceData1d<T>> symnetrizationBand, XYZ<DeviceData1d<T>> inv, XYZ<Delta1d<T>> delta) {
+    size_t i = idx();
+    for (int32_t dim = 0; dim < 3; ++dim)
+        if (dim < symnetrizationBand[dim]._cols) {
+            symnetrizationBand[dim][i] = sqrt(delta[dim][i] + delta[dim][i + 1]);
+            inv[dim][i] = 1/symnetrizationBand[dim][i];
+        }
 }
 
 

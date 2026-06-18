@@ -20,7 +20,7 @@ template <typename T>
 class KroneckerTriplet : public XYZ<SquareMat<T>> {
 
     const GridDim dim;
-    bool transpose;
+    XYZ<bool> transpose;
 
 public:
     /**
@@ -47,8 +47,6 @@ public:
      */
     void multDepths(const SimpleArray<T> &other, SimpleArray<T> result, Handle &hand) const;
 
-
-
     /**
      * @brief Constructs a KroneckerTriplet from an XYZ structure of constituent matrices.
      *
@@ -57,7 +55,7 @@ public:
      * mat.y multiplies the Y dimension (fastest).
      * mat.z multiplies the Z dimension (middle).
      */
-    KroneckerTriplet(const XYZ<SquareMat<T>> &mat, bool transpose);
+    KroneckerTriplet(const XYZ<SquareMat<T>> &mat, const XYZ<bool> &transpose);
 
     /**
      * @brief Constructs a KroneckerTriplet from three individual constituent matrices.
@@ -66,7 +64,7 @@ public:
      * @param y Operator for the fastest-changing dimension (Y).
      * @param z Operator for the middle-changing dimension (Z).
      */
-    KroneckerTriplet(SquareMat<T> x, SquareMat<T> y, SquareMat<T> z, bool transpose);
+    KroneckerTriplet(SquareMat<T> x, SquareMat<T> y, SquareMat<T> z, XYZ<bool> transpose);
 
     /**
      * @brief Explicitly forms the full dense matrix result of the Kronecker triplet product.
@@ -165,7 +163,7 @@ public:
      * @param X Operator for the slowest-changing dimension (X).
      * @param Y Operator for the fastest-changing dimension (Y).
      */
-    KroneckerTriplet(const SquareMat<T> &X, const SquareMat<T> &Y, bool transpose);
+    KroneckerTriplet(const SquareMat<T> &X, const SquareMat<T> &Y, bool transpX, bool transpY);
 
     /**
      * @brief Factory method for a pair where only the X dimension is active.
@@ -188,21 +186,15 @@ public:
     void mult2d(const SimpleArray<T> &other, SimpleArray<T> &result, const SimpleArray<T> &resultSizeBuffer, Handle &hand) const;
 
     /**
-     * A window into this object but with the transpose flag different from this transpose flag.
-     * @return The tranpose of this korneker product.
-     */
-    KroneckerTriplet<T> generateTranspose() const;
-
-    /**
      * A new set of matrices, each an inverse of the corresponding matrix here.
      * Note, this method allocates and cleans lots of its own memory.
      * @param hand3 3 handles.
-     * @param inverseGoesHere
+     * @param inverseGoesHere, pre allocate for non orthonormal matrices, and leave empty for orthonormal matrices.
      * @param event2
      * @param event2
      * @return
      */
-    void generateInverse(Handle *hand3, XYZ<SquareMat<T>> &inverseGoesHere, Event *event2) const;
+    KroneckerTriplet<T> generateInverse(Handle *hand3, XYZ<SquareMat<T>> &inverseGoesHere, Event *event2) const;
 };
 
 #endif //CUDABANDED_KRONECKERTRIPLET_H

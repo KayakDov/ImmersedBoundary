@@ -240,7 +240,7 @@ void Eigen<T>::generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, con
 
     triDiag.getDense(dense, hand);
 
-    dense.eigen(eVals, &eVecs, hand);
+    dense.eigen(eVals, &eVecs, hand);  //TODO: this method allocated its own memory, but generate Eigen may be called 3 times.  It should only be allocating memory once.
 }
 
 template<typename T>
@@ -268,24 +268,31 @@ void Eigen<T>::generateEigen(Handle &hand, Mat<T> eigins, const axisSegmentT &ax
  * to be assignable, which is critical for classes with const data members.
  */
 template <typename ResultType, typename F, typename BoundaryConfigT>
-void createUnique(const BoundaryConfigT& boundaryConfig, std::shared_ptr<ResultType> (&outputs)[3], F factory) {
+void createUnique(const BoundaryConfigT& boundaryConfig, std::shared_ptr<ResultType> (&outputs)[3], Handle* hands3, Event* events2, F factory) {
 
-    outputs[0] = std::make_shared<ResultType>(factory(boundaryConfig.x));
+    outputs[0] = std::make_shared<ResultType>(factory(boundaryConfig.x, hands3[0]));
+    if (boundaryConfig.y == boundaryConfig.x)  outputs[1] = outputs[0];
+    else {
+        outputs[1] = std::make_shared<ResultType>(factory(boundaryConfig.y, hands3[1]));
+        events2[0].record(hands3[1]);
+        events2[0].hold(hands3[0]);
 
-    if (boundaryConfig.y == boundaryConfig.x) outputs[1] = outputs[0];
-    else outputs[1] = std::make_shared<ResultType>(factory(boundaryConfig.y));
+    }
 
     if (boundaryConfig.dim().numDims() == 3) {
-        if (boundaryConfig.z == boundaryConfig.x) outputs[2] = outputs[0];
+        if (boundaryConfig.z == boundaryConfig.x)  outputs[2] = outputs[0];
         else if (boundaryConfig.z == boundaryConfig.y) outputs[2] = outputs[1];
-        else outputs[2] = std::make_shared<ResultType>(factory(boundaryConfig.z));
-    }
-    else outputs[2] = nullptr;
+        else {
+            outputs[2] = std::make_shared<ResultType>(factory(boundaryConfig.z, hands3[2]));
+            events2[1].record(hands3[2]);
+            events2[1].hold(hands3[0]);
+        }
+    } else outputs[2] = nullptr;
 }
-
 /**
 * Generates, including memory allocation, eigen values and vectors.  The matrices pointed to, that are retruned,
 * hold the values in the last column, and the vectors in the first nxn cells.
+* @param boundary The boundary configuration.
 * @param hands3 Used to create the different vectors in parrallel.  The number of handles should be equal to the number of dimentisons.
 * @param events The number of events should be equal to the number of dimesnions.
 * @param preAllocatedForL_iX3
@@ -298,44 +305,54 @@ void Eigen<Real>::generateEigen(const BoundaryConfigT& boundary, Handle *hands3,
     createUnique(
         boundary,
         preAllocatedForL_iX3,
-        [](const auto& c) {return Mat<Real>::create(c.numNodes, c.numNodes + 1);}
+        hands3,
+        events,
+        [](const auto& AxisSegmentT, Handle& hand) {
+
+            size_t numCols = AxisSegmentT.numNodes + 1;
+            if constexpr (std::is_same_v<std::decay_t<decltype(AxisSegmentT)>, VariableSegment<Real>>)
+                numCols = AxisSegmentT.numNodes * 2 + 1;
+
+            auto mat = Mat<Real>::create(AxisSegmentT.numNodes, numCols);
+            Eigen<Real>::generateEigen(hand, mat, AxisSegmentT);
+            return mat;
+        }
     );
-
-    Eigen<Real>::generateEigen(hands3[0], *(preAllocatedForL_iX3[0]), boundary.x);
-
-    if (boundary.y != boundary.x) {
-        Eigen<Real>::generateEigen(hands3[1], *(preAllocatedForL_iX3[1]), boundary.y);
-        events[0].record(hands3[1]);
-        events[0].hold(hands3[0]);
-    }
-
-    if (boundary.dim().numDims() == 3 && boundary.z != boundary.x && boundary.z != boundary.y) {
-        Eigen<Real>::generateEigen(hands3[2], *(preAllocatedForL_iX3[2]), boundary.z);
-        events[1].record(hands3[2]);
-        events[1].hold(hands3[0]);
-    }
 
 }
 
-
 template<typename T>
-Eigen<T>::Eigen(const XYZ<Vec<T>> &vals, const XYZ<SquareMat<T>> &vecs) :
-    vals(vals), vecs(vecs) {}
+Eigen<T>::Eigen(const XYZ<Vec<T>> &vals, const KroneckerTriplet<T>& vecs, const KroneckerTriplet<T>& vecsInv) :
+    vals(vals), vecs(vecs), vecsInv(vecsInv) {}
 
 template<typename T>
 template<typename BoundaryConfigT>
-Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* events) {
+Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* events2) {
 
     bool is3d = boundary.dim().numDims() == 3;
     std::shared_ptr<Mat<T>> eigen[3];
-    generateEigen(boundary, hands3, events, eigen);
+    generateEigen(boundary, hands3, events2, eigen);
     XYZ<Vec<T>> vals(eigen[0]->lastCol(), eigen[1]->lastCol(), is3d ? eigen[2]->lastCol() : SimpleArray<T>::empty());
+
     XYZ<SquareMat<T>> vecs(
         eigen[0]->sqSubMatFirstBiggest(),
         eigen[1]->sqSubMatFirstBiggest(),
-        is3d ? eigen[2]->sqSubMatFirstBiggest() : SquareMat<T>::empty()//GPUConst<T>::get(0).matrix(1).sqSubMat(0,0,1)
+        is3d ? eigen[2]->sqSubMatFirstBiggest() : SquareMat<T>::empty()
     );
-    return Eigen<T>(vals, vecs);
+
+    constexpr bool orthoX = !std::is_same_v<std::decay_t<decltype(boundary.x)>, VariableSegment<T>>;
+    constexpr bool orthoY = !std::is_same_v<std::decay_t<decltype(boundary.y)>, VariableSegment<T>>;
+    constexpr bool orthoZ = !std::is_same_v<std::decay_t<decltype(boundary.z)>, VariableSegment<T>>;
+
+    XYZ<SquareMat<T>> vecsInv(
+        orthoX ? SquareMat<T>::empty() : eigen[0]->sqSubMat(0, vecs.x._cols, vecs.x._cols ),
+        orthoY ? SquareMat<T>::empty() : eigen[1]->sqSubMat(0, vecs.y._cols, vecs.y._cols ),
+        !is3d || orthoZ ? SquareMat<T>::empty() : eigen[2]->sqSubMat(0, vecs.z._cols, vecs.z._cols )
+    );
+
+    KroneckerTriplet<T> kt(vecs, {false, false, false});
+
+    return Eigen<T>(vals, kt, kt.generateInverse(hands3, vecsInv, events2));
 }
 
 template<typename T>

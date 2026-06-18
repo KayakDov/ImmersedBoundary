@@ -125,13 +125,13 @@ EigenDecomp3d<T>::EigenDecomp3d(const BoundaryConfigT& boundary, Handle *hand3, 
 template<typename T>
 void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    this->eigen.vecs.mult( b , x, true, this->sizeOfB, hand);
+    this->eigen.vecsInv.mult( b , x, this->sizeOfB, hand);
 
 
     this->multLEigenValInverse(x, this->sizeOfB, hand);
 
 
-    this->eigen.vecs.mult(this->sizeOfB, x, false, this->sizeOfB, hand);
+    this->eigen.vecs.mult(this->sizeOfB, x, this->sizeOfB, hand);
 }
 
 template class EigenDecomp3d<double>;

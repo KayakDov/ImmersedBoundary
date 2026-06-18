@@ -206,7 +206,7 @@ void SquareMat<T>::solveLUDecomposed(Mat<T> &b, Vec<Int>& rowSwaps, Handle& hand
 
 template<typename T>
 template<typename Int>
-void SquareMat<T>::inverse(SquareMat<T> &result, SimpleArray<Int>& rowSwaps, Handle& handle, Singleton<int32_t>& info, SimpleArray<T>& buffer, bool transpose) {
+void SquareMat<T>::inverse(SquareMat<T> &result, SimpleArray<Int>& rowSwaps, Handle& handle, Singleton<int32_t> info, SimpleArray<T>& buffer, bool transpose) {
     result.setToIdentity(handle);
     solve(result, handle, info, buffer, rowSwaps, transpose);
 }
@@ -373,8 +373,8 @@ template void SquareMat<double>::solveLUDecomposed<int32_t>(Mat<double>&, Vec<in
 template void SquareMat<float>::solve<int32_t>(Mat<float>&, Handle&, Singleton<int32_t>&, SimpleArray<float>&, SimpleArray<int32_t>&, bool);
 template void SquareMat<double>::solve<int32_t>(Mat<double>&, Handle&, Singleton<int32_t>&, SimpleArray<double>&, SimpleArray<int32_t>&, bool);
 
-template void SquareMat<float>::inverse<int32_t>(SquareMat<float>&, SimpleArray<int32_t>&, Handle&, Singleton<int32_t>&, SimpleArray<float>&, bool);
-template void SquareMat<double>::inverse<int32_t>(SquareMat<double>&, SimpleArray<int32_t>&, Handle&, Singleton<int32_t>&, SimpleArray<double>&, bool);
+template void SquareMat<float>::inverse<int32_t>(SquareMat<float>&, SimpleArray<int32_t>&, Handle&, Singleton<int32_t>, SimpleArray<float>&, bool);
+template void SquareMat<double>::inverse<int32_t>(SquareMat<double>&, SimpleArray<int32_t>&, Handle&, Singleton<int32_t>, SimpleArray<double>&, bool);
 
 // ============================================================================
 // --- 64-bit Integer Instantiations ---
@@ -385,8 +385,8 @@ template void SquareMat<double>::solveLUDecomposed<int64_t>(Mat<double>&, Vec<in
 template void SquareMat<float>::solve<int64_t>(Mat<float>&, Handle&, Singleton<int32_t>&, SimpleArray<float>&, SimpleArray<int64_t>&, bool);
 template void SquareMat<double>::solve<int64_t>(Mat<double>&, Handle&, Singleton<int32_t>&, SimpleArray<double>&, SimpleArray<int64_t>&, bool);
 
-template void SquareMat<float>::inverse<int64_t>(SquareMat<float>&, SimpleArray<int64_t>&, Handle&, Singleton<int32_t>&, SimpleArray<float>&, bool);
-template void SquareMat<double>::inverse<int64_t>(SquareMat<double>&, SimpleArray<int64_t>&, Handle&, Singleton<int32_t>&, SimpleArray<double>&, bool);
+template void SquareMat<float>::inverse<int64_t>(SquareMat<float>&, SimpleArray<int64_t>&, Handle&, Singleton<int32_t>, SimpleArray<float>&, bool);
+template void SquareMat<double>::inverse<int64_t>(SquareMat<double>&, SimpleArray<int64_t>&, Handle&, Singleton<int32_t>, SimpleArray<double>&, bool);
 // 1. Define the expansion macro
 #define INSTANTIATE_SQUARE_MAT(T) \
 template class SquareMat<T>; \

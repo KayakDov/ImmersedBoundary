@@ -150,7 +150,7 @@ public:
      * @param transpose True to transpose the lhs operator.
      */
     template<class Int>
-    void inverse(SquareMat<T> &result, SimpleArray<Int> &rowSwaps, Handle &handle, Singleton<int32_t> &info, SimpleArray<T> &buffer, bool transpose);
+    void inverse(SquareMat<T> &result, SimpleArray<Int> &rowSwaps, Handle &handle, Singleton<int32_t> info, SimpleArray<T> &buffer, bool transpose);
 
 
     /**

@@ -201,6 +201,8 @@ void expectMatrixNear(const Mat<T>& A, const Mat<T>& B, Handle& hand, T tol = 1e
     A.get(aCpu.data(), hand);
     B.get(bCpu.data(), hand);
 
+    cudaStreamSynchronize(hand);
+
     for (size_t i = 0; i < aCpu.size(); i++)
         ASSERT_NEAR(aCpu[i], bCpu[i], tol) << "Mismatch at (" << i % A._rows << "," << i / A._rows << ")";
 }
@@ -210,7 +212,9 @@ void expectMatrixNear(const Mat<T>& A, const Mat<T>& B, Handle& hand, T tol = 1e
 TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
     using T = double;
 
-    Handle hand;
+    Handle hand3[3];
+    Event event2[2];
+    Handle& hand = hand3[0];
 
     // Nontrivial sizes
     GridDim dim(3, 2, 2);
@@ -228,14 +232,24 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
     Z.set(zCpu.data(), hand);
 
 
-    KroneckerTriplet<T> kt(X, Y, Z);
+    KroneckerTriplet<T> kt(X, Y, Z, {false, false, false});
 
-    Mat<T> implicitResult = kt.product(hand);
+    XYZ<SquareMat<T>> invMats (SquareMat<T>::create(dim.cols), SquareMat<T>::create(dim.rows), SquareMat<T>::create(dim.layers));
+    KroneckerTriplet<T> invKron = kt.generateInverse(hand3, invMats, event2);
 
     auto I = SquareMat<T>::create(dim.size()).setToIdentity(hand);
 
+    auto inverseMultresult = SquareMat<T>::create(dim.size());
+
+    kt.mult(I, inverseMultresult, hand);
+    invKron.mult(inverseMultresult, I, hand);
+    inverseMultresult.setToIdentity(hand);
+    expectMatrixNear(inverseMultresult, I, hand);
+
+    Mat<T> implicitResult = kt.product(hand);
+
     Mat<T> explicitResult = Mat<T>::create(dim.size(), dim.size());
-    kt.mult(I, explicitResult, false, hand);
+    kt.mult(I, explicitResult, hand);
 
     expectMatrixNear(explicitResult, implicitResult, hand);
 }
@@ -251,78 +265,69 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
  * @param errorMsg Anthing that should be appended to an error message.
  * @param tol The tolerance.
  */
+/**
+ * Examines eigen vectors and values, confirming L V = V Lambda for all systems.
+ * For uniform spacing, additionally confirms orthonormality (V^T V = I).
+ */
 template<typename T>
-static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, std::string errorMsg, T tol = 1e-6){
-    auto normGpu= Singleton<T>::create(hand);
+static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, const std::string& errorMsg, bool uniformDelta, T tol = 1e-8) {
 
-    // std::cout << "ceckEigens L = \n" << GpuOut<T>(L, hand) << std::endl;
-    // std::cout << "ceckEigens V = \n" << GpuOut<T>(V, hand) << std::endl;
-    // std::cout << "ceckEigens lambda = " << GpuOut<T>(lambda, hand) << std::endl;
+    std::cout << "checkEigens L = \n" << GpuOut<T>(L, hand) << std::endl << "V = \n" << GpuOut<T>(V, hand) << std::endl << "lambda = " << GpuOut<T>(lambda, hand) << std::endl;
 
-    for (size_t i = 0; i < lambda.size(); ++i) {
-        Vec<T> vi = V.col(i);
+    // ---------------------------------------------------------
+    // UNIVERSAL CHECK: L * V = V * Lambda
+    // ---------------------------------------------------------
+    auto LV = SquareMat<T>::create(V._rows);
+    L.mult(V, &LV, &hand, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), false, false);
 
-        vi.norm(normGpu, hand);
-        T err = normGpu.get(hand) - 1;
-        ASSERT_LT(err, tol)
-            << errorMsg << "\nEigen Vector is not orthogonal, col " << i << " has a norm not equal to 1 "
-            << " residual = " << err << "\n" << errorMsg << "\ncol = " << GpuOut<T>(vi, hand) << std::endl <<
-                "with eigen val = " << GpuOut<T>(lambda.get(i), hand);
-
-        Vec Lvi = SimpleArray<T>::create(L._rows, hand);
-        L.mult(vi, Lvi, &hand, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), false);
-
-
-        Vec<T> lam_vi = SimpleArray<T>::create(L._rows, hand);
-        lam_vi.set(vi, hand);
-        lam_vi.mult(lambda[i], &hand);
-
-        Lvi.add(lam_vi, &GPUScalar<T>::get(-1), &hand);
-
-        Lvi.norm(normGpu, hand);
-
-        err = normGpu.get(hand);
-
-        ASSERT_LT(std::abs(err), tol)
-            << errorMsg << "\nEigenpair failed at index " << i
-            << " residual = " << err;
-    }
-
-    for (size_t i = 0; i < V._cols; ++i)
-        for (size_t j = i + 1; j < V._cols; ++j) {
-            V.col(i).mult(V.col(j), normGpu, &hand);
-            T err = normGpu.get(hand);
-            ASSERT_LT(std::abs(err), tol)
-            << errorMsg << "\nEigenpair failed at index " << i
-            << " residual = " << err;
-        }
-
-
-    auto LambdaVT = SquareMat<T>::create(V._cols);
-    auto VLambdaVT = SquareMat<T>::create(V._cols);
+    auto VLambda = SquareMat<T>::create(V._rows);
     auto Lambda = SquareMat<T>::create(V._cols);
     Lambda.fill(0, hand);
     Lambda.diag(0).set(lambda, hand);
-    Lambda.mult(V, &LambdaVT, &hand, false, true);
-    V.mult(LambdaVT, &VLambdaVT, &hand, false, false);
+    V.mult(Lambda, &VLambda, &hand, false, false);
 
-    auto diff =  SquareMat<T>::create(V._cols);
-    diff.set(L, hand);
-    diff.add(VLambdaVT, diff, GPUScalar<T>::get(1), GPUScalar<T>::get(-1), false, false, hand);
+    // Calculate Residual: LV - VLambda
+    auto diff = SquareMat<T>::create(V._rows);
+    diff.set(LV, hand);
+    diff.add(VLambda, diff, GPUScalar<T>::get(1), GPUScalar<T>::get(-1), false, false, hand);
 
     std::vector<T> diffHost(diff.size(), 0);
     diff.get(diffHost.data(), hand);
+    cudaStreamSynchronize(hand);
+
     for (size_t i = 0; i < diffHost.size(); ++i) {
-        T val = diffHost[i];
-        ASSERT_LT(std::abs(val), tol)
-            << "failed at index " << i
+        ASSERT_NEAR(diffHost[i], 0, tol)
+            << errorMsg << "\nUniversal Eigenpair Check Failed (L * V != V * Lambda) at flat index " << i
             << " (row " << i % V._cols << ", col " << i / V._cols << ")"
-            << " with diff: " << val
-            << " (tol: " << tol << ")";
+            << " residual = " << diffHost[i];
     }
 
-}
+    // ---------------------------------------------------------
+    // UNIFORM-ONLY CHECK: Orthonormality (V^T * V = I)
+    // ---------------------------------------------------------
+    if (uniformDelta) {
+        auto VTV = SquareMat<T>::create(V._cols);
+        // V^T * V
+        V.mult(V, &VTV, &hand, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), true, false);
 
+        auto I = SquareMat<T>::create(V._cols).setToIdentity(hand);
+
+        auto orthoDiff = SquareMat<T>::create(V._cols);
+        orthoDiff.set(VTV, hand);
+        orthoDiff.add(I, orthoDiff, GPUScalar<T>::get(1), GPUScalar<T>::get(-1), false, false, hand);
+
+        std::vector<T> orthoHost(orthoDiff.size(), 0);
+        orthoDiff.get(orthoHost.data(), hand);
+        cudaStreamSynchronize(hand);
+
+        for (size_t i = 0; i < orthoHost.size(); ++i) {
+            ASSERT_NEAR(orthoHost[i], 0, tol)
+                << errorMsg << "\nUniform Basis is not orthonormal (V^T * V != I) at flat index " << i
+                << " (row " << i % V._cols << ", col " << i / V._cols << ")"
+                << " residual = " << orthoHost[i];
+        }
+    }
+}
 
 /**
  * Verifies the numerical identity of the EigenDecomposition solver.
@@ -497,24 +502,58 @@ void boundaryBattery(
        << " endVal = " << endVal
        << " dim = " << dim;
 
+    
     std::string locMsg = ss.str();
 
     // Use the factory to deduce segment types at runtime and execute the tests
-    buildBoundaryConfigAndLaunch<Real>(
-        dim, deltas, startIsN, endIsN, startVal, endVal, isStag, 0 /* default stream */,
-        [&](const auto& boundary) {
+    buildBoundaryConfigAndLaunch<Real>(dim, deltas, startIsN, endIsN, startVal, endVal, isStag, 0, [&](const auto& boundary) {
 
-            Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
-            Eigen<Real> laplacianEigen = Eigen<Real>::make(boundary, hand3, event2);
+        // Deduce uniformity at compile time
+        using Config = std::decay_t<decltype(boundary)>;
+        constexpr bool isXUniform = std::is_same_v<decltype(boundary.x), UniformSegment<Real>>;
+        constexpr bool isYUniform = std::is_same_v<decltype(boundary.y), UniformSegment<Real>>;
+        constexpr bool isZUniform = std::is_same_v<decltype(boundary.z), UniformSegment<Real>>;
 
-            for (size_t i = 0; i < dim.numDims(); ++i)
-                checkEigens(laplacian1d.dense(i, hand3[i]), laplacianEigen.vecs[i], laplacianEigen.vals[i], hand3[i], locMsg);
+        // Unconditionally instantiate the operators
+        Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
+        Eigen<Real> laplacianEigen = Eigen<Real>::make(boundary, hand3, event2);
 
-            //TODO: uncomment these.
-            // verifyEigenSolverIdentity(dim, boundary, hand3, event2, tolerance);
-            // verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
+        // 1. Check X
+        checkEigens(
+            laplacian1d.dense(0, hand3[0]),
+            laplacianEigen.vecs.x,
+            laplacianEigen.vals.x,
+            hand3[0],
+            locMsg,
+            isXUniform // Test orthonormality only if true
+        );
+
+        // 2. Check Y
+        checkEigens(
+            laplacian1d.dense(1, hand3[1]),
+            laplacianEigen.vecs.y,
+            laplacianEigen.vals.y,
+            hand3[1],
+            locMsg,
+            isYUniform
+        );
+
+        // 3. Check Z (if 3D)
+        if (dim.numDims() == 3) {
+            checkEigens(
+                laplacian1d.dense(2, hand3[2]),
+                laplacianEigen.vecs.z,
+                laplacianEigen.vals.z,
+                hand3[2],
+                locMsg,
+                isZUniform
+            );
         }
-    );
+
+        // 4. Always run shared verification tests
+        verifyEigenSolverIdentity(dim, boundary, hand3, event2, tolerance);
+        verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
+    });
 }
 
 template <typename Real>
@@ -558,35 +597,35 @@ TEST(LaplacianMath, laplacian) {
     size_t n = maxDim * maxDim * maxDim;
     auto buffer = Mat<Real>::create(n, n + 5);
 
-     // for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
-     //     for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
-     //         for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
-     //             for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
-     //                 for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
-     //                     for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
-     //                         for (size_t isStag = 0; isStag < 2; ++isStag)
-     //                             for (size_t x0Val = 0; x0Val < 2; ++x0Val)
-     //                                 for (size_t x1Val = 0; x1Val < 2; ++x1Val)
-     //                                     for (size_t y0Val = 0; y0Val < 2; ++y0Val)
-     //                                         for (size_t y1Val = 0; y1Val < 2; ++y1Val)
-     //                                             for (size_t z0Val = 0; z0Val < 2; ++z0Val)
-     //                                                 for (size_t z1Val = 0; z1Val < 2; ++z1Val)
-     //                                                     for (size_t rows = startRowsCols; rows < maxDim; rows+= dimStepSize)
-     //                                                         for (size_t cols = startRowsCols; cols < maxDim; cols += dimStepSize)
-     //                                                             for (size_t layers = 1; layers < maxDim; layers += dimStepSize) {
-                                                                     // GridDim dim(rows, cols, layers);
-                                                                     // XYZ<bool> startIsN(x0IsN, y0IsN, z0IsN);
-                                                                     // XYZ<bool> endIsN(x1IsN, y1IsN, z1IsN);
-                                                                     // XYZ<Real> startVal(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val));
-                                                                     // XYZ<Real> endVal(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val));
-                                                                     // bool isStagered = isStag;
+     for (size_t x0IsN = 0; x0IsN < 2; ++x0IsN)
+         for (size_t x1IsN = 0; x1IsN < 2; ++x1IsN)
+             for (size_t y0IsN = 0; y0IsN < 2; ++y0IsN)
+                 for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
+                     for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
+                         for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
+                             for (size_t isStag = 0; isStag < 2; ++isStag)
+                                 for (size_t x0Val = 0; x0Val < 2; ++x0Val)
+                                     for (size_t x1Val = 0; x1Val < 2; ++x1Val)
+                                         for (size_t y0Val = 0; y0Val < 2; ++y0Val)
+                                             for (size_t y1Val = 0; y1Val < 2; ++y1Val)
+                                                 for (size_t z0Val = 0; z0Val < 2; ++z0Val)
+                                                     for (size_t z1Val = 0; z1Val < 2; ++z1Val)
+                                                         for (size_t rows = startRowsCols; rows < maxDim; rows+= dimStepSize)
+                                                             for (size_t cols = startRowsCols; cols < maxDim; cols += dimStepSize)
+                                                                 for (size_t layers = 1; layers < maxDim; layers += dimStepSize) {
+                                                                     GridDim dim(rows, cols, layers);
+                                                                     XYZ<bool> startIsN(x0IsN, y0IsN, z0IsN);
+                                                                     XYZ<bool> endIsN(x1IsN, y1IsN, z1IsN);
+                                                                     XYZ<Real> startVal(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val));
+                                                                     XYZ<Real> endVal(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val));
+                                                                     bool isStagered = isStag;
 
-                                                                     GridDim dim(2, 2, 2);
-                                                                     XYZ<bool> startIsN(0, 0, 0);
-                                                                     XYZ<bool> endIsN(0, 0, 0);
-                                                                     XYZ<Real> startVal(0, 0, 0);
-                                                                     XYZ<Real> endVal(0, 0, 0);
-                                                                     bool isStagered = 0;
+                                                                     // GridDim dim(2, 2, 2);
+                                                                     // XYZ<bool> startIsN(0, 0, 0);
+                                                                     // XYZ<bool> endIsN(0, 0, 0);
+                                                                     // XYZ<Real> startVal(0, 0, 0);
+                                                                     // XYZ<Real> endVal(0, 0, 0);
+                                                                     // bool isStagered = 0;
 
                                                                      // Determine spacing type and generate deterministic seed
                                                                      bool testVariableSpacing = ((dim.rows + dim.cols + dim.layers + startIsN.x + isStagered) % 2 == 0);
@@ -606,7 +645,7 @@ TEST(LaplacianMath, laplacian) {
                                                                          hand3, event2, tolerance,
                                                                          buffer.subMat(0, 0, dim.size(), dim.size() + 5)
                                                                      );
-                                                                 // }
+                                                                 }
 }
 
 

@@ -13,10 +13,13 @@
 
 template<typename T>
     class Eigen {
-    Eigen(const XYZ<Vec<T>>& vals, const XYZ<SquareMat<T>>& vecs);
+    Eigen(const XYZ<Vec<T>> &vals, const KroneckerTriplet<T> &vecs, const KroneckerTriplet<T> &vecsInv);
 
     template<typename BoundaryConfigT>
     static void generateEigen(const BoundaryConfigT& boundary, Handle *hands3, Event *events, std::shared_ptr<Mat<T>> (&preAllocatedForL_iX3)[3]);
+
+
+
 public:
     /**
      * The eigen values, aka the spectrum.
@@ -26,17 +29,18 @@ public:
      * The eigen vectors.
      */
     const KroneckerTriplet<T> vecs;
+    const KroneckerTriplet<T> vecsInv;
 
     /**
      * Generates the eigenvector matrices.
      * @param boundary The boundary conditions.
      * @param hands3 A handle for each dimension.
-     * @param events an event for each dimension - 1
+     * @param events2 an event for each dimension - 1
      * @param hands3
      * @return The Laplacian's Eigen vector matrices.
      */
     template<typename BoundaryConfigT>
-    static Eigen make(const BoundaryConfigT &boundary, Handle *hands3, Event *events);
+    static Eigen make(const BoundaryConfigT &boundary, Handle *hands3, Event *events2);
 
     [[nodiscard]] GridDim dim() const;
 
