@@ -5,6 +5,11 @@
 #include <stdexcept>
 #include <iostream>
 #include <iomanip>
+#include "deviceArrays/headers/Mat.h"
+#include "deviceArrays/headers/GpuArray.h"
+#include "deviceArrays/headers/SimpleArray.h"
+#include "deviceArrays/headers/Vec.h"
+
 
 // ----------------------------------------------------------------------
 // GpuArrayReader Constructors

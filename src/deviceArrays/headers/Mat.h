@@ -2,8 +2,10 @@
 #ifndef BICGSTAB_MAT_H
 #define BICGSTAB_MAT_H
 
-#include "Singleton.h"
-
+#include "deviceArrays/headers/GpuArray.h"
+#include <memory>
+#include <cuda_runtime.h>
+#include <cusparse.h>
 
 template<typename T>
 void eigenDecompSolver(const T* frontBack, size_t fbLd,

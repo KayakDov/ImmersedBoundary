@@ -4,6 +4,7 @@
 
 #include "../../headers/sparse/SparseCSR.h"
 # include <string>
+#include "deviceArrays/headers/SimpleArray.h"
 
 template<typename Real, typename Int>
 void SparseCSR<Real, Int>::setDescriptor() {

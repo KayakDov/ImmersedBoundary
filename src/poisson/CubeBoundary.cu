@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "../deviceArrays/headers/Support/Streamable.h"
+#include "deviceArrays/headers/SimpleArray.h"
 
 template<typename T>
 CubeBoundary<T>::CubeBoundary(Mat<T>& frontBack_, Mat<T>& leftRight_, Mat<T>& topBottom_)

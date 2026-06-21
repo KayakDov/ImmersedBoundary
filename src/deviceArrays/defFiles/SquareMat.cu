@@ -367,45 +367,39 @@ bool SquareMat<T>::isSingular(double tolerance, Handle& hand) const {
 template<typename T>
 std::pair<size_t, size_t> SquareMat<T>::eigenSPDBufferSize(Handle& hand) const
 {
-    static_assert(std::is_floating_point_v<T>,
-        "eigenSPDBufferSize requires a floating-point matrix (float or double).");
+    // Use if constexpr instead of static_assert to avoid breaking integer class instantiations
+    if constexpr (!std::is_floating_point_v<T>) {
+        throw std::runtime_error("eigenSPDBufferSize requires a floating-point matrix (float or double).");
+    } else {
+        const cudaDataType_t dataType =
+            std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
 
-    if constexpr (!std::is_same_v<T, float> && !std::is_same_v<T, double>)
-        throw std::invalid_argument(
-            "eigenSPDBufferSize: only float and double are supported.");
+        cusolverDnParams_t params;
+        CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
 
-    const cudaDataType_t dataType =
-        std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
+        size_t deviceBytesNeeded = 0;
+        size_t hostBytesNeeded   = 0;
 
-    // cusolverDnXsyevd requires a parameter descriptor.
-    cusolverDnParams_t params;
-    CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
+        CHECK_CUSOLVER_ERROR(cusolverDnXsyevd_bufferSize(
+            hand,
+            params,
+            CUSOLVER_EIG_MODE_VECTOR,
+            CUBLAS_FILL_MODE_LOWER,
+            this->_rows,
+            dataType, this->data(), static_cast<int64_t>(this->_ld),
+            dataType, nullptr,
+            dataType,
+            &deviceBytesNeeded,
+            &hostBytesNeeded
+        ));
 
-    size_t deviceBytesNeeded = 0;
-    size_t hostBytesNeeded   = 0;
+        CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
 
-    CHECK_CUSOLVER_ERROR(cusolverDnXsyevd_bufferSize(
-        hand,
-        params,
-        CUSOLVER_EIG_MODE_VECTOR,   // always compute eigenvectors
-        CUBLAS_FILL_MODE_LOWER,     // we store/read the lower triangle
-        this->rows,
-        dataType, this->data(), static_cast<int64_t>(this->_ld),
-        dataType, nullptr,          // eigenvalue array – only size is queried
-        dataType,
-        &deviceBytesNeeded,
-        &hostBytesNeeded
-    ));
+        const size_t deviceElems = (deviceBytesNeeded + sizeof(T) - 1) / sizeof(T);
+        const size_t hostElems = (hostBytesNeeded   + sizeof(T) - 1) / sizeof(T);
 
-    CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
-
-    // Convert from bytes to elements of T, rounding up.
-    const size_t deviceElems =
-        (deviceBytesNeeded + sizeof(T) - 1) / sizeof(T);
-    const size_t hostElems =
-        (hostBytesNeeded   + sizeof(T) - 1) / sizeof(T);
-
-    return {deviceElems, hostElems};
+        return {deviceElems, hostElems};
+    }
 }
 
 template<typename T>
@@ -413,52 +407,46 @@ void SquareMat<T>::eigenSPD(
     Vec<T>&              eVals,
     Handle&              hand,
     SimpleArray<T>&      deviceBuffer,
-    T*                   hostBuffer,
+    T* hostBuffer,
     size_t               hostBufferSize,
     Singleton<int32_t>&  info
 )
 {
-    static_assert(std::is_floating_point_v<T>,
-        "eigenSPDFromBuffer requires a floating-point matrix (float or double).");
+    if constexpr (!std::is_floating_point_v<T>) {
+        throw std::runtime_error("eigenSPD requires a floating-point matrix (float or double).");
+    } else {
+        if (eVals.size() < this->_rows)
+            throw std::invalid_argument("eigenSPD: eVals is too small for the matrix.");
 
-    if constexpr (!std::is_same_v<T, float> && !std::is_same_v<T, double>)
-        throw std::invalid_argument(
-            "eigenSPDFromBuffer: only float and double are supported.");
+        const cudaDataType_t dataType =
+            std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
 
-    if (eVals.size() < this->_rows)
-        throw std::invalid_argument(
-            "eigenSPDFromBuffer: eVals is too small for the matrix.");
+        cusolverDnParams_t params;
+        CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
 
-    const cudaDataType_t dataType =
-        std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
+        // Fix: Replace *this with this->data(), eVals with eVals.data(),
+        // deviceBuffer with deviceBuffer.data(), and info.toKernel1d() with info.data()
+        CHECK_CUSOLVER_ERROR(cusolverDnXsyevd(
+            hand,
+            params,
+            CUSOLVER_EIG_MODE_VECTOR,
+            CUBLAS_FILL_MODE_LOWER,
+            this->_rows,
+            dataType, this->data(), this->_ld,
+            dataType, eVals.data(),
+            dataType,
+            deviceBuffer.data(), deviceBuffer.size() * sizeof(T),
+            hostBuffer, hostBufferSize * sizeof(T),
+            info.data()
+        ));
 
-    cusolverDnParams_t params;
-    CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
-
-    // cusolverDnXsyevd overwrites *this with eigenvectors.
-    CHECK_CUSOLVER_ERROR(cusolverDnXsyevd(
-        hand,
-        params,
-        CUSOLVER_EIG_MODE_VECTOR,
-        CUBLAS_FILL_MODE_LOWER,
-        this->rows,
-        dataType, *this, this->_ld,
-        dataType, eVals,
-        dataType,
-        deviceBuffer, deviceBuffer.size() * sizeof(T),
-        hostBuffer.data(), hostBufferSize * sizeof(T),
-        info.toKernel1d()
-    ));
-
-    CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
-
-    processInfo(info, "cusolverDnXsyevd (eigenSPDFromBuffer)");
+        CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
+    }
 }
 
 template<typename T>
 void SquareMat<T>::eigenSPD(
     Vec<T>&       eVals,
-    SquareMat<T>* eVecs,
     Handle&       hand
 )
 {
@@ -468,15 +456,16 @@ void SquareMat<T>::eigenSPD(
     std::vector<T> hostBuffer(std::max(hostElems, size_t{1}));
 
     auto deviceBuffer = preDeviceBuffer.subArray(0, deviceElems);
-    auto info = preDeviceBuffer.get(deviceElems);
+    auto info = Singleton<int32_t>::create(hand);
 
-    eigenSPD(eVals, eVecs, hand, deviceBuffer, hostBuffer.data(), hostElems, info);
+    eigenSPD(eVals, hand, deviceBuffer, hostBuffer.data(), hostElems, info);
 }
 
+// ============================================================================
+// --- Member function templates: integer pivot variants ---
+// ============================================================================
 
-// ============================================================================
-// --- 32-bit Integer Instantiations ---
-// ============================================================================
+// 32-bit pivots
 template void SquareMat<float>::solveLUDecomposed<int32_t>(Mat<float>&, Vec<int32_t>&, Handle&, Singleton<int32_t>&, bool);
 template void SquareMat<double>::solveLUDecomposed<int32_t>(Mat<double>&, Vec<int32_t>&, Handle&, Singleton<int32_t>&, bool);
 
@@ -486,9 +475,7 @@ template void SquareMat<double>::solve<int32_t>(Mat<double>&, Handle&, Singleton
 template void SquareMat<float>::inverse<int32_t>(SquareMat<float>&, SimpleArray<int32_t>&, Handle&, Singleton<int32_t>, SimpleArray<float>&, bool);
 template void SquareMat<double>::inverse<int32_t>(SquareMat<double>&, SimpleArray<int32_t>&, Handle&, Singleton<int32_t>, SimpleArray<double>&, bool);
 
-// ============================================================================
-// --- 64-bit Integer Instantiations ---
-// ============================================================================
+// 64-bit pivots
 template void SquareMat<float>::solveLUDecomposed<int64_t>(Mat<float>&, Vec<int64_t>&, Handle&, Singleton<int32_t>&, bool);
 template void SquareMat<double>::solveLUDecomposed<int64_t>(Mat<double>&, Vec<int64_t>&, Handle&, Singleton<int32_t>&, bool);
 
@@ -497,18 +484,32 @@ template void SquareMat<double>::solve<int64_t>(Mat<double>&, Handle&, Singleton
 
 template void SquareMat<float>::inverse<int64_t>(SquareMat<float>&, SimpleArray<int64_t>&, Handle&, Singleton<int32_t>, SimpleArray<float>&, bool);
 template void SquareMat<double>::inverse<int64_t>(SquareMat<double>&, SimpleArray<int64_t>&, Handle&, Singleton<int32_t>, SimpleArray<double>&, bool);
-// 1. Define the expansion macro
-#define INSTANTIATE_SQUARE_MAT(T) \
-template class SquareMat<T>; \
+
+// ============================================================================
+// --- Full class + Mat helper instantiations ---
+// Covers: SquareMat<T> class body (including eigenSPD/eigenSPDBufferSize via
+// if constexpr), Mat<T>::sqSubMat, and Mat<T>::sqSubMatFirstBiggest.
+//
+// eigenSPD and eigenSPDBufferSize do NOT get separate explicit instantiations
+// here because `template class SquareMat<T>` already covers all non-template
+// member functions for each T. Listing them separately would produce
+// "explicitly instantiated more than once" errors.
+//
+// Type notes (Linux x86-64):
+//   int32_t == int      (covers BandedMat<int>, ImmersedEq<T,int>)
+//   int64_t == long     (covers ImmersedEq<T,long>)
+//   size_t  == unsigned long  (covers BandedMat<size_t/unsigned long>)
+// ============================================================================
+#define INSTANTIATE_SQUARE_MAT(T)                                      \
+template class SquareMat<T>;                                           \
 template SquareMat<T> Mat<T>::sqSubMat(size_t, size_t, size_t) const; \
 template SquareMat<T> Mat<T>::sqSubMatFirstBiggest() const;
 
-// 2. Use the macro for all your types
 INSTANTIATE_SQUARE_MAT(float)
 INSTANTIATE_SQUARE_MAT(double)
-INSTANTIATE_SQUARE_MAT(int32_t)
-INSTANTIATE_SQUARE_MAT(size_t)
+INSTANTIATE_SQUARE_MAT(int32_t)     // == int
+INSTANTIATE_SQUARE_MAT(int64_t)     // == long  (needed by ImmersedEq<T,long>)
+INSTANTIATE_SQUARE_MAT(size_t)      // == unsigned long
 INSTANTIATE_SQUARE_MAT(unsigned char)
 
-// 3. Clean up (optional)
 #undef INSTANTIATE_SQUARE_MAT

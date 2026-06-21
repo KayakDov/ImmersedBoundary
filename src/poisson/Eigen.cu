@@ -255,7 +255,7 @@ __global__ void setSymetricMatrix(
     const VariableSegment<T> axisSegment
 ) {
     GridInd2d ind;
-    if (ind >= primaryDiag) return;
+    if (ind >= mat) return;
 
     mat[ind] = 0;
 
@@ -265,8 +265,8 @@ __global__ void setSymetricMatrix(
     auto d = sqrt(axisSegment.delta[i] + axisSegment.delta[i + 1]);
 
     auto& main = primaryDiag[i];
-    auto& left = primaryDiag[i - 1];
-    auto& right = primaryDiag[i];
+    auto& left = subDiag[i - 1];
+    auto& right = superDiag[i];
 
     if (i == 0) {
         axisSegment.start.setL(main, right);
@@ -312,12 +312,20 @@ void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eV
 
     KernelPrep kp = eVecs.kernelPrep();
     setSymetricMatrix<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        eVecs, eVecs.diag(0), eVecs.diag(-1), eVecs.diag(1), axisSegment
+        eVecs.toKernel2d(),
+        eVecs.diag(0).toKernel1d(),
+        eVecs.diag(-1).toKernel1d(),
+        eVecs.diag(1).toKernel1d(),
+        axisSegment
     );
 
     eVecs.eigenSPD(eVals, hand);
 
-    mapEigenSymmToEigenLap<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(eVecs, eVecsInv, axisSegment);
+    mapEigenSymmToEigenLap<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+        eVecs.toKernel2d(),
+        eVecsInv.toKernel2d(),
+        axisSegment
+    );
     eVals.mult(GPUScalar<T>::get(-1), &hand);
 }
 
@@ -430,8 +438,9 @@ Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* 
     );
 
     KroneckerTriplet<T> kt(vecs, {false, false, false});
+    KroneckerTriplet<T> ktInv(vecsInv, {orthoX, orthoY, orthoZ});
 
-    return Eigen<T>(vals, kt, kt.generateInverse(hands3, vecsInv, events2));
+    return Eigen<T>(vals, kt, ktInv);
 }
 
 template<typename T>

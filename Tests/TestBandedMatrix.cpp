@@ -3,11 +3,11 @@
 #include <vector>
 #include <cmath>
 
-// Framework Headers (Adjust paths based on your project structure)
-#include "headers/sparse/BandedMat.h"
-#include "headers/Mat.h"
-#include "headers/Vec.h"
-#include "headers/Singleton.h"
+// Framework Headers
+#include "deviceArrays/headers/sparse/BandedMat.h"
+#include "deviceArrays/headers/Mat.h"
+#include "deviceArrays/headers/Vec.h"
+#include "deviceArrays/headers/Singleton.h"
 
 template <typename T>
 class BandedMatWrappersTest : public ::testing::Test {
@@ -154,8 +154,9 @@ TYPED_TEST(BandedMatWrappersTest, VectorBandedMatrixProduct) {
     // [1, 2, 3] * A = [ (1*2 + 2*3), (1*1 + 2*4 + 3*6), (2*5 + 3*7) ] = [8, 27, 31]
     std::vector<T> expected = {8.0, 27.0, 31.0};
 
+    Handle hand;
     // Invoke wrapper from Vec class
-    x.productVecBanded(A, y, &(this->handle), &alpha, &beta);
+    x.mult(A, y, hand, alpha, beta);
     cudaDeviceSynchronize();
 
     std::vector<T> actual(this->N);
@@ -192,8 +193,9 @@ TYPED_TEST(BandedMatWrappersTest, DenseMatrixBandedMatrixProduct) {
     // Stored Column-Major: [Row0_Col0, Row1_Col0, Row0_Col1, Row1_Col1, Row0_Col2, Row1_Col2]
     std::vector<T> expected = {8.0, 23.0, 27.0, 60.0, 31.0, 67.0};
 
+    Handle hand;
     // Invoke wrapper from Mat class
-    X.productMatBanded(A, Y, &(this->handle), &alpha, &beta);
+    X.mult(A, Y, hand, alpha, beta);
     cudaDeviceSynchronize();
 
     std::vector<T> actual(R * this->N);

@@ -1,4 +1,8 @@
 #include "../headers/Tensor.h"
+#include "../headers/Vec.h"
+#include "../headers/SimpleArray.h"
+#include "../headers/Singleton.h"
+
 
 template<typename T>
 Tensor<T>::Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::shared_ptr<T> _ptr) :

@@ -288,17 +288,13 @@ public:
      * @param eVals  Output vector of length @c n.  Receives eigenvalues in
      *               ascending order.  Must be pre-allocated to at least @c n
      *               elements.
-     * @param eVecs  Optional output matrix.  If non-null, receives a copy of the
-     *               eigenvector matrix after the computation; @p *this still holds
-     *               the eigenvectors (it is overwritten in-place by cuSOLVER).
-     *               Pass @c nullptr to skip the copy.
      * @param hand   Active cuSOLVER handle.
      *
      * @throws std::invalid_argument  If @p eVals is too small, or @c T is
      *                                unsupported.
      * @throws std::runtime_error     On cuSOLVER failure.
      */
-    void eigenSPD(Vec<T> &eVals, SquareMat<T> *eVecs, Handle &hand);
+    void eigenSPD(Vec<T> &eVals, Handle &hand);
 
     /**
      * Checks if the matrix is singular by looking at the eigen values.  Will destory this matrix.

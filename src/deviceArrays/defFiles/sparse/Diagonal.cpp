@@ -4,6 +4,8 @@
 
 #include "../../headers/sparse/Diagonal.h"
 #include "deviceArrays/headers/Support/Streamable.h"
+#include "deviceArrays/headers/sparse/BandedMat.h"
+#include "deviceArrays/headers/Singleton.h"
 
 
 template<typename T>

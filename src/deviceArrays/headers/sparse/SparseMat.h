@@ -4,7 +4,10 @@
 #include <cusparse.h>
 #include <memory>
 
-#include "deviceArrays/headers/Mat.h"
+template<typename T> class SimpleArray;
+template<typename T> class Mat;
+template<typename T> class Singleton;
+class Handle;
 
 using SpMatDescrPtr = std::shared_ptr<std::remove_pointer<cusparseSpMatDescr_t>::type>;
 

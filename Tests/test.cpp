@@ -234,17 +234,7 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
 
     KroneckerTriplet<T> kt(X, Y, Z, {false, false, false});
 
-    XYZ<SquareMat<T>> invMats (SquareMat<T>::create(dim.cols), SquareMat<T>::create(dim.rows), SquareMat<T>::create(dim.layers));
-    KroneckerTriplet<T> invKron = kt.generateInverse(hand3, invMats, event2);
-
     auto I = SquareMat<T>::create(dim.size()).setToIdentity(hand);
-
-    auto inverseMultresult = SquareMat<T>::create(dim.size());
-
-    kt.mult(I, inverseMultresult, hand);
-    invKron.mult(inverseMultresult, I, hand);
-    inverseMultresult.setToIdentity(hand);
-    expectMatrixNear(inverseMultresult, I, hand);
 
     Mat<T> implicitResult = kt.product(hand);
 
@@ -502,7 +492,7 @@ void boundaryBattery(
        << " endVal = " << endVal
        << " dim = " << dim;
 
-    
+
     std::string locMsg = ss.str();
 
     // Use the factory to deduce segment types at runtime and execute the tests

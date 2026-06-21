@@ -6,7 +6,10 @@
 #define BICGSTAB_BANDEDMAT_H
 
 #include "deviceArrays/headers/Mat.h"
+#include "deviceArrays/headers/Singleton.h"
 
+
+template <typename T> class Vec;
 /**
  * @brief Represents a square matrix stored in banded (diagonal) format.
  *

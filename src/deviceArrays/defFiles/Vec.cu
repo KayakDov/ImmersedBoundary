@@ -7,6 +7,8 @@
 
 #include "deviceArrays/headers/deviceArraySupport.h"
 #include "deviceArrays/headers/Mat.h"
+#include "deviceArrays/headers/sparse/BandedMat.h"
+#include "deviceArrays/headers/sparse/BandedKernels.cuh"
 
 
 template<typename T>
@@ -439,15 +441,12 @@ Vec<T> GpuArray<T>::row(const size_t index) const{
 template<typename T>
 Vec<T> GpuArray<T>::diag(int32_t index) {
 
-    if (index >= 0) {
-        if (index >= this-> _cols) throw std::out_of_range("Out of range");
-        const size_t size = std::min(this->_rows, this->_cols - index);
-        return this->vec(index * this->_ld, this->_ld + 1, size);
-    } else {
-        if (-index >= this->_rows) throw std::out_of_range("Out of range.");
-        const size_t size = std::min(this->_cols, this->_rows + index);
-        return this->vec(-index, this->_ld + 1, size);
-    }
+    const size_t size = std::min(this->_rows, this->_cols - std::abs(index));
+    size_t ld = this->_ld + 1;
+
+    if (index >= 0) return this->vec(index * this->_ld, ld, size);
+
+    return this->vec(-index, ld, size);
 }
 template<typename T>
 Vec<T> GpuArray<T>::diag(int32_t index) const {
@@ -596,8 +595,8 @@ void Vec<T>::mult(
         banded.toKernel2d(),
         banded._indices.toKernel1d(),
         result.toKernel1d(),
-        alpha,
-        beta
+        alpha.data(),
+        beta.data()
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());

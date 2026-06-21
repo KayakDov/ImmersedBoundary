@@ -1,4 +1,5 @@
 #include "KroneckerTriplet.h"
+#include "deviceArrays/headers/Singleton.h"
 
 #include <filesystem>
 

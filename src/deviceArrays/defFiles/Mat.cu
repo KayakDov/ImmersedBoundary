@@ -7,8 +7,9 @@
 #include "../headers/Mat.h"
 
 #include "../headers/Support/GridDim.hpp"
-#include "deviceArrays/headers/Support/Streamable.h"
 #include <string>
+#include <deviceArrays/headers/sparse/BandedKernels.cuh>
+#include "deviceArrays/headers/sparse/BandedMat.h"
 
 template <typename T>
 Mat<T> Mat<T>::mult(
@@ -651,8 +652,8 @@ void Mat<T>::mult(
         banded.toKernel2d(),
         banded._indices.toKernel1d(),
         result.toKernel2d(),
-        alpha,
-        beta
+        alpha.data(),
+        beta.data()
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());
