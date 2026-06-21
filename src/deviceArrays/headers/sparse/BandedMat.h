@@ -115,6 +115,9 @@ public:
                     Singleton<T> alpha = GPUScalar<T>::get(1), const Singleton<T> beta = GPUScalar<T>::get(0), bool
                     transpose = false) const;
 
+    void bandedMult(const Mat<T> &other, Mat<T> &result, Handle *handle, Singleton<T> alpha, Singleton<T> beta,
+                    bool transpose) const;
+
 
     /**
      * Creates a matrix with lots of 0s stored off the diagonals of ineterst.

@@ -54,13 +54,14 @@ public:
      * @param stream The CUDA stream to execute the kernel on.
      * @param eVecs  The pre-allocated 2D device array to store the eigenvectors.
      * The dimension $N$ is automatically deduced from `eVecs.cols`.
+     * @param eVecsInv
      * @param eVals Places the eigen values here.
-     * @param axisSegment the axis segment these eigen values are on.
+     * @param seg the axis segment these eigen values are on.
      */
 
-    static void generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const UniformSegment<T>& axisSegment) ;
+    static void generateEigen(Handle &hand, SquareMat<T> &eVecs, SquareMat<T> &eVecsInv, Vec<T> &eVals, const UniformSegment<T> &seg) ;
 
-    static void generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const VariableSegment<T>& axisSegment);
+    static void generateEigen(Handle &hand, SquareMat<T> &eVecs, SquareMat<T> &eVecsInv, Vec<T> &eVals, const VariableSegment<T> &axisSegment);
 
     /**
      * Assigns the eigenvectors and eigen values.

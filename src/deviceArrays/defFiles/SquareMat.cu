@@ -77,7 +77,7 @@ SquareMat<T> SquareMat<T>::empty() {
 }
 
 template <typename T>
-void SquareMat<T>::eigen(
+void SquareMat<T>::eigen(//TODO: This method may not be correctly handaling real and imaginary componenets.
     Vec<T>& eVals,           // Will hold BOTH real (first n) and imaginary (last n) parts
     SquareMat<T>* eVecs,     // Eigenvectors (stored as real/imaginary parts) Set to null if not computed.
     Handle& hand
@@ -361,6 +361,116 @@ bool SquareMat<T>::isSingular(double tolerance, Handle& hand) const {
     this->get(copyMat, hand);
 
     return copyMat.isSingular(tolerance, rowSwaps, info, workSpace, hand);
+}
+
+
+template<typename T>
+std::pair<size_t, size_t> SquareMat<T>::eigenSPDBufferSize(Handle& hand) const
+{
+    static_assert(std::is_floating_point_v<T>,
+        "eigenSPDBufferSize requires a floating-point matrix (float or double).");
+
+    if constexpr (!std::is_same_v<T, float> && !std::is_same_v<T, double>)
+        throw std::invalid_argument(
+            "eigenSPDBufferSize: only float and double are supported.");
+
+    const cudaDataType_t dataType =
+        std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
+
+    // cusolverDnXsyevd requires a parameter descriptor.
+    cusolverDnParams_t params;
+    CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
+
+    size_t deviceBytesNeeded = 0;
+    size_t hostBytesNeeded   = 0;
+
+    CHECK_CUSOLVER_ERROR(cusolverDnXsyevd_bufferSize(
+        hand,
+        params,
+        CUSOLVER_EIG_MODE_VECTOR,   // always compute eigenvectors
+        CUBLAS_FILL_MODE_LOWER,     // we store/read the lower triangle
+        this->rows,
+        dataType, this->data(), static_cast<int64_t>(this->_ld),
+        dataType, nullptr,          // eigenvalue array – only size is queried
+        dataType,
+        &deviceBytesNeeded,
+        &hostBytesNeeded
+    ));
+
+    CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
+
+    // Convert from bytes to elements of T, rounding up.
+    const size_t deviceElems =
+        (deviceBytesNeeded + sizeof(T) - 1) / sizeof(T);
+    const size_t hostElems =
+        (hostBytesNeeded   + sizeof(T) - 1) / sizeof(T);
+
+    return {deviceElems, hostElems};
+}
+
+template<typename T>
+void SquareMat<T>::eigenSPD(
+    Vec<T>&              eVals,
+    Handle&              hand,
+    SimpleArray<T>&      deviceBuffer,
+    T*                   hostBuffer,
+    size_t               hostBufferSize,
+    Singleton<int32_t>&  info
+)
+{
+    static_assert(std::is_floating_point_v<T>,
+        "eigenSPDFromBuffer requires a floating-point matrix (float or double).");
+
+    if constexpr (!std::is_same_v<T, float> && !std::is_same_v<T, double>)
+        throw std::invalid_argument(
+            "eigenSPDFromBuffer: only float and double are supported.");
+
+    if (eVals.size() < this->_rows)
+        throw std::invalid_argument(
+            "eigenSPDFromBuffer: eVals is too small for the matrix.");
+
+    const cudaDataType_t dataType =
+        std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
+
+    cusolverDnParams_t params;
+    CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
+
+    // cusolverDnXsyevd overwrites *this with eigenvectors.
+    CHECK_CUSOLVER_ERROR(cusolverDnXsyevd(
+        hand,
+        params,
+        CUSOLVER_EIG_MODE_VECTOR,
+        CUBLAS_FILL_MODE_LOWER,
+        this->rows,
+        dataType, *this, this->_ld,
+        dataType, eVals,
+        dataType,
+        deviceBuffer, deviceBuffer.size() * sizeof(T),
+        hostBuffer.data(), hostBufferSize * sizeof(T),
+        info.toKernel1d()
+    ));
+
+    CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
+
+    processInfo(info, "cusolverDnXsyevd (eigenSPDFromBuffer)");
+}
+
+template<typename T>
+void SquareMat<T>::eigenSPD(
+    Vec<T>&       eVals,
+    SquareMat<T>* eVecs,
+    Handle&       hand
+)
+{
+    auto [deviceElems, hostElems] = eigenSPDBufferSize(hand);
+
+    auto preDeviceBuffer = SimpleArray<T>::create(std::max(deviceElems, size_t{1}) + 1, hand);
+    std::vector<T> hostBuffer(std::max(hostElems, size_t{1}));
+
+    auto deviceBuffer = preDeviceBuffer.subArray(0, deviceElems);
+    auto info = preDeviceBuffer.get(deviceElems);
+
+    eigenSPD(eVals, eVecs, hand, deviceBuffer, hostBuffer.data(), hostElems, info);
 }
 
 

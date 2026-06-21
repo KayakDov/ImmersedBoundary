@@ -55,9 +55,9 @@ public:
         const AxisSegmentT& boundaries,
         const AdjacencyInd& primary, const AdjacencyIndPair& leftRight
     ) {
-        T& mainDiag = (*laplacian)[primary.bandedInd(rowL)];
-        T& rightDiag = (*laplacian)[leftRight.right.bandedInd(rowL)];
-        T& leftDiag = (*laplacian)[leftRight.left.bandedInd(rowL)];
+        T& mainDiag = (*laplacian)[primary.bandedIndRow(rowL)];
+        T& rightDiag = (*laplacian)[leftRight.right.bandedIndRow(rowL)];
+        T& leftDiag = (*laplacian)[leftRight.left.bandedIndRow(rowL)];
 
         if (indexInLine == 0) {
             if (rowL + leftRight.left.diag < laplacian->rows) leftDiag = 0;
@@ -114,7 +114,7 @@ public:
         const SegmentType& boundary
     ) {
         lSetter.laplacian = &laplacian;
-        laplacian[primary.bandedInd(lSetter.rowL)] = 0;
+        laplacian[primary.bandedIndRow(lSetter.rowL)] = 0;
         lSetter.setRowInBanded1d(lSetter.rowL, boundary, primary, leftRight);
     }
 };
@@ -127,7 +127,7 @@ __global__ void buildLaplacianKernel(DeviceData2d<T> bandedL, const GridDim dim,
     size_t rowIndex = dim[gridInd];
 
     LSetter<T> ds(bandedL, rowIndex);
-    bandedL[ap.here.bandedInd(rowIndex)] = 0;
+    bandedL[ap.here.bandedIndRow(rowIndex)] = 0;
 
     size_t n = dim.size();
 
@@ -200,21 +200,9 @@ __global__ void buildAllL1dKernel(XYZ<DeviceData2d<T>> bandedL, const BoundaryCo
     size_t i = idx();
 
     LSetter1d<T> ds(bandedL.x, i, primary, prevNext);
-
-
     if (i < bandedL.x.rows) ds.setRowInBanded1d(bandedL.x, boundary.x);
     if (i < bandedL.y.rows) ds.setRowInBanded1d(bandedL.y, boundary.y);
     if (i < bandedL.z.rows) ds.setRowInBanded1d(bandedL.z, boundary.z);
-}
-
-template <typename T>
-__global__ void setSymetrizationMatrix(XYZ<DeviceData1d<T>> symnetrizationBand, XYZ<DeviceData1d<T>> inv, XYZ<Delta1d<T>> delta) {
-    size_t i = idx();
-    for (int32_t dim = 0; dim < 3; ++dim)
-        if (dim < symnetrizationBand[dim]._cols) {
-            symnetrizationBand[dim][i] = sqrt(delta[dim][i] + delta[dim][i + 1]);
-            inv[dim][i] = 1/symnetrizationBand[dim][i];
-        }
 }
 
 

@@ -35,9 +35,30 @@ public:
      * @param denseRow The row of the index in the dense matrix format.
      * @return Indices for a dense matrix.
      */
-    __device__ GridInd2d bandedInd(size_t denseRow) const {
+    __device__ GridInd2d bandedIndRow(size_t denseRow) const {
         if (diag < 0) return {denseRow + diag, colInBanded};
         return {denseRow, colInBanded};
+    }
+    /*
+     * @brief Provides the corresponding index in a banded matrix.
+     * @param denseCol The column of the index in the dense matrix format.
+     * @return Indices for a banded matrix.
+     */
+    __device__ GridInd2d bandedIndCol(size_t denseCol) const {
+        if (diag < 0) return {denseCol, colInBanded};
+        return {denseCol - diag, colInBanded};
+    }
+
+    /**
+     * The column in the dense matrix.
+     * @param denseRow The row in the dense matrix.
+     * @return The column in the dense marix.
+     */
+    __device__ size_t denseCol(size_t denseRow) const{
+        return denseRow + diag;
+    }
+    __device__ size_t denseRow(size_t denseCol) const{
+        return denseCol - diag;
     }
 
     /**
@@ -45,10 +66,28 @@ public:
      * @param denseRow The row of the index in the dense matrix format.
      * @return Indices for a dense matrix.
      */
-    __device__ GridInd2d denseInd(size_t denseRow) const {
-
-        return {denseRow, denseRow + diag};
+    __device__ GridInd2d denseIndRow(size_t denseRow) const {
+        return {denseRow, denseCol(denseRow)};
     }
+    __device__ GridInd2d denseIndCol(size_t denseCol) const {
+        return {denseRow(denseCol), denseCol};
+    }
+
+    /**
+     * Checks if the element on this diagonal at the given dense row is in bounds.
+     * @param denseRow The row in the dense matrix on this diagonal.
+     * @param height The height boundary.
+     * @param width The width boundary
+     * @return true if this index is in bounds, false otherwise.
+     */
+    __device__ bool inBoundsRow(size_t denseRow,size_t width) const {
+        return denseCol(denseRow) < width;
+    }
+
+    __device__ bool inBoundsCol(size_t denseCol, size_t height) const {
+        return denseRow(denseCol) < height;
+    }
+
 };
 
 

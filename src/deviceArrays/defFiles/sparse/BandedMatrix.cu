@@ -8,17 +8,6 @@
 #include "../../headers/Vec.h"
 
 /**
- * Checks if the index is in bounds.
- * @param minInclusive
- * @param maxExclusive
- * @param index
- * @return true if the index is in bounds, false otherwise.
- */
-__device__ bool inBounds(int32_t minInclusive, int32_t maxExclusive, int32_t index) {
-    return minInclusive <= index && index < maxExclusive;
-}
-
-/**
  * Sums all the elements in the block into this value.
  * @tparam T
  * @param val
@@ -28,13 +17,34 @@ __device__ void sumBlock(T& val) {
     for (int offset = 16; offset > 0; offset >>= 1) val += __shfl_down_sync(0xFFFFFFFF, val, offset);
 }
 
+template<typename T>
+__device__ void multBandedVec(
+    const DeviceData2d<T> banded, // packed diagonals
+    const int32_t *__restrict__ diags, // the number of diagonals is banded.cols
+    const DeviceData1d<T> x, // input vector
+    DeviceData1d<T> result,
+    const T *alpha, const T *beta
+) {
+    const size_t dstRow = idx();
+
+    if (dstRow >= result.cols) return;
+
+    T sum = 0;
+    for (size_t bandedCol = 0; bandedCol < banded.cols; ++bandedCol) {
+        AdjacencyInd adjInd(bandedCol, diags[bandedCol]);
+        if (adjInd.inBoundsCol(dstRow, x.cols))
+            sum += banded[adjInd.bandedIndRow(dstRow)] * x[adjInd.denseCol(dstRow)];
+    }
+    result[dstRow] = *alpha * sum + (*beta == 0 ? 0 : *beta * result[dstRow]);
+}
 /**
  * Kernel for sparse diagonal matrix-vector multiplication.
  *
  * When calling this kernel, <<<numberOfBlocks, threadsPerBlock, sharedMemorySize, stream>>>,
- * Number of blocks should be the number of rows in the solution vector.
- * Threads per block should be 32.
- * Shared memory size should be sizeof(T) * 32.
+ * In the x dimension:
+ *  Number of blocks should be the number of rows in the solution vector.
+ *  Threads per block should be 32.
+ * In the y dimension
  *
  * @param banded Packed diagonals of the matrix.  Trailing values are not read.  Each row is a diagonal, and the matrix is stored in column-major order.  There may be no more than 32 rows.
  * @param diags Indices of the diagonals.  Negative indices indicate sub-diagonals.
@@ -46,33 +56,71 @@ __device__ void sumBlock(T& val) {
  * @param beta Scalar multiplier for the existing values in the result vector.
  */
 template<typename T>
-__global__ void multVecKernel(
+__global__ void productBandedVec(
     const DeviceData2d<T> banded, // packed diagonals
     const int32_t *__restrict__ diags, // the number of diagonals is banded.cols
     const DeviceData1d<T> x, // input vector
-
     DeviceData1d<T> result,
-
-    const T *alpha,
-    const T *beta
+    const T *alpha, const T *beta
 ) {
-    const size_t rowResult = blockIdx.x;
-    const size_t bandedCol = threadIdx.x;
+    multBandedVec(banded, diags, x, result, alpha, beta);
+}
 
-    const bool isValid = rowResult < x.cols && bandedCol < banded.cols;
-    T val;
-    if (isValid) {
-        const int32_t d = diags[bandedCol];
-        int32_t bandedRow = rowResult, xRow;
-        bandedRow += (d < 0) * d;
-        xRow = rowResult + d;
-        val = inBounds(0, banded.rows - abs(d), bandedRow) && inBounds(0, x.cols, xRow) ? banded(bandedRow, bandedCol) * x[xRow]:0;
-    } else val = 0;
+template<typename T>
+__global__ void productBandedMat(
+    const DeviceData2d<T> banded, // packed diagonals
+    const int32_t *__restrict__ diags, // the number of diagonals is banded.cols
+    const DeviceData2d<T> x, // input vector
+    DeviceData2d<T> result,
+    const T *alpha, const T *beta
+) {
+    const size_t dstCol = idy();
 
-    sumBlock(val);
+    multBandedVec(banded, diags, x.col(dstCol), result.col(dstCol), alpha, beta);
+}
 
-    if (isValid && bandedCol == 0) result[rowResult] = *alpha * val + (*beta == 0 ? 0 : *beta * result[rowResult]);
+template<typename T>
+__device__ void multVecBanded(
+    const DeviceData1d<T> x,  // input vector
+    const DeviceData2d<T> banded, // packed diagonals
+    const int32_t *__restrict__ diags, // the number of diagonals is banded.cols
+    DeviceData1d<T> result,
+    const T *alpha, const T *beta
+) {
+    const size_t dstCol = idx();
 
+    if (dstCol >= result.cols) return;
+
+    T sum = 0;
+    for (size_t bandedCol = 0; bandedCol < banded.cols; ++bandedCol) {
+        AdjacencyInd adjInd(bandedCol, diags[bandedCol]);
+        if (adjInd.inBoundsRow(dstCol, x.cols))
+            sum += banded[adjInd.bandedIndCol(dstCol)] * x[adjInd.denseRow(dstCol)];
+    }
+    result[dstCol] = *alpha * sum + (*beta == 0 ? 0 : *beta * result[dstCol]);
+}
+
+template<typename T>
+__global__ void productVecBanded(
+    const DeviceData1d<T> x, // input vector
+    const DeviceData2d<T> banded, // packed diagonals
+    const int32_t *__restrict__ diags, // the number of diagonals is banded.cols
+    DeviceData1d<T> result,
+    const T *alpha, const T *beta
+) {
+    productVecBanded(x, banded, diags, result, alpha, beta);
+}
+
+template<typename T>
+__global__ void productMatBanded(
+    const DeviceData2d<T> x, // input vector
+    const DeviceData2d<T> banded, // packed diagonals
+    const int32_t *__restrict__ diags, // the number of diagonals is banded.cols
+    DeviceData2d<T> result,
+    const T *alpha, const T *beta
+) {
+    const size_t rowDense = idy();
+    productVecBanded(x.row(rowDense), banded, diags, result.row(rowDense), alpha, beta);
 }
 
 /**
@@ -96,14 +144,14 @@ void BandedMat<T>::bandedMult(
     const Singleton<T> beta,
     bool transpose
 ) const {
-    if (this->_cols > 32) throw std::invalid_argument("width must be <= 32 for this kernel");
-
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
     if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
 
-    multVecKernel<<<this->_rows, 32, 0, *h>>>(
+    auto kp = result.kernelPrep();
+
+    productBandedVec<<<kp.numBlocks, kp.threadsPerBlock, 0, *h>>>(
         this->toKernel2d(),
         _indices.toKernel1d().data,
         other.toKernel1d(),
@@ -116,6 +164,34 @@ void BandedMat<T>::bandedMult(
     if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
 }
 
+template<typename T>
+void BandedMat<T>::bandedMult(
+    const Mat<T> &other,
+    Mat<T> &result,
+    Handle *handle,
+    const Singleton<T> alpha,
+    const Singleton<T> beta,
+    bool transpose
+) const {
+    std::unique_ptr<Handle> temp_hand_ptr;
+    Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+
+    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
+
+    auto kp = result.kernelPrep();
+
+    productBandedMat<<<kp.numBlocks, kp.threadsPerBlock, 0, *h>>>(
+        this->toKernel2d(),
+        _indices.toKernel1d().data,
+        other.toKernel2d(),
+        result.toKernel2d(),
+        alpha.toKernel1d().data,
+        beta.toKernel1d().data
+    );
+
+    CHECK_CUDA_ERROR(cudaGetLastError());
+    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
+}
 template<typename T>
 __global__ void mapToDenseKernel(
     DeviceData2d<T> denseSquareDst,
@@ -208,7 +284,6 @@ void BandedMat<T>::setFromDense(const SquareMat<T> &denseMat, Handle *handle) {
     );
     CHECK_CUDA_ERROR(cudaGetLastError());
 }
-
 
 
 template class BandedMat<float>;

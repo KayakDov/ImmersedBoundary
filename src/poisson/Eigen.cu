@@ -7,6 +7,7 @@
 #include "Laplacian1d.cuh"
 #include "deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
+#include "deviceArrays/headers/sparse/Diagonal.h"
 #include "kronecker/KroneckerTriplet.h"
 #include "math/XYZ.cuh"
 #include "solvers/Event.h"
@@ -199,7 +200,7 @@ __global__ void eigenValLKernel_ND(DeviceData1d<T> eVals, const T minFourOverDel
 }
 
 template<typename T>
-void Eigen<T>::generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const UniformSegment<T>& seg) {
+void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eVecsInv, Vec<T>& eVals, const UniformSegment<T>& seg) {
 
     KernelPrep vecKP = eVecs.kernelPrep();
     KernelPrep valKP = eVals.kernelPrep();
@@ -227,28 +228,106 @@ void Eigen<T>::generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, con
 
 ////////////////////////////////////////////////////Remainder of Eigen methods//////////////////////////////////////////
 ///
+///
+///
+template <typename T>
+__global__ void setSymetrizationMatrix(DeviceData1d<T> symnetrizationBand, Delta1d<T> delta) {
+    if (size_t i = idx(); i < symnetrizationBand._cols) {
+        symnetrizationBand[i] = sqrt(delta[i] + delta[i + 1]);
+    }
+}
+
+/**
+ * Computes the matrix S = -D L D^{-1}, with D = diag(sqrt(axisSegment.delta[i] + axisSegment.delta[i + 1])).
+ * @tparam T
+ * @param mat The dense matrix S will be stored here.
+ * @param primaryDiag  The primary diagonal of S.
+ * @param subDiag The sub diagoanl of S.
+ * @param superDiag The super diagonal of S.
+ * @param axisSegment
+ */
+template <typename T>
+__global__ void setSymetricMatrix(
+    DeviceData2d<T> mat,
+    DeviceData1d<T> primaryDiag,
+    DeviceData1d<T> subDiag,
+    DeviceData1d<T> superDiag,
+    const VariableSegment<T> axisSegment
+) {
+    GridInd2d ind;
+    if (ind >= primaryDiag) return;
+
+    mat[ind] = 0;
+
+    size_t& i = ind.row;
+
+    // d can be safely computed for all valid nodes
+    auto d = sqrt(axisSegment.delta[i] + axisSegment.delta[i + 1]);
+
+    auto& main = primaryDiag[i];
+    auto& left = primaryDiag[i - 1];
+    auto& right = primaryDiag[i];
+
+    if (i == 0) {
+        axisSegment.start.setL(main, right);
+        auto dp = sqrt(axisSegment.delta[i + 1] + axisSegment.delta[i + 2]);
+        right *= -d / dp;
+    }
+    else if (i < axisSegment.numNodes - 1) {
+        axisSegment.setInteriorL(main, left, right, i);
+        auto dp = sqrt(axisSegment.delta[i + 1] + axisSegment.delta[i + 2]);
+        auto dm = sqrt(axisSegment.delta[i - 1] + axisSegment.delta[i]);
+
+        left *= -d / dm;
+        right *= -d / dp;
+    }
+    else if (i == axisSegment.numNodes - 1) {
+        axisSegment.end.setL(main, left);
+        auto dm = sqrt(axisSegment.delta[i - 1] + axisSegment.delta[i]);
+        left *= -d / dm;
+    }
+    main *= -1;
+}
+
+/**
+ * Computes the eigen matrix and it's inverse.
+ * @tparam T
+ * @param eigen The eigen matrix for the symmetrical system, S, goes here.  S = -DLD^{-1}.
+ * Where D = diag(sqrt(axisSegment.delta[i] + axisSegment.delta[i + 1])).  This will be replaced with the eigen matrix
+ * for L with V_L = D^{-1}V_S.
+ * @param eigenInv The inverse of the eigen matrix will be stored here, with V_L^{-1} = V_S^T D^{-1}
+ * @param axisSegment
+ */
 template<typename T>
-void Eigen<T>::generateEigen(Handle& hand, SquareMat<T> eVecs, Vec<T> eVals, const VariableSegment<T> &axisSegment) {
+__global__ void mapEigenSymmToEigenLap(DeviceData2d<T> eigen, DeviceData2d<T> eigenInv, const VariableSegment<T> axisSegment) {
+    if (GridInd2d ind; ind < eigen) {
+        T d = sqrt(axisSegment.delta[ind.row] + axisSegment.delta[ind.row + 1]);
+        eigenInv[ind] = eigen(ind.col, ind.row)/d;
+        eigen[ind] *= d;
+    }
+}
 
-    size_t n = eVecs._cols;
-    auto buffer = Mat<T>::create(n, n + 3);
-    auto cols3 = buffer.subMat(0,0,n, 3);
-    TriDiagonal<T> triDiag(cols3, hand);
+template<typename T>
+void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eVecsInv, Vec<T>& eVals, const VariableSegment<T> &axisSegment) {
 
-    Laplacian1d<T>::create(axisSegment, triDiag, hand);
-    auto dense =buffer.sqSubMat(0, 3, n);
+    KernelPrep kp = eVecs.kernelPrep();
+    setSymetricMatrix<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+        eVecs, eVecs.diag(0), eVecs.diag(-1), eVecs.diag(1), axisSegment
+    );
 
-    triDiag.getDense(dense, hand);
+    eVecs.eigenSPD(eVals, hand);
 
-    dense.eigen(eVals, &eVecs, hand);  //TODO: this method allocated its own memory, but generate Eigen may be called 3 times.  It should only be allocating memory once.
+    mapEigenSymmToEigenLap<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(eVecs, eVecsInv, axisSegment);
+    eVals.mult(GPUScalar<T>::get(-1), &hand);
 }
 
 template<typename T>
 template<typename axisSegmentT>
 void Eigen<T>::generateEigen(Handle &hand, Mat<T> eigins, const axisSegmentT &axisSegment) {
     auto vecs = eigins.sqSubMat(0, 0, eigins._rows);
+    auto vecsInv = eigins.sqSubMat(0, eigins._rows, eigins._rows);
     auto vals = eigins.col(eigins._cols - 1);
-    generateEigen(hand, vecs, vals, axisSegment);
+    generateEigen(hand, vecs, vecsInv, vals, axisSegment);
 }
 
 /**
@@ -345,9 +424,9 @@ Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* 
     constexpr bool orthoZ = !std::is_same_v<std::decay_t<decltype(boundary.z)>, VariableSegment<T>>;
 
     XYZ<SquareMat<T>> vecsInv(
-        orthoX ? SquareMat<T>::empty() : eigen[0]->sqSubMat(0, vecs.x._cols, vecs.x._cols ),
-        orthoY ? SquareMat<T>::empty() : eigen[1]->sqSubMat(0, vecs.y._cols, vecs.y._cols ),
-        !is3d || orthoZ ? SquareMat<T>::empty() : eigen[2]->sqSubMat(0, vecs.z._cols, vecs.z._cols )
+        orthoX ? vecs.x : eigen[0]->sqSubMat(0, vecs.x._cols, vecs.x._cols ),
+        orthoY ? vecs.y : eigen[1]->sqSubMat(0, vecs.y._cols, vecs.y._cols ),
+        !is3d || orthoZ ? vecs.z : eigen[2]->sqSubMat(0, vecs.z._cols, vecs.z._cols )
     );
 
     KroneckerTriplet<T> kt(vecs, {false, false, false});

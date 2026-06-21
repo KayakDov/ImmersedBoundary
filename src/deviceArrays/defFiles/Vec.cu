@@ -581,6 +581,27 @@ Vec<T>::operator Mat<T>() const{
     return Mat<T>(this->_rows, this->_cols, this->_ld, this->_ptr);
 }
 
+template<typename T>
+void Vec<T>::mult(
+    const BandedMat<T> &banded,
+    Vec<T> &result,
+    Handle& handle,
+    const Singleton<T> alpha,
+    const Singleton<T> beta
+) const {
+     auto kp = result.kernelPrep();
+
+    productVecBanded<<<kp.numBlocks, kp.threadsPerBlock, 0, handle>>>(
+        this->toKernel1d(),
+        banded.toKernel2d(),
+        banded._indices.toKernel1d(),
+        result.toKernel1d(),
+        alpha,
+        beta
+    );
+
+    CHECK_CUDA_ERROR(cudaGetLastError());
+}
 
 // =========================================================================
 // Explicit Template Instantiations

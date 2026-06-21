@@ -1,4 +1,4 @@
-#include "../headers/sparse/SparseMat.h"
+#include "../../headers/sparse/SparseMat.h"
 
 cusparseOperation_t cuTranspose(bool trans) {
     return trans? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE;

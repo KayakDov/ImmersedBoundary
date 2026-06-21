@@ -637,6 +637,28 @@ Mat<T> SimpleArray<T>::matrix(size_t height) const{
     return Mat<T>(height, this->size()/height, height, this->_ptr);
 }
 
+template<typename T>
+void Mat<T>::mult(
+    const BandedMat<T> &banded,
+    Mat<T> &result,
+    Handle& handle,
+    const Singleton<T> alpha,
+    const Singleton<T> beta
+) const {
+    auto kp = result.kernelPrep();
+    productMatBanded<<<kp.numBlocks, kp.threadsPerBlock, 0, handle>>>(
+        this->toKernel2d(),
+        banded.toKernel2d(),
+        banded._indices.toKernel1d(),
+        result.toKernel2d(),
+        alpha,
+        beta
+    );
+
+    CHECK_CUDA_ERROR(cudaGetLastError());
+}
+
+
 // --- 32-bit Instantiations ---
 template size_t Mat<float>::factorLUBufferSize<int32_t>(Handle&);
 template size_t Mat<double>::factorLUBufferSize<int32_t>(Handle&);

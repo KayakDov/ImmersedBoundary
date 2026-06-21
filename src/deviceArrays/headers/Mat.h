@@ -374,5 +374,7 @@ public:
 
     __host__ __device__ operator DeviceData2d<T>();
     __host__ __device__ operator DeviceData2d<T>() const;
+
+    void mult(const BandedMat<T> &banded, Mat<T> &result, Handle& handle, const Singleton<T> alpha, const Singleton<T> beta) const;
 };
 #endif //BICGSTAB_MAT_H

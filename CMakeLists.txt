@@ -147,10 +147,16 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # =========================
 # Unit Test Executable
 # =========================
+# =========================
+# Unit Test Executable
+# =========================
 enable_testing()
 
-# We use the source lists directly to ensure GTest macros are compiled into the binary
-file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp")
+# CHANGE THIS: Include both .cpp and .cu files
+file(GLOB TEST_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cu"
+)
 
 add_executable(run_unit_tests ${TEST_SOURCES})
 
@@ -158,7 +164,6 @@ set_target_properties(run_unit_tests PROPERTIES
         CUDA_RUNTIME_LIBRARY Shared
         BUILD_RPATH "${INTLC_LIB_DIR}"
 )
-
 target_link_libraries(run_unit_tests
         PRIVATE
         CudaBandedLib

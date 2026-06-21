@@ -166,59 +166,5 @@ XYZ<SimpleArray<Int>> getPivot(SimpleArray<Int>& preRowOps, size_t xRows, size_t
 }
 
 
-template<typename T>
-KroneckerTriplet<T> KroneckerTriplet<T>::generateInverse(Handle* hand3, XYZ<SquareMat<T>>& inverseGoesHere, Event* event2) const {
-
-    XYZ<bool> orthonormal(inverseGoesHere.x.size() == 0, inverseGoesHere.y.size() == 0, inverseGoesHere.z.size() == 0);
-
-    for (size_t i = 1; i < 3; i++) {
-        event2[i - 1].record(hand3[0]);
-        event2[i - 1].hold(hand3[i]);
-    }
-    XYZ<SquareMat<T>> copy(
-        orthonormal.x ? SquareMat<T>::empty() : SquareMat<T>::create(this->x._rows),
-        orthonormal.y ? SquareMat<T>::empty() : SquareMat<T>::create(this->y._rows),
-        orthonormal.z ? SquareMat<T>::empty() : SquareMat<T>::create(this->z._rows)
-    );
-
-    for (size_t i = 0; i < 3; i++) if (!orthonormal[i]) copy[i].set((*this)[i], hand3[i]);
-    for (size_t i = 1; i < 3; i++) if (!orthonormal[i]) {
-        event2[i - 1].record(hand3[i]);
-        event2[i - 1].hold(hand3[0]);
-    }
-
-    using Int = int32_t;//This should be made larger if x, y, and z are huge huge huge, which is porbbaly not possible with present technology.
-
-    auto bufferSize = getBufSize<Int, T>(copy, orthonormal, hand3[0]);
-    auto buffer = getBuffer<T>(bufferSize, hand3[0]);
-    XYZ<size_t> size((!orthonormal.x) * dim.cols, (!orthonormal.y) * dim.rows, (!orthonormal.z) * dim.layers);
-    auto preRowOps = SimpleArray<Int>::create(size.x + size.y + size.z + 3, hand3[0]);
-    auto pivot = getPivot<Int>(preRowOps, size.x, size.y, size.z);
-    size_t numSingletons = (!orthonormal.x) + (!orthonormal.y) + (!orthonormal.z);
-    auto info = preRowOps.subArray(preRowOps.size() - numSingletons, numSingletons);
-
-
-    for (size_t i = 1; i < 3; i++) if (!orthonormal[i]) {
-        event2[i - 1].record(hand3[0]);
-        event2[i - 1].hold(hand3[i]);
-    }
-
-    XYZ<SquareMat<T>> result(
-        orthonormal.x ? this->x : inverseGoesHere.x,
-        orthonormal.y ? this->y : inverseGoesHere.y,
-        orthonormal.z ? this->z : inverseGoesHere.z
-    );
-
-
-    for (size_t i = 0, infoInd = 0; i < 3; i++)
-        if (!orthonormal[i]) copy[i].inverse(result[i], pivot[i], hand3[i], info.get(infoInd++), buffer[i], false);//TODO:Test inverse
-
-    for (size_t i = 1; i < 3; i++) {
-        event2[i - 1].record(hand3[i]);
-        event2[i - 1].hold(hand3[0]);
-    }
-    return {result, orthonormal};
-}
-
 template class KroneckerTriplet<float>;
 template class KroneckerTriplet<double>;

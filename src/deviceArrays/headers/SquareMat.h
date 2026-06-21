@@ -192,6 +192,114 @@ public:
      */
     bool isSingular(double tolerance, Handle& hand) const ;
 
+
+    /**
+     * @brief Query the device- and host-workspace sizes required by eigenSPDFromBuffer().
+     *
+     * This is the first of a two-phase eigendecomposition API for symmetric
+     * positive (semi-)definite matrices.  Call this once, allocate the buffers it
+     * returns, then pass them to eigenSPDFromBuffer() to perform the actual
+     * computation without any internal heap allocation.
+     *
+     * The split is modelled on the existing factorLUBufferSize() / factorLU()
+     * pattern in Mat.cu so that callers that run many decompositions in a loop
+     * can reuse the same workspace across calls.
+     *
+     * @tparam T  Floating-point element type.  Must be @c float or @c double;
+     *            calling with any other type throws @c std::invalid_argument.
+     *
+     * @param hand  Active cuSOLVER handle.
+     *
+     * @return A pair whose @c first element is the required device-workspace size
+     *         in elements of @c T, and whose @c second element is the required
+     *         host-workspace size in elements of @c T.
+     *
+     * @throws std::invalid_argument  If @c T is not @c float or @c double.
+     * @throws std::runtime_error     If the cuSOLVER buffer-size query fails.
+     */
+    std::pair<size_t, size_t> eigenSPDBufferSize(Handle &hand) const;
+
+    /**
+     * @brief Compute the eigendecomposition of a symmetric positive (semi-)definite
+     *        matrix using caller-supplied workspaces.
+     *
+     * This is the compute half of the two-phase API.  The caller must first invoke
+     * eigenSPDBufferSize() to determine the required buffer sizes, allocate them,
+     * and then call this method.
+     *
+     * @par Mathematical requirements
+     * The matrix @b must satisfy all of the following conditions:
+     *  - **Square**: rows == cols.
+     *  - **Real**: complex-valued matrices are not supported.
+     *  - **Symmetric**: only the lower triangle is read; the upper triangle is
+     *    ignored.  If the matrix is not actually symmetric, results are undefined.
+     *  - **Positive semi-definite**: all eigenvalues must be ≥ 0.  The cuSOLVER
+     *    symmetric solver (dsytd2 / ssytd2 via cusolverDnXsyevd) is numerically
+     *    stable for PSD matrices, but may produce incorrect or negative eigenvalues
+     *    if the matrix is indefinite or has significant numerical asymmetry.
+     *
+     * @par In-place operation
+     * cusolverDnXsyevd overwrites @p *this with the eigenvectors.  After the call,
+     * column @c j of @p *this contains the unit eigenvector corresponding to
+     * eigenvalue @c eVals[j].  If you need to preserve the original matrix, copy
+     * it before calling this method.
+     *
+     * @tparam T  Floating-point element type.  Must be @c float or @c double.
+     *
+     * @param eVals         Output vector of length @c n.  On return, holds the
+     *                      eigenvalues in ascending order.  Must already be
+     *                      allocated to at least @c this->_rows elements.
+     * @param hand          Active cuSOLVER handle.
+     * @param deviceBuffer    Pre-allocated device workspace.  Must be at least as
+     *                      large as the device element count returned by
+     *                      eigenSPDBufferSize().
+     * @param hostBufferSize
+     * @param hostBufferSize
+     * @param buffer      Pre-allocated host workspace.  Must be at least as
+     *                      large as the host element count returned by
+     *                      eigenSPDBufferSize().
+     * @param info
+     *
+     * @throws std::invalid_argument  If @p eVals is too small, or if @c T is
+     *                                unsupported.
+     * @throws std::runtime_error     On cuSOLVER failure, with an info code
+     *                                forwarded through processInfo().
+     */
+    void eigenSPD(Vec<T> &eVals, Handle &hand, SimpleArray<T> &deviceBuffer, T *hostBuffer, size_t hostBufferSize, Singleton<int32_t> &
+                  info);
+
+    /**
+     * @brief Convenience wrapper: compute the eigendecomposition of a symmetric
+     *        positive (semi-)definite matrix, allocating all workspaces internally.
+     *
+     * This method combines eigenSPDBufferSize() and eigenSPDFromBuffer() into a
+     * single call for callers that do not need to amortise workspace allocation
+     * across multiple decompositions.  For hot paths, prefer the two-phase API.
+     *
+     * @par Mathematical requirements
+     * Identical to eigenSPDFromBuffer().  In summary:
+     *  - The matrix must be **square**, **real**, **symmetric** (lower triangle
+     *    used), and **positive semi-definite**.
+     *  - The matrix is overwritten with eigenvectors in-place by cuSOLVER.
+     *    Pass a non-null @p eVecs if you need the original matrix preserved.
+     *
+     * @tparam T  Floating-point element type.  Must be @c float or @c double.
+     *
+     * @param eVals  Output vector of length @c n.  Receives eigenvalues in
+     *               ascending order.  Must be pre-allocated to at least @c n
+     *               elements.
+     * @param eVecs  Optional output matrix.  If non-null, receives a copy of the
+     *               eigenvector matrix after the computation; @p *this still holds
+     *               the eigenvectors (it is overwritten in-place by cuSOLVER).
+     *               Pass @c nullptr to skip the copy.
+     * @param hand   Active cuSOLVER handle.
+     *
+     * @throws std::invalid_argument  If @p eVals is too small, or @c T is
+     *                                unsupported.
+     * @throws std::runtime_error     On cuSOLVER failure.
+     */
+    void eigenSPD(Vec<T> &eVals, SquareMat<T> *eVecs, Handle &hand);
+
     /**
      * Checks if the matrix is singular by looking at the eigen values.  Will destory this matrix.
      * @param tolerance
@@ -201,6 +309,7 @@ public:
      * @return true if this matrix is singular, false otherwise.
      */
     bool isSingular(double tolerance, SimpleArray<int32_t> &rowSwaps, Singleton<int32_t> &info, SimpleArray<T> &workSpace, Handle &hand);
+
 
 
 };

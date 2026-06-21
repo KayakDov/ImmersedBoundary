@@ -286,6 +286,8 @@ public:
     operator Mat<T>();
     operator Mat<T>() const;
 
+    void mult(const BandedMat<T> &banded, Vec<T> &result, Handle &handle, Singleton<T> alpha, Singleton<T> beta) const;
+
     /**
      * @brief Initializes the vector with a sequence of its own indices.
      * * Performs the operation: this[i] = i for all elements in the vector.
