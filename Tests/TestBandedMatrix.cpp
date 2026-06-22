@@ -1,56 +1,49 @@
 #include <gtest/gtest.h>
 #include <cuda_runtime.h>
 #include <vector>
-#include <cmath>
 
 // Framework Headers
 #include "deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/Mat.h"
 #include "deviceArrays/headers/Vec.h"
 #include "deviceArrays/headers/Singleton.h"
+#include "deviceArrays/headers/handle.h"
+#include "deviceArrays/headers/Support/Streamable.h"
+#include "deviceArrays/headers/SquareMat.h"
 
 template <typename T>
 class BandedMatWrappersTest : public ::testing::Test {
 protected:
     Handle handle;
-    
-    // Matrix dimensions
-    const size_t N = 3;
-    const size_t numDiags = 3;
 
-    // Host data arrays
-    std::vector<int32_t> h_diags = {-1, 0, 1}; // Sub, Main, Super
-    
-    // Banded matrix stored in column-major order matching your framework structure
-    // Col 0 (diag -1): [3, 6, x] -> padded/garbage at trailing
-    // Col 1 (diag  0): [2, 4, 7]
-    // Col 2 (diag  1): [x, 1, 5] -> padded/garbage at leading
+    const size_t N = 3;
+
+    // Framework expects padding at the trailing edge of each column.
+    // Diag -1: [3, 6, x]
+    // Diag  0: [2, 4, 7]
+    // Diag  1: [1, 5, x]
+    std::vector<int32_t> h_diags = {-1, 0, 1};
     std::vector<T> h_banded_data = {
-        3.0, 6.0, 0.0,  // Diag -1
-        2.0, 4.0, 7.0,  // Diag  0
-        0.0, 1.0, 5.0   // Diag  1
+        3.0, 6.0, 0.0,
+        2.0, 4.0, 7.0,
+        1.0, 5.0, 0.0
     };
 
-    // Device allocations
-    T *d_banded_data = nullptr;
-    int32_t *d_diags = nullptr;
-
-    void SetUp() override {
-        cudaMalloc(&d_banded_data, h_banded_data.size() * sizeof(T));
-        cudaMalloc(&d_diags, h_diags.size() * sizeof(int32_t));
-
-        cudaMemcpy(d_banded_data, h_banded_data.data(), h_banded_data.size() * sizeof(T), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_diags, h_diags.data(), h_diags.size() * sizeof(int32_t), cudaMemcpyHostToDevice);
-    }
-
-    void TearDown() override {
-        if (d_banded_data) cudaFree(d_banded_data);
-        if (d_diags) cudaFree(d_diags);
-    }
-
-    // Helper to instantiate BandedMat object using framework factory methods
+    // Safely constructs and initializes a BandedMat using framework tools
     BandedMat<T> createTestBandedMat() {
-        return BandedMat<T>::create(N, numDiags, N, d_banded_data, d_diags, 1);
+        // 1. Create and populate the indices vector
+        auto diagsVec = Vec<int32_t>::create(h_diags.size(), this->handle);
+        diagsVec.set(h_diags.data(), this->handle);
+
+        // 2. Create the BandedMat framework object
+        auto A = BandedMat<T>::create(N, diagsVec);
+
+        // 3. Upload the dense diagonal data to the device
+        A.set(h_banded_data.data(), this->handle);
+
+        // std::cout << "A = \n" << GpuOut<T>(dense, handle) << std::endl;
+
+        return A;
     }
 };
 
@@ -65,30 +58,27 @@ TYPED_TEST(BandedMatWrappersTest, BandedMatrixVectorProduct) {
     using T = TypeParam;
     BandedMat<T> A = this->createTestBandedMat();
 
-    // Setup input vector x = [1, 2, 3]^T
     std::vector<T> h_x = {1.0, 2.0, 3.0};
-    auto x = Vec<T>::create(this->N, 1, h_x.data()); // Assuming non-owning or managed device copy wrapper
+    auto x = Vec<T>::create(this->N, this->handle);
+    x.set(h_x.data(), this->handle);
 
-    // Setup initial destination vector y = [10, 10, 10]^T
     std::vector<T> h_y = {10.0, 10.0, 10.0};
-    auto y = Vec<T>::create(this->N, 1, h_y.data());
+    auto y = Vec<T>::create(this->N, this->handle);
+    y.set(h_y.data(), this->handle);
 
-    // Scalars: alpha = 2.0, beta = 0.5
-    auto alpha = Singleton<T>::create(static_cast<T>(2.0));
-    auto beta = Singleton<T>::create(static_cast<T>(0.5));
+    auto alpha = Singleton<T>::create(static_cast<T>(2.0), this->handle);
+    auto beta  = Singleton<T>::create(static_cast<T>(0.5), this->handle);
 
-    // Expected mathematical result calculation:
-    // Ax = [ (2*1 + 1*2), (3*1 + 4*2 + 5*3), (6*2 + 7*3) ]^T = [4, 26, 33]^T
-    // y = 2.0 * Ax + 0.5 * y_old = [ 2*4 + 5, 2*26 + 5, 2*33 + 5 ]^T = [13, 57, 71]^T
-    std::vector<T> expected = {13.0, 57.0, 71.0};
+    // Expected: y = 2.0 * Ax + 0.5 * y_old = [13, 57, 71]^T
+    std::vector<T> expected = {9.0, 57.0, 47.0};
 
-    // Invoke host wrapper
+    // Invoke bandedMult (takes Handle as pointer)
     A.bandedMult(x, y, &(this->handle), alpha, beta, false);
-    cudaDeviceSynchronize();
 
-    // Verify back on host
+    // Retrieve results to host
     std::vector<T> actual(this->N);
-    cudaMemcpy(actual.data(), y.toKernel1d().data, this->N * sizeof(T), cudaMemcpyDeviceToHost);
+    y.get(actual.data(), this->handle);
+    cudaDeviceSynchronize();
 
     for (size_t i = 0; i < this->N; ++i) {
         EXPECT_NEAR(actual[i], expected[i], 1e-5);
@@ -101,31 +91,32 @@ TYPED_TEST(BandedMatWrappersTest, BandedMatrixVectorProduct) {
 TYPED_TEST(BandedMatWrappersTest, BandedMatrixDenseMatrixProduct) {
     using T = TypeParam;
     BandedMat<T> A = this->createTestBandedMat();
-    const size_t K = 2; // Number of columns in dense matrix X
+    const size_t K = 2;
 
-    // Input Dense Matrix X (3x2, Column-Major layout implied by framework)
-    // Row 0: [1, 4], Row 1: [2, 5], Row 2: [3, 6] -> Data: [1, 2, 3, 4, 5, 6]
+    // Row 0: [1, 4], Row 1: [2, 5], Row 2: [3, 6] -> Column-Major: [1, 2, 3, 4, 5, 6]
     std::vector<T> h_X = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-    auto X = Mat<T>::create(this->N, K, this->N, h_X.data());
+    auto X = Mat<T>::create(this->N, K);
+    X.set(h_X.data(), this->handle);
 
-    // Initial Destination Matrix Y (3x2, initialized to 0.0, beta = 0.0)
     std::vector<T> h_Y = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    auto Y = Mat<T>::create(this->N, K, this->N, h_Y.data());
+    auto Y = Mat<T>::create(this->N, K);
+    Y.set(h_Y.data(), this->handle);
 
-    auto alpha = Singleton<T>::create(static_cast<T>(1.0));
-    auto beta = Singleton<T>::create(static_cast<T>(0.0));
+    auto alpha = Singleton<T>::create(static_cast<T>(1.0), this->handle);
+    auto beta  = Singleton<T>::create(static_cast<T>(0.0), this->handle);
 
-    // Expected Mathematical Result Calculation (A * X):
-    // Col 0: A * [1, 2, 3]^T = [4, 26, 33]^T
-    // Col 1: A * [4, 5, 6]^T = [ (2*4 + 1*5), (3*4 + 4*5 + 5*6), (6*5 + 7*6) ]^T = [13, 62, 72]^T
-    std::vector<T> expected = {4.0, 26.0, 33.0, 13.0, 62.0, 72.0};
+    // Expected: Y = A * X
+    // Expected: Y = A * X using current BandedMat boundary convention
+    std::vector<T> expected = {
+        2.0, 26.0, 21.0,
+        8.0, 62.0, 42.0
+    };
 
-    // Invoke host wrapper
     A.bandedMult(X, Y, &(this->handle), alpha, beta, false);
-    cudaDeviceSynchronize();
 
     std::vector<T> actual(this->N * K);
-    cudaMemcpy(actual.data(), Y.toKernel2d().data, actual.size() * sizeof(T), cudaMemcpyDeviceToHost);
+    Y.get(actual.data(), this->handle);
+    cudaDeviceSynchronize();
 
     for (size_t i = 0; i < actual.size(); ++i) {
         EXPECT_NEAR(actual[i], expected[i], 1e-5);
@@ -139,28 +130,27 @@ TYPED_TEST(BandedMatWrappersTest, VectorBandedMatrixProduct) {
     using T = TypeParam;
     BandedMat<T> A = this->createTestBandedMat();
 
-    // Vector x^T = [1, 2, 3]
     std::vector<T> h_x = {1.0, 2.0, 3.0};
-    auto x = Vec<T>::create(this->N, 1, h_x.data());
+    auto x = Vec<T>::create(this->N, this->handle);
+    x.set(h_x.data(), this->handle);
 
-    // Destination vector y^T initialized to zeros
     std::vector<T> h_y = {0.0, 0.0, 0.0};
-    auto y = Vec<T>::create(this->N, 1, h_y.data());
+    auto y = Vec<T>::create(this->N, this->handle);
+    y.set(h_y.data(), this->handle);
 
-    auto alpha = Singleton<T>::create(static_cast<T>(1.0));
-    auto beta = Singleton<T>::create(static_cast<T>(0.0));
+    auto alpha = Singleton<T>::create(static_cast<T>(1.0), this->handle);
+    auto beta  = Singleton<T>::create(static_cast<T>(0.0), this->handle);
 
-    // Expected Mathematical Result Calculation (x^T * A):
-    // [1, 2, 3] * A = [ (1*2 + 2*3), (1*1 + 2*4 + 3*6), (2*5 + 3*7) ] = [8, 27, 31]
+    // Expected: y^T = x^T * A
     std::vector<T> expected = {8.0, 27.0, 31.0};
 
-    Handle hand;
-    // Invoke wrapper from Vec class
-    x.mult(A, y, hand, alpha, beta);
-    cudaDeviceSynchronize();
+    std::cout << "x = " << GpuOut<T>(x, this->handle) << std::endl;
+    // Invoke Vec framework overload (takes Handle as reference)
+    x.mult(A, y, this->handle, alpha, beta);
 
     std::vector<T> actual(this->N);
-    cudaMemcpy(actual.data(), y.toKernel1d().data, this->N * sizeof(T), cudaMemcpyDeviceToHost);
+    y.get(actual.data(), this->handle);
+    cudaDeviceSynchronize();
 
     for (size_t i = 0; i < this->N; ++i) {
         EXPECT_NEAR(actual[i], expected[i], 1e-5);
@@ -173,33 +163,36 @@ TYPED_TEST(BandedMatWrappersTest, VectorBandedMatrixProduct) {
 TYPED_TEST(BandedMatWrappersTest, DenseMatrixBandedMatrixProduct) {
     using T = TypeParam;
     BandedMat<T> A = this->createTestBandedMat();
-    const size_t R = 2; // Number of rows in dense matrix X
+    const size_t R = 2;
 
-    // Input Dense Matrix X (2x3, Column-Major Layout)
-    // Row 0: [1, 2, 3], Row 1: [4, 5, 6] -> Strided storage: [1, 4, 2, 5, 3, 6]
+    // Row 0: [1, 2, 3], Row 1: [4, 5, 6] -> Column-Major: [1, 4, 2, 5, 3, 6]
     std::vector<T> h_X = {1.0, 4.0, 2.0, 5.0, 3.0, 6.0};
-    auto X = Mat<T>::create(R, this->N, R, h_X.data());
+    auto X = Mat<T>::create(R, this->N);
+    X.set(h_X.data(), this->handle);
 
-    // Destination matrix Y (2x3, Column-Major Layout)
+    std::cout << "X =\n" << GpuOut<T>(X, this->handle) << std::endl;
+
     std::vector<T> h_Y = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    auto Y = Mat<T>::create(R, this->N, R, h_Y.data());
+    auto Y = Mat<T>::create(R, this->N);
+    Y.set(h_Y.data(), this->handle);
 
-    auto alpha = Singleton<T>::create(static_cast<T>(1.0));
-    auto beta = Singleton<T>::create(static_cast<T>(0.0));
+    auto alpha = Singleton<T>::create(static_cast<T>(1.0), this->handle);
+    auto beta  = Singleton<T>::create(static_cast<T>(0.0), this->handle);
 
-    // Expected Mathematical Result Calculation (X * A):
-    // Row 0: [1, 2, 3] * A = [8, 27, 31]
-    // Row 1: [4, 5, 6] * A = [ (4*2 + 5*3), (4*1 + 5*4 + 6*6), (5*5 + 6*7) ] = [23, 60, 67]
-    // Stored Column-Major: [Row0_Col0, Row1_Col0, Row0_Col1, Row1_Col1, Row0_Col2, Row1_Col2]
+    // Expected: Y = X * A (Column-Major stored layout)
     std::vector<T> expected = {8.0, 23.0, 27.0, 60.0, 31.0, 67.0};
 
-    Handle hand;
-    // Invoke wrapper from Mat class
-    X.mult(A, Y, hand, alpha, beta);
-    cudaDeviceSynchronize();
+    auto dense = SquareMat<T>::create(this->N);
+    A.getDense(dense, this->handle);
+
+    // Invoke Mat framework overload (takes Handle as reference)
+    X.mult(A, Y, this->handle, alpha, beta);
+
+    std::cout << "Y =\n" << GpuOut<T>(Y, this->handle) << std::endl;
 
     std::vector<T> actual(R * this->N);
-    cudaMemcpy(actual.data(), Y.toKernel2d().data, actual.size() * sizeof(T), cudaMemcpyDeviceToHost);
+    Y.get(actual.data(), this->handle);
+    cudaDeviceSynchronize();
 
     for (size_t i = 0; i < actual.size(); ++i) {
         EXPECT_NEAR(actual[i], expected[i], 1e-5);

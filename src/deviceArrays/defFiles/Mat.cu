@@ -10,6 +10,7 @@
 #include <string>
 #include <deviceArrays/headers/sparse/BandedKernels.cuh>
 #include "deviceArrays/headers/sparse/BandedMat.h"
+#include "deviceArrays/headers/Support/Streamable.h"
 
 template <typename T>
 Mat<T> Mat<T>::mult(
@@ -646,6 +647,7 @@ void Mat<T>::mult(
     const Singleton<T> alpha,
     const Singleton<T> beta
 ) const {
+
     auto kp = result.kernelPrep();
     productMatBanded<<<kp.numBlocks, kp.threadsPerBlock, 0, handle>>>(
         this->toKernel2d(),

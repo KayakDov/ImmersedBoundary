@@ -84,6 +84,12 @@ public:
         return denseCol(denseRow) < width;
     }
 
+    /**
+     * Checks if hte element on this diagonal at the given column is in bounds.
+     * @param denseCol A column in the dense matrix.
+     * @param height The height of the matrix.
+     * @return True if this diagonal includes the given dense column.
+     */
     __device__ bool inBoundsCol(size_t denseCol, size_t height) const {
         return denseRow(denseCol) < height;
     }

@@ -67,7 +67,7 @@ std::istream& GpuIn<T>::read(std::istream& is) {
 // ----------------------------------------------------------------------
 
 template<typename T>
-GpuOut<T>::GpuOut(const GpuArray<T> &src, const cudaStream_t &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(src) {
+GpuOut<T>::GpuOut(const GpuArray<T>& src, const cudaStream_t &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(src) {
 }
 
 template<typename T>

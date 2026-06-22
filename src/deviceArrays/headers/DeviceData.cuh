@@ -23,7 +23,16 @@ class DeviceData1d {
 
 public:
 
-    __host__ __device__  DeviceData1d(const size_t cols, const size_t ld, T* data): cols(cols), ld(ld), data(data) {}
+    __host__ __device__  DeviceData1d(const size_t cols, const size_t ld, T* data): cols(cols), ld(ld), data(data) {
+
+        // if (idx() == 0 && idy() == 0) printf(
+        //     "row=%llu col=%llu x.row(0) = (%f, %f, %f)  ld = %llu\n",
+        //     idy(),
+        //     idx(),
+        //     (*this)[0],(*this)[1],(*this)[2],
+        //     ld
+        // );
+    }
 
 
     const size_t cols, ld;
@@ -50,6 +59,9 @@ public:
         return data[idx * ld];
     }
 
+    __device__ const T& operator[](size_t idx) const {
+        return data[idx * ld];
+    }
     __host__ __device__ operator T*(){
         return this->data;
     }
@@ -81,6 +93,7 @@ public:
      * @param data The device pointer to the allocated data.
      */
     __host__ __device__ DeviceData2d(size_t rows, size_t cols, size_t ld, T *data) : DeviceData1d<T>(cols, ld, data), rows(rows) {
+        // if (idx() == 0 && idy() == 0) printf("row=%llu col=%llu 2dld = %llu\n",idy(),idx(),ld);
     }
 
     /** The number of logical rows in the matrix. */

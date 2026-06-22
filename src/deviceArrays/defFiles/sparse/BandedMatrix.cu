@@ -88,8 +88,8 @@ __global__ void mapToDenseKernel(
     if (sparseInd >= bandedSrc) return;
     int32_t diag = indices[sparseInd.col];
     GridInd2d denseInd(
-        sparseInd.row - (diag < 0 ? diag : 0),
-        sparseInd.row + (diag > 0 ? diag : 0)
+        (diag < 0 ? sparseInd.row - diag : sparseInd.row),
+        (diag > 0 ? sparseInd.row + diag : sparseInd.row)
     );
     if (denseInd < denseSquareDst) denseSquareDst[denseInd] = bandedSrc[sparseInd];
 }

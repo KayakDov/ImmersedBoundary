@@ -70,6 +70,7 @@ __global__ void productBandedMat(
     const T *alpha, const T *beta
 ) {
     const size_t dstCol = idy();
+    if (dstCol >= x.cols) return;
 
     multBandedVec(banded, diags, x.col(dstCol), result.col(dstCol), alpha, beta);
 }
@@ -89,11 +90,12 @@ __device__ void multVecBanded(
     T sum = 0;
     for (size_t bandedCol = 0; bandedCol < banded.cols; ++bandedCol) {
         AdjacencyInd adjInd(bandedCol, diags[bandedCol]);
-        if (adjInd.inBoundsRow(dstCol, x.cols))
+        if (adjInd.inBoundsCol(dstCol, x.cols))
             sum += banded[adjInd.bandedIndCol(dstCol)] * x[adjInd.denseRow(dstCol)];
     }
     result[dstCol] = *alpha * sum + (*beta == 0 ? 0 : *beta * result[dstCol]);
 }
+
 
 template<typename T>
 __global__ void productVecBanded(
@@ -116,6 +118,7 @@ __global__ void productMatBanded(
     const T *beta
 ) {
     const size_t rowDense = idy();
+    if (rowDense >= result.rows) return;
     multVecBanded(x.row(rowDense), banded, diags, result.row(rowDense), alpha, beta);
 }
 #endif //CUDABANDED_BANDEDKERNELS_CUH
