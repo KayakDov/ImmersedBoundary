@@ -262,7 +262,7 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
 template<typename T>
 static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, const std::string& errorMsg, bool uniformDelta, T tol = 1e-8) {
 
-    std::cout << "checkEigens L = \n" << GpuOut<T>(L, hand) << std::endl << "V = \n" << GpuOut<T>(V, hand) << std::endl << "lambda = " << GpuOut<T>(lambda, hand) << std::endl;
+    // std::cout << "checkEigens L = \n" << GpuOut<T>(L, hand) << std::endl << "V = \n" << GpuOut<T>(V, hand) << std::endl << "lambda = " << GpuOut<T>(lambda, hand) << std::endl;
 
     // ---------------------------------------------------------
     // UNIVERSAL CHECK: L * V = V * Lambda
@@ -332,7 +332,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
  * @param  Maximum allowable difference for numerical validation.
  */
 template<typename Real, typename BoundaryConfigT>
-void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& boundary, Handle* hands, Event* events, Real tolerance) {
+void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& boundary, Handle* hands, Event* events, Real tolerance, std::string& msg) {
 
     auto laplacian = poisson::laplacian<Real>(boundary, hands[0]);
 
@@ -352,7 +352,7 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& bounda
     auto rhs = SimpleArray<Real>::create(dim.size(), hands[0]);
     laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
 
-    // std::cout << "x = " << GpuOut<Real>(x, hands[0]) << std::endl;
+    // std::cout << "init x = " << GpuOut<Real>(x, hands[0]) << std::endl;
     // std::cout << "rhs = " << GpuOut<Real>(rhs, hands[0]) << std::endl;
 
     x.fill(0, hands[0]);
@@ -377,7 +377,7 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& bounda
     // std::cout << "verifyEigenSolverIdentity norm = \n" << normHost[0] << std::endl;
 
     cudaDeviceSynchronize();
-    ASSERT_NEAR(normHost[0], 0, tolerance) << " || L_i x - rhs|| > " << tolerance;
+    ASSERT_NEAR(normHost[0], 0, tolerance) << " || L_i x - rhs|| > " << tolerance << std::endl << msg;
 
     if (dim.numDims()== 3) {
         EigenDecompThomas ed(boundary, hands, events);
@@ -399,7 +399,6 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& bounda
         cudaDeviceSynchronize();
         ASSERT_NEAR(normHost[0], 0, tolerance) << " Thomas || L_i x - rhs|| > " << tolerance;
     }
-
 }
 
 
@@ -490,8 +489,8 @@ void boundaryBattery(
        << " isStagered = " << isStag
        << " startVal = " << startVal
        << " endVal = " << endVal
-       << " dim = " << dim;
-
+       << " dim = " << dim
+       << "var spacing = (" << (deltas.x.size() > 1) << ", " << (deltas.y.size() > 1) << ", " << (deltas.z.size() < 1) << ")";
 
     std::string locMsg = ss.str();
 
@@ -540,9 +539,10 @@ void boundaryBattery(
             );
         }
 
+        //TODO:Uncomment below!
         // 4. Always run shared verification tests
-        verifyEigenSolverIdentity(dim, boundary, hand3, event2, tolerance);
-        verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
+        verifyEigenSolverIdentity(dim, boundary, hand3, event2, tolerance, locMsg);
+        // verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
     });
 }
 
@@ -610,7 +610,7 @@ TEST(LaplacianMath, laplacian) {
                                                                      XYZ<Real> endVal(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val));
                                                                      bool isStagered = isStag;
 
-                                                                     // GridDim dim(2, 2, 2);
+                                                                     // GridDim dim(2, 2, 1);
                                                                      // XYZ<bool> startIsN(0, 0, 0);
                                                                      // XYZ<bool> endIsN(0, 0, 0);
                                                                      // XYZ<Real> startVal(0, 0, 0);

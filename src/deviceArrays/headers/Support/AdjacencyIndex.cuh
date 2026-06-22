@@ -39,6 +39,18 @@ public:
         if (diag < 0) return {denseRow + diag, colInBanded};
         return {denseRow, colInBanded};
     }
+
+    /**
+     * generates the dense index that coresponds to the given sparse row.
+     * @param sparseRow
+     * @return
+     */
+    __device__ GridInd2d denseInd(size_t sparseRow) const {
+        return {
+        (diag < 0 ? sparseRow - diag : sparseRow),
+        (diag > 0 ? sparseRow + diag : sparseRow)
+        };
+    }
     /*
      * @brief Provides the corresponding index in a banded matrix.
      * @param denseCol The column of the index in the dense matrix format.

@@ -299,11 +299,20 @@ __global__ void setSymetricMatrix(
  * @param axisSegment
  */
 template<typename T>
-__global__ void mapEigenSymmToEigenLap(DeviceData2d<T> eigen, DeviceData2d<T> eigenInv, const VariableSegment<T> axisSegment) {
+__global__ void mapEigenSymmToEigenLapInv(const DeviceData2d<T> eigen, DeviceData2d<T> eigenInv, const VariableSegment<T> axisSegment) {
+    if (GridInd2d ind; ind < eigenInv) {
+        // V_L^{-1}[i, j] = V_S[j, i] * D_j
+        T d_col = sqrt(axisSegment.delta[ind.col] + axisSegment.delta[ind.col + 1]);
+        eigenInv[ind] = eigen(ind.col, ind.row) * d_col;
+    }
+}
+
+template<typename T>
+__global__ void mapEigenSymmToEigenLap(DeviceData2d<T> eigen, const VariableSegment<T> axisSegment) {
     if (GridInd2d ind; ind < eigen) {
-        T d = sqrt(axisSegment.delta[ind.row] + axisSegment.delta[ind.row + 1]);
-        eigenInv[ind] = eigen(ind.col, ind.row)/d;
-        eigen[ind] *= d;
+        // V_L[i, j] = V_S[i, j] / D_i
+        T d_row = sqrt(axisSegment.delta[ind.row] + axisSegment.delta[ind.row + 1]);
+        eigen[ind] /= d_row;
     }
 }
 
@@ -321,11 +330,17 @@ void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eV
 
     eVecs.eigenSPD(eVals, hand);
 
-    mapEigenSymmToEigenLap<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+    mapEigenSymmToEigenLapInv<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
         eVecs.toKernel2d(),
         eVecsInv.toKernel2d(),
         axisSegment
     );
+
+    mapEigenSymmToEigenLap<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+        eVecs.toKernel2d(),
+        axisSegment
+    );
+
     eVals.mult(GPUScalar<T>::get(-1), &hand);
 }
 

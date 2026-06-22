@@ -27,7 +27,7 @@ __device__ void multBandedVec(
     T sum = 0;
     for (size_t bandedCol = 0; bandedCol < banded.cols; ++bandedCol) {
         AdjacencyInd adjInd(bandedCol, diags[bandedCol]);
-        if (adjInd.inBoundsCol(dstRow, x.cols))
+        if (adjInd.inBoundsRow(dstRow, x.cols))
             sum += banded[adjInd.bandedIndRow(dstRow)] * x[adjInd.denseCol(dstRow)];
     }
     result[dstRow] = *alpha * sum + (*beta == 0 ? 0 : *beta * result[dstRow]);

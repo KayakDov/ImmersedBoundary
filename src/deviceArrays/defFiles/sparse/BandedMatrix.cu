@@ -78,6 +78,7 @@ void BandedMat<T>::bandedMult(
     CHECK_CUDA_ERROR(cudaGetLastError());
     if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
 }
+
 template<typename T>
 __global__ void mapToDenseKernel(
     DeviceData2d<T> denseSquareDst,
@@ -87,10 +88,8 @@ __global__ void mapToDenseKernel(
     GridInd2d sparseInd;
     if (sparseInd >= bandedSrc) return;
     int32_t diag = indices[sparseInd.col];
-    GridInd2d denseInd(
-        (diag < 0 ? sparseInd.row - diag : sparseInd.row),
-        (diag > 0 ? sparseInd.row + diag : sparseInd.row)
-    );
+    AdjacencyInd adj(sparseInd.col, indices[sparseInd.col]);
+    auto denseInd = adj.denseInd(sparseInd.row);
     if (denseInd < denseSquareDst) denseSquareDst[denseInd] = bandedSrc[sparseInd];
 }
 
