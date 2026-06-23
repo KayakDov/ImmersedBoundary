@@ -2,7 +2,7 @@
 
 This library provides solvers for the following systems:
 
-(1) $$L x = b$$
+(1) $$L x = b + bc$$
 
 (2) $$(L + 2 B^T B)x = 2 B^T F + p + bc$$
 
