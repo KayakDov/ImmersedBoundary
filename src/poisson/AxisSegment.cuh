@@ -11,13 +11,20 @@
 template<typename Real>
 struct Delta1d {
     const DeviceData1d<Real> deltaVar;
-    const bool isUniform;
+    const double val;
 
-    __host__ __device__ Delta1d(bool isUniform, const DeviceData1d<Real>& deltaVar)
-    : deltaVar(deltaVar), isUniform(isUniform) {}
+    /**
+     *
+     * @param delta set to 0 if the variable delta will be used.  If the distance between nodes is uniform, then this is that distance.
+     * @param deltaVar set to empty set if the distance between nodes is uniform.  If the distance is variable, this will be used.
+     * The first value is the distance from the first boundary to the first node.  If there are n nodes, then the n + 1 value is
+     * the distance from the last node to the end boundary.
+     */
+    __host__ __device__ Delta1d(Real delta, const DeviceData1d<Real>& deltaVar)
+    : deltaVar(deltaVar), val(delta) {}
 
     __device__ Real operator[](size_t i) const{
-        return isUniform ? deltaVar[0] : deltaVar[i];
+        return val > 0 ? val : deltaVar[i];
     }
 };
 
@@ -212,7 +219,7 @@ public:
     }
 
     Delta1d<T> getDelta() const {
-        return Delta1d<T>(true, SimpleArray<T>::empty());
+        return Delta1d<T>(delta, SimpleArray<T>::empty());
     }
 };
 

@@ -69,8 +69,7 @@ TYPED_TEST(BandedMatWrappersTest, BandedMatrixVectorProduct) {
     auto alpha = Singleton<T>::create(static_cast<T>(2.0), this->handle);
     auto beta  = Singleton<T>::create(static_cast<T>(0.5), this->handle);
 
-    // Expected: y = 2.0 * Ax + 0.5 * y_old = [13, 57, 71]^T
-    std::vector<T> expected = {9.0, 57.0, 47.0};
+    std::vector<T> expected = {13, 57.0, 71.0};
 
     // Invoke bandedMult (takes Handle as pointer)
     A.bandedMult(x, y, &(this->handle), alpha, beta, false);
@@ -80,9 +79,8 @@ TYPED_TEST(BandedMatWrappersTest, BandedMatrixVectorProduct) {
     y.get(actual.data(), this->handle);
     cudaDeviceSynchronize();
 
-    for (size_t i = 0; i < this->N; ++i) {
-        EXPECT_NEAR(actual[i], expected[i], 1e-5);
-    }
+    for (size_t i = 0; i < this->N; ++i) EXPECT_NEAR(actual[i], expected[i], 1e-5);
+
 }
 
 // =========================================================================
@@ -108,8 +106,8 @@ TYPED_TEST(BandedMatWrappersTest, BandedMatrixDenseMatrixProduct) {
     // Expected: Y = A * X
     // Expected: Y = A * X using current BandedMat boundary convention
     std::vector<T> expected = {
-        2.0, 26.0, 21.0,
-        8.0, 62.0, 42.0
+        4, 26, 33.0,
+        13.0, 62.0, 72.0
     };
 
     A.bandedMult(X, Y, &(this->handle), alpha, beta, false);
@@ -144,7 +142,7 @@ TYPED_TEST(BandedMatWrappersTest, VectorBandedMatrixProduct) {
     // Expected: y^T = x^T * A
     std::vector<T> expected = {8.0, 27.0, 31.0};
 
-    std::cout << "x = " << GpuOut<T>(x, this->handle) << std::endl;
+    // std::cout << "x = " << GpuOut<T>(x, this->handle) << std::endl;
     // Invoke Vec framework overload (takes Handle as reference)
     x.mult(A, y, this->handle, alpha, beta);
 
@@ -170,7 +168,7 @@ TYPED_TEST(BandedMatWrappersTest, DenseMatrixBandedMatrixProduct) {
     auto X = Mat<T>::create(R, this->N);
     X.set(h_X.data(), this->handle);
 
-    std::cout << "X =\n" << GpuOut<T>(X, this->handle) << std::endl;
+    // std::cout << "X =\n" << GpuOut<T>(X, this->handle) << std::endl;
 
     std::vector<T> h_Y = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     auto Y = Mat<T>::create(R, this->N);
@@ -188,7 +186,7 @@ TYPED_TEST(BandedMatWrappersTest, DenseMatrixBandedMatrixProduct) {
     // Invoke Mat framework overload (takes Handle as reference)
     X.mult(A, Y, this->handle, alpha, beta);
 
-    std::cout << "Y =\n" << GpuOut<T>(Y, this->handle) << std::endl;
+    // std::cout << "Y =\n" << GpuOut<T>(Y, this->handle) << std::endl;
 
     std::vector<T> actual(R * this->N);
     Y.get(actual.data(), this->handle);

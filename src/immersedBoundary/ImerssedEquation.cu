@@ -295,9 +295,19 @@ void ImmersedEq<Real, Int>::solve(
     Real *UGamma,
     Real* uStar) {
 
+    hand5[0].synch();
+
     setSparse(R, nnzR, colOffsetsR, rowIndsR, valuesR, hand5[0]);
+
+    hand5[0].synch();
+
     velocities.set(uStar, hand5[0]);
+
+    hand5[0].synch();
+
     setRHSPPrime(hand5[0]);
+
+    hand5[0].synch();
 
     events12[0].record(hand5[0]);
     events12[0].hold(hand5[1]);

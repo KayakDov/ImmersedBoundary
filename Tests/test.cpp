@@ -542,7 +542,7 @@ void boundaryBattery(
         //TODO:Uncomment below!
         // 4. Always run shared verification tests
         verifyEigenSolverIdentity(dim, boundary, hand3, event2, tolerance, locMsg);
-        // verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
+        verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
     });
 }
 
