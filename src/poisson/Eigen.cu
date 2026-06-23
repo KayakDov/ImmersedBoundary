@@ -271,22 +271,21 @@ __global__ void setSymetricMatrix(
     if (i == 0) {
         axisSegment.start.setL(main, right);
         auto dp = sqrt(axisSegment.delta[i + 1] + axisSegment.delta[i + 2]);
-        right *= -d / dp;
+        right *= d / dp;
     }
     else if (i < axisSegment.numNodes - 1) {
         axisSegment.setInteriorL(main, left, right, i);
         auto dp = sqrt(axisSegment.delta[i + 1] + axisSegment.delta[i + 2]);
         auto dm = sqrt(axisSegment.delta[i - 1] + axisSegment.delta[i]);
 
-        left *= -d / dm;
-        right *= -d / dp;
+        left *= d / dm;
+        right *= d / dp;
     }
     else if (i == axisSegment.numNodes - 1) {
         axisSegment.end.setL(main, left);
         auto dm = sqrt(axisSegment.delta[i - 1] + axisSegment.delta[i]);
-        left *= -d / dm;
+        left *= d / dm;
     }
-    main *= -1;
 }
 
 /**
@@ -340,8 +339,6 @@ void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eV
         eVecs.toKernel2d(),
         axisSegment
     );
-
-    eVals.mult(GPUScalar<T>::get(-1), &hand);
 }
 
 template<typename T>
