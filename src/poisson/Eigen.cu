@@ -248,44 +248,38 @@ __global__ void setSymetrizationMatrix(DeviceData1d<T> symnetrizationBand, Delta
  */
 template <typename T>
 __global__ void setSymetricMatrix(
-    DeviceData2d<T> mat,
     DeviceData1d<T> primaryDiag,
     DeviceData1d<T> subDiag,
     DeviceData1d<T> superDiag,
     const VariableSegment<T> axisSegment
 ) {
-    GridInd2d ind;
-    if (ind >= mat) return;
-
-    mat[ind] = 0;
-
-    size_t& i = ind.row;
+    size_t i = idx();
+    if (i >= primaryDiag.cols) return;
 
     // d can be safely computed for all valid nodes
     auto d = sqrt(axisSegment.delta[i] + axisSegment.delta[i + 1]);
 
     auto& main = primaryDiag[i];
-    auto& left = subDiag[i - 1];
-    auto& right = superDiag[i];
 
     if (i == 0) {
-        axisSegment.start.setL(main, right);
+        axisSegment.start.setL(main, superDiag[i]);
         auto dp = sqrt(axisSegment.delta[i + 1] + axisSegment.delta[i + 2]);
-        right *= d / dp;
+        superDiag[i] *= -d / dp;
     }
     else if (i < axisSegment.numNodes - 1) {
-        axisSegment.setInteriorL(main, left, right, i);
+        axisSegment.setInteriorL(main, subDiag[i - 1], superDiag[i], i);
         auto dp = sqrt(axisSegment.delta[i + 1] + axisSegment.delta[i + 2]);
         auto dm = sqrt(axisSegment.delta[i - 1] + axisSegment.delta[i]);
 
-        left *= d / dm;
-        right *= d / dp;
+        subDiag[i - 1] *= -d / dm;
+        superDiag[i] *= -d / dp;
     }
     else if (i == axisSegment.numNodes - 1) {
-        axisSegment.end.setL(main, left);
+        axisSegment.end.setL(main, subDiag[i - 1]);
         auto dm = sqrt(axisSegment.delta[i - 1] + axisSegment.delta[i]);
-        left *= d / dm;
+        subDiag[i - 1] *= -d / dm;
     }
+    main *= -1;
 }
 
 /**
@@ -318,9 +312,10 @@ __global__ void mapEigenSymmToEigenLap(DeviceData2d<T> eigen, const VariableSegm
 template<typename T>
 void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eVecsInv, Vec<T>& eVals, const VariableSegment<T> &axisSegment) {
 
-    KernelPrep kp = eVecs.kernelPrep();
-    setSymetricMatrix<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
-        eVecs.toKernel2d(),
+    eVecs.fill(0, hand);
+
+    auto kp1d = eVals.kernelPrep();
+    setSymetricMatrix<<<kp1d.numBlocks, kp1d.threadsPerBlock, 0, hand>>>(
         eVecs.diag(0).toKernel1d(),
         eVecs.diag(-1).toKernel1d(),
         eVecs.diag(1).toKernel1d(),
@@ -329,16 +324,19 @@ void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eV
 
     eVecs.eigenSPD(eVals, hand);
 
-    mapEigenSymmToEigenLapInv<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+    auto kp2d = eVecs.kernelPrep();
+    mapEigenSymmToEigenLapInv<<<kp2d.numBlocks, kp2d.threadsPerBlock, 0, hand>>>(
         eVecs.toKernel2d(),
         eVecsInv.toKernel2d(),
         axisSegment
     );
 
-    mapEigenSymmToEigenLap<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
+    mapEigenSymmToEigenLap<<<kp2d.numBlocks, kp2d.threadsPerBlock, 0, hand>>>(
         eVecs.toKernel2d(),
         axisSegment
     );
+
+     eVals.mult(GPUScalar<T>::get(-1), &hand);
 }
 
 template<typename T>
@@ -387,6 +385,7 @@ void createUnique(const BoundaryConfigT& boundaryConfig, std::shared_ptr<ResultT
             events2[1].hold(hands3[0]);
         }
     } else outputs[2] = nullptr;
+
 }
 /**
 * Generates, including memory allocation, eigen values and vectors.  The matrices pointed to, that are retruned,
@@ -414,6 +413,7 @@ void Eigen<Real>::generateEigen(const BoundaryConfigT& boundary, Handle *hands3,
 
             auto mat = Mat<Real>::create(AxisSegmentT.numNodes, numCols);
             Eigen<Real>::generateEigen(hand, mat, AxisSegmentT);
+            // hand.synch();//This eliminates the failure when present.  I need to understand why, so that I can fix it properly and not with a workaround.
             return mat;
         }
     );
@@ -431,6 +431,7 @@ Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* 
     bool is3d = boundary.dim().numDims() == 3;
     std::shared_ptr<Mat<T>> eigen[3];
     generateEigen(boundary, hands3, events2, eigen);
+
     XYZ<Vec<T>> vals(eigen[0]->lastCol(), eigen[1]->lastCol(), is3d ? eigen[2]->lastCol() : SimpleArray<T>::empty());
 
     XYZ<SquareMat<T>> vecs(

@@ -580,9 +580,9 @@ TEST(LaplacianMath, laplacian) {
 
     double tolerance = 1e-11;
 
-    size_t maxDim = 4;
+    size_t maxDim = 21;
     size_t startRowsCols = 2;
-    size_t dimStepSize = 1;
+    size_t dimStepSize = 9;
 
     size_t n = maxDim * maxDim * maxDim;
     auto buffer = Mat<Real>::create(n, n + 5);

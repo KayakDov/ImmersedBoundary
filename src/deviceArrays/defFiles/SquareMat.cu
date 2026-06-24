@@ -36,10 +36,9 @@ SquareMat<T> SquareMat<T>::create(size_t rowsCols, size_t ld, T *ptr) {
  *
  * @throws std::runtime_error if info != 0.
  */
-inline void processInfo(const Singleton<int32_t>& info_dev,
-                        const std::string& context = "cusolverDnXgeev")
+inline void processInfo(const Singleton<int32_t>& info_dev, cudaStream_t stream, const std::string& context = "cusolverDnXgeev")
 {
-    const int info_host = info_dev.get();
+    const int info_host = info_dev.get(stream);
 
     if (info_host == 0) return;
 
@@ -402,6 +401,63 @@ std::pair<size_t, size_t> SquareMat<T>::eigenSPDBufferSize(Handle& hand) const
     }
 }
 
+/**
+ * @brief Checks the info result from cusolverDnXsyevd and throws if an error occurred.
+ *
+ * cusolverDnXsyevd sets info as follows:
+ *   info = 0  : success.
+ *   info < 0  : the (-info)-th parameter had an illegal value.
+ *   info > 0  : the algorithm failed to converge; info off-diagonal elements
+ *               of an intermediate tridiagonal form did not converge to zero.
+ *
+ * @param info_dev  Device-side Singleton<int32_t> written by cusolverDnXsyevd.
+ * @param context   String appended to the error message for caller identification.
+ *
+ * @throws std::runtime_error if info != 0.
+ */
+inline void processInfoSyevd(const Singleton<int32_t>& info_dev, cudaStream_t stream, const std::string& context = "cusolverDnXsyevd")
+{
+    const int info_host = info_dev.get(stream);
+
+    if (info_host == 0) return;
+
+    std::ostringstream msg;
+    msg << "cuSOLVER error in " << context << ": info = " << info_host << ". ";
+
+    if (info_host > 0) {
+        msg << "The symmetric eigensolver (Divide & Conquer / QR iteration) failed "
+            << "to converge. " << info_host << " off-diagonal elements of the "
+            << "intermediate tridiagonal matrix did not converge to zero. "
+            << "The matrix may be numerically indefinite or very ill-conditioned.";
+    } else {
+        const int param = -info_host;
+        msg << "Parameter " << param << " had an illegal value. ";
+        switch (param) {
+            case 1:  msg << "(handle)"; break;
+            case 2:  msg << "(params descriptor)"; break;
+            case 3:  msg << "(jobz: eigenvector mode)"; break;
+            case 4:  msg << "(uplo: fill mode)"; break;
+            case 5:  msg << "(n: matrix dimension)"; break;
+            case 6:  msg << "(dataTypeA)"; break;
+            case 7:  msg << "(A: device matrix pointer)"; break;
+            case 8:  msg << "(lda: leading dimension of A)"; break;
+            case 9:  msg << "(dataTypeW)"; break;
+            case 10: msg << "(W: device eigenvalue array pointer)"; break;
+            case 11: msg << "(computeType)"; break;
+            case 12: msg << "(bufferOnDevice: device workspace pointer)"; break;
+            case 13: msg << "(workspaceInBytesOnDevice)"; break;
+            case 14: msg << "(bufferOnHost: host workspace pointer)"; break;
+            case 15: msg << "(workspaceInBytesOnHost)"; break;
+            case 16: msg << "(info: device result pointer)"; break;
+            default: msg << "(unknown parameter)"; break;
+        }
+    }
+
+    std::cout << "SquareMat.cu::processInforSyved info ran" << std::endl;
+
+    throw std::runtime_error(msg.str());
+}
+
 template<typename T>
 void SquareMat<T>::eigenSPD(
     Vec<T>&              eVals,
@@ -424,8 +480,6 @@ void SquareMat<T>::eigenSPD(
         cusolverDnParams_t params;
         CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
 
-        // Fix: Replace *this with this->data(), eVals with eVals.data(),
-        // deviceBuffer with deviceBuffer.data(), and info.toKernel1d() with info.data()
         CHECK_CUSOLVER_ERROR(cusolverDnXsyevd(
             hand,
             params,
@@ -441,15 +495,18 @@ void SquareMat<T>::eigenSPD(
         ));
 
         CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
+        hand.synch(); //It looks like if hostBuffer gets cleaned up to soon after this is done running, then crash.
+        // processInfoSyevd(info, hand);
     }
 }
+
+
 
 template<typename T>
 void SquareMat<T>::eigenSPD(
     Vec<T>&       eVals,
     Handle&       hand
-)
-{
+){
     auto [deviceElems, hostElems] = eigenSPDBufferSize(hand);
 
     auto preDeviceBuffer = SimpleArray<T>::create(std::max(deviceElems, size_t{1}) + 1, hand);

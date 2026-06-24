@@ -253,8 +253,8 @@ void ImmersedEq<Real, Int>::setRHSPPrime(Handle &hand) {
     if (dim.layers > 1) divergenceKernel3d<Real><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
             {
                 u.tensor(dim.rows, dim.layers).toKernel3d(),
-                v.tensor(dim.rows, dim.layers).toKernel3d(),
-                w.tensor(dim.rows, dim.layers).toKernel3d()
+                v.tensor(dim.rows + 1, dim.layers).toKernel3d(),
+                w.tensor(dim.rows, dim.layers + 1).toKernel3d()
             },
             RHSPPrime.tensor(dim.rows, dim.layers).toKernel3d(),
             delta,
@@ -262,7 +262,7 @@ void ImmersedEq<Real, Int>::setRHSPPrime(Handle &hand) {
         );
     else divergenceKernel2d<Real><<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
             u.matrix(dim.rows).toKernel2d(),
-            v.matrix(dim.rows).toKernel2d(),
+            v.matrix(dim.rows + 1).toKernel2d(),
             RHSPPrime.matrix(dim.rows).toKernel2d(),
             delta,
             dT.data()
