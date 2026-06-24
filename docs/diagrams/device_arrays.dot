@@ -1,0 +1,99 @@
+digraph DeviceArrays {
+    ranksep=1.2;
+ //   nodesep=1.0;
+
+    label="GPU Wrapper Architecture";
+    fontsize=24;
+    labelloc=t;
+
+    
+    rankdir=LR;
+
+    node [shape=box];
+
+    GpuArray;
+    Mat;
+    Vec;
+    Tensor;
+    SquareMat;
+    BandedMat;
+    Diagonal;
+    Row;
+    Col;
+    Tridiagonal;
+    DiagonalMat;
+    LayerXY;
+    LayerYZ;
+    
+
+    // Inheritance (blue)
+    GpuArray -> Mat       [color=blue];
+    GpuArray -> Vec       [color=blue];
+    
+    Mat -> Row       [color=red];
+    Mat -> Col       [color=red];
+    Mat -> Diagonal  [color=red];
+    
+    
+
+    Mat -> SquareMat      [color=blue];
+    Mat -> BandedMat      [color=blue];
+    Mat -> Tensor    [color=blue];
+    
+    Mat -> LayerXY [color=blue];
+    Mat -> LayerYZ [color=blue];
+    
+    Tensor -> LayerXY [color=red];
+    Tensor -> LayerYZ [color=red];
+    
+    Vec -> SimpleArray [color=blue];
+    
+    Vec -> Row       [color=blue];
+    Vec -> Diagonal  [color=blue];
+    
+    SimpleArray -> Singleton [color=blue];
+
+    GpuArray -> Singleton      [color=red];
+
+    BandedMat -> Tridiagonal  [color = blue]
+    BandedMat -> DiagonalMat  [color = blue]
+    
+    SimpleArray -> Col       [color=blue];
+
+    Handle [
+        shape=box
+        label="Handle\nhandles, streams,\nand stream state"
+    ];
+    
+    Event [
+        shape=box
+        label="Event\nstream cooperation"
+    ];
+    
+    Handle -> Event [color = green]
+    Handle -> GpuArray [color = green]
+    Event -> GpuArray [color = green]
+
+Legend [
+    shape=none
+    fontsize=12
+    margin=0.1
+    label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+        <TR>
+            <TD><FONT COLOR="blue"><B>━━▷</B></FONT></TD>
+            <TD>Inheritance</TD>
+        </TR>
+        <TR>
+            <TD><FONT COLOR="red"><B>━━▶</B></FONT></TD>
+            <TD>Creates / Returns</TD>
+        </TR>
+        <TR>
+            <TD><FONT COLOR="green"><B>━━▶</B></FONT></TD>
+            <TD>Use</TD>
+        </TR>
+    </TABLE>
+    >
+];
+{ rank=min; Legend; }
+}
