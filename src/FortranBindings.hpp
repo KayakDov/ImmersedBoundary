@@ -247,10 +247,10 @@ namespace ImEq {
 namespace eigen {
 
     template<typename Real>
-    std::unique_ptr<EigenDecompForFortran<Real>> eds = nullptr;
+    std::vector<std::unique_ptr<EigenDecompForFortran<Real>>> solvers;
 
     template<typename Real>
-    void initEigenDecompSolver(
+    size_t initEigenDecompSolver(
         size_t rows, size_t cols, size_t layers,
         Real* dx, Real* dy, Real* dz,
         bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
@@ -261,35 +261,39 @@ namespace eigen {
     ) {
         auto xb = Mat<Real>::create(rows * cols * layers, 3);
 
-
-
-        eds<Real> = std::make_unique<EigenDecompForFortran<Real>>(
-            rows, cols, layers,
-            std::vector<Real>(dx, dx + (uniformDeltaX ? 1 : cols + 1)),
-            std::vector<Real>(dy, dy + (uniformDeltaY ? 1 : rows + 1)),
-            std::vector<Real>(dz, dz + (uniformDeltaZ ? 1 : layers + 1)),
-            leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
-            leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
-            isStaggered,
-            thomas, xb.col(0), xb.col(1), xb.col(2));
+        size_t solverHandle = solvers<Real>.size();
+        solvers<Real>.push_back(
+            std::make_unique<EigenDecompForFortran<Real>>(
+                rows, cols, layers,
+                std::vector<Real>(dx, dx + (uniformDeltaX ? 1 : cols + 1)),
+                std::vector<Real>(dy, dy + (uniformDeltaY ? 1 : rows + 1)),
+                std::vector<Real>(dz, dz + (uniformDeltaZ ? 1 : layers + 1)),
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
+                leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
+                isStaggered,
+                thomas, xb.col(0), xb.col(1), xb.col(2)
+            )
+        );
+        return solverHandle;
     }
 
     template<typename Real>
-    void runDecompSolver(Real* xHost, Real* bHost) {
-        if (!eds<Real>) throw std::runtime_error(
-            "The solver is not initialized.  Be sure you're using consistent types.");
-        eds<Real>->solve(xHost, bHost);
+    void runDecompSolver(size_t solverHandle, Real* xHost, Real* bHost) {
+        if (solverHandle >= solvers<Real>.size() || !solvers<Real>[solverHandle])
+            throw std::runtime_error("Invalid eigen solver handle.");
+
+        solvers<Real>[solverHandle]->solve(xHost, bHost);
         cudaDeviceSynchronize();
     }
 
     template<typename Real>
     void finalizeEigenDecomp() {
-        if (eds<Real>) eds<Real>.reset();
+        solvers<Real>.clear();
     }
 
     // --- Initialization Functions ---
     extern "C" {
-        inline void initEigenDecomp_d(
+        inline size_t initEigenDecomp_d(
             size_t rows, size_t cols, size_t layers,
             double* dx, double* dy, double* dz,
             bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
@@ -298,16 +302,16 @@ namespace eigen {
             bool isStaggered,
             bool thomas
         ) {
-            initEigenDecompSolver<double>(
+            return initEigenDecompSolver<double>(
                 rows, cols, layers,
                 dx, dy, dz,
-                uniformDeltaX, uniformDeltaX, uniformDeltaZ,
+                uniformDeltaX, uniformDeltaY, uniformDeltaZ,
                 leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
                 isStaggered, thomas);
         }
 
-        inline void initEigenDecomp_s(
+        inline size_t initEigenDecomp_s(
             size_t rows, size_t cols, size_t layers,
             float* dx, float* dy, float* dz,
             bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
@@ -316,22 +320,22 @@ namespace eigen {
             bool isStaggered,
             bool thomas
         ) {
-            initEigenDecompSolver<float>(
+            return initEigenDecompSolver<float>(
                 rows, cols, layers,
                 dx, dy, dz,
-                uniformDeltaX, uniformDeltaX, uniformDeltaZ,
+                uniformDeltaX, uniformDeltaY, uniformDeltaZ,
                 leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
                 isStaggered, thomas
             );
         }
 
-        inline void solveEigenDecomp_d(double *x, double* b) {
-            runDecompSolver(x, b);
+        inline void solveEigenDecomp_d(size_t solverHandle, double *x, double* b) {
+            runDecompSolver(solverHandle, x, b);
         }
 
-        inline void solveEigenDecomp_s(float *x, float* b) {
-            runDecompSolver(x, b);
+        inline void solveEigenDecomp_s(size_t solverHandle, float *x, float* b) {
+            runDecompSolver(solverHandle, x, b);
         }
 
         inline void finalizeEigenDecomp_d() {
@@ -342,4 +346,4 @@ namespace eigen {
             finalizeEigenDecomp<float>();
         }
     }
-}
+};

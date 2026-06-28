@@ -50,6 +50,7 @@ program test_cudabanded_suite
     real(C_DOUBLE), allocatable :: b_eig(:)
 
     logical :: use_thomas
+    integer(C_SIZE_T) :: solverHandle
 
     !------------------------------------------------------------------
     ! Grid
@@ -145,8 +146,8 @@ program test_cudabanded_suite
 
     call finalize_immersed_eq_d_i32()
 
-    deallocate(rowOffsetsB,colIndsB,valuesB)
-    deallocate(f_constraints,p_im,rhs_b)
+    deallocate(rowOffsetsB, colIndsB, valuesB)
+    deallocate(f_constraints, p_im, rhs_b)
 
     print *
     print *, "==========================================="
@@ -161,7 +162,7 @@ program test_cudabanded_suite
 
     use_thomas = .true.
 
-    call init_eigen_decomp_d( &
+    solverHandle = init_eigen_decomp_d( &
             rows, cols, layers, &
             dx, dy, dz, &
             uniformDeltaX, &
@@ -182,14 +183,17 @@ program test_cudabanded_suite
             isStaggered, &
             use_thomas)
 
-    call solve_eigen_decomp_d(x_eig,b_eig)
+    call solve_eigen_decomp_d( &
+            solverHandle, &
+            x_eig, &
+            b_eig)
 
     print *, "Eigen Decomp Result (first 3): ", x_eig(1:3)
 
     call finalize_eigen_decomp_d()
 
-    deallocate(x_eig,b_eig)
-    deallocate(dx,dy,dz)
+    deallocate(x_eig, b_eig)
+    deallocate(dx, dy, dz)
 
     print *, "==========================================="
     print *, "ALL TESTS COMPLETED"

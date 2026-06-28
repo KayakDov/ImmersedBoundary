@@ -38,13 +38,34 @@ From the project root directory:
 ## 2. Fortran Implementation
 
 ### The "Persistent" Workflow
-Unlike a standard function call, this library maintains a "state" on the GPU to maximize throughput.
-1. **Initialize Once:** The GPU allocates memory and pre-calculates eigenvalues.
-2. **Solve Many Times:** Call the solve routine inside your loops. You can update the boundary matrix ($B$) every time you call it without re-initializing.
-3. **Finalize Once:** Release GPU resources before program termination.
 
-### Implementation Examples
-For a complete working example of both the Immersed Boundary and the Direct Eigen solvers, please refer to the source code and build scripts in the `/FortranTest` subfolder.
+The Eigendecomposition solver supports multiple independent solver instances.
+
+Each call to `init_eigen_decomp_*` creates a new solver and returns a solver handle. This handle uniquely identifies the precomputed eigendecomposition and must be supplied to subsequent calls to `solve_eigen_decomp_*`.
+
+Typical usage is:
+
+1. Initialize one solver for each grid or boundary configuration.
+2. Save the returned solver handle.
+3. Reuse that handle for as many solves as needed.
+4. Call `finalize_eigen_decomp_*()` once before program termination to release all eigendecomposition resources.
+
+Example:
+
+```fortran
+integer(C_SIZE_T) :: pressureSolver
+integer(C_SIZE_T) :: temperatureSolver
+
+pressureSolver = init_eigen_decomp_d(...)
+
+temperatureSolver = init_eigen_decomp_d(...)
+
+call solve_eigen_decomp_d(pressureSolver, xp, bp)
+
+call solve_eigen_decomp_d(temperatureSolver, xt, bt)
+
+call finalize_eigen_decomp_d()
+```
 
 ---
 
@@ -136,7 +157,12 @@ Executes the iterative solver for the coupled Pressure ($P'$) and Force ($F'$) s
 ## 7. Argument Reference: Direct Eigen Solver
 
 ### Initialization Routine (`init_eigen_decomp_*`)
-Pre-calculates the spectral basis for the Laplacian on the given grid.
+
+Creates a new eigendecomposition solver and returns a solver handle.
+
+| Return Value | Type | Description |
+| :--- | :--- | :--- |
+| solverHandle | integer(C_SIZE_T) | Identifier used in subsequent solve calls. |
 
 | Argument | Type | Description |
 | :--- | :--- | :--- |
@@ -153,6 +179,7 @@ Performs the spectral solve on the GPU.
 
 | Argument | Type | Description                                                                          |
 | :--- | :--- |:-------------------------------------------------------------------------------------|
+| solverHandle | integer(C_SIZE_T) | Handle returned by `init_eigen_decomp_*`. |
 | x | real array | Output: The solved field.                                                            |
 | b | real array | Input: The source term (RHS).  Be sure this is in the column space of the laplacian. |
 
@@ -211,9 +238,9 @@ This module provides standalone direct Eigendecomposition solvers for the Poisso
 
 | Routine | Precision | Purpose |
 | :--- | :--- | :--- |
-| `init_eigen_decomp_d` | Double | Initialize Eigendecomposition / spectral basis. |
-| `init_eigen_decomp_s` | Single | Initialize Eigendecomposition / spectral basis. |
-| `solve_eigen_decomp_d` | Double | Direct spectral solve ($\nabla^2 x = b$). |
-| `solve_eigen_decomp_s` | Single | Direct spectral solve ($\nabla^2 x = b$). |
+| `init_eigen_decomp_d` | Double | Create a new eigendecomposition solver and return its solver handle. |
+| `init_eigen_decomp_s` | Single | Create a new eigendecomposition solver and return its solver handle. |
+| `solve_eigen_decomp_d` | Double | Solve using an existing solver handle. ($\nabla^2 x = b$). |
+| `solve_eigen_decomp_s` | Single | Solve using an existing solver handle. ($\nabla^2 x = b$). |
 | `finalize_eigen_decomp_d` | N/A | Free Eigendecomposition GPU resources. |
 | `finalize_eigen_decomp_s` | N/A | Free Eigendecomposition GPU resources. |
