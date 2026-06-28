@@ -1,13 +1,30 @@
-.idea/
-.vscode/
+# Build outputs
 cmake-build-debug/
-build/
-bin/
-obj/
+cmake-build-release/
+
+# Doxygen generated files
+src/html/
+src/latex/
+code/src/html/
+code/src/latex/
+**/*.html
+**/*.map
+**/*.md5
+
+# Binary/compiled outputs  
 *.o
-*.obj
-*.exe
-*.out
-dataFromYuri/*.bin
-dataFromYuri/*.dat
-dataFromYuri/result.dat
+*.a
+*.so
+*.mod
+*.zip
+*.pdf
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build.ninja
+
+# Log files
+*.log
