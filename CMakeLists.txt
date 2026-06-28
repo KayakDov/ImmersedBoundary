@@ -147,16 +147,13 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # =========================
 # Unit Test Executable
 # =========================
-# =========================
-# Unit Test Executable
-# =========================
 enable_testing()
 
-# CHANGE THIS: Include both .cpp and .cu files
 file(GLOB TEST_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cu"
 )
+list(FILTER TEST_SOURCES EXCLUDE REGEX "BenchMark\\.cpp$")
 
 add_executable(run_unit_tests ${TEST_SOURCES})
 
@@ -174,6 +171,30 @@ target_link_libraries(run_unit_tests
 include(GoogleTest)
 gtest_discover_tests(run_unit_tests DISCOVERY_MODE PRE_TEST)
 
+# =========================
+# Benchmark Executable
+# =========================
+add_executable(run_benchmarks
+        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/BenchMark.cpp"
+)
+
+set_target_properties(run_benchmarks PROPERTIES
+        CUDA_RUNTIME_LIBRARY Shared
+        BUILD_RPATH "${INTLC_LIB_DIR}"
+)
+target_link_libraries(run_benchmarks
+        PRIVATE
+        CudaBandedLib
+        GTest::gtest
+        GTest::gtest_main
+)
+
+if(NOT MSVC)
+    target_link_options(run_benchmarks PRIVATE
+            "-Wl,--no-undefined"
+            "-Wl,--disable-new-dtags"
+    )
+endif()
 # =========================
 # Install the library and Fortran modules for external projects
 # =========================
