@@ -27,7 +27,7 @@ extern "C" {
 // splicer begin namespace.eigen.C_declarations
 // splicer end namespace.eigen.C_declarations
 
-void EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
+size_t EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
     size_t layers, double *dx, double *dy, double *dz,
     bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
     bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann,
@@ -35,7 +35,7 @@ void EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
     double leftVal, double rightVal, double topVal, double bottomVal,
     double frontVal, double backVal, bool isStaggered, bool thomas);
 
-void EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
+size_t EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
     size_t layers, float *dx, float *dy, float *dz, bool uniformDeltaX,
     bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann,
     bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
@@ -43,9 +43,11 @@ void EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
     float rightVal, float topVal, float bottomVal, float frontVal,
     float backVal, bool isStaggered, bool thomas);
 
-void EIG_eigen_solveEigenDecomp_d(double *x, double *b);
+void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *x,
+    double *b);
 
-void EIG_eigen_solveEigenDecomp_s(float *x, float *b);
+void EIG_eigen_solveEigenDecomp_s(size_t solverHandle, float *x,
+    float *b);
 
 void EIG_eigen_finalizeEigenDecomp_d(void);
 

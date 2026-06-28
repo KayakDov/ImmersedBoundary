@@ -19211,15 +19211,15 @@
                                         "typemap_name": "bool"
                                     }
                                 ],
-                                "typemap_name": "void"
+                                "typemap_name": "size_t"
                             },
                             "specifier": [
-                                "void"
+                                "size_t"
                             ],
-                            "typemap_name": "void"
+                            "typemap_name": "size_t"
                         },
-                        "decl": "void initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
-                        "declgen": "void initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
+                        "decl": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
+                        "declgen": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
                         "linenumber": 29,
                         "name": "initEigenDecomp_d",
                         "options": {},
@@ -19235,16 +19235,26 @@
                                         "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "C_name": "EIG_eigen_initEigenDecomp_d",
                                         "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas",
-                                        "C_return_type": "void",
+                                        "C_return_type": "size_t",
+                                        "c_const": "",
+                                        "c_get_value": "",
+                                        "c_type": "size_t",
+                                        "c_var": "SHC_rv",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&SHC_rv",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "SHC_rv",
                                         "i_name_function": "c_init_eigen_decomp_d",
-                                        "stmt_name": "c_subroutine",
-                                        "typemap_name": "void"
+                                        "idtor": "0",
+                                        "stmt_name": "c_function_native",
+                                        "typemap_name": "size_t"
                                     },
                                     "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
+                                        "abstract": "native",
+                                        "intent": "function"
                                     },
-                                    "stmt": "c_subroutine"
+                                    "stmt": "c_function_native"
                                 },
                                 "backIsNeumann": {
                                     "fmtdict": {
@@ -19964,22 +19974,43 @@
                                         "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "C_name": "EIG_eigen_initEigenDecomp_d",
                                         "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas",
-                                        "C_return_type": "void",
+                                        "C_return_type": "size_t",
                                         "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx",
                                         "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
-                                        "F_subprogram": "subroutine",
+                                        "F_subprogram": "function",
+                                        "c_const": "",
+                                        "c_get_value": "",
+                                        "c_type": "size_t",
+                                        "c_var": "SHC_rv",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&SHC_rv",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "SHC_rv",
                                         "f_call_function": "c_init_eigen_decomp_d",
+                                        "f_kind": "C_SIZE_T",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_result_clause": "\fresult(SHT_rv)",
+                                        "f_type": "integer(C_SIZE_T)",
+                                        "f_var": "SHT_rv",
+                                        "fc_var": "SHT_rv",
                                         "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "i_kind": "C_SIZE_T",
+                                        "i_module_name": "iso_c_binding",
                                         "i_name_function": "c_init_eigen_decomp_d",
-                                        "i_subprogram": "subroutine",
-                                        "stmt_name": "f_subroutine",
-                                        "typemap_name": "void"
+                                        "i_result_clause": "\fresult(SHT_rv)",
+                                        "i_subprogram": "function",
+                                        "i_type": "integer(C_SIZE_T)",
+                                        "i_var": "SHT_rv",
+                                        "idtor": "0",
+                                        "stmt_name": "f_function_native",
+                                        "typemap_name": "size_t"
                                     },
                                     "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
+                                        "abstract": "native",
+                                        "intent": "function"
                                     },
-                                    "stmt": "f_subroutine"
+                                    "stmt": "f_function_native"
                                 },
                                 "backIsNeumann": {
                                     "fmtdict": {
@@ -20906,8 +20937,8 @@
                             "share": {
                                 "+result": {
                                     "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
+                                        "abstract": "native",
+                                        "intent": "function"
                                     }
                                 },
                                 "backIsNeumann": {
@@ -21080,7 +21111,7 @@
                             "F_name_generic": "init_eigen_decomp_d",
                             "F_name_impl": "init_eigen_decomp_d",
                             "c_arglist": [
-                                "c_var",
+                                "SHC_rv",
                                 "rows",
                                 "cols",
                                 "layers",
@@ -21106,7 +21137,7 @@
                                 "thomas"
                             ],
                             "f_arglist": [
-                                "f_var",
+                                "SHT_rv",
                                 "rows",
                                 "cols",
                                 "layers",
@@ -21398,15 +21429,15 @@
                                         "typemap_name": "bool"
                                     }
                                 ],
-                                "typemap_name": "void"
+                                "typemap_name": "size_t"
                             },
                             "specifier": [
-                                "void"
+                                "size_t"
                             ],
-                            "typemap_name": "void"
+                            "typemap_name": "size_t"
                         },
-                        "decl": "void initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
-                        "declgen": "void initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
+                        "decl": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
+                        "declgen": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
                         "linenumber": 30,
                         "name": "initEigenDecomp_s",
                         "options": {},
@@ -21422,16 +21453,26 @@
                                         "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "C_name": "EIG_eigen_initEigenDecomp_s",
                                         "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas",
-                                        "C_return_type": "void",
+                                        "C_return_type": "size_t",
+                                        "c_const": "",
+                                        "c_get_value": "",
+                                        "c_type": "size_t",
+                                        "c_var": "SHC_rv",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&SHC_rv",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "SHC_rv",
                                         "i_name_function": "c_init_eigen_decomp_s",
-                                        "stmt_name": "c_subroutine",
-                                        "typemap_name": "void"
+                                        "idtor": "0",
+                                        "stmt_name": "c_function_native",
+                                        "typemap_name": "size_t"
                                     },
                                     "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
+                                        "abstract": "native",
+                                        "intent": "function"
                                     },
-                                    "stmt": "c_subroutine"
+                                    "stmt": "c_function_native"
                                 },
                                 "backIsNeumann": {
                                     "fmtdict": {
@@ -22151,22 +22192,43 @@
                                         "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "C_name": "EIG_eigen_initEigenDecomp_s",
                                         "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas",
-                                        "C_return_type": "void",
+                                        "C_return_type": "size_t",
                                         "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx",
                                         "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
-                                        "F_subprogram": "subroutine",
+                                        "F_subprogram": "function",
+                                        "c_const": "",
+                                        "c_get_value": "",
+                                        "c_type": "size_t",
+                                        "c_var": "SHC_rv",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&SHC_rv",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "SHC_rv",
                                         "f_call_function": "c_init_eigen_decomp_s",
+                                        "f_kind": "C_SIZE_T",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_result_clause": "\fresult(SHT_rv)",
+                                        "f_type": "integer(C_SIZE_T)",
+                                        "f_var": "SHT_rv",
+                                        "fc_var": "SHT_rv",
                                         "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "i_kind": "C_SIZE_T",
+                                        "i_module_name": "iso_c_binding",
                                         "i_name_function": "c_init_eigen_decomp_s",
-                                        "i_subprogram": "subroutine",
-                                        "stmt_name": "f_subroutine",
-                                        "typemap_name": "void"
+                                        "i_result_clause": "\fresult(SHT_rv)",
+                                        "i_subprogram": "function",
+                                        "i_type": "integer(C_SIZE_T)",
+                                        "i_var": "SHT_rv",
+                                        "idtor": "0",
+                                        "stmt_name": "f_function_native",
+                                        "typemap_name": "size_t"
                                     },
                                     "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
+                                        "abstract": "native",
+                                        "intent": "function"
                                     },
-                                    "stmt": "f_subroutine"
+                                    "stmt": "f_function_native"
                                 },
                                 "backIsNeumann": {
                                     "fmtdict": {
@@ -23093,8 +23155,8 @@
                             "share": {
                                 "+result": {
                                     "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
+                                        "abstract": "native",
+                                        "intent": "function"
                                     }
                                 },
                                 "backIsNeumann": {
@@ -23267,7 +23329,7 @@
                             "F_name_generic": "init_eigen_decomp_s",
                             "F_name_impl": "init_eigen_decomp_s",
                             "c_arglist": [
-                                "c_var",
+                                "SHC_rv",
                                 "rows",
                                 "cols",
                                 "layers",
@@ -23293,7 +23355,7 @@
                                 "thomas"
                             ],
                             "f_arglist": [
-                                "f_var",
+                                "SHT_rv",
                                 "rows",
                                 "cols",
                                 "layers",
@@ -23327,6 +23389,16 @@
                             "declarator": {
                                 "name": "solveEigenDecomp_d",
                                 "params": [
+                                    {
+                                        "declarator": {
+                                            "name": "solverHandle",
+                                            "typemap_name": "size_t"
+                                        },
+                                        "specifier": [
+                                            "size_t"
+                                        ],
+                                        "typemap_name": "size_t"
+                                    },
                                     {
                                         "declarator": {
                                             "attrs": {
@@ -23373,8 +23445,8 @@
                             ],
                             "typemap_name": "void"
                         },
-                        "decl": "void solveEigenDecomp_d(double *x +intent(out) +rank(1), double* b +intent(in) +rank(1))",
-                        "declgen": "void solveEigenDecomp_d(double *x +intent(out)+rank(1), double *b +intent(in)+rank(1))",
+                        "decl": "void solveEigenDecomp_d(size_t solverHandle, double *x +intent(out) +rank(1), double* b +intent(in) +rank(1))",
+                        "declgen": "void solveEigenDecomp_d(size_t solverHandle, double *x +intent(out)+rank(1), double *b +intent(in)+rank(1))",
                         "linenumber": 31,
                         "name": "solveEigenDecomp_d",
                         "options": {},
@@ -23386,10 +23458,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::solveEigenDecomp_d(\tx,\t b)",
-                                        "C_call_list": "x,\t b",
+                                        "C_call_function": "eigen::solveEigenDecomp_d(\tsolverHandle,\t x,\t b)",
+                                        "C_call_list": "solverHandle,\t x,\t b",
                                         "C_name": "EIG_eigen_solveEigenDecomp_d",
-                                        "C_prototype": "double *x,\t double *b",
+                                        "C_prototype": "size_t solverHandle,\t double *x,\t double *b",
                                         "C_return_type": "void",
                                         "i_name_function": "c_solve_eigen_decomp_d",
                                         "stmt_name": "c_subroutine",
@@ -23431,6 +23503,37 @@
                                     },
                                     "stmt": "c_in_native*"
                                 },
+                                "solverHandle": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "solverHandle",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&solverHandle",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "solverHandle",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_value_attr": ", value",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "c_in_native"
+                                },
                                 "x": {
                                     "fmtdict": {
                                         "c_abstract_decl": "double *",
@@ -23465,16 +23568,16 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::solveEigenDecomp_d(\tx,\t b)",
-                                        "C_call_list": "x,\t b",
+                                        "C_call_function": "eigen::solveEigenDecomp_d(\tsolverHandle,\t x,\t b)",
+                                        "C_call_list": "solverHandle,\t x,\t b",
                                         "C_name": "EIG_eigen_solveEigenDecomp_d",
-                                        "C_prototype": "double *x,\t double *b",
+                                        "C_prototype": "size_t solverHandle,\t double *x,\t double *b",
                                         "C_return_type": "void",
-                                        "F_arg_c_call": "x,\t b",
-                                        "F_arguments": "x,\t b",
+                                        "F_arg_c_call": "solverHandle,\t x,\t b",
+                                        "F_arguments": "solverHandle,\t x,\t b",
                                         "F_subprogram": "subroutine",
                                         "f_call_function": "c_solve_eigen_decomp_d",
-                                        "i_arguments": "x,\t b",
+                                        "i_arguments": "solverHandle,\t x,\t b",
                                         "i_name_function": "solve_eigen_decomp_d",
                                         "i_subprogram": "subroutine",
                                         "stmt_name": "f_subroutine",
@@ -23530,6 +23633,46 @@
                                     },
                                     "stmt": "f_in_native*"
                                 },
+                                "solverHandle": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "solverHandle",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&solverHandle",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "solverHandle",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_kind": "C_SIZE_T",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_type": "integer(C_SIZE_T)",
+                                        "f_value_attr": ", value",
+                                        "f_var": "solverHandle",
+                                        "fc_var": "solverHandle",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "i_kind": "C_SIZE_T",
+                                        "i_module_name": "iso_c_binding",
+                                        "i_type": "integer(C_SIZE_T)",
+                                        "i_var": "solverHandle",
+                                        "idtor": "0",
+                                        "stmt_name": "f_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "f_in_native"
+                                },
                                 "x": {
                                     "fmtdict": {
                                         "c_abstract_decl": "double *",
@@ -23589,6 +23732,13 @@
                                         "rank": 1
                                     }
                                 },
+                                "solverHandle": {
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    }
+                                },
                                 "x": {
                                     "meta": {
                                         "abstract": "native*",
@@ -23606,11 +23756,13 @@
                             "F_name_impl": "solve_eigen_decomp_d",
                             "c_arglist": [
                                 "c_var",
+                                "solverHandle",
                                 "x",
                                 "b"
                             ],
                             "f_arglist": [
                                 "f_var",
+                                "solverHandle",
                                 "x",
                                 "b"
                             ],
@@ -23623,6 +23775,16 @@
                             "declarator": {
                                 "name": "solveEigenDecomp_s",
                                 "params": [
+                                    {
+                                        "declarator": {
+                                            "name": "solverHandle",
+                                            "typemap_name": "size_t"
+                                        },
+                                        "specifier": [
+                                            "size_t"
+                                        ],
+                                        "typemap_name": "size_t"
+                                    },
                                     {
                                         "declarator": {
                                             "attrs": {
@@ -23669,8 +23831,8 @@
                             ],
                             "typemap_name": "void"
                         },
-                        "decl": "void solveEigenDecomp_s(float *x +intent(out) +rank(1), float* b +intent(in) +rank(1))",
-                        "declgen": "void solveEigenDecomp_s(float *x +intent(out)+rank(1), float *b +intent(in)+rank(1))",
+                        "decl": "void solveEigenDecomp_s(size_t solverHandle, float *x +intent(out) +rank(1), float* b +intent(in) +rank(1))",
+                        "declgen": "void solveEigenDecomp_s(size_t solverHandle, float *x +intent(out)+rank(1), float *b +intent(in)+rank(1))",
                         "linenumber": 32,
                         "name": "solveEigenDecomp_s",
                         "options": {},
@@ -23682,10 +23844,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::solveEigenDecomp_s(\tx,\t b)",
-                                        "C_call_list": "x,\t b",
+                                        "C_call_function": "eigen::solveEigenDecomp_s(\tsolverHandle,\t x,\t b)",
+                                        "C_call_list": "solverHandle,\t x,\t b",
                                         "C_name": "EIG_eigen_solveEigenDecomp_s",
-                                        "C_prototype": "float *x,\t float *b",
+                                        "C_prototype": "size_t solverHandle,\t float *x,\t float *b",
                                         "C_return_type": "void",
                                         "i_name_function": "c_solve_eigen_decomp_s",
                                         "stmt_name": "c_subroutine",
@@ -23727,6 +23889,37 @@
                                     },
                                     "stmt": "c_in_native*"
                                 },
+                                "solverHandle": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "solverHandle",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&solverHandle",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "solverHandle",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_value_attr": ", value",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "c_in_native"
+                                },
                                 "x": {
                                     "fmtdict": {
                                         "c_abstract_decl": "float *",
@@ -23761,16 +23954,16 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::solveEigenDecomp_s(\tx,\t b)",
-                                        "C_call_list": "x,\t b",
+                                        "C_call_function": "eigen::solveEigenDecomp_s(\tsolverHandle,\t x,\t b)",
+                                        "C_call_list": "solverHandle,\t x,\t b",
                                         "C_name": "EIG_eigen_solveEigenDecomp_s",
-                                        "C_prototype": "float *x,\t float *b",
+                                        "C_prototype": "size_t solverHandle,\t float *x,\t float *b",
                                         "C_return_type": "void",
-                                        "F_arg_c_call": "x,\t b",
-                                        "F_arguments": "x,\t b",
+                                        "F_arg_c_call": "solverHandle,\t x,\t b",
+                                        "F_arguments": "solverHandle,\t x,\t b",
                                         "F_subprogram": "subroutine",
                                         "f_call_function": "c_solve_eigen_decomp_s",
-                                        "i_arguments": "x,\t b",
+                                        "i_arguments": "solverHandle,\t x,\t b",
                                         "i_name_function": "solve_eigen_decomp_s",
                                         "i_subprogram": "subroutine",
                                         "stmt_name": "f_subroutine",
@@ -23825,6 +24018,46 @@
                                         "rank": 1
                                     },
                                     "stmt": "f_in_native*"
+                                },
+                                "solverHandle": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "solverHandle",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&solverHandle",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "solverHandle",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_kind": "C_SIZE_T",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_type": "integer(C_SIZE_T)",
+                                        "f_value_attr": ", value",
+                                        "f_var": "solverHandle",
+                                        "fc_var": "solverHandle",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "i_kind": "C_SIZE_T",
+                                        "i_module_name": "iso_c_binding",
+                                        "i_type": "integer(C_SIZE_T)",
+                                        "i_var": "solverHandle",
+                                        "idtor": "0",
+                                        "stmt_name": "f_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "f_in_native"
                                 },
                                 "x": {
                                     "fmtdict": {
@@ -23885,6 +24118,13 @@
                                         "rank": 1
                                     }
                                 },
+                                "solverHandle": {
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    }
+                                },
                                 "x": {
                                     "meta": {
                                         "abstract": "native*",
@@ -23902,11 +24142,13 @@
                             "F_name_impl": "solve_eigen_decomp_s",
                             "c_arglist": [
                                 "c_var",
+                                "solverHandle",
                                 "x",
                                 "b"
                             ],
                             "f_arglist": [
                                 "f_var",
+                                "solverHandle",
                                 "x",
                                 "b"
                             ],

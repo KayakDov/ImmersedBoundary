@@ -12,7 +12,7 @@ extern "C" {
 // splicer begin namespace.eigen.C_definitions
 // splicer end namespace.eigen.C_definitions
 
-void EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
+size_t EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
     size_t layers, double *dx, double *dy, double *dz,
     bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
     bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann,
@@ -21,15 +21,16 @@ void EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
     double frontVal, double backVal, bool isStaggered, bool thomas)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_d
-    eigen::initEigenDecomp_d(rows, cols, layers, dx, dy, dz,
-        uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
+    size_t SHC_rv = eigen::initEigenDecomp_d(rows, cols, layers, dx, dy,
+        dz, uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
         rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann,
         frontIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
         backVal, isStaggered, thomas);
+    return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_d
 }
 
-void EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
+size_t EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
     size_t layers, float *dx, float *dy, float *dz, bool uniformDeltaX,
     bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann,
     bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
@@ -38,25 +39,28 @@ void EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
     float backVal, bool isStaggered, bool thomas)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_s
-    eigen::initEigenDecomp_s(rows, cols, layers, dx, dy, dz,
-        uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
+    size_t SHC_rv = eigen::initEigenDecomp_s(rows, cols, layers, dx, dy,
+        dz, uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
         rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann,
         frontIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
         backVal, isStaggered, thomas);
+    return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_s
 }
 
-void EIG_eigen_solveEigenDecomp_d(double *x, double *b)
+void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *x,
+    double *b)
 {
     // splicer begin namespace.eigen.function.solveEigenDecomp_d
-    eigen::solveEigenDecomp_d(x, b);
+    eigen::solveEigenDecomp_d(solverHandle, x, b);
     // splicer end namespace.eigen.function.solveEigenDecomp_d
 }
 
-void EIG_eigen_solveEigenDecomp_s(float *x, float *b)
+void EIG_eigen_solveEigenDecomp_s(size_t solverHandle, float *x,
+    float *b)
 {
     // splicer begin namespace.eigen.function.solveEigenDecomp_s
-    eigen::solveEigenDecomp_s(x, b);
+    eigen::solveEigenDecomp_s(solverHandle, x, b);
     // splicer end namespace.eigen.function.solveEigenDecomp_s
 }
 
