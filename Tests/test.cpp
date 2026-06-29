@@ -239,6 +239,7 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
     Mat<T> implicitResult = kt.product(hand);
 
     Mat<T> explicitResult = Mat<T>::create(dim.size(), dim.size());
+    
     kt.mult(I, explicitResult, hand);
 
     expectMatrixNear(explicitResult, implicitResult, hand);

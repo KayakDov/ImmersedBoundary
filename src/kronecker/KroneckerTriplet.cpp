@@ -49,14 +49,17 @@ KroneckerTriplet<T>::KroneckerTriplet(const SquareMat<T> x, const SquareMat<T> y
 
 template<typename T>
 void KroneckerTriplet<T>::product(Mat<T> &result, Mat<T>& xDimXZDimBuffer, Handle &hand) const{
+    xDimXZDimBuffer.fill(0, hand);
     this->x.multKronecker(this->z, xDimXZDimBuffer, hand);
     xDimXZDimBuffer.multKronecker(this->y, result, hand);
 }
 
 template<typename T>
 Mat<T> KroneckerTriplet<T>::product(Handle &hand) const{
-    size_t yzRows = this->y._rows * this->z._rows, yzCols = this->y._cols * this->z._cols;
+    size_t yzRows = this->y._rows * this->z._rows,
+        yzCols = this->y._cols * this->z._cols;
     auto result = Mat<T>::create(this->x._rows * yzRows, this->x._cols * yzCols);
+    result.fill(0, hand);
     auto buffer = Mat<T>::create(yzRows, yzCols);
     product(result, buffer, hand);
     return result;
