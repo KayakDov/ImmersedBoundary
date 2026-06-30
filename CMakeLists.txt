@@ -106,6 +106,10 @@ list(FILTER LIB_SOURCES EXCLUDE REGEX "[/\\\\]main\\.cu$")
 # =========================
 # Library Target
 # =========================
+# Defined early so they're available to target_include_directories' INSTALL_INTERFACE below.
+set(INSTALL_LIB_DIR lib)
+set(INSTALL_MOD_DIR include/fortran_modules)
+
 add_library(CudaBandedLib STATIC
         ${LIB_SOURCES}
         ${SHROUD_SOURCES}
@@ -121,10 +125,12 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modules")
 
 target_include_directories(CudaBandedLib
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/shroud_project
-        "${CMAKE_CURRENT_BINARY_DIR}/modules"
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shroud_project>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/modules>
+        $<INSTALL_INTERFACE:include>
+        $<INSTALL_INTERFACE:${INSTALL_MOD_DIR}>
         ${CUDAToolkit_INCLUDE_DIRS}
 )
 
@@ -198,13 +204,12 @@ endif()
 # =========================
 # Install the library and Fortran modules for external projects
 # =========================
-set(INSTALL_LIB_DIR lib)
-set(INSTALL_MOD_DIR include/fortran_modules)
-
 install(TARGETS CudaBandedLib
+        EXPORT CudaBandedLibTargets
         ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
         LIBRARY DESTINATION ${INSTALL_LIB_DIR}
         RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
@@ -218,3 +223,37 @@ if(NOT MSVC)
             "-Wl,--disable-new-dtags"   # Use DT_RPATH (propagates transitively) not DT_RUNPATH
     )
 endif()
+
+# =========================
+# Export package config so downstream projects can do:
+#   find_package(CudaBandedLib REQUIRED)
+#   target_link_libraries(<target> PRIVATE CudaBandedLib::CudaBandedLib)
+# =========================
+include(CMakePackageConfigHelpers)
+
+set(INSTALL_CONFIG_DIR ${INSTALL_LIB_DIR}/cmake/CudaBandedLib)
+
+install(EXPORT CudaBandedLibTargets
+        FILE CudaBandedLibTargets.cmake
+        NAMESPACE CudaBandedLib::
+        DESTINATION ${INSTALL_CONFIG_DIR}
+)
+
+configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CudaBandedLibConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/CudaBandedLibConfig.cmake"
+        INSTALL_DESTINATION ${INSTALL_CONFIG_DIR}
+        PATH_VARS INSTALL_LIB_DIR INSTALL_MOD_DIR
+)
+
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/CudaBandedLibConfigVersion.cmake"
+        VERSION 1.0.0
+        COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/CudaBandedLibConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/CudaBandedLibConfigVersion.cmake"
+        DESTINATION ${INSTALL_CONFIG_DIR}
+)
