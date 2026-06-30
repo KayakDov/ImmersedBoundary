@@ -18,7 +18,7 @@ module eigenbcgsolver_imeq_mod
 
         subroutine c_init_immersed_eq_d_i32(gridHeight, gridWidth, &
                 gridDepth, leftIsNeumann, rightIsNeumann, topIsNeumann, &
-                bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+                bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
                 rightVal, topVal, bottomVal, frontVal, backVal, &
                 isStaggered, fSize, nnzMaxB, p, f, dx, dy, dz, dt, &
                 uniformDeltaX, uniformDeltaY, uniformDeltaZ, tolerance, &
@@ -33,8 +33,8 @@ module eigenbcgsolver_imeq_mod
             logical(C_BOOL), value, intent(IN) :: rightIsNeumann
             logical(C_BOOL), value, intent(IN) :: topIsNeumann
             logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
-            logical(C_BOOL), value, intent(IN) :: backIsNeumann
             logical(C_BOOL), value, intent(IN) :: frontIsNeumann
+            logical(C_BOOL), value, intent(IN) :: backIsNeumann
             real(C_DOUBLE), value, intent(IN) :: leftVal
             real(C_DOUBLE), value, intent(IN) :: rightVal
             real(C_DOUBLE), value, intent(IN) :: topVal
@@ -59,7 +59,7 @@ module eigenbcgsolver_imeq_mod
 
         subroutine c_init_immersed_eq_s_i32(gridHeight, gridWidth, &
                 gridDepth, leftIsNeumann, rightIsNeumann, topIsNeumann, &
-                bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+                bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
                 rightVal, topVal, bottomVal, frontVal, backVal, &
                 isStaggered, fSize, nnzMaxB, p, f, dx, dy, dz, dt, &
                 uniformDeltaX, uniformDeltaY, uniformDeltaZ, tolerance, &
@@ -74,8 +74,8 @@ module eigenbcgsolver_imeq_mod
             logical(C_BOOL), value, intent(IN) :: rightIsNeumann
             logical(C_BOOL), value, intent(IN) :: topIsNeumann
             logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
-            logical(C_BOOL), value, intent(IN) :: backIsNeumann
             logical(C_BOOL), value, intent(IN) :: frontIsNeumann
+            logical(C_BOOL), value, intent(IN) :: backIsNeumann
             real(C_DOUBLE), value, intent(IN) :: leftVal
             real(C_DOUBLE), value, intent(IN) :: rightVal
             real(C_DOUBLE), value, intent(IN) :: topVal
@@ -100,7 +100,7 @@ module eigenbcgsolver_imeq_mod
 
         subroutine c_init_immersed_eq_d_i64(gridHeight, gridWidth, &
                 gridDepth, leftIsNeumann, rightIsNeumann, topIsNeumann, &
-                bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+                bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
                 rightVal, topVal, bottomVal, frontVal, backVal, &
                 isStaggered, fSize, nnzMaxB, p, f, dx, dy, dz, dt, &
                 uniformDeltaX, uniformDeltaY, uniformDeltaZ, tolerance, &
@@ -115,8 +115,8 @@ module eigenbcgsolver_imeq_mod
             logical(C_BOOL), value, intent(IN) :: rightIsNeumann
             logical(C_BOOL), value, intent(IN) :: topIsNeumann
             logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
-            logical(C_BOOL), value, intent(IN) :: backIsNeumann
             logical(C_BOOL), value, intent(IN) :: frontIsNeumann
+            logical(C_BOOL), value, intent(IN) :: backIsNeumann
             real(C_DOUBLE), value, intent(IN) :: leftVal
             real(C_DOUBLE), value, intent(IN) :: rightVal
             real(C_DOUBLE), value, intent(IN) :: topVal
@@ -141,7 +141,7 @@ module eigenbcgsolver_imeq_mod
 
         subroutine c_init_immersed_eq_s_i64(gridHeight, gridWidth, &
                 gridDepth, leftIsNeumann, rightIsNeumann, topIsNeumann, &
-                bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+                bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
                 rightVal, topVal, bottomVal, frontVal, backVal, &
                 isStaggered, fSize, nnzMaxB, p, f, dx, dy, dz, dt, &
                 uniformDeltaX, uniformDeltaY, uniformDeltaZ, tolerance, &
@@ -156,8 +156,8 @@ module eigenbcgsolver_imeq_mod
             logical(C_BOOL), value, intent(IN) :: rightIsNeumann
             logical(C_BOOL), value, intent(IN) :: topIsNeumann
             logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
-            logical(C_BOOL), value, intent(IN) :: backIsNeumann
             logical(C_BOOL), value, intent(IN) :: frontIsNeumann
+            logical(C_BOOL), value, intent(IN) :: backIsNeumann
             real(C_DOUBLE), value, intent(IN) :: leftVal
             real(C_DOUBLE), value, intent(IN) :: rightVal
             real(C_DOUBLE), value, intent(IN) :: topVal
@@ -336,7 +336,7 @@ contains
 
     subroutine init_immersed_eq_d_i32(gridHeight, gridWidth, gridDepth, &
             leftIsNeumann, rightIsNeumann, topIsNeumann, &
-            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+            bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
             rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
             nnzMaxB, p, f, dx, dy, dz, dt, uniformDeltaX, uniformDeltaY, &
             uniformDeltaZ, tolerance, maxBCGIterations)
@@ -348,8 +348,8 @@ contains
         logical, value, intent(IN) :: rightIsNeumann
         logical, value, intent(IN) :: topIsNeumann
         logical, value, intent(IN) :: bottomIsNeumann
-        logical, value, intent(IN) :: backIsNeumann
         logical, value, intent(IN) :: frontIsNeumann
+        logical, value, intent(IN) :: backIsNeumann
         real(C_DOUBLE), value, intent(IN) :: leftVal
         real(C_DOUBLE), value, intent(IN) :: rightVal
         real(C_DOUBLE), value, intent(IN) :: topVal
@@ -375,8 +375,8 @@ contains
         logical(C_BOOL) :: SHT_rightIsNeumann_cxx
         logical(C_BOOL) :: SHT_topIsNeumann_cxx
         logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
-        logical(C_BOOL) :: SHT_backIsNeumann_cxx
         logical(C_BOOL) :: SHT_frontIsNeumann_cxx
+        logical(C_BOOL) :: SHT_backIsNeumann_cxx
         logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_uniformDeltaX_cxx
         logical(C_BOOL) :: SHT_uniformDeltaY_cxx
@@ -385,8 +385,8 @@ contains
         SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
         SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
         SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
-        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
         SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
+        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
         SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SH_fSize = size(f,kind=C_SIZE_T)
         SHT_uniformDeltaX_cxx = uniformDeltaX  ! coerce to C_BOOL
@@ -395,7 +395,7 @@ contains
         call c_init_immersed_eq_d_i32(gridHeight, gridWidth, gridDepth, &
             SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
             SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
-            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
+            SHT_frontIsNeumann_cxx, SHT_backIsNeumann_cxx, leftVal, &
             rightVal, topVal, bottomVal, frontVal, backVal, &
             SHT_isStaggered_cxx, SH_fSize, nnzMaxB, p, f, dx, dy, dz, &
             dt, SHT_uniformDeltaX_cxx, SHT_uniformDeltaY_cxx, &
@@ -405,7 +405,7 @@ contains
 
     subroutine init_immersed_eq_s_i32(gridHeight, gridWidth, gridDepth, &
             leftIsNeumann, rightIsNeumann, topIsNeumann, &
-            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+            bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
             rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
             nnzMaxB, p, f, dx, dy, dz, dt, uniformDeltaX, uniformDeltaY, &
             uniformDeltaZ, tolerance, maxBCGIterations)
@@ -417,8 +417,8 @@ contains
         logical, value, intent(IN) :: rightIsNeumann
         logical, value, intent(IN) :: topIsNeumann
         logical, value, intent(IN) :: bottomIsNeumann
-        logical, value, intent(IN) :: backIsNeumann
         logical, value, intent(IN) :: frontIsNeumann
+        logical, value, intent(IN) :: backIsNeumann
         real(C_DOUBLE), value, intent(IN) :: leftVal
         real(C_DOUBLE), value, intent(IN) :: rightVal
         real(C_DOUBLE), value, intent(IN) :: topVal
@@ -444,8 +444,8 @@ contains
         logical(C_BOOL) :: SHT_rightIsNeumann_cxx
         logical(C_BOOL) :: SHT_topIsNeumann_cxx
         logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
-        logical(C_BOOL) :: SHT_backIsNeumann_cxx
         logical(C_BOOL) :: SHT_frontIsNeumann_cxx
+        logical(C_BOOL) :: SHT_backIsNeumann_cxx
         logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_uniformDeltaX_cxx
         logical(C_BOOL) :: SHT_uniformDeltaY_cxx
@@ -454,8 +454,8 @@ contains
         SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
         SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
         SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
-        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
         SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
+        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
         SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SH_fSize = size(f,kind=C_SIZE_T)
         SHT_uniformDeltaX_cxx = uniformDeltaX  ! coerce to C_BOOL
@@ -464,7 +464,7 @@ contains
         call c_init_immersed_eq_s_i32(gridHeight, gridWidth, gridDepth, &
             SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
             SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
-            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
+            SHT_frontIsNeumann_cxx, SHT_backIsNeumann_cxx, leftVal, &
             rightVal, topVal, bottomVal, frontVal, backVal, &
             SHT_isStaggered_cxx, SH_fSize, nnzMaxB, p, f, dx, dy, dz, &
             dt, SHT_uniformDeltaX_cxx, SHT_uniformDeltaY_cxx, &
@@ -474,7 +474,7 @@ contains
 
     subroutine init_immersed_eq_d_i64(gridHeight, gridWidth, gridDepth, &
             leftIsNeumann, rightIsNeumann, topIsNeumann, &
-            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+            bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
             rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
             nnzMaxB, p, f, dx, dy, dz, dt, uniformDeltaX, uniformDeltaY, &
             uniformDeltaZ, tolerance, maxBCGIterations)
@@ -486,8 +486,8 @@ contains
         logical, value, intent(IN) :: rightIsNeumann
         logical, value, intent(IN) :: topIsNeumann
         logical, value, intent(IN) :: bottomIsNeumann
-        logical, value, intent(IN) :: backIsNeumann
         logical, value, intent(IN) :: frontIsNeumann
+        logical, value, intent(IN) :: backIsNeumann
         real(C_DOUBLE), value, intent(IN) :: leftVal
         real(C_DOUBLE), value, intent(IN) :: rightVal
         real(C_DOUBLE), value, intent(IN) :: topVal
@@ -513,8 +513,8 @@ contains
         logical(C_BOOL) :: SHT_rightIsNeumann_cxx
         logical(C_BOOL) :: SHT_topIsNeumann_cxx
         logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
-        logical(C_BOOL) :: SHT_backIsNeumann_cxx
         logical(C_BOOL) :: SHT_frontIsNeumann_cxx
+        logical(C_BOOL) :: SHT_backIsNeumann_cxx
         logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_uniformDeltaX_cxx
         logical(C_BOOL) :: SHT_uniformDeltaY_cxx
@@ -523,8 +523,8 @@ contains
         SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
         SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
         SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
-        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
         SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
+        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
         SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SH_fSize = size(f,kind=C_SIZE_T)
         SHT_uniformDeltaX_cxx = uniformDeltaX  ! coerce to C_BOOL
@@ -533,7 +533,7 @@ contains
         call c_init_immersed_eq_d_i64(gridHeight, gridWidth, gridDepth, &
             SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
             SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
-            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
+            SHT_frontIsNeumann_cxx, SHT_backIsNeumann_cxx, leftVal, &
             rightVal, topVal, bottomVal, frontVal, backVal, &
             SHT_isStaggered_cxx, SH_fSize, nnzMaxB, p, f, dx, dy, dz, &
             dt, SHT_uniformDeltaX_cxx, SHT_uniformDeltaY_cxx, &
@@ -543,7 +543,7 @@ contains
 
     subroutine init_immersed_eq_s_i64(gridHeight, gridWidth, gridDepth, &
             leftIsNeumann, rightIsNeumann, topIsNeumann, &
-            bottomIsNeumann, backIsNeumann, frontIsNeumann, leftVal, &
+            bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
             rightVal, topVal, bottomVal, frontVal, backVal, isStaggered, &
             nnzMaxB, p, f, dx, dy, dz, dt, uniformDeltaX, uniformDeltaY, &
             uniformDeltaZ, tolerance, maxBCGIterations)
@@ -555,8 +555,8 @@ contains
         logical, value, intent(IN) :: rightIsNeumann
         logical, value, intent(IN) :: topIsNeumann
         logical, value, intent(IN) :: bottomIsNeumann
-        logical, value, intent(IN) :: backIsNeumann
         logical, value, intent(IN) :: frontIsNeumann
+        logical, value, intent(IN) :: backIsNeumann
         real(C_DOUBLE), value, intent(IN) :: leftVal
         real(C_DOUBLE), value, intent(IN) :: rightVal
         real(C_DOUBLE), value, intent(IN) :: topVal
@@ -582,8 +582,8 @@ contains
         logical(C_BOOL) :: SHT_rightIsNeumann_cxx
         logical(C_BOOL) :: SHT_topIsNeumann_cxx
         logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
-        logical(C_BOOL) :: SHT_backIsNeumann_cxx
         logical(C_BOOL) :: SHT_frontIsNeumann_cxx
+        logical(C_BOOL) :: SHT_backIsNeumann_cxx
         logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_uniformDeltaX_cxx
         logical(C_BOOL) :: SHT_uniformDeltaY_cxx
@@ -592,8 +592,8 @@ contains
         SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
         SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
         SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
-        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
         SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
+        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
         SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SH_fSize = size(f,kind=C_SIZE_T)
         SHT_uniformDeltaX_cxx = uniformDeltaX  ! coerce to C_BOOL
@@ -602,7 +602,7 @@ contains
         call c_init_immersed_eq_s_i64(gridHeight, gridWidth, gridDepth, &
             SHT_leftIsNeumann_cxx, SHT_rightIsNeumann_cxx, &
             SHT_topIsNeumann_cxx, SHT_bottomIsNeumann_cxx, &
-            SHT_backIsNeumann_cxx, SHT_frontIsNeumann_cxx, leftVal, &
+            SHT_frontIsNeumann_cxx, SHT_backIsNeumann_cxx, leftVal, &
             rightVal, topVal, bottomVal, frontVal, backVal, &
             SHT_isStaggered_cxx, SH_fSize, nnzMaxB, p, f, dx, dy, dz, &
             dt, SHT_uniformDeltaX_cxx, SHT_uniformDeltaY_cxx, &

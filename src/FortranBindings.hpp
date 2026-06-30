@@ -28,7 +28,7 @@ namespace ImEq {
     template<typename Real, typename Int>
     void initImmersedEq(
         size_t gridHeight, size_t gridWidth, size_t gridDepth,
-        bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+        bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
         Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
         bool isStaggered,
         size_t forceSize,
@@ -92,7 +92,7 @@ namespace ImEq {
     extern "C" {
         inline void initImmersedEq_d_i32(
             size_t gridHeight, size_t gridWidth, size_t gridDepth,
-            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
             double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
             bool isStaggered,
             size_t forceSize,
@@ -104,7 +104,7 @@ namespace ImEq {
         ) {
             initImmersedEq<double, int32_t>(
                 gridHeight, gridWidth, gridDepth,
-                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann, frontIsNeumann,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
                 isStaggered,
                 forceSize,
@@ -118,7 +118,7 @@ namespace ImEq {
 
         inline void initImmersedEq_s_i32(
             size_t gridHeight, size_t gridWidth, size_t gridDepth,
-            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
             double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
             bool isStaggered,
             size_t forceSize,
@@ -130,7 +130,7 @@ namespace ImEq {
         ) {
             initImmersedEq<float, int32_t>(
                 gridHeight, gridWidth, gridDepth,
-                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann, frontIsNeumann,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
                 isStaggered,
                 forceSize,
@@ -144,7 +144,7 @@ namespace ImEq {
 
         inline void initImmersedEq_d_i64(
             size_t gridHeight, size_t gridWidth, size_t gridDepth,
-            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
             double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
             bool isStaggered,
             size_t forceSize,
@@ -156,7 +156,7 @@ namespace ImEq {
         ) {
             initImmersedEq<double, int64_t>(
                 gridHeight, gridWidth, gridDepth,
-                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann, frontIsNeumann,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
                 isStaggered,
                 forceSize,
@@ -170,7 +170,7 @@ namespace ImEq {
 
         inline void initImmersedEq_s_i64(
             size_t gridHeight, size_t gridWidth, size_t gridDepth,
-            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
             double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
             bool isStaggered,
             size_t forceSize,
@@ -182,7 +182,7 @@ namespace ImEq {
         ) {
             initImmersedEq<float, int64_t>(
                 gridHeight, gridWidth, gridDepth,
-                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann, frontIsNeumann,
+                leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
                 isStaggered,
                 forceSize,
@@ -254,7 +254,7 @@ namespace eigen {
         size_t rows, size_t cols, size_t layers,
         Real* dx, Real* dy, Real* dz,
         bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
-        bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+        bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
         Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
         bool isStaggered,
         bool thomas
@@ -297,7 +297,7 @@ namespace eigen {
             size_t rows, size_t cols, size_t layers,
             double* dx, double* dy, double* dz,
             bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
-            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
             double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
             bool isStaggered,
             bool thomas
@@ -315,7 +315,7 @@ namespace eigen {
             size_t rows, size_t cols, size_t layers,
             float* dx, float* dy, float* dz,
             bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
-            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+            bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
             float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal,
             bool isStaggered,
             bool thomas

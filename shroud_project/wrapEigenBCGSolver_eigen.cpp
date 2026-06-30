@@ -16,15 +16,15 @@ size_t EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
     size_t layers, double *dx, double *dy, double *dz,
     bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
     bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann,
-    bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+    bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
     double leftVal, double rightVal, double topVal, double bottomVal,
     double frontVal, double backVal, bool isStaggered, bool thomas)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_d
     size_t SHC_rv = eigen::initEigenDecomp_d(rows, cols, layers, dx, dy,
         dz, uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
-        rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann,
-        frontIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
+        rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann,
+        backIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
         backVal, isStaggered, thomas);
     return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_d
@@ -34,15 +34,15 @@ size_t EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
     size_t layers, float *dx, float *dy, float *dz, bool uniformDeltaX,
     bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann,
     bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
-    bool backIsNeumann, bool frontIsNeumann, float leftVal,
+    bool frontIsNeumann, bool backIsNeumann, float leftVal,
     float rightVal, float topVal, float bottomVal, float frontVal,
     float backVal, bool isStaggered, bool thomas)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_s
     size_t SHC_rv = eigen::initEigenDecomp_s(rows, cols, layers, dx, dy,
         dz, uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
-        rightIsNeumann, topIsNeumann, bottomIsNeumann, backIsNeumann,
-        frontIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
+        rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann,
+        backIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
         backVal, isStaggered, thomas);
     return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_s

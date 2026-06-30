@@ -87,7 +87,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "backIsNeumann",
+                                            "name": "frontIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -97,7 +97,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "frontIsNeumann",
+                                            "name": "backIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -361,8 +361,8 @@
                             ],
                             "typemap_name": "void"
                         },
-                        "decl": "void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, double* p +intent(in) +rank(1), double* f +intent(in) +rank(1), double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
-                        "declgen": "void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
+                        "decl": "void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, double* p +intent(in) +rank(1), double* f +intent(in) +rank(1), double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
+                        "declgen": "void initImmersedEq_d_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
                         "linenumber": 7,
                         "name": "initImmersedEq_d_i32",
                         "options": {},
@@ -374,10 +374,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "ImEq::initImmersedEq_d_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
-                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "C_call_function": "ImEq::initImmersedEq_d_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
+                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "C_name": "EIG_ImEq_initImmersedEq_d_i32",
-                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double *dx,\t double *dy,\t double *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double *dx,\t double *dy,\t double *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                         "C_return_type": "void",
                                         "i_name_function": "c_init_immersed_eq_d_i32",
                                         "stmt_name": "c_subroutine",
@@ -1287,16 +1287,16 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "ImEq::initImmersedEq_d_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
-                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "C_call_function": "ImEq::initImmersedEq_d_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
+                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "C_name": "EIG_ImEq_initImmersedEq_d_i32",
-                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double *dx,\t double *dy,\t double *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double *dx,\t double *dy,\t double *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                         "C_return_type": "void",
-                                        "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t tolerance,\t maxBCGIterations",
-                                        "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t tolerance,\t maxBCGIterations",
+                                        "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "F_subprogram": "subroutine",
                                         "f_call_function": "c_init_immersed_eq_d_i32",
-                                        "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "i_name_function": "c_init_immersed_eq_d_i32",
                                         "i_subprogram": "subroutine",
                                         "stmt_name": "f_subroutine",
@@ -2707,8 +2707,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -2739,8 +2739,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -2843,7 +2843,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "backIsNeumann",
+                                            "name": "frontIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -2853,7 +2853,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "frontIsNeumann",
+                                            "name": "backIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -3117,8 +3117,8 @@
                             ],
                             "typemap_name": "void"
                         },
-                        "decl": "void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, float* p +intent(in) +rank(1), float* f +intent(in) +rank(1), float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
-                        "declgen": "void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
+                        "decl": "void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, float* p +intent(in) +rank(1), float* f +intent(in) +rank(1), float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
+                        "declgen": "void initImmersedEq_s_i32(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
                         "linenumber": 8,
                         "name": "initImmersedEq_s_i32",
                         "options": {},
@@ -3130,10 +3130,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "ImEq::initImmersedEq_s_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
-                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "C_call_function": "ImEq::initImmersedEq_s_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
+                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "C_name": "EIG_ImEq_initImmersedEq_s_i32",
-                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t float *dx,\t float *dy,\t float *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t float *dx,\t float *dy,\t float *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                         "C_return_type": "void",
                                         "i_name_function": "c_init_immersed_eq_s_i32",
                                         "stmt_name": "c_subroutine",
@@ -4043,16 +4043,16 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "ImEq::initImmersedEq_s_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
-                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "C_call_function": "ImEq::initImmersedEq_s_i32(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
+                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "C_name": "EIG_ImEq_initImmersedEq_s_i32",
-                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t float *dx,\t float *dy,\t float *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t float *dx,\t float *dy,\t float *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                         "C_return_type": "void",
-                                        "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t tolerance,\t maxBCGIterations",
-                                        "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t tolerance,\t maxBCGIterations",
+                                        "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "F_subprogram": "subroutine",
                                         "f_call_function": "c_init_immersed_eq_s_i32",
-                                        "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "i_name_function": "c_init_immersed_eq_s_i32",
                                         "i_subprogram": "subroutine",
                                         "stmt_name": "f_subroutine",
@@ -5463,8 +5463,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -5495,8 +5495,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -5599,7 +5599,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "backIsNeumann",
+                                            "name": "frontIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -5609,7 +5609,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "frontIsNeumann",
+                                            "name": "backIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -5873,8 +5873,8 @@
                             ],
                             "typemap_name": "void"
                         },
-                        "decl": "void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, double* p +intent(in) +rank(1), double* f +intent(in) +rank(1), double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
-                        "declgen": "void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
+                        "decl": "void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, double* p +intent(in) +rank(1), double* f +intent(in) +rank(1), double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
+                        "declgen": "void initImmersedEq_d_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, double *p +intent(in)+rank(1), double *f +intent(in)+rank(1), double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
                         "linenumber": 9,
                         "name": "initImmersedEq_d_i64",
                         "options": {},
@@ -5886,10 +5886,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "ImEq::initImmersedEq_d_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
-                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "C_call_function": "ImEq::initImmersedEq_d_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
+                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "C_name": "EIG_ImEq_initImmersedEq_d_i64",
-                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double *dx,\t double *dy,\t double *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double *dx,\t double *dy,\t double *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                         "C_return_type": "void",
                                         "i_name_function": "c_init_immersed_eq_d_i64",
                                         "stmt_name": "c_subroutine",
@@ -6799,16 +6799,16 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "ImEq::initImmersedEq_d_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
-                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "C_call_function": "ImEq::initImmersedEq_d_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
+                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "C_name": "EIG_ImEq_initImmersedEq_d_i64",
-                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double *dx,\t double *dy,\t double *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t double *p,\t double *f,\t double *dx,\t double *dy,\t double *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                         "C_return_type": "void",
-                                        "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t tolerance,\t maxBCGIterations",
-                                        "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t tolerance,\t maxBCGIterations",
+                                        "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "F_subprogram": "subroutine",
                                         "f_call_function": "c_init_immersed_eq_d_i64",
-                                        "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "i_name_function": "c_init_immersed_eq_d_i64",
                                         "i_subprogram": "subroutine",
                                         "stmt_name": "f_subroutine",
@@ -8219,8 +8219,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -8251,8 +8251,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -8355,7 +8355,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "backIsNeumann",
+                                            "name": "frontIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -8365,7 +8365,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "frontIsNeumann",
+                                            "name": "backIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -8629,8 +8629,8 @@
                             ],
                             "typemap_name": "void"
                         },
-                        "decl": "void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, float* p +intent(in) +rank(1), float* f +intent(in) +rank(1), float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
-                        "declgen": "void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
+                        "decl": "void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, float* p +intent(in) +rank(1), float* f +intent(in) +rank(1), float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
+                        "declgen": "void initImmersedEq_s_i64(size_t gridHeight, size_t gridWidth, size_t gridDepth, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, size_t fSize +implied(size(f)), size_t nnzMaxB, float *p +intent(in)+rank(1), float *f +intent(in)+rank(1), float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), double dt, bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, double tolerance, size_t maxBCGIterations)",
                         "linenumber": 10,
                         "name": "initImmersedEq_s_i64",
                         "options": {},
@@ -8642,10 +8642,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "ImEq::initImmersedEq_s_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
-                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "C_call_function": "ImEq::initImmersedEq_s_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
+                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "C_name": "EIG_ImEq_initImmersedEq_s_i64",
-                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t float *dx,\t float *dy,\t float *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t float *dx,\t float *dy,\t float *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                         "C_return_type": "void",
                                         "i_name_function": "c_init_immersed_eq_s_i64",
                                         "stmt_name": "c_subroutine",
@@ -9555,16 +9555,16 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "ImEq::initImmersedEq_s_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
-                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "C_call_function": "ImEq::initImmersedEq_s_i64(\tgridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations)",
+                                        "C_call_list": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "C_name": "EIG_ImEq_initImmersedEq_s_i64",
-                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t float *dx,\t float *dy,\t float *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
+                                        "C_prototype": "size_t gridHeight,\t size_t gridWidth,\t size_t gridDepth,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t size_t fSize,\t size_t nnzMaxB,\t float *p,\t float *f,\t float *dx,\t float *dy,\t float *dz,\t double dt,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t double tolerance,\t size_t maxBCGIterations",
                                         "C_return_type": "void",
-                                        "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t tolerance,\t maxBCGIterations",
-                                        "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "F_arg_c_call": "gridHeight,\t gridWidth,\t gridDepth,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SH_fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t tolerance,\t maxBCGIterations",
+                                        "F_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "F_subprogram": "subroutine",
                                         "f_call_function": "c_init_immersed_eq_s_i64",
-                                        "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
+                                        "i_arguments": "gridHeight,\t gridWidth,\t gridDepth,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t fSize,\t nnzMaxB,\t p,\t f,\t dx,\t dy,\t dz,\t dt,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t tolerance,\t maxBCGIterations",
                                         "i_name_function": "c_init_immersed_eq_s_i64",
                                         "i_subprogram": "subroutine",
                                         "stmt_name": "f_subroutine",
@@ -10975,8 +10975,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -11007,8 +11007,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -19112,7 +19112,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "backIsNeumann",
+                                            "name": "frontIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -19122,7 +19122,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "frontIsNeumann",
+                                            "name": "backIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -19218,8 +19218,8 @@
                             ],
                             "typemap_name": "size_t"
                         },
-                        "decl": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
-                        "declgen": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
+                        "decl": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
+                        "declgen": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
                         "linenumber": 29,
                         "name": "initEigenDecomp_d",
                         "options": {},
@@ -19231,10 +19231,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_d(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
-                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "C_call_function": "eigen::initEigenDecomp_d(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
+                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "C_name": "EIG_eigen_initEigenDecomp_d",
-                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas",
+                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas",
                                         "C_return_type": "size_t",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -19970,13 +19970,13 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_d(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
-                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "C_call_function": "eigen::initEigenDecomp_d(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
+                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "C_name": "EIG_eigen_initEigenDecomp_d",
-                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas",
+                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas",
                                         "C_return_type": "size_t",
-                                        "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx",
-                                        "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx",
+                                        "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "F_subprogram": "function",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -19994,7 +19994,7 @@
                                         "f_type": "integer(C_SIZE_T)",
                                         "f_var": "SHT_rv",
                                         "fc_var": "SHT_rv",
-                                        "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "i_kind": "C_SIZE_T",
                                         "i_module_name": "iso_c_binding",
                                         "i_name_function": "c_init_eigen_decomp_d",
@@ -21125,8 +21125,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -21151,8 +21151,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -21330,7 +21330,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "backIsNeumann",
+                                            "name": "frontIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -21340,7 +21340,7 @@
                                     },
                                     {
                                         "declarator": {
-                                            "name": "frontIsNeumann",
+                                            "name": "backIsNeumann",
                                             "typemap_name": "bool"
                                         },
                                         "specifier": [
@@ -21436,8 +21436,8 @@
                             ],
                             "typemap_name": "size_t"
                         },
-                        "decl": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
-                        "declgen": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
+                        "decl": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
+                        "declgen": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
                         "linenumber": 30,
                         "name": "initEigenDecomp_s",
                         "options": {},
@@ -21449,10 +21449,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_s(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
-                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "C_call_function": "eigen::initEigenDecomp_s(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
+                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "C_name": "EIG_eigen_initEigenDecomp_s",
-                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas",
+                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas",
                                         "C_return_type": "size_t",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -22188,13 +22188,13 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_s(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
-                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "C_call_function": "eigen::initEigenDecomp_s(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
+                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "C_name": "EIG_eigen_initEigenDecomp_s",
-                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool backIsNeumann,\t bool frontIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas",
+                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas",
                                         "C_return_type": "size_t",
-                                        "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx",
-                                        "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx",
+                                        "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "F_subprogram": "function",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -22212,7 +22212,7 @@
                                         "f_type": "integer(C_SIZE_T)",
                                         "f_var": "SHT_rv",
                                         "fc_var": "SHT_rv",
-                                        "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t backIsNeumann,\t frontIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
                                         "i_kind": "C_SIZE_T",
                                         "i_module_name": "iso_c_binding",
                                         "i_name_function": "c_init_eigen_decomp_s",
@@ -23343,8 +23343,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",
@@ -23369,8 +23369,8 @@
                                 "rightIsNeumann",
                                 "topIsNeumann",
                                 "bottomIsNeumann",
-                                "backIsNeumann",
                                 "frontIsNeumann",
+                                "backIsNeumann",
                                 "leftVal",
                                 "rightVal",
                                 "topVal",

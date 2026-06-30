@@ -31,7 +31,7 @@ size_t EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
     size_t layers, double *dx, double *dy, double *dz,
     bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
     bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann,
-    bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
+    bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
     double leftVal, double rightVal, double topVal, double bottomVal,
     double frontVal, double backVal, bool isStaggered, bool thomas);
 
@@ -39,7 +39,7 @@ size_t EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
     size_t layers, float *dx, float *dy, float *dz, bool uniformDeltaX,
     bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann,
     bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
-    bool backIsNeumann, bool frontIsNeumann, float leftVal,
+    bool frontIsNeumann, bool backIsNeumann, float leftVal,
     float rightVal, float topVal, float bottomVal, float frontVal,
     float backVal, bool isStaggered, bool thomas);
 
