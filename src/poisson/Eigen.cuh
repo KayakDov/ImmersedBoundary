@@ -18,12 +18,11 @@
 
 template<typename T>
     class Eigen {
+
+    template<class BoundaryConfigT>
+    static XYZ<std::shared_ptr<Mat<T>>> generateEigen(const BoundaryConfigT &boundary, Handle *hands3, Event *events);
+
     Eigen(const XYZ<Vec<T>> &vals, const KroneckerTriplet<T> &vecs, const KroneckerTriplet<T> &vecsInv);
-
-    template<typename BoundaryConfigT>
-    static void generateEigen(const BoundaryConfigT& boundary, Handle *hands3, Event *events, std::shared_ptr<Mat<T>> (&preAllocatedForL_iX3)[3]);
-
-
 
 public:
     /**

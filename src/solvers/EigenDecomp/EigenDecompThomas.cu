@@ -2,6 +2,8 @@
 
 #include "EigenDecompThomas.cuh"
 
+#include "deviceArrays/headers/Support/Streamable.h"
+
 /**
  * @brief Core implementation of the Thomas Algorithm (TDMA) for a 1D tridiagonal system.
  * * This device function performs the forward elimination and back-substitution required
@@ -110,12 +112,16 @@ template<typename T, typename SegmentT>
 void EigenDecompThomas<T, SegmentT>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
     this->eigen.vecsInv.multCols(b, x, hand);
+
     this->eigen.vecsInv.multDepths(x, this->sizeOfB, hand);
 
     this->multLEigenValInverse(this->sizeOfB, x, hand);
 
     this->eigen.vecs.multCols(x, this->sizeOfB, hand);
+
     this->eigen.vecs.multDepths(this->sizeOfB, x, hand);
+
+
 }
 
 

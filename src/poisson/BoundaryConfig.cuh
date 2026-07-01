@@ -94,15 +94,11 @@ void buildBoundaryConfigAndLaunch(
     auto dispatchZ = [&](const auto& segX, const auto& segY) {
         if (deltas.z.size() == 1) {
             UniformSegment<Real> segZ(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, deltas.z[0], dim.layers);
-            launchParams(
-                BoundaryConfig<Real, std::decay_t<decltype(segX)>, std::decay_t<decltype(segY)>, UniformSegment<Real>>(segX, segY, segZ)
-            );
+            launchParams(BoundaryConfig<Real, std::decay_t<decltype(segX)>, std::decay_t<decltype(segY)>, UniformSegment<Real>>(segX, segY, segZ));
         } else {
             SimpleArray<Real> arrayZ = SimpleArray<Real>::create(deltas.z, stream);
             VariableSegment<Real> segZ(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, arrayZ);
-            launchParams(
-                BoundaryConfig<Real, std::decay_t<decltype(segX)>, std::decay_t<decltype(segY)>, VariableSegment<Real>>(segX, segY, segZ)
-            );
+            launchParams(BoundaryConfig<Real, std::decay_t<decltype(segX)>, std::decay_t<decltype(segY)>, VariableSegment<Real>>(segX, segY, segZ));
         }
     };
 

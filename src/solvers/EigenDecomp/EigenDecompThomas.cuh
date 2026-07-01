@@ -34,7 +34,7 @@ protected:
     Tensor<T> workSpaceRHSPrime;
 
     /** The boundary conditions for the x dimension. */
-    const SegmentT& boundaryX;
+    const SegmentT boundaryX;
 
     /**
      * @brief Solves the tridiagonal systems in the eigen-space.

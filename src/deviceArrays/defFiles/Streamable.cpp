@@ -88,6 +88,7 @@ std::ostream& GpuOut<T>::write(std::ostream& os) const {
         std::vector<T> host_buffer(view.size());
 
         view.get(host_buffer.data(), current_stream);
+        CHECK_CUDA_ERROR(cudaGetLastError());
         cudaStreamSynchronize(current_stream);
 
         if (this->isText) {

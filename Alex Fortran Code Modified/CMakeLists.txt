@@ -39,6 +39,34 @@ project(AlexFortranCode LANGUAGES Fortran CUDA)
 
 # Find CUDA toolkit
 find_package(CUDAToolkit REQUIRED)
+# =========================
+# Locate CudaBandedLib build tree
+# =========================
+set(DEP_LIB_DIR
+        "/home/usr/Documents/TelAvivU/cmake-build-debug"
+        CACHE PATH
+        "Path to the CudaBandedLib build directory"
+)
+
+find_library(CUDA_BANDED_LIB
+        NAMES CudaBandedLib
+        PATHS ${DEP_LIB_DIR}
+        NO_DEFAULT_PATH
+)
+
+if(NOT CUDA_BANDED_LIB)
+    message(FATAL_ERROR
+            "Could not find CudaBandedLib in ${DEP_LIB_DIR}")
+endif()
+
+message(STATUS "Using CudaBandedLib: ${CUDA_BANDED_LIB}")
+
+set(CUDA_BANDED_MODULE_DIR "${DEP_LIB_DIR}/modules")
+
+if(NOT EXISTS "${CUDA_BANDED_MODULE_DIR}")
+    message(WARNING "Fortran module directory not found at ${CUDA_BANDED_MODULE_DIR}. "
+            "USE statements for CudaBandedLib's interfaces may fail to compile.")
+endif()
 
 # =========================
 # Standards
@@ -73,15 +101,6 @@ if(INTLC_LIB)
 else()
     message(WARNING "libintlc.so not found - Test_TPF may fail to start at runtime.")
 endif()
-
-# =========================
-# Locate CudaBandedLib
-# =========================
-# CudaBandedLib is built/installed separately from its own project
-# (~/Documents/TelAvivU). Point CMake at the *install* tree, e.g.:
-#   cmake -DCudaBandedLib_ROOT=~/Documents/TelAvivU/install ..
-# or add that path to CMAKE_PREFIX_PATH.
-find_package(CudaBandedLib REQUIRED)
 
 # =========================
 # Compiler flags (match Alex's link_file exactly)
@@ -158,18 +177,21 @@ file(GLOB_RECURSE ALEX_SOURCES CONFIGURE_DEPENDS
 
 add_executable(Test_TPF ${ALEX_SOURCES})
 
+target_include_directories(Test_TPF PRIVATE
+        ${CUDA_BANDED_MODULE_DIR}
+)
+
 set_target_properties(Test_TPF PROPERTIES
         Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
         BUILD_RPATH "${INTLC_LIB_DIR}"
 )
-
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 target_link_libraries(Test_TPF
         PRIVATE
-        CudaBandedLib::CudaBandedLib
-        CUDA::cudart       # Add this for core CUDA runtime
+        ${CUDA_BANDED_LIB}
+        CUDA::cudart
         CUDA::cusolver
         CUDA::cublas
         CUDA::cusparse

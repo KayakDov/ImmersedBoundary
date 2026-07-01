@@ -2,6 +2,10 @@
 #include "solvers/EigenDecomp/EigenDecomp3d.cuh"
 #include "math/XYZ.cuh"
 #include "deviceArrays/headers/Support/Streamable.h"
+#include <fstream>
+#include <iomanip>
+#include <filesystem>
+
 
 template<typename T>
 __global__ void setLEigenValInverseKernel3d(
@@ -55,12 +59,9 @@ EigenDecomp3d<T>::EigenDecomp3d(const BoundaryConfigT& boundary, Handle *hand3, 
 
 template<typename T>
 void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
-
     this->eigen.vecsInv.mult( b , x, this->sizeOfB, hand);
 
-
     this->multLEigenValInverse(x, this->sizeOfB, hand);
-
 
     this->eigen.vecs.mult(this->sizeOfB, x, this->sizeOfB, hand);
 }

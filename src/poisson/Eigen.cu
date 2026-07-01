@@ -365,7 +365,7 @@ void Eigen<T>::generateEigen(Handle &hand, Mat<T> eigins, const axisSegmentT &ax
  * to be assignable, which is critical for classes with const data members.
  */
 template <typename ResultType, typename F, typename BoundaryConfigT>
-void createUnique(const BoundaryConfigT& boundaryConfig, std::shared_ptr<ResultType> (&outputs)[3], Handle* hands3, Event* events2, F factory) {
+void createUnique(const BoundaryConfigT& boundaryConfig, XYZ<std::shared_ptr<ResultType>>& outputs, Handle* hands3, Event* events2, F factory) {
 
     outputs[0] = std::make_shared<ResultType>(factory(boundaryConfig.x, hands3[0]));
     if (boundaryConfig.y == boundaryConfig.x)  outputs[1] = outputs[0];
@@ -396,27 +396,34 @@ void createUnique(const BoundaryConfigT& boundaryConfig, std::shared_ptr<ResultT
 * @param preAllocatedForL_iX3
 * @return pointers to matrices containing the eigen values and vectors.
  */
-template<typename Real>
+template<typename T>
 template<typename BoundaryConfigT>
-void Eigen<Real>::generateEigen(const BoundaryConfigT& boundary, Handle *hands3, Event *events, std::shared_ptr<Mat<Real>> (&preAllocatedForL_iX3)[3]) {
+XYZ<std::shared_ptr<Mat<T>>> Eigen<T>::generateEigen(const BoundaryConfigT& boundary, Handle *hands3, Event *events) {
+
+    XYZ<std::shared_ptr<Mat<T>>> eigenBack(nullptr, nullptr, nullptr);
 
     createUnique(
         boundary,
-        preAllocatedForL_iX3,
+        eigenBack,
         hands3,
         events,
         [](const auto& AxisSegmentT, Handle& hand) {
 
             size_t numCols = AxisSegmentT.numNodes + 1;
-            if constexpr (std::is_same_v<std::decay_t<decltype(AxisSegmentT)>, VariableSegment<Real>>)
+            if constexpr (std::is_same_v<std::decay_t<decltype(AxisSegmentT)>, VariableSegment<T>>)
                 numCols = AxisSegmentT.numNodes * 2 + 1;
 
-            auto mat = Mat<Real>::create(AxisSegmentT.numNodes, numCols);
-            Eigen<Real>::generateEigen(hand, mat, AxisSegmentT);
+            auto mat = Mat<T>::create(AxisSegmentT.numNodes, numCols);
+            Eigen<T>::generateEigen(hand, mat, AxisSegmentT);
             return mat;
         }
     );
 
+    hands3[0].synch();
+    hands3[1].synch();
+    hands3[2].synch();
+
+    return eigenBack;
 }
 
 template<typename T>
@@ -428,15 +435,15 @@ template<typename BoundaryConfigT>
 Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* events2) {
 
     bool is3d = boundary.dim().numDims() == 3;
-    std::shared_ptr<Mat<T>> eigen[3];
-    generateEigen(boundary, hands3, events2, eigen);
 
-    XYZ<Vec<T>> vals(eigen[0]->lastCol(), eigen[1]->lastCol(), is3d ? eigen[2]->lastCol() : SimpleArray<T>::empty());
+    auto eigenBack = generateEigen(boundary, hands3, events2);
+
+    XYZ<Vec<T>> vals(eigenBack[0]->lastCol(), eigenBack[1]->lastCol(), is3d ? eigenBack[2]->lastCol() : SimpleArray<T>::empty());
 
     XYZ<SquareMat<T>> vecs(
-        eigen[0]->sqSubMatFirstBiggest(),
-        eigen[1]->sqSubMatFirstBiggest(),
-        is3d ? eigen[2]->sqSubMatFirstBiggest() : SquareMat<T>::empty()
+        eigenBack[0]->sqSubMatFirstBiggest(),
+        eigenBack[1]->sqSubMatFirstBiggest(),
+        is3d ? eigenBack[2]->sqSubMatFirstBiggest() : SquareMat<T>::empty()
     );
 
     constexpr bool orthoX = !std::is_same_v<std::decay_t<decltype(boundary.x)>, VariableSegment<T>>;
@@ -444,15 +451,15 @@ Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* 
     constexpr bool orthoZ = !std::is_same_v<std::decay_t<decltype(boundary.z)>, VariableSegment<T>>;
 
     XYZ<SquareMat<T>> vecsInv(
-        orthoX ? vecs.x : eigen[0]->sqSubMat(0, vecs.x._cols, vecs.x._cols ),
-        orthoY ? vecs.y : eigen[1]->sqSubMat(0, vecs.y._cols, vecs.y._cols ),
-        !is3d || orthoZ ? vecs.z : eigen[2]->sqSubMat(0, vecs.z._cols, vecs.z._cols )
+        orthoX ? vecs.x : eigenBack[0]->sqSubMat(0, vecs.x._cols, vecs.x._cols ),
+        orthoY ? vecs.y : eigenBack[1]->sqSubMat(0, vecs.y._cols, vecs.y._cols ),
+        !is3d || orthoZ ? vecs.z : eigenBack[2]->sqSubMat(0, vecs.z._cols, vecs.z._cols )
     );
 
-    KroneckerTriplet<T> kt(vecs, {false, false, false});
-    KroneckerTriplet<T> ktInv(vecsInv, {orthoX, orthoY, orthoZ});
+    KroneckerTriplet<T> ktVecs(vecs, {false, false, false});
+    KroneckerTriplet<T> ktVecsInv(vecsInv, {orthoX, orthoY, orthoZ});
 
-    return Eigen<T>(vals, kt, ktInv);
+    return Eigen<T>(vals, ktVecs, ktVecsInv);
 }
 
 template<typename T>

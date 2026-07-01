@@ -8,6 +8,7 @@
 #include <random>
 
 
+#include "FortranBindings.hpp"
 #include "deviceArrays/headers/DeviceMemory.h"
 #include "immersedBoundary/ImerssedEquation.h"
 #include "kronecker/KroneckerTriplet.h"
@@ -31,6 +32,81 @@ SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vect
     return B;
 }
 
+
+TEST(FortranWrapper, SmokeTestAlex)
+{
+    using Real = double;
+
+    constexpr size_t N = 257;
+
+    //------------------------------------------------------------------
+    // Alex's HP arrays
+    //------------------------------------------------------------------
+
+    XYZ<std::vector<Real>> d(std::vector<Real>(N + 1), std::vector<Real>(N + 1), std::vector<Real>(N + 1));
+    const Real h = 1.0 / static_cast<Real>(N);
+
+    d.x.front() = h * 0.5;
+    d.y.front() = h * 0.5;
+    d.z.front() = h * 0.5;
+
+    for(size_t i=1;i<N;i++)
+    {
+        d.x[i]=h;
+        d.y[i]=h;
+        d.z[i]=h;
+    }
+
+    d.x.back() = h * 0.5;
+    d.y.back() = h * 0.5;
+    d.z.back() = h * 0.5;
+
+    //------------------------------------------------------------------
+    // RHS
+    //------------------------------------------------------------------
+
+    const size_t size = N * N * N;
+
+    std::vector<Real> rhs(size,1.0);
+    std::vector<Real> xStandard(size,-9999.0);
+    std::vector<Real> xThomas(size,-9999.0);
+
+    //------------------------------------------------------------------
+    // Exactly the same API Alex calls
+    //------------------------------------------------------------------
+
+    size_t handleStandard = eigen::initEigenDecomp_d(
+            N, N, N,
+            d.x.data(), d.y.data(), d.z.data(),
+            false, false, false,
+            false, false, false,
+            false, false, false,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            false, false
+        );
+
+    size_t handleThomas = eigen::initEigenDecomp_d(
+            N, N, N,
+            d.x.data(), d.y.data(), d.z.data(),
+            false, false, false,
+            false, false, false,
+            false, false, false,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            false, true
+        );
+
+    eigen::solveEigenDecomp_d(handleStandard, xStandard.data(), rhs.data());
+    eigen::solveEigenDecomp_d(handleThomas, xThomas.data(), rhs.data());
+
+
+    //------------------------------------------------------------------
+    // Diagnostics
+    //------------------------------------------------------------------
+
+    for(size_t i=0;i<size;i++) ASSERT_NEAR(xThomas[i], xStandard[i], 1e-7) <<  " i = " << i;
+
+    eigen::finalizeEigenDecomp_d();
+}
 
 TEST(ImmersedEq, SolvesPrimes_3x2x1) {
 

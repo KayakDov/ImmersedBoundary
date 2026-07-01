@@ -25,7 +25,7 @@ struct Delta1d {
      * The first value is the distance from the first boundary to the first node.  If there are n nodes, then the n + 1 value is
      * the distance from the last node to the end boundary.
      */
-    __host__ __device__ Delta1d(Real delta, const DeviceData1d<Real>& deltaVar)
+    __device__ Delta1d(Real delta, const DeviceData1d<Real>& deltaVar)
     : deltaVar(deltaVar), val(delta) {}
 
     __device__ Real operator[](size_t i) const{
