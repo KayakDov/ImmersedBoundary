@@ -228,6 +228,58 @@ public:
     }
 };
 
+// Base declaration
+template<typename SegmentType>
+class AxisSegmentHost;
+
+// --- SPECIALIZATION FOR UNIFORM SEGMENTS ---
+template<typename Real>
+class AxisSegmentHost<UniformSegment<Real>> {
+
+    BoundaryConditionHost<Real> start, end;
+    bool isStaggered;
+    Real delta;
+    size_t numNodes;
+
+public:
+    using SegmentType = UniformSegment<Real>;
+
+    AxisSegmentHost(BoundaryConditionHost<Real> start, BoundaryConditionHost<Real> end, bool isStaggered, Real delta, size_t numNodes)
+        : start(start), end(end), isStaggered(isStaggered), delta(delta), numNodes(numNodes) {}
+
+    UniformSegment<Real> forDevice() const {
+        return UniformSegment<Real>(start.isNeumann, end.isNeumann,
+                                     start.value, end.value,
+                                     isStaggered, delta, numNodes);
+    }
+};
+
+// --- SPECIALIZATION FOR VARIABLE SEGMENTS ---
+template<typename Real>
+class AxisSegmentHost<VariableSegment<Real>> {
+
+
+    BoundaryConditionHost<Real> start, end;
+    SimpleArray<Real> varDelta; // Manages host lifetime / prevents premature cudaFree!
+
+public:
+
+    using SegmentType = VariableSegment<Real>;
+
+    AxisSegmentHost(BoundaryConditionHost<Real> start, BoundaryConditionHost<Real> end, SimpleArray<Real> deviceArray)
+        : start(start), end(end), varDelta(deviceArray) {}
+
+    VariableSegment<Real> forDevice() const {
+        return VariableSegment<Real>(start.isNeumann, end.isNeumann,
+                                      start.value, end.value,
+                                      varDelta); // Implicitly decays to DeviceData1d
+    }
+};
+
+
+
+
+
 template<typename T>
 __host__ __device__
 bool operator==(const UniformSegment<T>&,

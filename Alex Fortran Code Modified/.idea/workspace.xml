@@ -29,21 +29,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5e717848-e6b7-447f-a3b4-45c92782bb68" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/Alex Fortran Code Modified.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EVD_Thomas3D_dgemm_OMP_v2_time.f90" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EVD_Thomas3D_dgemm_OMP_v3_time.f90" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EVD_eigenvector_ag1.f90" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EVD_laptmpr_3D.f90" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EVD_solver_DGEMM_3D_v2.f90" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EVD_solver_DGEMM_3D_v3.f90" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TestMain_3D.f90" beforeDir="false" afterPath="$PROJECT_DIR$/src/TestMain_3D.f90" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/modfv_3D.f90" beforeDir="false" afterPath="$PROJECT_DIR$/src/modfv_3D.f90" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Alex Fortran Code/.idea/workspace.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../Alex Fortran Code/CMakeLists.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../Alex Fortran Code/src/EVD_Thomas3D_dgemm_OMP_v2_time.f90" beforeDir="false" />
@@ -159,13 +145,14 @@
       <change beforePath="$PROJECT_DIR$/../code/src/solvers/EigenDecomp/EigenDecompThomas.cuh" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../code/src/solvers/Event.cu" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../code/src/solvers/Event.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/deviceArrays/defFiles/Streamable.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../src/deviceArrays/defFiles/Streamable.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/poisson/AxisSegment.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/poisson/AxisSegment.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/AxisSegment.cuh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/poisson/BoundaryCondition.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/BoundaryCondition.cuh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/poisson/BoundaryConfig.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/BoundaryConfig.cuh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/poisson/Eigen.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/Eigen.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/poisson/Eigen.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/Eigen.cuh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecomp3d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecomp3d.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecomp3d.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecomp3d.cuh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompForFortran.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompForFortran.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompSolver.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompSolver.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompSolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompSolver.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompThomas.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompThomas.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompThomas.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompThomas.cuh" afterDir="false" />
     </list>
@@ -247,7 +234,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1782887876858</updated>
-      <workItem from="1782887877916" duration="6653000" />
+      <workItem from="1782887877916" duration="7913000" />
     </task>
     <servers />
   </component>

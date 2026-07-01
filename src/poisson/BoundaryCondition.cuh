@@ -195,5 +195,18 @@ public:
 
 };
 
+template<typename Real>
+class BoundaryConditionHost {
+public:
+    Real value;
+    bool isNeumann;
 
+    BoundaryConditionHost(Real value, bool isNeumann)
+        : value(value), isNeumann(isNeumann) {}
+
+    // Convenience converter to the standard trivially copyable device layout
+    BoundaryCondition<Real> forDevice() const {
+        return BoundaryCondition<Real>(value, isNeumann);
+    }
+};
 

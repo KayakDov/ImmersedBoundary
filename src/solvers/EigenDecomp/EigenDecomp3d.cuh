@@ -40,7 +40,7 @@ public:
      * @param event2 an event for controlling stream dependency.
      */
     template<typename BoundaryConfigT>
-    EigenDecomp3d(const BoundaryConfigT& boundary, Handle *hand3, Event *event2);
+    EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2);
 
 
 
@@ -53,7 +53,7 @@ public:
      * @param event2 an event for controlling stream dependency.
      */
     template<typename BoundaryConfigT>
-    EigenDecomp3d(const BoundaryConfigT& boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB);
+    EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB);
 
     /**
      * Be sure that b is in the column space of L.  Otheriwise you will receive a projection onto the column space

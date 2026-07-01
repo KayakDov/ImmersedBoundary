@@ -103,6 +103,7 @@ public:
      * @param boundary The boundary conditions.
      * @param hands A handle for each dimension.
      * @param events If 3d, then 2 events, if 2d then 1 event.
+     * @param sizeOfB a buffer that is the same size as b.
      */
     template<typename BoundaryConfigT>
     EigenDecompSolver(const BoundaryConfigT &boundary, Handle *hands, Event *events, SimpleArray<T> sizeOfB);

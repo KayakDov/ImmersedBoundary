@@ -113,16 +113,16 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
         XYZ<Real>{rightVal, bottomVal, backVal},
         isStaggered,
         defaultStream,
-        [&](const auto& boundary) {
-            poisson::boundaryCorrection(boundary, sizeOfBForBAdj, hands[0]);
-            using SegXType = std::decay_t<decltype(boundary.x)>;
+        [&](const auto& boundaryHost) {
+            poisson::boundaryCorrection(boundaryHost.forDevice(), sizeOfBForBAdj, hands[0]);
+            using SegXType = typename std::decay_t<decltype(boundaryHost.x)>::SegmentType;
 
             if (layers <= 1)
-                eds = std::make_unique<EigenDecomp2d<Real>>(boundary, hands, events[0]);
+                eds = std::make_unique<EigenDecomp2d<Real>>(boundaryHost.forDevice(), hands, events[0]);
             else
                 eds = thomas ?
-                    std::make_unique<EigenDecompThomas<Real, SegXType>>(boundary, hands, events) :
-                    std::make_unique<EigenDecomp3d<Real>>(boundary, hands, events);
+                    std::make_unique<EigenDecompThomas<Real, SegXType>>(boundaryHost, hands, events) :
+                    std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), hands, events);
         }
     );
 }

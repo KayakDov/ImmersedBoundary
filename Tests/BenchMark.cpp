@@ -178,8 +178,8 @@ double runEigenDecomp3d(const Boundary& boundary,
         std::chrono::high_resolution_clock::now() - t0).count();
 }
 
-template <typename Real, typename Segment, typename Boundary>
-double runEigenDecompThomas(const Boundary& boundary,
+template <typename Real, typename SegX, typename SegY, typename SegZ>
+double runEigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>& boundary,
                             SimpleArray<Real>& x,
                             const SimpleArray<Real>& rhs,
                             Mat<Real>& sizeOfBX3,
@@ -188,7 +188,7 @@ double runEigenDecompThomas(const Boundary& boundary,
     cudaDeviceSynchronize();
 
     auto t0 = std::chrono::high_resolution_clock::now();
-    EigenDecompThomas<Real, Segment> ed(boundary, hands, events, sizeOfBX3);
+    EigenDecompThomas<Real, SegX> ed(boundary, hands, events, sizeOfBX3);
     ed.solve(x, rhs, hands[0]);
     cudaDeviceSynchronize();
 
@@ -258,17 +258,14 @@ TEST(Benchmark, SolverRuntimes) {
         SolverTiming timing;
 
         try {
-            timing.eigenMs = runEigenDecomp3d<Real>(
-                uniformBoundary, xEigenSub, rhsSub, sizeOfBSub, hands, events);
+            timing.eigenMs = runEigenDecomp3d<Real>(uniformBoundary, xEigenSub, rhsSub, sizeOfBSub, hands, events);
         } catch (...) {
             std::cout << "OOM in EigenDecomp3d at N=" << n << std::endl; break;
         }
 
         try {
-            timing.thomasUnifMs = runEigenDecompThomas<Real, UniformSegment<Real>>(
-                uniformBoundary, xThomasSub, rhsSub, sizeOfBX3Sub, hands, events);
-            timing.diffNormUnif = computeResidualNorm(
-                uniformBoundary, xThomasSub, rhsSub, *buf.normResult, hands);
+            timing.thomasUnifMs = runEigenDecompThomas<Real, UniformSegment<Real>>(uniformBoundary, xThomasSub, rhsSub, sizeOfBX3Sub, hands, events);
+            timing.diffNormUnif = computeResidualNorm(uniformBoundary, xThomasSub, rhsSub, *buf.normResult, hands);
         } catch (...) {
             std::cout << "OOM in EigenDecompThomas (Uniform) at N=" << n << std::endl; break;
         }

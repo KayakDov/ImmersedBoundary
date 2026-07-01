@@ -135,13 +135,13 @@ void EigenDecompThomas<T, SegmentT>::multLEigenValInverse(const SimpleArray<T> &
         this->eigen.vals.z.toKernel1d(),
         workSpaceSuperPrime.toKernel3d(),
         workSpaceRHSPrime.toKernel3d(),
-        boundaryX,
+        boundaryX.forDevice(),
         this->isSingular
     );
 }
 //EigenDecomp3d(const poisson::Eigen<T> &eigen, SimpleArray<T>& sizeOfB, Vec<T>& size1IfSingular, bool isSingular);
 template<typename T, typename SegmentT>
-EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const SegmentT& boundX, Mat<T> &sizeOfBX3, bool isSingular):
+EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const AxisSegmentHost<SegmentT>& boundX, Mat<T> &sizeOfBX3, bool isSingular):
     EigenDecomp3d<T>(
         eigen,
         sizeOfBX3.col(0),
@@ -155,18 +155,18 @@ EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const S
 
 
 template<typename T, typename SegmentT>
-template<typename BoundaryConfigT>
-EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigT &boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3):
-    EigenDecomp3d<T>(boundary, hand3, event2, sizeOfBX3.col(0)),
-    workSpaceSuperPrime(sizeOfBX3.col(1).tensor(boundary.dim().rows, boundary.dim().layers)),
-    workSpaceRHSPrime(sizeOfBX3.col(2).tensor(boundary.dim().rows, boundary.dim().layers)),
-    boundaryX(boundary.x)
+template<typename SegY, typename SegZ>
+    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3):
+        EigenDecomp3d<T>(boundary.forDevice(), hand3, event2, sizeOfBX3.col(0)),
+        workSpaceSuperPrime(sizeOfBX3.col(1).tensor(boundary.forDevice().dim().rows, boundary.forDevice().dim().layers)),
+        workSpaceRHSPrime(sizeOfBX3.col(2).tensor(boundary.forDevice().dim().rows, boundary.forDevice().dim().layers)),
+        boundaryX(boundary.x)
 {}
 
 template<typename T, typename SegmentT>
-template<typename BoundaryConfigT>
-EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigT &boundary, Handle *hand3, Event *event2):
-    EigenDecompThomas(boundary, hand3, event2, Mat<T>::create(boundary.dim().size(), 3))
+template<typename SegY, typename SegZ>
+    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2):
+        EigenDecompThomas(boundary, hand3, event2, Mat<T>::create(boundary.forDevice().dim().size(), 3))
 {
 }
 // ==============================================================================
@@ -184,9 +184,9 @@ template class EigenDecompThomas<double, VariableSegment<double>>;
 // Note: We use <Real, SegX> for the class, and deduce the BoundaryConfigT from the args.
 #define INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, SegX, SegY, SegZ) \
 template EigenDecompThomas<Real, SegX>::EigenDecompThomas( \
-    const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*); \
+    const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*); \
 template EigenDecompThomas<Real, SegX>::EigenDecompThomas( \
-    const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>);
+    const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>);
 
 
 // 3. Generate all combinations of Uniform and Variable segments

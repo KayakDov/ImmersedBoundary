@@ -43,15 +43,7 @@ struct BoundaryConfig {
     __host__ __device__ BoundaryConfig(const SegX& axisX, const SegY& axisY, const SegZ& axisZ)
         : x(axisX), y(axisY), z(axisZ) {}
 
-    /**
-     * Checks if all the boundary conditions are Neumann, which results in a singular Laplacian.
-     * @return True if all axes have Neumann conditions on both ends.
-     */
-    __host__ bool allNeumann() const {
-        return this->x.bothNeumann() && 
-               this->y.bothNeumann() && 
-               (this->z.bothNeumann() || this->z.numNodes <= 1); // [cite: 254]
-    }
+
 
     /**
      * @brief Deduces the full 3D grid dimensions from the segments themselves.
@@ -61,8 +53,38 @@ struct BoundaryConfig {
         return GridDim(this->y.numNodes, this->x.numNodes, this->z.numNodes); // [cite: 257]
     }
 
+
     XYZ<Delta1d<Real>> delta() const {
         return {x.getDelta(), y.getDelta(), z.getDelta()};
+    }
+
+    /**
+     * Checks if all the boundary conditions are Neumann, which results in a singular Laplacian.
+     * @return True if all axes have Neumann conditions on both ends.
+     */
+    bool allNeumann() const {
+        return this->x.bothNeumann() &&
+               this->y.bothNeumann() &&
+               (this->z.bothNeumann() || this->z.numNodes <= 1); // [cite: 254]
+    }
+};
+
+template<typename Real, typename SegX, typename SegY, typename SegZ>
+class BoundaryConfigHost {
+
+public:
+    const AxisSegmentHost<SegX> x;
+    const AxisSegmentHost<SegY> y;
+    const AxisSegmentHost<SegZ> z;
+
+    BoundaryConfigHost(const AxisSegmentHost<SegX>& axisX,
+                       const AxisSegmentHost<SegY>& axisY,
+                       const AxisSegmentHost<SegZ>& axisZ)
+        : x(axisX), y(axisY), z(axisZ) {}
+
+    // Deterministic return type! Flawless parameter passing for kernels.
+    auto forDevice() const {
+        return BoundaryConfig<Real, SegX, SegY, SegZ>(x.forDevice(), y.forDevice(), z.forDevice());
     }
 };
 
@@ -91,35 +113,71 @@ void buildBoundaryConfigAndLaunch(
     cudaStream_t stream,
     Callback&& launchParams
 ) {
-    auto dispatchZ = [&](const auto& segX, const auto& segY) {
+    auto dispatchZ = [&](const auto& segHostX, const auto& segHostY) {
+        using SegX = typename std::decay_t<decltype(segHostX)>::SegmentType;
+        using SegY = typename std::decay_t<decltype(segHostY)>::SegmentType;
         if (deltas.z.size() == 1) {
-            UniformSegment<Real> segZ(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, deltas.z[0], dim.layers);
-            launchParams(BoundaryConfig<Real, std::decay_t<decltype(segX)>, std::decay_t<decltype(segY)>, UniformSegment<Real>>(segX, segY, segZ));
+            AxisSegmentHost<UniformSegment<Real>> segHostZ(
+                {startVal.z, startIsNeumann.z},
+                {endVal.z, endIsNeumann.z},
+                isStaggered,
+                deltas.z[0],
+                dim.layers
+            );
+            launchParams(
+                BoundaryConfigHost<Real, SegX, SegY, UniformSegment<Real>>(segHostX, segHostY, segHostZ)
+            );
         } else {
             SimpleArray<Real> arrayZ = SimpleArray<Real>::create(deltas.z, stream);
-            VariableSegment<Real> segZ(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, arrayZ);
-            launchParams(BoundaryConfig<Real, std::decay_t<decltype(segX)>, std::decay_t<decltype(segY)>, VariableSegment<Real>>(segX, segY, segZ));
+            AxisSegmentHost<VariableSegment<Real>> segHostZ(
+                {startVal.z, startIsNeumann.z},
+                {endVal.z, endIsNeumann.z},
+                arrayZ
+            );
+            launchParams(
+                BoundaryConfigHost<Real, SegX, SegY, VariableSegment<Real>>(segHostX, segHostY, segHostZ)
+            );
         }
     };
 
-    auto dispatchY = [&](const auto& segX) {
+    auto dispatchY = [&](const auto& segHostX) {
         if (deltas.y.size() == 1) {
-            UniformSegment<Real> segY(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, deltas.y[0], dim.rows);
-            dispatchZ(segX, segY);
+            AxisSegmentHost<UniformSegment<Real>> segHostY(
+                {startVal.y, startIsNeumann.y},
+                {endVal.y, endIsNeumann.y},
+                isStaggered,
+                deltas.y[0],
+                dim.rows
+            );
+            dispatchZ(segHostX, segHostY);
         } else {
             SimpleArray<Real> arrayY = SimpleArray<Real>::create(deltas.y, stream);
-            VariableSegment<Real> segY(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, arrayY);
-            dispatchZ(segX, segY);
+            AxisSegmentHost<VariableSegment<Real>> segHostY(
+                {startVal.y, startIsNeumann.y},
+                {endVal.y, endIsNeumann.y},
+                arrayY
+            );
+            dispatchZ(segHostX, segHostY);
         }
     };
 
     if (deltas.x.size() == 1) {
-        UniformSegment<Real> segX(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, deltas.x[0], dim.cols);
-        dispatchY(segX);
+        AxisSegmentHost<UniformSegment<Real>> segHostX(
+                {startVal.x, startIsNeumann.x},
+                {endVal.x, endIsNeumann.x},
+                isStaggered,
+                deltas.x[0],
+                dim.cols
+            );
+        dispatchY(segHostX);
     } else {
         SimpleArray<Real> arrayX = SimpleArray<Real>::create(deltas.x, stream);
-        VariableSegment<Real> segX(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, arrayX);
-        dispatchY(segX);
+        AxisSegmentHost<VariableSegment<Real>> segHostX(
+                {startVal.x, startIsNeumann.x},
+                {endVal.x, endIsNeumann.x},
+                arrayX
+            );
+        dispatchY(segHostX);
     }
 }
 
@@ -141,4 +199,6 @@ static auto makeUniformBoundaryConfig(
         UniformSegment<T>(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
     );
 }
+
+
 #endif // CUDABANDED_BOUNDARYCONFIG_CUH

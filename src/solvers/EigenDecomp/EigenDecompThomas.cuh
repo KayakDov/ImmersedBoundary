@@ -34,7 +34,7 @@ protected:
     Tensor<T> workSpaceRHSPrime;
 
     /** The boundary conditions for the x dimension. */
-    const SegmentT boundaryX;
+    const AxisSegmentHost<SegmentT> boundaryX;
 
     /**
      * @brief Solves the tridiagonal systems in the eigen-space.
@@ -57,7 +57,7 @@ public:
      * @param sizeOfBX3 A 3-column matrix providing scratch space for [Solution, SuperPrime, RHSPrime].
      * @param isSingular true if the laplacian is singular.
      */
-    EigenDecompThomas(const Eigen<T> &eigen, const SegmentT& boundX, Mat<T> &sizeOfBX3, bool isSingular);
+    EigenDecompThomas(const Eigen<T> &eigen, const AxisSegmentHost<SegmentT> &boundX, Mat<T> &sizeOfBX3, bool isSingular);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.
@@ -67,8 +67,11 @@ public:
      * @param sizeOfBX3 allocated memory for the right hand side, and the thomas calculations.  It should have as amny rows
      * as there are rows in L, and 3 columns.
      */
-    template<typename BoundaryConfigT>
-    EigenDecompThomas(const BoundaryConfigT& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3);
+    template<typename SegY, typename SegZ>
+    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3);
+
+
+
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.
@@ -76,8 +79,8 @@ public:
      * @param hand3 Pointer to array of Handles.
      * @param event2 Event for stream synchronization.
      */
-    template<typename BoundaryConfigT>
-    EigenDecompThomas(const BoundaryConfigT& boundary, Handle *hand3, Event *event2);
+    template<class SegY, class SegZ>
+    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ> &boundary, Handle *hand3, Event *event2);
 
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const override;
 };
@@ -85,12 +88,12 @@ public:
 
 // Guide for Constructor 2 (Without Mat workspace)
 template<typename Real, typename SegX, typename SegY, typename SegZ>
-EigenDecompThomas(const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*)
+EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*)
     -> EigenDecompThomas<Real, SegX>;
 
 // Guide for Constructor 1 (With Mat workspace)
 template<typename Real, typename SegX, typename SegY, typename SegZ>
-EigenDecompThomas(const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>)
+EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>)
     -> EigenDecompThomas<Real, SegX>;
 
 #endif //CUDABANDED_EIGENDECOMPTHOMAS_CUH

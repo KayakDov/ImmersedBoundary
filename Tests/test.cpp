@@ -484,7 +484,7 @@ template <typename Real, typename Int, typename BoundaryConfigT>
 void verifyImmersedEqWithBoundary(const BoundaryConfigT& boundary, Handle& hand, Real tolerance, const std::string& locMsg, Mat<Real> bufferNXNPlus5) {
     std::stringstream errorMsg;
     errorMsg << locMsg << '\n';
-    const size_t n = boundary.dim().size();
+    const size_t n = boundary.forDevice().dim().size();
 
     // 1. Setup sparse boundary matrix B
     std::vector<Real> x0Host(n);
