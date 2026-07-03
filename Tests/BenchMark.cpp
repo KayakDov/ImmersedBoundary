@@ -97,7 +97,7 @@ public:
 
 template <typename Real>
 auto makeUniformNeumann(const Real3d& delta, const GridDim& dim) {
-    return makeUniformBoundaryConfig<Real>(
+    return makeUniformBoundaryConfigHost<Real>(
         {false, false, false},
         {false, false, false},
         {0.0,   0.0,   0.0},
@@ -112,11 +112,11 @@ auto makeVariableUnitSpacing(SolverBuffers<Real>& buf, size_t n, Handle& hand) {
     auto dySub = buf.dy->subArray(0, n + 1); dySub.fill(1.0, hand);
     auto dzSub = buf.dz->subArray(0, n + 1); dzSub.fill(1.0, hand);
 
-    VariableSegment<Real> varX(true, true, 0.0, 0.0, dxSub);
-    VariableSegment<Real> varY(true, true, 0.0, 0.0, dySub);
-    VariableSegment<Real> varZ(true, true, 0.0, 0.0, dzSub);
+    AxisSegmentHost<VariableSegment<Real>> varX({0, true}, {0, true}, dxSub);
+    AxisSegmentHost<VariableSegment<Real>> varY({0, true}, {0, true}, dySub);
+    AxisSegmentHost<VariableSegment<Real>> varZ({0, true}, {0, true}, dzSub);
 
-    return BoundaryConfig<Real,
+    return BoundaryConfigHost<Real,
                           VariableSegment<Real>,
                           VariableSegment<Real>,
                           VariableSegment<Real>>(varX, varY, varZ);
@@ -141,8 +141,8 @@ std::vector<Real> generateZeroMeanRhs(size_t total) {
 
 // ─── Residual Norm ───────────────────────────────────────────────────────────
 
-template <typename Real, typename Boundary>
-double computeResidualNorm(const Boundary& boundary,
+template <typename Real, typename segX, typename segY, typename segZ>
+double computeResidualNorm(const BoundaryConfig<Real, segX, segY, segZ>& boundary,
                             const SimpleArray<Real>& x,
                             const SimpleArray<Real>& rhs,
                             Singleton<Real>& normResult,
@@ -160,8 +160,8 @@ double computeResidualNorm(const Boundary& boundary,
 
 // ─── Individual Solver Runs ───────────────────────────────────────────────────
 
-template <typename Real, typename Boundary>
-double runEigenDecomp3d(const Boundary& boundary,
+template <typename Real, typename segX, typename  segY, typename segZ>
+double runEigenDecomp3d(const BoundaryConfig<Real, segX, segY, segZ>& boundary,
                         SimpleArray<Real>& x,
                         const SimpleArray<Real>& rhs,
                         SimpleArray<Real>& sizeOfB,
@@ -258,14 +258,14 @@ TEST(Benchmark, SolverRuntimes) {
         SolverTiming timing;
 
         try {
-            timing.eigenMs = runEigenDecomp3d<Real>(uniformBoundary, xEigenSub, rhsSub, sizeOfBSub, hands, events);
+            timing.eigenMs = runEigenDecomp3d<Real>(uniformBoundary.forDevice(), xEigenSub, rhsSub, sizeOfBSub, hands, events);
         } catch (...) {
             std::cout << "OOM in EigenDecomp3d at N=" << n << std::endl; break;
         }
 
         try {
             timing.thomasUnifMs = runEigenDecompThomas<Real, UniformSegment<Real>>(uniformBoundary, xThomasSub, rhsSub, sizeOfBX3Sub, hands, events);
-            timing.diffNormUnif = computeResidualNorm(uniformBoundary, xThomasSub, rhsSub, *buf.normResult, hands);
+            timing.diffNormUnif = computeResidualNorm(uniformBoundary.forDevice(), xThomasSub, rhsSub, *buf.normResult, hands);
         } catch (...) {
             std::cout << "OOM in EigenDecompThomas (Uniform) at N=" << n << std::endl; break;
         }
@@ -274,7 +274,7 @@ TEST(Benchmark, SolverRuntimes) {
             timing.thomasVarMs = runEigenDecompThomas<Real, VariableSegment<Real>>(
                 variableBoundary, xVarThomasSub, rhsSub, sizeOfBX3Sub, hands, events);
             timing.diffNormVar = computeResidualNorm(
-                variableBoundary, xVarThomasSub, rhsSub, *buf.normResult, hands);
+                variableBoundary.forDevice(), xVarThomasSub, rhsSub, *buf.normResult, hands);
         } catch (...) {
             std::cout << "OOM in EigenDecompThomas (Variable) at N=" << n << std::endl; break;
         }

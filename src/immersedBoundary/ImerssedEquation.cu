@@ -401,33 +401,30 @@ ImmersedEqSolver<Real, Int>::ImmersedEqSolver(
     imEq(imEq) {
 }
 
-
-#define INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, SegX, SegY, SegZ) \
-template ImmersedEq<Real, Int>::ImmersedEq( \
-const BoundaryConfig<Real, SegX, SegY, SegZ>&, \
-size_t, size_t, Real*, Real*, double, Real, size_t);
-
-#define INSTANTIATE_FOR_SEG_COMBO(Real, Int) \
-INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
-INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_IMMERSED_EQ_BOUNDARY(Real, Int, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
-
-INSTANTIATE_FOR_SEG_COMBO(float,  int32_t)
-INSTANTIATE_FOR_SEG_COMBO(double, int32_t)
-INSTANTIATE_FOR_SEG_COMBO(float,  int64_t)
-INSTANTIATE_FOR_SEG_COMBO(double, int64_t)
-
-template class ImmersedEqSolver<float, int32_t>;
-template class ImmersedEqSolver<double, int32_t>;
+// 1. Explicitly instantiate the base classes first
+template class ImmersedEqSolver<float, int>;
+template class ImmersedEqSolver<double, int>;
 template class ImmersedEqSolver<float, int64_t>;
 template class ImmersedEqSolver<double, int64_t>;
 
-template class ImmersedEq<float, int32_t>;
-template class ImmersedEq<double, int32_t>;
+template class ImmersedEq<float, int>;
+template class ImmersedEq<double, int>;
 template class ImmersedEq<float, int64_t>;
 template class ImmersedEq<double, int64_t>;
+
+// 2. Define the macro to ONLY instantiate for Device configs
+#define INSTANTIATE_IMMERSED_EQ_CTORS_DEVICE(Real, SegX, SegY, SegZ) \
+/* Constructor 1 (Passed by value) */ \
+template ImmersedEq<Real, int>::ImmersedEq( \
+BoundaryConfig<Real, SegX, SegY, SegZ>, \
+SimpleArray<int>, SimpleArray<int>, Singleton<Real>, Real, size_t); \
+/* ... repeat for int64_t ... */ \
+/* Constructor 2 (Passed by reference) */ \
+template ImmersedEq<Real, int>::ImmersedEq( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, \
+size_t, size_t, Real*, Real*, double, Real, size_t); \
+/* ... repeat for int64_t ... */
+
+// 3. Trigger the macro ONLY for Device
+APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_IMMERSED_EQ_CTORS_DEVICE)
+APPLY_TO_ALL_SEGMENT_COMBOS(float,  INSTANTIATE_IMMERSED_EQ_CTORS_DEVICE)

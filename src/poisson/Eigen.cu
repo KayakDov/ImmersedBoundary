@@ -477,19 +477,9 @@ template void Eigen<double>::generateEigen<VariableSegment<double>>(Handle&, Mat
 template class Eigen<float>;
 template class Eigen<double>;
 
-#define INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, SegX, SegY, SegZ) \
+#define INSTANTIATE_EIGEN_MAKE_DEVICE(Real, SegX, SegY, SegZ) \
 template Eigen<Real> Eigen<Real>::make<BoundaryConfig<Real, SegX, SegY, SegZ>>( \
-    const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*);
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*);
 
-#define INSTANTIATE_EIGEN_ALL(Real) \
-INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
-INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_MAKE_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>) \
-
-INSTANTIATE_EIGEN_ALL(float)
-INSTANTIATE_EIGEN_ALL(double)
+APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_EIGEN_MAKE_DEVICE)
+APPLY_TO_ALL_SEGMENT_COMBOS(float,  INSTANTIATE_EIGEN_MAKE_DEVICE)

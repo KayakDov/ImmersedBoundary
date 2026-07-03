@@ -80,29 +80,18 @@ namespace poisson {
 
 }
 
-#define INSTANTIATE_POISSON_BOUNDARY(Real, SegX, SegY, SegZ) \
+// 1. Define the macro to instantiate the Poisson functions for the Device Config
+#define INSTANTIATE_POISSON_FUNCTIONS(Real, SegX, SegY, SegZ) \
+/* laplacian returning BandedMat */ \
 template BandedMat<Real> poisson::laplacian<Real, BoundaryConfig<Real, SegX, SegY, SegZ>>( \
 const BoundaryConfig<Real, SegX, SegY, SegZ>&, cudaStream_t); \
-template SimpleArray<Real> poisson::boundaryCorrection<Real, BoundaryConfig<Real, SegX, SegY, SegZ>>( \
-const BoundaryConfig<Real, SegX, SegY, SegZ>&, cudaStream_t); \
+/* boundaryCorrection modifying array */ \
 template void poisson::boundaryCorrection<Real, BoundaryConfig<Real, SegX, SegY, SegZ>>( \
-const BoundaryConfig<Real, SegX, SegY, SegZ>&, SimpleArray<Real>, cudaStream_t);
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, SimpleArray<Real>, cudaStream_t); \
+/* boundaryCorrection returning array */ \
+template SimpleArray<Real> poisson::boundaryCorrection<Real, BoundaryConfig<Real, SegX, SegY, SegZ>>( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, cudaStream_t);
 
-#define INSTANTIATE_POISSON_ALL(Real) \
-INSTANTIATE_POISSON_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_POISSON_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_POISSON_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_POISSON_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
-INSTANTIATE_POISSON_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_POISSON_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_POISSON_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_POISSON_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
-
-INSTANTIATE_POISSON_ALL(float)
-INSTANTIATE_POISSON_ALL(double)
-
-#define INSTANTIATE_LAPLACIAN(T)                                                                       \
-template SimpleArray<T> poisson::boundaryCorrection<T, BoundaryConfigT>(const BoundaryConfigT&, cudaStream_t);        \
-template void poisson::boundaryCorrection<T, BoundaryConfigT>(const BoundaryConfigT&, SimpleArray<T>, cudaStream_t);  \
-template BandedMat<T> poisson::laplacian<T, BoundaryConfigT>(const BoundaryConfigT&, cudaStream_t);                   \
-template BandedMat<T> poisson::laplacian<T, BoundaryConfigT>(const BoundaryConfigT&, Mat<T>&, Vec<int32_t>&, cudaStream_t);
+// 2. Trigger the macro
+APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_POISSON_FUNCTIONS)
+APPLY_TO_ALL_SEGMENT_COMBOS(float,  INSTANTIATE_POISSON_FUNCTIONS)

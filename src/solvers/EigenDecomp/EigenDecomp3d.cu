@@ -69,22 +69,10 @@ void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle 
 template class EigenDecomp3d<double>;
 template class EigenDecomp3d<float>;
 
-#define INSTANTIATE_EIGEN3D_BOUNDARY(Real, SegX, SegY, SegZ) \
-template EigenDecomp3d<Real>::EigenDecomp3d( \
-const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*); \
-template EigenDecomp3d<Real>::EigenDecomp3d( \
-const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*, SimpleArray<Real>);
+#define INSTANTIATE_EIGENDECOMP3D_CTORS(Real, SegX, SegY, SegZ) \
+template EigenDecomp3d<Real>::EigenDecomp3d(const BoundaryConfig<Real, SegX, SegY, SegZ>, Handle*, Event*); \
+template EigenDecomp3d<Real>::EigenDecomp3d(const BoundaryConfig<Real, SegX, SegY, SegZ>, Handle*, Event*, SimpleArray<Real>);
 
-#define INSTANTIATE_EIGEN3D_ALL(Real) \
-INSTANTIATE_EIGEN3D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN3D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN3D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN3D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
-INSTANTIATE_EIGEN3D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN3D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN3D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN3D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
-
-INSTANTIATE_EIGEN3D_ALL(float)
-INSTANTIATE_EIGEN3D_ALL(double)
+APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_EIGENDECOMP3D_CTORS)
+APPLY_TO_ALL_SEGMENT_COMBOS(float,  INSTANTIATE_EIGENDECOMP3D_CTORS)
 

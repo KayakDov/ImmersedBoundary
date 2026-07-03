@@ -42,6 +42,7 @@
       <change beforePath="$PROJECT_DIR$/../Alex Fortran Code/src/TestMain_3D.f90" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../Alex Fortran Code/src/Test_TPF.link_file" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../Alex Fortran Code/src/modfv_3D.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Tests/BenchMark.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../Tests/BenchMark.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Tests/test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../Tests/test.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../code/FortranTest/.idea/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../code/FortranTest/.idea/.name" beforeDir="false" />
@@ -145,16 +146,12 @@
       <change beforePath="$PROJECT_DIR$/../code/src/solvers/EigenDecomp/EigenDecompThomas.cuh" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../code/src/solvers/Event.cu" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../code/src/solvers/Event.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/poisson/AxisSegment.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/AxisSegment.cuh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/poisson/BoundaryCondition.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/BoundaryCondition.cuh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/immersedBoundary/ImerssedEquation.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/immersedBoundary/ImerssedEquation.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/poisson/BoundaryConfig.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/BoundaryConfig.cuh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/poisson/Eigen.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/Eigen.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/poisson/Laplacian1d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/Laplacian1d.cu" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/poisson/Poisson.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/poisson/Poisson.cu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecomp3d.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecomp3d.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecomp3d.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecomp3d.cuh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompForFortran.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompForFortran.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompSolver.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompSolver.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompSolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompSolver.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompThomas.cu" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompThomas.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompThomas.cuh" beforeDir="false" afterPath="$PROJECT_DIR$/../src/solvers/EigenDecomp/EigenDecompThomas.cuh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -77,9 +77,7 @@ public:
     const AxisSegmentHost<SegY> y;
     const AxisSegmentHost<SegZ> z;
 
-    BoundaryConfigHost(const AxisSegmentHost<SegX>& axisX,
-                       const AxisSegmentHost<SegY>& axisY,
-                       const AxisSegmentHost<SegZ>& axisZ)
+    BoundaryConfigHost(const AxisSegmentHost<SegX>& axisX, const AxisSegmentHost<SegY>& axisY, const AxisSegmentHost<SegZ>& axisZ)
         : x(axisX), y(axisY), z(axisZ) {}
 
     // Deterministic return type! Flawless parameter passing for kernels.
@@ -188,17 +186,33 @@ void buildBoundaryConfigAndLaunch(
      * x, y, and z axes using the uniform parameters provided.
      */
 template<typename T>
-static auto makeUniformBoundaryConfig(
+static auto makeUniformBoundaryConfigHost(
     const XYZ<bool>& startIsNeumann, const XYZ<bool>& endIsNeumann,
     const XYZ<T>& startVal, const XYZ<T>& endVal,
     const Real3d& delta, const GridDim& dim, bool isStaggered
 ) {
-    return BoundaryConfig<T, UniformSegment<T>, UniformSegment<T>, UniformSegment<T>>(
-        UniformSegment<T>(startIsNeumann.x, endIsNeumann.x, startVal.x, endVal.x, isStaggered, delta.x, dim.cols),
-        UniformSegment<T>(startIsNeumann.y, endIsNeumann.y, startVal.y, endVal.y, isStaggered, delta.y, dim.rows),
-        UniformSegment<T>(startIsNeumann.z, endIsNeumann.z, startVal.z, endVal.z, isStaggered, delta.z, dim.layers)
+    return BoundaryConfigHost<T, UniformSegment<T>, UniformSegment<T>, UniformSegment<T>>(
+        AxisSegmentHost<UniformSegment<T>>({startVal.x, startIsNeumann.x}, {endVal.x, endIsNeumann.x}, isStaggered, delta.x, dim.cols),
+        AxisSegmentHost<UniformSegment<T>>({startVal.y, startIsNeumann.y}, {endVal.y, endIsNeumann.y}, isStaggered, delta.y, dim.rows),
+        AxisSegmentHost<UniformSegment<T>>({startVal.z, startIsNeumann.z}, {endVal.z, endIsNeumann.z}, isStaggered, delta.z, dim.layers)
     );
 }
 
 
+
+#ifndef INSTANTIATION_MACROS_H
+#define INSTANTIATION_MACROS_H
+
+// Applies a given MACRO_NAME to all 8 segment combinations for a specific Real type
+#define APPLY_TO_ALL_SEGMENT_COMBOS(Real, MACRO_NAME) \
+MACRO_NAME(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
+MACRO_NAME(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
+MACRO_NAME(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
+MACRO_NAME(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
+MACRO_NAME(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
+MACRO_NAME(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
+
+#endif // INSTANTIATION_MACROS_H
 #endif // CUDABANDED_BOUNDARYCONFIG_CUH

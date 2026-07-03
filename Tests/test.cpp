@@ -117,7 +117,7 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
     Real3d delta(1, 1, 1);
     Handle hand;
 
-    auto boundary = makeUniformBoundaryConfig<Real>(
+    auto boundaryHost = makeUniformBoundaryConfigHost<Real>(
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
@@ -164,7 +164,7 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
 
     // ToeplitzLaplacian<Real>::printL(dim, hand, delta);
 
-    ImmersedEq<Real, Int> imEq(boundary, f.size(), valsR.size(), p.data(), f.data(), deltaT, 1e-8, 1000);
+    ImmersedEq<Real, Int> imEq(boundaryHost.forDevice(), f.size(), valsR.size(), p.data(), f.data(), deltaT, 1e-8, 1000);
 
     imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
 
@@ -208,7 +208,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     GridDim dim(25, 30, 20);
     Real3d delta(1, 0.5, 2);
     Handle hand;
-    auto boundary = makeUniformBoundaryConfig<Real>(
+    auto boundary = makeUniformBoundaryConfigHost<Real>(
         {false, false, false},
         {false, false, false},
         {0, 0, 0},
@@ -229,7 +229,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     auto x = SimpleArray<Real>::create(dim.size(), hand);
     x.set(xHost.data(), hand);
 
-    BandedMat<Real> L = poisson::laplacian<double>(boundary, hand);
+    BandedMat<Real> L = poisson::laplacian<double>(boundary.forDevice(), hand);
     auto LDense = SquareMat<Real>::create(dim.size());
     L.getDense(LDense, hand);
 
@@ -256,7 +256,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     std::vector<Real> resultP(dim.size(), 0);
     std::vector<Real> resultF(fHost.size(), 0);
 
-    ImmersedEq<Real, Int> imEq(boundary, fHost.size(), valuesB.size(), p.data(), fHost.data(), 1, 1e-12, 5);
+    ImmersedEq<Real, Int> imEq(boundary.forDevice(), fHost.size(), valuesB.size(), p.data(), fHost.data(), 1, 1e-12, 5);
 
 
     imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
@@ -408,10 +408,10 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
  * @param events Array of events for synchronization.
  * @param  Maximum allowable difference for numerical validation.
  */
-template<typename Real, typename BoundaryConfigT>
-void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& boundary, Handle* hands, Event* events, Real tolerance, std::string& msg) {
+template<typename Real, typename segX, typename segY, typename segZ>
+void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real, segX, segY, segZ>& boundary, Handle* hands, Event* events, Real tolerance, std::string& msg) {
 
-    auto laplacian = poisson::laplacian<Real>(boundary, hands[0]);
+    auto laplacian = poisson::laplacian<Real>(boundary.forDevice(), hands[0]);
 
     // std::cout << "verifyEigenSolverIdentity banded laplacian = \n" << GpuOut<Real>(laplacian, hands[0]) << std::endl;
     // std::cout << "verifyEigenSolverIdentity dense laplacian = \n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
@@ -435,10 +435,10 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& bounda
     x.fill(0, hands[0]);
 
     if (dim.numDims() == 2) {
-        EigenDecomp2d<Real> ed(boundary, hands, events[0]);
+        EigenDecomp2d<Real> ed(boundary.forDevice(), hands, events[0]);
         ed.solve(x, rhs, hands[0]);
     } else {
-        EigenDecomp3d<Real> ed(boundary, hands, events);
+        EigenDecomp3d<Real> ed(boundary.forDevice(), hands, events);
         ed.solve(x, rhs, hands[0]);
     }
     // std::cout << "verifyEigenSolverIdentity x_solution = \n" << GpuOut<Real>(x, hands[0]) << std::endl;
@@ -480,11 +480,11 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigT& bounda
 
 
 
-template <typename Real, typename Int, typename BoundaryConfigT>
-void verifyImmersedEqWithBoundary(const BoundaryConfigT& boundary, Handle& hand, Real tolerance, const std::string& locMsg, Mat<Real> bufferNXNPlus5) {
+template <typename Real, typename Int, typename segX, typename segY, typename segZ>
+void verifyImmersedEqWithBoundary(const BoundaryConfig<Real, segX, segY, segZ>& boundary, Handle& hand, Real tolerance, const std::string& locMsg, Mat<Real> bufferNXNPlus5) {
     std::stringstream errorMsg;
     errorMsg << locMsg << '\n';
-    const size_t n = boundary.forDevice().dim().size();
+    const size_t n = boundary.dim().size();
 
     // 1. Setup sparse boundary matrix B
     std::vector<Real> x0Host(n);
@@ -572,17 +572,17 @@ void boundaryBattery(
     std::string locMsg = ss.str();
 
     // Use the factory to deduce segment types at runtime and execute the tests
-    buildBoundaryConfigAndLaunch<Real>(dim, deltas, startIsN, endIsN, startVal, endVal, isStag, 0, [&](const auto& boundary) {
+    buildBoundaryConfigAndLaunch<Real>(dim, deltas, startIsN, endIsN, startVal, endVal, isStag, 0, [&](const auto& boundaryHost) {
 
         // Deduce uniformity at compile time
-        using Config = std::decay_t<decltype(boundary)>;
-        constexpr bool isXUniform = std::is_same_v<decltype(boundary.x), UniformSegment<Real>>;
-        constexpr bool isYUniform = std::is_same_v<decltype(boundary.y), UniformSegment<Real>>;
-        constexpr bool isZUniform = std::is_same_v<decltype(boundary.z), UniformSegment<Real>>;
+        using Config = std::decay_t<decltype(boundaryHost)>;
+        constexpr bool isXUniform = std::is_same_v<decltype(boundaryHost.x), UniformSegment<Real>>;
+        constexpr bool isYUniform = std::is_same_v<decltype(boundaryHost.y), UniformSegment<Real>>;
+        constexpr bool isZUniform = std::is_same_v<decltype(boundaryHost.z), UniformSegment<Real>>;
 
         // Unconditionally instantiate the operators
-        Laplacian1d<Real> laplacian1d(boundary, hand3[0]);
-        Eigen<Real> laplacianEigen = Eigen<Real>::make(boundary, hand3, event2);
+        Laplacian1d<Real> laplacian1d(boundaryHost.forDevice(), hand3[0]);
+        Eigen<Real> laplacianEigen = Eigen<Real>::make(boundaryHost.forDevice(), hand3, event2);
 
         // 1. Check X
         checkEigens(
@@ -618,8 +618,8 @@ void boundaryBattery(
 
         //TODO:Uncomment below!
         // 4. Always run shared verification tests
-        verifyEigenSolverIdentity(dim, boundary, hand3, event2, tolerance, locMsg);
-        verifyImmersedEqWithBoundary<Real, int32_t>(boundary, hand3[0], tolerance, locMsg, bufferNXNPlus5);
+        verifyEigenSolverIdentity(dim, boundaryHost, hand3, event2, tolerance, locMsg);
+        verifyImmersedEqWithBoundary<Real, int32_t>(boundaryHost.forDevice(), hand3[0], tolerance, locMsg, bufferNXNPlus5);
     });
 }
 
