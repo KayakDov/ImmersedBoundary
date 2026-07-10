@@ -244,3 +244,8 @@ This module provides standalone direct Eigendecomposition solvers for the Poisso
 | `solve_eigen_decomp_s` | Single | Solve using an existing solver handle. ($\nabla^2 x = b$). |
 | `finalize_eigen_decomp_d` | N/A | Free Eigendecomposition GPU resources. |
 | `finalize_eigen_decomp_s` | N/A | Free Eigendecomposition GPU resources. |
+
+## 10. Flatened Indexing
+When mapping from (row, col, layer) = (y, x, z) indices to a flatened indexing, 
+y changes fastest, then z, then x changes slowest.  That is a column major indexing where all the first columns
+in each later are would be itereatred over before all the second columns in each layer and so on.

@@ -20,7 +20,7 @@ Subroutine    Solution_time
 
     Real(kind=8) :: Nusselt
 
-    Integer, Dimension(2) :: Loc
+    Integer :: i_x_write
 
     ! =============================================================
 
@@ -34,7 +34,7 @@ Subroutine    Solution_time
     k_z_write = Nz2 / 2
     j_y_write = Ny2 / 2
 
-    Loc(1:1) = MinLoc( abs( X12(1:Nx1) - 0.05D0 ) );  i_x_write = Loc(1)
+    i_x_write = MinLoc( abs( X12(1:Nx1) - 0.05D0 ), dim=1 )
 
     ! .........  Prepare divergence operator .............................
 

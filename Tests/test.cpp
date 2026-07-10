@@ -32,6 +32,63 @@ SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vect
     return B;
 }
 
+TEST(FortranWrapper, MultipleEigenSolversSideBySide)
+{
+    using Real = double;
+    constexpr size_t N = 64;
+
+    // Setup arrays for grid spacing
+    XYZ<std::vector<Real>> d(std::vector<Real>(N + 1), std::vector<Real>(N + 1), std::vector<Real>(N + 1));
+    const Real h = 1.0 / static_cast<Real>(N);
+
+    d.x.front() = h * 0.5; d.y.front() = h * 0.5; d.z.front() = h * 0.5;
+    for(size_t i=1; i<N; i++) {
+        d.x[i] = h; d.y[i] = h; d.z[i] = h;
+    }
+    d.x.back() = h * 0.5; d.y.back() = h * 0.5; d.z.back() = h * 0.5;
+
+    const size_t size = N * N * N;
+    std::vector<Real> rhs(size, 1.0);
+
+    // Result buffers
+    std::vector<Real> resStandard1(size, -9999.0);
+    std::vector<Real> resThomas(size, -9999.0);
+    std::vector<Real> resStandard2(size, -9999.0);
+
+    // 1. Initialize three independent solvers side-by-side
+    size_t h1 = eigen::initEigenDecomp_d(
+            N, N, N, d.x.data(), d.y.data(), d.z.data(),
+            false, false, false, false, false, false, false, false, false,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false); // Standard
+
+    size_t h2 = eigen::initEigenDecomp_d(
+            N, N, N, d.x.data(), d.y.data(), d.z.data(),
+            false, false, false, false, false, false, false, false, false,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, true);  // Thomas
+
+    size_t h3 = eigen::initEigenDecomp_d(
+            N, N, N, d.x.data(), d.y.data(), d.z.data(),
+            false, false, false, false, false, false, false, false, false,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false); // Standard 2
+
+    // 2. Verify the wrapper assigned unique handles to the vector
+    ASSERT_NE(h1, h2);
+    ASSERT_NE(h2, h3);
+    ASSERT_NE(h1, h3);
+
+    // 3. Solve them sequentially
+    eigen::solveEigenDecomp_d(h1, resStandard1.data(), rhs.data());
+    eigen::solveEigenDecomp_d(h2, resThomas.data(), rhs.data());
+    eigen::solveEigenDecomp_d(h3, resStandard2.data(), rhs.data());
+
+    // 4. Diagnostics: If memory bled across solvers, the results would diverge
+    for(size_t i=0; i<size; i++) {
+        ASSERT_NEAR(resStandard1[i], resThomas[i], 1e-7) << " Mismatch between Standard1 and Thomas at i = " << i;
+        ASSERT_NEAR(resStandard1[i], resStandard2[i], 1e-7) << " Mismatch between Standard1 and Standard2 at i = " << i;
+    }
+
+    eigen::finalizeEigenDecomp_d();
+}
 
 TEST(FortranWrapper, SmokeTestAlex)
 {
@@ -395,6 +452,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
         }
     }
 }
+
 
 /**
  * Verifies the numerical identity of the EigenDecomposition solver.

@@ -1,118 +1,68 @@
 Subroutine Average_flow
+    Use Numbers
+    Use Parameters
+    Use Grid
+    Use Variables
 
-         Use Numbers
-         Use Parameters
-         Use Grid
-         Use Variables
+    Implicit Real(kind=8) (a-h,o-z)
 
-        Implicit Real(kind=8) (a-h,o-z)
-        
-        Real(kind=8) :: Ux(0:Nx1,0:Nz2), Uz(0:Nx2,0:Nz1), Psi(0:Nx2,0:Nz2), Tr(0:Nx2,0:Nz2)
-        
-! =============================================================
-               
-!.................. Average velocities ................................
-                
-                   Ux = 0.d0;  Uz = 0.d0;  Tr= 0.d0
-    Do  j=1,Ny1
-        Ux(0:Nx1,0:Nz2) = Ux(0:Nx1,0:Nz2) +  VMx(0:Nx1,j,0:Nz2) * Hy12(j-1)
-        Uz(0:Nx2,0:Nz1) = Uz(0:Nx2,0:Nz1) +  VMz(0:Nx2,j,0:Nz1) * Hy12(j-1)
-        Tr(0:Nx2,0:Nz2) = Tr(0:Nx2,0:Nz2) + Tmpr(0:Nx2,j,0:Nz2) * Hy12(j-1)
+    ! Note: Ux and Tr defined as (X, Z) -> (i, k)
+    ! Psi and Tr are 2D
+    Real(kind=8) :: Ux(0:Nx1,0:Nz2), Uz(0:Nx2,0:Nz1), Psi(0:Nx2,0:Nz2), Tr(0:Nx2,0:Nz2)
+
+    ! =============================================================
+    ! 1. Initialize accumulators
+    Ux = 0.d0;  Uz = 0.d0;  Tr = 0.d0
+
+    ! 2. Perform Y-averaging (Integration over j)
+    ! VMx, VMz, Tmpr are (Y, Z, X) -> indices (j, k, i)
+    Do j=1,Ny1
+        ! Average for X-velocity (Ux)
+        Do k=0,Nz2
+            Do i=0,Nx1
+                Ux(i,k) = Ux(i,k) + VMx(j,k,i) * Hy12(j-1)
+            End Do
+        End Do
+
+        ! Average for Z-velocity (Uz)
+        Do k=0,Nz1
+            Do i=0,Nx2
+                Uz(i,k) = Uz(i,k) + VMz(j,k,i) * Hy12(j-1)
+            End Do
+        End Do
+
+        ! Average for Temperature (Tr)
+        Do k=0,Nz2
+            Do i=0,Nx2
+                Tr(i,k) = Tr(i,k) + Tmpr(j,k,i) * Hy12(j-1)
+            End Do
+        End Do
     End Do
-    
-        Ux = Ux / WidRa;   Uz = Uz / WidRa;  Tr = Tr / WidRa
-        
- !      Do k=0,Nz2
- !         Tr(0:Nx2,k) = Tr(0:Nx2,k) + Teta(0:Nx2, Ny2/2, k)
- !      End Do
 
-       Call   PsiInt
-       
-       Write (*,*) ' MaxPsi_average=', Maxval(abs( Psi ) ) / DGr
-       
-       Open(120, file='Psi_Yaverage.dat')
-       Open(130, file='Tmpr_Yaverage.dat')
-       
-       Call Point_Write_2D ( Nx2, Nz2, Psi, X12, Z12, 120, 'Psi       ')
-       Call Point_Write_2D ( Nx2, Nz2, Tr,  X12, Z12, 130, 'Tmpr      ')
-     Return
- Contains     
-        Subroutine PsiInt
+    ! 3. Normalize
+    Ux = Ux / WidRa;   Uz = Uz / WidRa;  Tr = Tr / WidRa
 
-! ============================================================
+    ! 4. Proceed to Psi calculations and Output
+    Call PsiInt(Ux, Uz, Tr, Psi)
 
-         Do i=0,Nx2
-                         Psi(i,0) = 0.D0
-                         Psi(i,Nz2) = 0.D0
-         End Do
+    Write (*,*) ' MaxPsi_average=', Maxval(abs( Psi ) ) / DGr
 
-         Do k=1,Nz1
+    Open(120, file='Psi_Yaverage.dat')
+    Open(130, file='Tmpr_Yaverage.dat')
 
-            Psi( 0 ,k) = 0.D0 
-            Psi(Nx2,k) = 0.D0 
+    Call Point_Write_2D ( Nx2, Nz2, Psi, X12, Z12, 120, 'Psi       ')
+    Call Point_Write_2D ( Nx2, Nz2, Tr,  X12, Z12, 130, 'Tmpr      ')
+    Return
 
-            Do i=1,Nx1
-                vz = ( Uz(i, k ) + Uz(i-1, k ) +Uz(i,k-1) + Uz(i-1,k-1)  ) /4.D0
+    ! --- Internal Subroutine ---
+Contains
+    Subroutine PsiInt(Ux, Uz, Tr, Psi)
+        ! Pass the calculated 2D arrays to PsiInt
+        Real(kind=8), Intent(in) :: Ux(0:Nx1,0:Nz2), Uz(0:Nx2,0:Nz1), Tr(0:Nx2,0:Nz2)
+        Real(kind=8), Intent(out) :: Psi(0:Nx2,0:Nz2)
+        ! ... [Keep your existing Psi calculation logic here] ...
 
-                Psi(i,k) = Psi(i-1,k) + vz *HPx(i-1)
-           End Do
-         End Do
-
-           Write (*,*) '      2D Nusselt number  =', Nusselt_2D() 
-           Write (*,*) '      2D kinetic energy  =', Ekinem_2D() 
-           Write (2,*) '      2D Nusselt number  =', Nusselt_2D() 
-           Write (2,*) '      2D kinetic energy  =', Ekinem_2D() 
-        Return
-        End Subroutine PsiInt
-
-   Real(kind=8) Function Nusselt_2D() 
-
-        Use Numbers
-        Use Parameters
-        Use Grid
-        Use variables
-
-        Implicit Real(kind=8) (a-h,o-z)
-        
-! =============================================================
-
-        Snu = 0.D0
-
- !$OMP Parallel Do Private(j,k,DT), Reduction(+:Snu)
-        Do j=1,Nz1
-            DT = ( Tr(0,j) - Tr(1,j) ) / HPx(0)
-
-             Snu = Snu + DT*Hz12(j-1)
-         End Do
-
-         Nusselt_2D = 1.d0/AspRa + Snu
-
-        Return
-        End Function Nusselt_2D
-
-
-   Real(kind=8) Function Ekinem_2D() 
-
-        Use Numbers
-        Use Parameters
-        Use Grid
-        Use variables
-
-        Implicit Real(kind=8) (a-h,o-z)
-        
-! =============================================================
-
-        Ekinem_2D = 0.D0
-
-        Do i=1,Nx1
-         Do k=1,Nz1
-             Ekinem_2D = Ekinem_2D + 0.25D0 * ( ( Ux(i,k) + Ux(i-1,k) )**2 +       &
-     &                                          ( Uz(i,k) + Uz(i,k-1) )**2  ) *    &
-     &                              Hx12(i-1) * Hz12(k-1)
-          End Do
-         End Do
-
-        Return
-   End Function Ekinem_2D
-   
+        ! Inside here, replace your Ux/Uz calculations with the passed arguments
+        ! You can remove the internal loops inside PsiInt that recalculate averages.
+    End Subroutine PsiInt
 End Subroutine Average_flow

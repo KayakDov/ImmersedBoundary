@@ -1,0 +1,29 @@
+1.0                   Aspect ratio                 
+1.0                  Width ratio                 
+1.85185185D+07                Grashof number 
+0.0                   Biot number
+0.054                  Prandtl number
+1000.                  Hartmann number
+3                    Nx
+2                    Ny
+4                    Nz
+0.0000001               Eps
+0.000001                EpsCnv 
+9000                  ItMax
+0.0001                   Htime
+0.001                   Time  
+  1                  Iprint (I5) (<0 - read initial data from file)
+  1                 Icheck (=0, if check)
+  0                 Iexcl  (<0 - only temperrature, >0 - only fluid flow)
+  1                 Istat (0 - stationary equation for temperature, 1 - time-dependent))
+  0                 EVD_BCx (0 - Dirichlet, 1 - Neumann)
+  1                 EVD_BCy (0 - Dirichlet, 1 - Neumann)
+  1                 EVD_BCz (0 - Dirichlet, 1 - Neumann)
+  1                 EVD_Pot (0 - Dirichlet, 1 - Neumann)
+  1
+  1
+ 20                 Number of CPUs
+  1                 I_Fourier (0 - make fourier integrals)
+  1                 N_Fourier (number of Fourier modes)
+1.17114                Omega1 (first fourier frequency)
+3.32                Omega2 (second Fourier frequency)

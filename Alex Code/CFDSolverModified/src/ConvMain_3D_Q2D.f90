@@ -19,9 +19,6 @@ Character*50 sentns
 Character*80 balabo
 
 Integer ::  omp_get_max_threads
-integer(C_SIZE_T) :: pressureGpuSolver
-integer(C_SIZE_T) :: temperatureGpuSolver
-
 Real(kind=8) :: Nusselt, Nusselt_middle
 
 ! ======================================================================
@@ -134,17 +131,20 @@ Nz2 = Nz + 2
 
 ! ************* allocate memory for large arrays **********************
 
-Allocate( VMxOld(0:Nx1,0:Ny2,0:Nz2), VMx(0:Nx1,0:Ny2,0:Nz2),  VMxNew(0:Nx1,0:Ny2,0:Nz2), RHSx(0:Nx1,0:Ny2,0:Nz2) )
-Allocate( VMyOld(0:Nx2,0:Ny1,0:Nz2), VMy(0:Nx2,0:Ny1,0:Nz2),  VMyNew(0:Nx2,0:Ny1,0:Nz2), RHSy(0:Nx2,0:Ny1,0:Nz2) )
-Allocate( VMzOld(0:Nx2,0:Ny2,0:Nz1), VMz(0:Nx2,0:Ny2,0:Nz1),  VMzNew(0:Nx2,0:Ny2,0:Nz1), RHSz(0:Nx2,0:Ny2,0:Nz1) )
-Allocate( TmpOld(0:Nx2,0:Ny2,0:Nz2), Tmpr(0:Nx2,0:Ny2,0:Nz2), TmpNew(0:Nx2,0:Ny2,0:Nz2), Teta(0:Nx2,0:Ny2,0:Nz2) )
-Allocate( Prs(1:Nx1,1:Ny1,1:Nz1), Dprs(1:Nx1,1:Ny1,1:Nz1), FDRHP(0:Nx2,0:Ny2,0:Nz2), FDRHP1(0:Nx2,0:Ny2,0:Nz2) )
-Allocate( Potential(0:Nxx1,0:Nyy2,0:Nzz1))
+Allocate( VMxOld(0:Ny2,0:Nz2,0:Nx1), VMx(0:Ny2,0:Nz2,0:Nx1),  VMxNew(0:Ny2,0:Nz2,0:Nx1), RHSx(0:Ny2,0:Nz2,0:Nx1) )
+Allocate( VMyOld(0:Ny1,0:Nz2,0:Nx2), VMy(0:Ny1,0:Nz2,0:Nx2),  VMyNew(0:Ny1,0:Nz2,0:Nx2), RHSy(0:Ny1,0:Nz2,0:Nx2) )
+Allocate( VMzOld(0:Ny2,0:Nz1,0:Nx2), VMz(0:Ny2,0:Nz1,0:Nx2),  VMzNew(0:Ny2,0:Nz1,0:Nx2), RHSz(0:Ny2,0:Nz1,0:Nx2) )
+
+Allocate( TmpOld(0:Ny2,0:Nz2,0:Nx2), Tmpr(0:Ny2,0:Nz2,0:Nx2), TmpNew(0:Ny2,0:Nz2,0:Nx2), Teta(0:Ny2,0:Nz2,0:Nx2) )
+
+Allocate( Prs(1:Ny1,1:Nz1,1:Nx1), Dprs(1:Ny1,1:Nz1,1:Nx1), FDRHP(0:Ny2,0:Nz2,0:Nx2), FDRHP1(0:Ny2,0:Nz2,0:Nx2) )
+
+Allocate( Potential(0:Ny2,0:Nz1,0:Nx1) )
 
 If(I_fourier == 0) then
-    Allocate( Tmp_Amplitude(-N_fourier:N_fourier,0:Nx2,0:Ny2,0:Nz2), Omega(N_Fourier) )
-    Allocate( VMx_Av(0:Nx1,0:Ny2,0:Nz2), VMy_Av(0:Nx2,0:Ny1,0:Nz2), VMz_Av(0:Nx2,0:Ny2,0:Nz1) )
-    Allocate( Tmp_Av(0:Nx2,0:Ny2,0:Nz2) )
+    Allocate( Tmp_Amplitude(-N_fourier:N_fourier,0:Ny2,0:Nz2,0:Nx2), Omega(N_Fourier) )
+    Allocate( VMx_Av(0:Ny2,0:Nz2,0:Nx1), VMy_Av(0:Ny1,0:Nz2,0:Nx2), VMz_Av(0:Ny2,0:Nz1,0:Nx2) )
+    Allocate( Tmp_Av(0:Ny2,0:Nz2,0:Nx2) )
 
     Tmp_Amplitude = 0.d0
     VMx_Av = 0.d0;   VMy_Av = 0.d0;   VMz_Av = 0.d0
@@ -159,7 +159,11 @@ End If
 ! ########  Call of the main subroutine ################
 
 
+!Call omp_set_num_threads(Ncpus)
+! Force standard OpenMP execution to a single thread
+Ncpus = 1
 Call omp_set_num_threads(Ncpus)
+Write (*,*) 'FORCED: 1 CPU will be used'
 Write (*,*) omp_get_max_threads(), '  CPUs will be used'
 
 ! ---------------------------------------------------------
@@ -177,7 +181,7 @@ Call    Solution_time
 ! ******** Calculate Nusselt ********************
 
 If(I_Fourier == 0) then
-    Tmpr = Tmpr_Av;  VMx = VMx_Av;  VMy = VMy_Av;  VMz = VMx_Az
+    Tmpr = Tmpr_Av;  VMx = VMx_Av;  VMy = VMy_Av;  VMz = VMz_Av
 End If
 
 Write (*,*) '          Nusselt number  = ', Nusselt()

@@ -1,83 +1,70 @@
 ! ***************************************************
 ! *   Finite difference approximation of Grad(P)    *
-! *                                                 *
-! *   GradPx(Nx,Ny1) -    x-component of Grad(P)    *
-! *   GradPy(Nx1,Ny) -    y-component of Grad(P)    *
-! *   GradPz(Nx1,Ny) -    z-component of Grad(P)    *
+! *   Updated for (Y, Z, X) Memory Layout           *
 ! ***************************************************
 
-        Subroutine  GradPx(ResX, Pressure)
+Subroutine GradPx(ResX, Pressure)
+    Use Numbers
+    Use Grid
+    Use Variables
+    Use Operators
+    Implicit Real(kind=8) (A-H,O-Z)
 
-         Use Numbers
-         Use Grid
-         Use Variables
-         Use Operators
+    ! New Dimension Order: (Ny1, Nz1, Nx)
+    Real(kind=8), Dimension(Ny1, Nz1, Nx)  :: ResX
+    Real(kind=8), Dimension(Ny1, Nz1, Nx1) :: Pressure
 
-        Implicit Real(kind=8) (A-H,O-Z)
-
-         Real(kind=8), Dimension(Nx ,Ny1,Nz1) :: ResX
-         Real(kind=8), Dimension(Nx1,Ny1,Nz1) :: Pressure
-! ===============================================================
-
-!$OMP Parallel Do Private(i,j,k)
-        Do i=1,Nx
-         Do j=1,Ny1
-          Do k=1,Nz1
-            ResX(i,j,k) = ( Pressure(i+1,j,k) - Pressure(i,j,k) ) / HPx(i)
-          End Do
-         End Do
+    !$OMP Parallel Do Private(i,j,k)
+    Do i=1,Nx
+        Do k=1,Nz1
+            Do j=1,Ny1
+                ResX(j,k,i) = ( Pressure(j,k,i+1) - Pressure(j,k,i) ) / HPx(i)
+            End Do
         End Do
+    End Do
+    Return
+End Subroutine GradPx
 
-        Return
-        End
+Subroutine GradPy(ResY, Pressure)
+    Use Numbers
+    Use Grid
+    Use Variables
+    Use Operators
+    Implicit Real(kind=8) (A-H,O-Z)
 
+    ! New Dimension Order: (Ny, Nz1, Nx1)
+    Real(kind=8), Dimension(Ny, Nz1, Nx1)  :: ResY
+    Real(kind=8), Dimension(Ny1, Nz1, Nx1) :: Pressure
 
-        Subroutine GradPy(ResY, Pressure) 
-
-         Use Numbers
-         Use Grid
-         Use Variables
-         Use Operators
-
-        Implicit Real(kind=8) (A-H,O-Z)
-
-         Real(kind=8), Dimension(Nx1,Ny ,Nz1) :: ResY
-         Real(kind=8), Dimension(Nx1,Ny1,Nz1) :: Pressure
-! =============================================================
-
- !$OMP Parallel Do Private(i,j,k)
-       Do i=1,Nx1
-         Do j=1,Ny
-          Do k=1,Nz1
-            ResY(i,j,k) = ( Pressure(i,j+1,k) - Pressure(i,j,k) ) / HPy(j)
-          End Do
-         End Do
+    !$OMP Parallel Do Private(i,j,k)
+    Do i=1,Nx1
+        Do k=1,Nz1
+            Do j=1,Ny
+                ResY(j,k,i) = ( Pressure(j+1,k,i) - Pressure(j,k,i) ) / HPy(j)
+            End Do
         End Do
+    End Do
+    Return
+End Subroutine GradPy
 
-        Return
-        End
+Subroutine GradPz(ResZ, Pressure)
+    Use Numbers
+    Use Grid
+    Use Variables
+    Use Operators
+    Implicit Real(kind=8) (A-H,O-Z)
 
-        Subroutine GradPz(ResZ, Pressure) 
+    ! New Dimension Order: (Ny1, Nz, Nx1)
+    Real(kind=8), Dimension(Ny1, Nz, Nx1)  :: ResZ
+    Real(kind=8), Dimension(Ny1, Nz1, Nx1) :: Pressure
 
-         Use Numbers
-         Use Grid
-         Use Variables
-         Use Operators
-
-        Implicit Real(kind=8) (A-H,O-Z)
-
-         Real(kind=8), Dimension(Nx1,Ny1,Nz ) :: ResZ
-         Real(kind=8), Dimension(Nx1,Ny1,Nz1) :: Pressure
-! =============================================================
-
-!$OMP Parallel Do Private(i,j,k)
-        Do i=1,Nx1
-         Do j=1,Ny1
-          Do k=1,Nz
-            ResZ(i,j,k) =( Pressure(i,j,k+1) - Pressure(i,j,k) ) / HPz(k)
-          End Do
-         End Do
+    !$OMP Parallel Do Private(i,j,k)
+    Do i=1,Nx1
+        Do k=1,Nz
+            Do j=1,Ny1
+                ResZ(j,k,i) = ( Pressure(j,k+1,i) - Pressure(j,k,i) ) / HPz(k)
+            End Do
         End Do
-
-        Return
-        End
+    End Do
+    Return
+End Subroutine GradPz

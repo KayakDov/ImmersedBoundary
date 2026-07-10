@@ -1,0 +1,33 @@
+gfortran -fopenmp -o Q2D_time.run \
+ConvMain_3D_Q2D.o \
+modfv_3D_Q2D.o \
+EVD_lapP_3D.o \
+EVD_lap_Fi_3D.o \
+EVD_laptmpr_3D.o \
+EVD_lapVx_3D.o  \
+EVD_lapVy_3D.o  \
+EVD_lapVz_3D.o \
+EVD_eigenvector_ag1_R16.o \
+EVD_Thomas3D_dgemm_OMP_v2_time.o \
+EVD_solver_DGEMM_3D_v2.o \
+EM_forcing.o \
+divvel_3D_alloc.o \
+gradp_3D.o \
+vgradf_3D.o \
+bounds_3D.o \
+time_step_Q2D.o \
+init_3D.o \
+pointw.o \
+ekinem_3D.o  \
+prmesh.o \
+MeshStretch.o  \
+Solution_time_Q2D.o \
+sublid_3D.o \
+outp_3D.o \
+check_3D.o \
+Yaverage.o \
+rg_eispack_R16.o \
+-llapack -lblas 
+
+
+

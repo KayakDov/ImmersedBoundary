@@ -1,0 +1,47 @@
+   3 x-points  
+   2 y-points
+   4 z-points
+
+
+ Aspect Ratio                  =  1.0000000    
+ Width  Ratio                  =  1.0000000    
+ Grashof number                =  18518518.    
+ Biot number                   =  0.0000000    
+ Prandtl number                = 0.54000000E-01
+ Hartmann number               =  1000.0000    
+
+
+ Initial time step             = 0.10000000E-03
+ Time interval                 = 0.10000000E-02
+ Maximal number of iterations  = 9000
+ Print step                    =    1
+ Precision                     = 0.10000000E-06
+
+
+
+          X mesh
+
+ i=  0  X=  0.000      Hx12= 0.6648E-02  X12=  0.000      HPx= 0.3324E-02
+ i=  1  X= 0.6648E-02  Hx12= 0.4934      X12= 0.3324E-02  HPx= 0.2500    
+ i=  2  X= 0.5000      Hx12= 0.4934      X12= 0.2533      HPx= 0.4934    
+ i=  3  X= 0.9934      Hx12= 0.6648E-02  X12= 0.7467      HPx= 0.2500    
+ i=  4  X=  1.000                        X12= 0.9967      HPx= 0.3324E-02
+ i=  5                                   X12=  1.000    
+
+
+          Y mesh
+ i=  0  Y=  0.000      Hy12= 0.3440E-01  Y12=  0.000      HPy= 0.1720E-01
+ i=  1  Y= 0.3440E-01  Hy12= 0.9312      Y12= 0.1720E-01  HPy= 0.4828    
+ i=  2  Y= 0.9656      Hy12= 0.3440E-01  Y12= 0.5000      HPy= 0.4828    
+ i=  3  Y=  1.000                        Y12= 0.9828      HPy= 0.1720E-01
+ i=  4                                   Y12=  1.000    
+
+
+          Z mesh
+ i=  0  Y=  0.000      Hy12= 0.2427E-02  Y12=  0.000      HPy= 0.1214E-02
+ i=  1  Y= 0.2427E-02  Hy12= 0.1167      Y12= 0.1214E-02  HPy= 0.5958E-01
+ i=  2  Y= 0.1192      Hy12= 0.7617      Y12= 0.6080E-01  HPy= 0.4392    
+ i=  3  Y= 0.8808      Hy12= 0.1167      Y12= 0.5000      HPy= 0.4392    
+ i=  4  Y= 0.9976      Hy12= 0.2427E-02  Y12= 0.9392      HPy= 0.5958E-01
+ i=  5  Y=  1.000                        Y12= 0.9988      HPy= 0.1214E-02
+ i=  6                                   Y12=  1.000    

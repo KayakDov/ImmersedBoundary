@@ -1,184 +1,142 @@
-Subroutine Initialize_GPU_Solvers()
-    Use AlexCudaCompatibility
-    Use eigenbcgsolver_eigen_mod, only : init_eigen_decomp_d
-    Use iso_c_binding, only : C_SIZE_T
+module AlexCudaCompatibility
+    use iso_c_binding, only : C_SIZE_T
+    implicit none
 
-    ! ACTIVATE THESE so the subroutine knows what Nx1, dx_array, etc., are:
-    Use Parameters
-    Use Grid
-    ! Use BoundaryConditions (or whichever module holds BC_Left_Neumann_Temp, etc.)
+    public :: TemperatureHandle, VxHandle, VyHandle, VzHandle, PressureHandle, PotentialHandle
+    public :: Initialize_GPU_Solvers
 
-    Implicit None
+    integer(C_SIZE_T) :: TemperatureHandle = 0_C_SIZE_T
+    integer(C_SIZE_T) :: VxHandle          = 0_C_SIZE_T
+    integer(C_SIZE_T) :: VyHandle          = 0_C_SIZE_T
+    integer(C_SIZE_T) :: VzHandle          = 0_C_SIZE_T
+    integer(C_SIZE_T) :: PressureHandle    = 0_C_SIZE_T
+    integer(C_SIZE_T) :: PotentialHandle   = 0_C_SIZE_T
+    integer :: r, c, l, idx
 
-    !-------------------------------------------------------------------------
-    ! 1. TEMPERATURE (Centered Grid)
-    !-------------------------------------------------------------------------
-    TemperatureHandle = init_eigen_decomp_d( &
-            rows            = int(Ny1, C_SIZE_T), &
-            cols            = int(Nx1, C_SIZE_T), &
-            layers          = int(Nz1, C_SIZE_T), &
-            dx              = HPy(0:Ny1), &
-            dy              = HPx(0:Nx1), &
-            dz              = HPz(0:Nz1), &
-            uniformDeltaX   = .false., &
-            uniformDeltaY   = .false., &
-            uniformDeltaZ   = .false., &
-            leftIsNeumann   = BC_Left_Neumann_Temp, &
-            rightIsNeumann  = BC_Right_Neumann_Temp, &
-            topIsNeumann    = BC_Top_Neumann_Temp, &
-            bottomIsNeumann = BC_Bottom_Neumann_Temp, &
-            frontIsNeumann  = BC_Front_Neumann_Temp, &
-            backIsNeumann   = BC_Back_Neumann_Temp, &
-            leftVal         = BC_Left_Val_Temp, &
-            rightVal        = BC_Right_Val_Temp, &
-            topVal          = BC_Top_Val_Temp, &
-            bottomVal       = BC_Bottom_Val_Temp, &
-            frontVal        = BC_Front_Val_Temp, &
-            backVal         = BC_Back_Val_Temp, &
-            isStaggered     = .false., &
-            thomas          = .true. &
-            )
 
-    !-------------------------------------------------------------------------
-    ! 2. X-VELOCITY (Boundary distances baked into dx_array_Vx)
-    !-------------------------------------------------------------------------
-    VxHandle = init_eigen_decomp_d( &
-            rows            = int(Ny, C_SIZE_T), &
-            cols            = int(Nx1, C_SIZE_T), &
-            layers          = int(Nz1, C_SIZE_T), &
-            dx              = HPy(0:Ny1), &
-            dy              = HPx(0:Nx1), &
-            dz              = HPz(0:Nz1), &
-            uniformDeltaX   = .false., &
-            uniformDeltaY   = .false., &
-            uniformDeltaZ   = .false., &
-            leftIsNeumann   = BC_Left_Neumann_Vx, &
-            rightIsNeumann  = BC_Right_Neumann_Vx, &
-            topIsNeumann    = BC_Top_Neumann_Vx, &
-            bottomIsNeumann = BC_Bottom_Neumann_Vx, &
-            frontIsNeumann  = BC_Front_Neumann_Vx, &
-            backIsNeumann   = BC_Back_Neumann_Vx, &
-            leftVal         = BC_Left_Val_Vx, &
-            rightVal        = BC_Right_Val_Vx, &
-            topVal          = BC_Top_Val_Vx, &
-            bottomVal       = BC_Bottom_Val_Vx, &
-            frontVal        = BC_Front_Val_Vx, &
-            backVal         = BC_Back_Val_Vx, &
-            isStaggered     = .false., &
-            thomas          = .true. &
-            )
+contains
 
-    !-------------------------------------------------------------------------
-    ! 3. Y-VELOCITY (Boundary distances baked into dy_array_Vy)
-    !-------------------------------------------------------------------------
-    VyHandle = init_eigen_decomp_d( &
-            rows            = int(Ny1, C_SIZE_T), &
-            cols            = int(Nx, C_SIZE_T), &
-            layers          = int(Nz1, C_SIZE_T), &
-            dx              = HPy(0:Ny1), &
-            dy              = HPx(0:Nx1), &
-            dz              = HPz(0:Nz1), &
-            uniformDeltaX   = .false., &
-            uniformDeltaY   = .false., &
-            uniformDeltaZ   = .false., &
-            leftIsNeumann   = BC_Left_Neumann_Vy, &
-            rightIsNeumann  = BC_Right_Neumann_Vy, &
-            topIsNeumann    = BC_Top_Neumann_Vy, &
-            bottomIsNeumann = BC_Bottom_Neumann_Vy, &
-            frontIsNeumann  = BC_Front_Neumann_Vy, &
-            backIsNeumann   = BC_Back_Neumann_Vy, &
-            leftVal         = BC_Left_Val_Vy, &
-            rightVal        = BC_Right_Val_Vy, &
-            topVal          = BC_Top_Val_Vy, &
-            bottomVal       = BC_Bottom_Val_Vy, &
-            frontVal        = BC_Front_Val_Vy, &
-            backVal         = BC_Back_Val_Vy, &
-            isStaggered     = .false., &
-            thomas          = .true. &
-            )
+    Subroutine Initialize_GPU_Solvers()
+        Use eigenbcgsolver_eigen_mod, only : init_eigen_decomp_d
+        Use iso_c_binding, only : C_SIZE_T
+        Use Numbers
+        Use Parameters
+        Use Grid
+        Use Numerica
+        Use Variables
+        Implicit None
 
-    !-------------------------------------------------------------------------
-    ! 4. Z-VELOCITY (Boundary distances baked into dz_array_Vz)
-    !-------------------------------------------------------------------------
-    VzHandle = init_eigen_decomp_d( &
-            rows            = int(Ny1, C_SIZE_T), &
-            cols            = int(Nx1, C_SIZE_T), &
-            layers          = int(Nz, C_SIZE_T), &
-            dx              = HPy(0:Ny1), &
-            dy              = HPx(0:Nx1), &
-            dz              = HPz(0:Nz1), &
-            uniformDeltaX   = .false., &
-            uniformDeltaY   = .false., &
-            uniformDeltaZ   = .false., &
-            leftIsNeumann   = BC_Left_Neumann_Vz, &
-            rightIsNeumann  = BC_Right_Neumann_Vz, &
-            topIsNeumann    = BC_Top_Neumann_Vz, &
-            bottomIsNeumann = BC_Bottom_Neumann_Vz, &
-            frontIsNeumann  = BC_Front_Neumann_Vz, &
-            backIsNeumann   = BC_Back_Neumann_Vz, &
-            leftVal         = BC_Left_Val_Vz, &
-            rightVal        = BC_Right_Val_Vz, &
-            topVal          = BC_Top_Val_Vz, &
-            bottomVal       = BC_Bottom_Val_Vz, &
-            frontVal        = BC_Front_Val_Vz, &
-            backVal         = BC_Back_Val_Vz, &
-            isStaggered     = .false., &
-            thomas          = .true. &
-            )
+        logical :: bc_left_is_neumann, bc_right_is_neumann
+        logical :: bc_top_is_neumann, bc_bottom_is_neumann
+        logical :: bc_front_is_neumann, bc_back_is_neumann
+        real(kind=8) :: bc_left_value, bc_right_value
+        real(kind=8) :: bc_top_value, bc_bottom_value
+        real(kind=8) :: bc_front_value, bc_back_value
 
-    !-------------------------------------------------------------------------
-    ! 5. PRESSURE (Centered Grid)
-    !-------------------------------------------------------------------------
-    PressureHandle = init_eigen_decomp_d( &
-            rows            = int(Ny1, C_SIZE_T), &
-            cols            = int(Nx1, C_SIZE_T), &
-            layers          = int(Nz1, C_SIZE_T), &
-            dx              = HPy(0:Ny1), &
-            dy              = HPx(0:Nx1), &
-            dz              = HPz(0:Nz1), &
-            uniformDeltaX   = .false., &
-            uniformDeltaY   = .false., &
-            uniformDeltaZ   = .false., &
-            leftIsNeumann   = BC_Left_Neumann_P, &
-            rightIsNeumann  = BC_Right_Neumann_P, &
-            topIsNeumann    = BC_Top_Neumann_P, &
-            bottomIsNeumann = BC_Bottom_Neumann_P, &
-            frontIsNeumann  = BC_Front_Neumann_P, &
-            backIsNeumann   = BC_Back_Neumann_P, &
-            leftVal         = BC_Left_Val_P, &
-            rightVal        = BC_Right_Val_P, &
-            topVal          = BC_Top_Val_P, &
-            bottomVal       = BC_Bottom_Val_P, &
-            frontVal        = BC_Front_Val_P, &
-            backVal         = BC_Back_Val_P, &
-            isStaggered     = .false., &
-            thomas          = .false. &
-            )
+        bc_left_is_neumann=.false.;  bc_right_is_neumann=.false.
+        bc_top_is_neumann=.false.;   bc_bottom_is_neumann=.false.
+        bc_front_is_neumann=.false.; bc_back_is_neumann=.false.
+        bc_left_value=0.d0; bc_right_value=0.d0
+        bc_top_value=0.d0;  bc_bottom_value=0.d0
+        bc_front_value=0.d0; bc_back_value=0.d0
 
-    PotentialHandle = init_eigen_decomp_d( &
-            rows            = int(Ny1, C_SIZE_T), &
-            cols            = int(Nx, C_SIZE_T), &
-            layers          = int(Nz1, C_SIZE_T), &
-            dx              = HPy(0:Ny1), &
-            dy              = HPx(0:Nx1), &
-            dz              = HPz(0:Nz1), &
-            uniformDeltaX   = .false., &
-            uniformDeltaY   = .false., &
-            uniformDeltaZ   = .false., &
-            leftIsNeumann   = ?, &
-            rightIsNeumann  = ?, &
-            topIsNeumann    = ?, &
-            bottomIsNeumann = ?, &
-            frontIsNeumann  = ?, &
-            backIsNeumann   = ?, &
-            leftVal         = 0.d0, &
-            rightVal        = 0.d0, &
-            topVal          = 0.d0, &
-            bottomVal       = 0.d0, &
-            frontVal        = 0.d0, &
-            backVal         = 0.d0, &
-            isStaggered     = .false., &
-            thomas          = .false. &
-    )
+        ! ======================================================================
+        ! AUDIT MILESTONE C: Array state immediately before passing to CUDA
+        ! ======================================================================
+        print *, ""
+        print *, "--- [AUDIT C] Final Pre-CUDA Flattening Audit ---"
+        print *, "Target layout target dimensions: Rows(Y)=", Ny1, " Cols(X)=", Nx1, " Layers(Z)=", Nz1
 
-End Subroutine Initialize_GPU_Solvers
+        block
+            idx = 1
+            ! Walking the structure to see how standard column-major reference treats our data
+            do l = 0, int(Nz1)
+                do c = 0, int(Nx1)
+                    do r = 0, int(Ny1)
+                        if (Tmpr(r, l, c) /= 0.d0) then
+                            print *, "PreCUDA[", idx, "] (Y=", r, ", Z=", l, ", X=", c, ") = ", Tmpr(r, l, c)
+                        end if
+                        idx = idx + 1
+                    end do
+                end do
+            end do
+        end block
+        print *, "--------------------------------------------------------"
+
+        call assert_spacing_sizes("Temperature", HPx(0:Nx1), HPy(0:Ny1), HPz(0:Nz1), Nx1, Ny1, Nz1)
+        TemperatureHandle = init_eigen_decomp_d( &
+                rows=int(Ny1,C_SIZE_T), cols=int(Nx1,C_SIZE_T), layers=int(Nz1,C_SIZE_T), &
+                dx=HPx(0:Nx1), dy=HPy(0:Ny1), dz=HPz(0:Nz1), &
+                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
+                leftIsNeumann=bc_left_is_neumann, rightIsNeumann=bc_right_is_neumann, &
+                topIsNeumann=bc_top_is_neumann, bottomIsNeumann=bc_bottom_is_neumann, &
+                frontIsNeumann=bc_front_is_neumann, backIsNeumann=bc_back_is_neumann, &
+                leftVal=bc_left_value, rightVal=bc_right_value, topVal=bc_top_value, bottomVal=bc_bottom_value, &
+                frontVal=bc_front_value, backVal=bc_back_value, isStaggered=.false., thomas=.true. )
+
+        call assert_spacing_sizes("Vx", HPx(0:Nx), HPy(0:Ny1), HPz(0:Nz1), Nx, Ny1, Nz1)
+        VxHandle = init_eigen_decomp_d( &
+                rows=int(Ny1,C_SIZE_T), cols=int(Nx,C_SIZE_T), layers=int(Nz1,C_SIZE_T), &
+                dx=HPx(0:Nx), dy=HPy(0:Ny1), dz=HPz(0:Nz1), &
+                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
+                leftIsNeumann=bc_left_is_neumann, rightIsNeumann=bc_right_is_neumann, &
+                topIsNeumann=bc_top_is_neumann, bottomIsNeumann=bc_bottom_is_neumann, &
+                frontIsNeumann=bc_front_is_neumann, backIsNeumann=bc_back_is_neumann, &
+                leftVal=bc_left_value, rightVal=bc_right_value, topVal=bc_top_value, bottomVal=bc_bottom_value, &
+                frontVal=bc_front_value, backVal=bc_back_value, isStaggered=.false., thomas=.true. )
+
+        call assert_spacing_sizes("Vy", HPx(0:Nx1), HPy(0:Ny), HPz(0:Nz1), Nx1, Ny, Nz1)
+        VyHandle = init_eigen_decomp_d( &
+                rows=int(Ny,C_SIZE_T), cols=int(Nx1,C_SIZE_T), layers=int(Nz1,C_SIZE_T), &
+                dx=HPx(0:Nx1), dy=HPy(0:Ny), dz=HPz(0:Nz1), &
+                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
+                leftIsNeumann=bc_left_is_neumann, rightIsNeumann=bc_right_is_neumann, &
+                topIsNeumann=bc_top_is_neumann, bottomIsNeumann=bc_bottom_is_neumann, &
+                frontIsNeumann=bc_front_is_neumann, backIsNeumann=bc_back_is_neumann, &
+                leftVal=bc_left_value, rightVal=bc_right_value, topVal=bc_top_value, bottomVal=bc_bottom_value, &
+                frontVal=bc_front_value, backVal=bc_back_value, isStaggered=.false., thomas=.true. )
+
+        call assert_spacing_sizes("Vz", HPx(0:Nx1), HPy(0:Ny1), HPz(0:Nz), Nx1, Ny1, Nz)
+        VzHandle = init_eigen_decomp_d( &
+                rows=int(Ny1,C_SIZE_T), cols=int(Nx1,C_SIZE_T), layers=int(Nz,C_SIZE_T), &
+                dx=HPx(0:Nx1), dy=HPy(0:Ny1), dz=HPz(0:Nz), &
+                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
+                leftIsNeumann=bc_left_is_neumann, rightIsNeumann=bc_right_is_neumann, &
+                topIsNeumann=bc_top_is_neumann, bottomIsNeumann=bc_bottom_is_neumann, &
+                frontIsNeumann=bc_front_is_neumann, backIsNeumann=bc_back_is_neumann, &
+                leftVal=bc_left_value, rightVal=bc_right_value, topVal=bc_top_value, bottomVal=bc_bottom_value, &
+                frontVal=bc_front_value, backVal=bc_back_value, isStaggered=.false., thomas=.true. )
+
+        call assert_spacing_sizes("Pressure", HPx(0:Nx1), HPy(0:Ny1), HPz(0:Nz1), Nx1, Ny1, Nz1)
+        PressureHandle = init_eigen_decomp_d( &
+                rows=int(Ny1,C_SIZE_T), cols=int(Nx1,C_SIZE_T), layers=int(Nz1,C_SIZE_T), &
+                dx=HPx(0:Nx1), dy=HPy(0:Ny1), dz=HPz(0:Nz1), &
+                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
+                leftIsNeumann=bc_left_is_neumann, rightIsNeumann=bc_right_is_neumann, &
+                topIsNeumann=bc_top_is_neumann, bottomIsNeumann=bc_bottom_is_neumann, &
+                frontIsNeumann=bc_front_is_neumann, backIsNeumann=bc_back_is_neumann, &
+                leftVal=bc_left_value, rightVal=bc_right_value, topVal=bc_top_value, bottomVal=bc_bottom_value, &
+                frontVal=bc_front_value, backVal=bc_back_value, isStaggered=.false., thomas=.false. )
+
+        call assert_spacing_sizes("Potential", HPx(0:Nx), HPy(0:Ny1), HPz(0:Nz1), Nx, Ny1, Nz1)
+        PotentialHandle = init_eigen_decomp_d( &
+                rows=int(Ny1,C_SIZE_T), cols=int(Nx,C_SIZE_T), layers=int(Nz,C_SIZE_T), &
+                dx=HPx(0:Nx), dy=HPy(0:Ny1), dz=HPz(0:Nz), &
+                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
+                leftIsNeumann=.true., rightIsNeumann=.true., &
+                topIsNeumann=.true., bottomIsNeumann=.true., &
+                frontIsNeumann=.true., backIsNeumann=.true., &
+                leftVal=0.d0, rightVal=0.d0, topVal=0.d0, bottomVal=0.d0, frontVal=0.d0, backVal=0.d0, isStaggered=.false., thomas=.false. )
+    End Subroutine Initialize_GPU_Solvers
+
+    subroutine assert_spacing_sizes(name, dx, dy, dz, ncol, nrow, nlay)
+        implicit none
+        character(len=*), intent(in) :: name
+        real(kind=8), intent(in) :: dx(:), dy(:), dz(:)
+        integer, intent(in) :: ncol, nrow, nlay
+        if (size(dx) /= ncol+1) error stop "dx size mismatch: "//trim(name)
+        if (size(dy) /= nrow+1) error stop "dy size mismatch: "//trim(name)
+        if (size(dz) /= nlay+1) error stop "dz size mismatch: "//trim(name)
+    end subroutine assert_spacing_sizes
+
+end module AlexCudaCompatibility

@@ -23,15 +23,15 @@
         
         SSS = 0.D0
         
-        Do  i=1,Nx1
-         Do  j=1,Ny1
-          Do  k=1,Nz1
+        Do  j=1,Ny1
+         Do  k=1,Nz1
+          Do  i=1,Nx1
 
               pp = FDRHP(i,j,k)**2
 
-              vx = 0.5*( VMx(i,j,k) + VMx(i-1,j,k) )
-              vy = 0.5*( VMy(i,j,k) + VMy(i,j-1,k) )   
-              vz = 0.5*( VMz(i,j,k) + VMz(i,j,k-1) )   
+              vx = 0.5*( VMx(j,k,i) + VMx(j,k,i-1) )
+              vy = 0.5*( VMy(j,k,i) + VMy(j-1,k,i) )
+              vz = 0.5*( VMz(j,k,i) + VMz(j,k,i-1) )
               vv = vx*vx + vy*vy + vz*vz
                
                If (vv > 1.D0) pp = pp / vv
@@ -64,12 +64,12 @@
         Call   GradPx( RHSx(1:Nx ,1:Ny1,1:Nz1), Prs ) 
 
 !$OMP Parallel Do Private(i,j,k), Reduction(+:Sx)
-        Do i=1,Nx
-         Do j=1,Ny1
-          Do  k=1,Nz1
-            Sx = Sx + VMx(i,j,k) * RHSx(i,j,k) * HPx(i)*Hy12(j-1) * Hz12(k-1)
-          End Do
-         End Do
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                    Sx = Sx + VMx(j,k,i) * RHSx(j,k,i) * HPx(i)*Hy12(j-1) * Hz12(k-1)
+                End Do
+            End Do
         End Do
 
 ! ........... Y - component ..............
@@ -77,12 +77,12 @@
         Call    GradPy( RHSy(1:Nx1,1:Ny ,1:Nz1), Prs ) 
         
 !$OMP Parallel Do Private(i,j,k), Reduction(+:Sy)
-        Do i=1,Nx1
-         Do j=1,Ny
-          Do  k=1,Nz1
-            Sy = Sy + VMy(i,j,k) * RHSy(i,j,k) * Hx12(i-1) * HPy(j) * Hz12(k-1)
-          End Do
-         End Do
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                    Sy = Sy + VMy(j,k,i) * RHSy(j,k,i) * Hx12(i-1) * HPy(j) * Hz12(k-1)
+                End Do
+             End Do
         End Do
 
 ! ........... Z - component ..............
@@ -90,10 +90,10 @@
         Call    GradPz( RHSz(1:Nx1,1:Ny1,1:Nz ), Prs ) 
         
 !$OMP Parallel Do Private(i,j,k), Reduction(+:Sz)
-        Do i=1,Nx1
-         Do j=1,Ny1
-          Do  k=1,Nz
-            Sz = Sz + VMz(i,j,k) * RHSz(i,j,k) * Hx12(i-1) * Hy12(j-1) * HPz(k)
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                     Sz = Sz + VMz(j,k,i) * RHSz(j,k,i) * Hx12(i-1) * Hy12(j-1) * HPz(k)
           End Do
          End Do
         End Do
@@ -112,13 +112,12 @@
         Stmpr = 0.D0
 
 !$OMP Parallel Do Private(i,j,k), Reduction(+:Stmpr)
-        Do i=1,Nx1
-         Do j=1,Ny1
-          Do  k=1,Nz1
-             Stmpr = Stmpr + FDRHP(i,j,k) * ( Tmpr(i,j,k) + Teta(i,j,k) ) &
-    &            * Hx12(i-1) * Hy12(j-1) * Hz12(k-1) 
-          End Do
-         End Do
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                    Stmpr = Stmpr + FDRHP(j,k,i) * ( Tmpr(j,k,i) + Teta(j,k,i) ) * Hx12(i-1) * Hy12(j-1) * Hz12(k-1)
+                 End Do
+             End Do
         End Do
 
 ! ########### Check of the < (Vdrad)V, V> ##################
@@ -134,15 +133,15 @@
         Px   = 0.D0
         
 !$OMP Parallel Do Private(i,j,k), Reduction(+:Sx), Reduction(max:Px)
-        Do i=1,Nx
-         Do j=1,Ny1
-          Do k=1,Nz1
-            expr = FDRHP(i,j,k) * VMx(i,j,k)
-            Sx   = Sx   + expr * HPx(i) * Hy12(j-1) * Hz12(k-1)
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                    expr = FDRHP(j,k,i) * VMx(j,k,i)
+                    Sx   = Sx   + expr * HPx(i) * Hy12(j-1) * Hz12(k-1)
 
-            Px = Max(Px,expr)
-          End Do
-         End Do
+                    Px = Max(Px,expr)
+                 End Do
+             End Do
         End Do
 
 ! ........... y - component ..............................
@@ -155,15 +154,15 @@
          Py = 0.D0
 
 !$OMP Parallel Do Private(i,j,k), Reduction(+:Sy), Reduction(max:Py)
-        Do j=1,Ny
-         Do i=1,Nx1
-          Do k=1,Nz1
-             expr = FDRHP(i,j,k) * VMy(i,j,k)
-             Sy = Sy + expr * Hx12(i-1) * HPy(j) * Hz12(k-1)
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                     expr = FDRHP(j,k,i) * VMy(j,k,i)
+                     Sy = Sy + expr * Hx12(i-1) * HPy(j) * Hz12(k-1)
 
-             Py = Max(Py, expr)
-          End Do
-         End Do
+                     Py = Max(Py, expr)
+                 End Do
+             End Do
         End Do
 
 ! ........... z - component ..............................
@@ -176,15 +175,15 @@
          Pz = 0.D0
        
 !$OMP Parallel Do Private(i,j,k), Reduction(+:Sz), Reduction(max:Pz)
-        Do j=1,Ny1
-         Do i=1,Nx1
-          Do k=1,Nz
-             expr = FDRHP(i,j,k) * VMz(i,j,k)
-             Sz = Sz + expr * Hx12(i-1) * Hy12(j-1) * HPz(k)
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                     expr = FDRHP(j,k,i) * VMz(j,k,i)
+                     Sz = Sz + expr * Hx12(i-1) * Hy12(j-1) * HPz(k)
 
-             Pz = Max(Pz, expr)
-          End Do
-         End Do
+                     Pz = Max(Pz, expr)
+                 End Do
+             End Do
         End Do
 
         SS  = Sx + Sy + Sz
@@ -197,14 +196,14 @@
 ! ************** Calculation of <grad(V*V),V> ****************
 
 !$OMP Parallel Do Private(i,j,k)
-         Do i=1,Nx1
-          Do j=1,Ny1
-           Do k=1,Nz1
-            DPrs(i,j,k) = 0.5*( VMx(i,j,k)**2 + VMx(i-1,j,k)**2 + &
-     &                          VMy(i,j,k)**2 + VMy(i,j-1,k)**2 + &
-     &                          VMz(i,j,k)**2 + VMz(i,j,k-1)**2  )
-           End Do
-          End Do
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                     DPrs(i,j,k) = 0.5*( VMx(j,k,i)**2 + VMx(j,k,i-1)**2 + &
+                             &                          VMy(j,k,i)**2 + VMy(j-1,k,i)**2 + &
+                             &                          VMz(j,k,i)**2 + VMz(j,k-1,i)**2  )
+                 End Do
+             End Do
          End Do
 
          SS = 0.D0
@@ -214,38 +213,38 @@
         Call   GradPx( RHSx(1:Nx ,1:Ny1,1:Nz1), Dprs )
 
 !$OMP Parallel Do Private(i,j,k), Reduction(+:SS)
-        Do i=1,Nx
-         Do j=1,Ny1
-          Do k=1,Nz1
-            SS = SS + VMx(i,j,k) * RHSx(i,j,k) * HPx(i)*Hy12(j-1) * Hz12(k-1)
-          End Do
-         End Do
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                    SS = SS + VMx(j,k,i) * RHSx(j,k,i) * HPx(i)*Hy12(j-1) * Hz12(k-1)
+                 End Do
+             End Do
         End Do
 
 ! ........... Y - component ..............
 
-        Call    GradPy( RHSy(1:Nx1,1:Ny,1:Nz1), Dprs ) 
+        Call    GradPy( RHSy(1:Ny1,1:Nz,1:Nx1), Dprs )
 
 !$OMP Parallel Do Private(i,j,k), Reduction(+:SS)
-        Do i=1,Nx1
-         Do j=1,Ny
-          Do k=1,Nz1
-            SS = SS + VMy(i,j,k) * RHSy(i,j,k) * Hx12(i-1) * HPy(j) * Hz12(k-1)
-          End Do
-         End Do
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                    SS = SS + VMy(j,k,i) * RHSy(j,k,i) * Hx12(i-1) * HPy(j) * Hz12(k-1)
+                 End Do
+             End Do
         End Do
 
 ! ........... Z - component ..............
 	
-        Call    GradPz( RHSz(1:Nx1,1:Ny1,1:Nz), Dprs )  
+        Call    GradPz( RHSz(1:Ny1,1:Nz1,1:Nx), Dprs )
 
 !$OMP Parallel Do Private(i,j,k), Reduction(+:SS)
-        Do i=1,Nx1
-         Do j=1,Ny
-          Do k=1,Nz1
-            SS = SS + VMz(i,j,k) * RHSz(i,j,k) * Hx12(i-1) * Hy12(j-1) * HPz(k)
-          End Do
-         End Do
+         Do  j=1,Ny1
+             Do  k=1,Nz1
+                 Do  i=1,Nx1
+                        SS = SS + VMz(j,k,i) * RHSz(j,k,i) * Hx12(i-1) * Hy12(j-1) * HPz(k)
+                 End Do
+             End Do
         End Do
 
             SS = SS / 2.D0
