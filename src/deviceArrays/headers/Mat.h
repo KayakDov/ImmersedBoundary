@@ -193,10 +193,13 @@ public:
     virtual void mult(const Singleton<T>& alpha, Handle* handle);
 
     /**
-     * @brief Transpose this matrix into a provided result matrix.
-     * @note Not yet implemented.
+     * Transposes the matrix. This method creates and returns a new CuArray2D
+     * object with transposed dimensions.
+     * @param result Optional pointer to an existing CuArray2D to store the result.
+     * @param handle Optional Cuda handle for stream/context management.
+     * @return A new CuArray2D object containing the transposed matrix.
      */
-    virtual void transpose(Mat<T>& result, Handle* handle) const;
+    void transpose(Mat<T>& result, Handle &handle) const;
 
     /**
      * @brief Transpose this matrix, optionally using pre-allocated memory.

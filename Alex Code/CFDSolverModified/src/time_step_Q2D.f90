@@ -6,7 +6,7 @@ Subroutine TimeStep ( Istp, RNSx, RNSy, RNSz, RTmpr, RDP )
     Use Grid
     Use Operators
     Use Variables
-    Use AlexCudaCompatibility, only : TemperatureHandle, VxHandle, VyHandle, VzHandle, PressureHandle
+    Use AlexCudaCompatibility, only : TemperatureHandle, VxHandle, VyHandle, VzHandle, PressureHandle, GrPr
     Use eigenbcgsolver_eigen_mod, only : solve_eigen_decomp_d
 
     Implicit Real(kind=8) (A-H,O-Z)
@@ -35,7 +35,10 @@ Subroutine TimeStep ( Istp, RNSx, RNSy, RNSz, RTmpr, RDP )
             &              dt_temp * ( 4.D0 * Tmpr(1:Ny1,1:Nz1,1:Nx1) - &
                     &                               TmpOld(1:Ny1,1:Nz1,1:Nx1)     ) / Ht
 
-    GPU_FDRHP_T(1:Ny1,1:Nz1,1:Nx1) = FDRHP(1:Ny1,1:Nz1,1:Nx1)
+    ! The GPU solves (L - Ckor*Istat*GrPr/Htime) T = GrPr * rhs, equivalent to
+    ! the CPU system ((1/GrPr) L - (Ckor/Htime)*Istat) T = rhs.
+    GPU_FDRHP_T(1:Ny1,1:Nz1,1:Nx1) = FDRHP(1:Ny1,1:Nz1,1:Nx1) * GrPr
+
     GPU_TmpNew_T(1:Ny1,1:Nz1,1:Nx1) = TmpNew(1:Ny1,1:Nz1,1:Nx1) ! <-- Fixed: Initialize to prevent NaNs
 
     Call solve_eigen_decomp_d( &
@@ -80,7 +83,9 @@ Subroutine TimeStep ( Istp, RNSx, RNSy, RNSz, RTmpr, RDP )
 
     Call EM_force
 
-    GPU_RHSx(1:Ny1,1:Nz1,1:Nx) = RHSx(1:Ny1,1:Nz1,1:Nx)
+    ! The GPU solves (L - Ckor/(Htime*DGr)) V = rhs / DGr, equivalent to the
+    ! CPU system (DGr * L - Ckor/Htime) V = rhs.
+    GPU_RHSx(1:Ny1,1:Nz1,1:Nx) = RHSx(1:Ny1,1:Nz1,1:Nx) / DGr
     GPU_VMxNew(1:Ny1,1:Nz1,1:Nx) = VMxNew(1:Ny1,1:Nz1,1:Nx) ! <-- Fixed: Initialize
     Call solve_eigen_decomp_d( &
             VxHandle, &
@@ -88,7 +93,7 @@ Subroutine TimeStep ( Istp, RNSx, RNSy, RNSz, RTmpr, RDP )
             GPU_RHSx)
     VMxNew(1:Ny1,1:Nz1,1:Nx) = GPU_VMxNew(1:Ny1,1:Nz1,1:Nx)
 
-    GPU_RHSy(1:Ny,1:Nz1,1:Nx1) = RHSy(1:Ny,1:Nz1,1:Nx1)
+    GPU_RHSy(1:Ny,1:Nz1,1:Nx1) = RHSy(1:Ny,1:Nz1,1:Nx1) / DGr
     GPU_VMyNew(1:Ny,1:Nz1,1:Nx1) = VMyNew(1:Ny,1:Nz1,1:Nx1) ! <-- Fixed: Initialize
     Call solve_eigen_decomp_d( &
             VyHandle, &
@@ -96,7 +101,7 @@ Subroutine TimeStep ( Istp, RNSx, RNSy, RNSz, RTmpr, RDP )
             GPU_RHSy)
     VMyNew(1:Ny,1:Nz1,1:Nx1) = GPU_VMyNew(1:Ny,1:Nz1,1:Nx1)
 
-    GPU_RHSz(1:Ny1,1:Nz,1:Nx1) = RHSz(1:Ny1,1:Nz,1:Nx1)
+    GPU_RHSz(1:Ny1,1:Nz,1:Nx1) = RHSz(1:Ny1,1:Nz,1:Nx1) / DGr
     GPU_VMzNew(1:Ny1,1:Nz,1:Nx1) = VMzNew(1:Ny1,1:Nz,1:Nx1) ! <-- Fixed: Initialize
     Call solve_eigen_decomp_d( &
             VzHandle, &

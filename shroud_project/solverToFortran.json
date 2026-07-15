@@ -19209,6 +19209,16 @@
                                             "bool"
                                         ],
                                         "typemap_name": "bool"
+                                    },
+                                    {
+                                        "declarator": {
+                                            "name": "helmholtzShift",
+                                            "typemap_name": "double"
+                                        },
+                                        "specifier": [
+                                            "double"
+                                        ],
+                                        "typemap_name": "double"
                                     }
                                 ],
                                 "typemap_name": "size_t"
@@ -19218,8 +19228,8 @@
                             ],
                             "typemap_name": "size_t"
                         },
-                        "decl": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
-                        "declgen": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)",
+                        "decl": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas, double helmholtzShift)",
+                        "declgen": "size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double *dx +intent(in)+rank(1), double *dy +intent(in)+rank(1), double *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas, double helmholtzShift)",
                         "linenumber": 29,
                         "name": "initEigenDecomp_d",
                         "options": {},
@@ -19231,10 +19241,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_d(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
-                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "C_call_function": "eigen::initEigenDecomp_d(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift)",
+                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift",
                                         "C_name": "EIG_eigen_initEigenDecomp_d",
-                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas",
+                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas,\t double helmholtzShift",
                                         "C_return_type": "size_t",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -19547,6 +19557,37 @@
                                         "cxx_nonconst_ptr": "&frontVal",
                                         "cxx_type": "double",
                                         "cxx_var": "frontVal",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_value_attr": ", value",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_in_native",
+                                        "typemap_name": "double"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "c_in_native"
+                                },
+                                "helmholtzShift": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "double",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "double",
+                                        "c_var": "helmholtzShift",
+                                        "cxx_abstract_decl": "double",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&helmholtzShift",
+                                        "cxx_type": "double",
+                                        "cxx_var": "helmholtzShift",
                                         "f_intent": "IN",
                                         "f_intent_attr": ", intent(IN)",
                                         "f_value_attr": ", value",
@@ -19970,13 +20011,13 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_d(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
-                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "C_call_function": "eigen::initEigenDecomp_d(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift)",
+                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift",
                                         "C_name": "EIG_eigen_initEigenDecomp_d",
-                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas",
+                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t double *dx,\t double *dy,\t double *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t double leftVal,\t double rightVal,\t double topVal,\t double bottomVal,\t double frontVal,\t double backVal,\t bool isStaggered,\t bool thomas,\t double helmholtzShift",
                                         "C_return_type": "size_t",
-                                        "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx",
-                                        "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx,\t helmholtzShift",
+                                        "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift",
                                         "F_subprogram": "function",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -19994,7 +20035,7 @@
                                         "f_type": "integer(C_SIZE_T)",
                                         "f_var": "SHT_rv",
                                         "fc_var": "SHT_rv",
-                                        "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift",
                                         "i_kind": "C_SIZE_T",
                                         "i_module_name": "iso_c_binding",
                                         "i_name_function": "c_init_eigen_decomp_d",
@@ -20410,6 +20451,46 @@
                                         "i_module_name": "iso_c_binding",
                                         "i_type": "real(C_DOUBLE)",
                                         "i_var": "frontVal",
+                                        "idtor": "0",
+                                        "stmt_name": "f_in_native",
+                                        "typemap_name": "double"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "f_in_native"
+                                },
+                                "helmholtzShift": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "double",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "double",
+                                        "c_var": "helmholtzShift",
+                                        "cxx_abstract_decl": "double",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&helmholtzShift",
+                                        "cxx_type": "double",
+                                        "cxx_var": "helmholtzShift",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_kind": "C_DOUBLE",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_type": "real(C_DOUBLE)",
+                                        "f_value_attr": ", value",
+                                        "f_var": "helmholtzShift",
+                                        "fc_var": "helmholtzShift",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "i_kind": "C_DOUBLE",
+                                        "i_module_name": "iso_c_binding",
+                                        "i_type": "real(C_DOUBLE)",
+                                        "i_var": "helmholtzShift",
                                         "idtor": "0",
                                         "stmt_name": "f_in_native",
                                         "typemap_name": "double"
@@ -21011,6 +21092,13 @@
                                         "value": true
                                     }
                                 },
+                                "helmholtzShift": {
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    }
+                                },
                                 "isStaggered": {
                                     "meta": {
                                         "abstract": "bool",
@@ -21134,7 +21222,8 @@
                                 "frontVal",
                                 "backVal",
                                 "isStaggered",
-                                "thomas"
+                                "thomas",
+                                "helmholtzShift"
                             ],
                             "f_arglist": [
                                 "SHT_rv",
@@ -21160,7 +21249,8 @@
                                 "frontVal",
                                 "backVal",
                                 "isStaggered",
-                                "thomas"
+                                "thomas",
+                                "helmholtzShift"
                             ],
                             "function_name": "initEigenDecomp_d"
                         }
@@ -21427,6 +21517,16 @@
                                             "bool"
                                         ],
                                         "typemap_name": "bool"
+                                    },
+                                    {
+                                        "declarator": {
+                                            "name": "helmholtzShift",
+                                            "typemap_name": "float"
+                                        },
+                                        "specifier": [
+                                            "float"
+                                        ],
+                                        "typemap_name": "float"
                                     }
                                 ],
                                 "typemap_name": "size_t"
@@ -21436,8 +21536,8 @@
                             ],
                             "typemap_name": "size_t"
                         },
-                        "decl": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
-                        "declgen": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)",
+                        "decl": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas, float helmholtzShift)",
+                        "declgen": "size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float *dx +intent(in)+rank(1), float *dy +intent(in)+rank(1), float *dz +intent(in)+rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas, float helmholtzShift)",
                         "linenumber": 30,
                         "name": "initEigenDecomp_s",
                         "options": {},
@@ -21449,10 +21549,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_s(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
-                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "C_call_function": "eigen::initEigenDecomp_s(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift)",
+                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift",
                                         "C_name": "EIG_eigen_initEigenDecomp_s",
-                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas",
+                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas,\t float helmholtzShift",
                                         "C_return_type": "size_t",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -21765,6 +21865,37 @@
                                         "cxx_nonconst_ptr": "&frontVal",
                                         "cxx_type": "float",
                                         "cxx_var": "frontVal",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_value_attr": ", value",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_in_native",
+                                        "typemap_name": "float"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "c_in_native"
+                                },
+                                "helmholtzShift": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "float",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "float",
+                                        "c_var": "helmholtzShift",
+                                        "cxx_abstract_decl": "float",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&helmholtzShift",
+                                        "cxx_type": "float",
+                                        "cxx_var": "helmholtzShift",
                                         "f_intent": "IN",
                                         "f_intent_attr": ", intent(IN)",
                                         "f_value_attr": ", value",
@@ -22188,13 +22319,13 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_s(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas)",
-                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "C_call_function": "eigen::initEigenDecomp_s(\trows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift)",
+                                        "C_call_list": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift",
                                         "C_name": "EIG_eigen_initEigenDecomp_s",
-                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas",
+                                        "C_prototype": "size_t rows,\t size_t cols,\t size_t layers,\t float *dx,\t float *dy,\t float *dz,\t bool uniformDeltaX,\t bool uniformDeltaY,\t bool uniformDeltaZ,\t bool leftIsNeumann,\t bool rightIsNeumann,\t bool topIsNeumann,\t bool bottomIsNeumann,\t bool frontIsNeumann,\t bool backIsNeumann,\t float leftVal,\t float rightVal,\t float topVal,\t float bottomVal,\t float frontVal,\t float backVal,\t bool isStaggered,\t bool thomas,\t float helmholtzShift",
                                         "C_return_type": "size_t",
-                                        "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx",
-                                        "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "F_arg_c_call": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t SHT_uniformDeltaX_cxx,\t SHT_uniformDeltaY_cxx,\t SHT_uniformDeltaZ_cxx,\t SHT_leftIsNeumann_cxx,\t SHT_rightIsNeumann_cxx,\t SHT_topIsNeumann_cxx,\t SHT_bottomIsNeumann_cxx,\t SHT_frontIsNeumann_cxx,\t SHT_backIsNeumann_cxx,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t SHT_isStaggered_cxx,\t SHT_thomas_cxx,\t helmholtzShift",
+                                        "F_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift",
                                         "F_subprogram": "function",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -22212,7 +22343,7 @@
                                         "f_type": "integer(C_SIZE_T)",
                                         "f_var": "SHT_rv",
                                         "fc_var": "SHT_rv",
-                                        "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas",
+                                        "i_arguments": "rows,\t cols,\t layers,\t dx,\t dy,\t dz,\t uniformDeltaX,\t uniformDeltaY,\t uniformDeltaZ,\t leftIsNeumann,\t rightIsNeumann,\t topIsNeumann,\t bottomIsNeumann,\t frontIsNeumann,\t backIsNeumann,\t leftVal,\t rightVal,\t topVal,\t bottomVal,\t frontVal,\t backVal,\t isStaggered,\t thomas,\t helmholtzShift",
                                         "i_kind": "C_SIZE_T",
                                         "i_module_name": "iso_c_binding",
                                         "i_name_function": "c_init_eigen_decomp_s",
@@ -22628,6 +22759,46 @@
                                         "i_module_name": "iso_c_binding",
                                         "i_type": "real(C_FLOAT)",
                                         "i_var": "frontVal",
+                                        "idtor": "0",
+                                        "stmt_name": "f_in_native",
+                                        "typemap_name": "float"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "f_in_native"
+                                },
+                                "helmholtzShift": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "float",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "float",
+                                        "c_var": "helmholtzShift",
+                                        "cxx_abstract_decl": "float",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&helmholtzShift",
+                                        "cxx_type": "float",
+                                        "cxx_var": "helmholtzShift",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_kind": "C_FLOAT",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_type": "real(C_FLOAT)",
+                                        "f_value_attr": ", value",
+                                        "f_var": "helmholtzShift",
+                                        "fc_var": "helmholtzShift",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "i_kind": "C_FLOAT",
+                                        "i_module_name": "iso_c_binding",
+                                        "i_type": "real(C_FLOAT)",
+                                        "i_var": "helmholtzShift",
                                         "idtor": "0",
                                         "stmt_name": "f_in_native",
                                         "typemap_name": "float"
@@ -23229,6 +23400,13 @@
                                         "value": true
                                     }
                                 },
+                                "helmholtzShift": {
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    }
+                                },
                                 "isStaggered": {
                                     "meta": {
                                         "abstract": "bool",
@@ -23352,7 +23530,8 @@
                                 "frontVal",
                                 "backVal",
                                 "isStaggered",
-                                "thomas"
+                                "thomas",
+                                "helmholtzShift"
                             ],
                             "f_arglist": [
                                 "SHT_rv",
@@ -23378,7 +23557,8 @@
                                 "frontVal",
                                 "backVal",
                                 "isStaggered",
-                                "thomas"
+                                "thomas",
+                                "helmholtzShift"
                             ],
                             "function_name": "initEigenDecomp_s"
                         }

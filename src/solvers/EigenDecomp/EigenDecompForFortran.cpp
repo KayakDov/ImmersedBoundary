@@ -42,63 +42,12 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
     Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
     bool isStaggered,
     bool thomas,
+    Real helmholtzShift,
     SimpleArray<Real> sizeOfBForX,
     SimpleArray<Real> sizeOfBForRHS,
     SimpleArray<Real> sizeOfBForBAdj
 ) : x(sizeOfBForX), b(sizeOfBForRHS), adjToB(sizeOfBForBAdj) {
-
-     std::cout << "\n========== EigenDecompForFortran Constructor ==========\n";
-
-     std::cout << "Dimensions:\n";
-    std::cout << "  rows   = " << rows   << '\n';
-     std::cout << "  cols   = " << cols   << '\n';
-     std::cout << "  layers = " << layers << '\n';
-
-     std::cout << "\nSpacing vectors:\n";
-
-     std::cout << "dx (" << dx.size() << ") = ";
-     for (const auto& v : dx) std::cout << v << " ";
-     std::cout << '\n';
-
-     std::cout << "dy (" << dy.size() << ") = ";
-     for (const auto& v : dy) std::cout << v << " ";
-     std::cout << '\n';
-
-     std::cout << "dz (" << dz.size() << ") = ";
-    for (const auto& v : dz) std::cout << v << " ";
-     std::cout << '\n';
-
-     std::cout << "\nBoundary conditions:\n";
-
-     std::cout << "leftIsNeumann   = " << leftIsNeumann   << '\n';
-     std::cout << "rightIsNeumann  = " << rightIsNeumann  << '\n';
-     std::cout << "topIsNeumann    = " << topIsNeumann    << '\n';
-     std::cout << "bottomIsNeumann = " << bottomIsNeumann << '\n';
-     std::cout << "frontIsNeumann  = " << frontIsNeumann  << '\n';
-     std::cout << "backIsNeumann   = " << backIsNeumann   << '\n';
-
-     std::cout << "\nBoundary values:\n";
-
-     std::cout << "leftVal   = " << leftVal   << '\n';
-     std::cout << "rightVal  = " << rightVal  << '\n';
-     std::cout << "topVal    = " << topVal    << '\n';
-     std::cout << "bottomVal = " << bottomVal << '\n';
-     std::cout << "frontVal  = " << frontVal  << '\n';
-     std::cout << "backVal   = " << backVal   << '\n';
-
-     std::cout << "\nOther flags:\n";
-
-     std::cout << "isStaggered = " << isStaggered << '\n';
-     std::cout << "thomas      = " << thomas      << '\n';
-
-     std::cout << "\nBuffer sizes:\n";
-
-     std::cout << "sizeOfBForX   = " << sizeOfBForX.size()   << '\n';
-     std::cout << "sizeOfBForRHS = " << sizeOfBForRHS.size() << '\n';
-     std::cout << "sizeOfBForBAdj= " << sizeOfBForBAdj.size() << '\n';
-
-     std::cout << "=======================================================" << std::endl;
-
+    
     Handle hands[3];
     Event events[3];
     cudaStream_t defaultStream = 0;
@@ -121,8 +70,8 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
                 eds = std::make_unique<EigenDecomp2d<Real>>(boundaryHost.forDevice(), hands, events[0]);
             else
                 eds = thomas ?
-                    std::make_unique<EigenDecompThomas<Real, SegXType>>(boundaryHost, hands, events) :
-                    std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), hands, events);
+                    std::make_unique<EigenDecompThomas<Real, SegXType>>(boundaryHost, hands, events, helmholtzShift) :
+                    std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), hands, events, helmholtzShift);
         }
     );
     for (size_t i = 0; i < 3; ++i) {
@@ -135,9 +84,14 @@ void EigenDecompForFortran<Real>::solve(Real *xHost, Real *bHost)  {
 
     b.set(bHost, hand);
 
+    std::cout << "EigenDecompForFortran::solve() b = " << GpuOut<Real>(b, hand) << std::endl;
+
     b.add(adjToB, &GPUScalar<Real>::get(1), &hand);
 
     eds->solve(x, b, hand);
+
+    std::cout << "EigenDecompForFortran::solve() x = " << GpuOut<Real>(x, hand) << std::endl;
+
     x.get(xHost, hand);
 }
 

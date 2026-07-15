@@ -90,7 +90,7 @@ public:
  * @brief A factory that deduces boundary types at runtime and injects the
  * strongly-typed BoundaryConfig into a provided callback.
  * * @param dim The dimensions of the grid (rows=Y, cols=X, layers=Z).
- * @param deltas XYZ struct containing the delta vectors for each axis.
+ * @param delta XYZ struct containing the delta vectors for each axis.
  * @param startIsNeumann XYZ struct of Neumann flags for the start boundaries.
  * @param endIsNeumann XYZ struct of Neumann flags for the end boundaries.
  * @param startVal XYZ struct of boundary values for the start boundaries.
@@ -102,7 +102,7 @@ public:
 template<typename Real, typename Callback>
 void buildBoundaryConfigAndLaunch(
     const GridDim& dim,
-    const XYZ<std::vector<Real>>& deltas,
+    const XYZ<std::vector<Real>>& delta,
     const XYZ<bool>& startIsNeumann,
     const XYZ<bool>& endIsNeumann,
     const XYZ<Real>& startVal,
@@ -114,19 +114,19 @@ void buildBoundaryConfigAndLaunch(
     auto dispatchZ = [&](const auto& segHostX, const auto& segHostY) {
         using SegX = typename std::decay_t<decltype(segHostX)>::SegmentType;
         using SegY = typename std::decay_t<decltype(segHostY)>::SegmentType;
-        if (deltas.z.size() == 1) {
+        if (delta.z.size() == 1) {
             AxisSegmentHost<UniformSegment<Real>> segHostZ(
                 {startVal.z, startIsNeumann.z},
                 {endVal.z, endIsNeumann.z},
                 isStaggered,
-                deltas.z[0],
+                delta.z[0],
                 dim.layers
             );
             launchParams(
                 BoundaryConfigHost<Real, SegX, SegY, UniformSegment<Real>>(segHostX, segHostY, segHostZ)
             );
         } else {
-            SimpleArray<Real> arrayZ = SimpleArray<Real>::create(deltas.z, stream);
+            SimpleArray<Real> arrayZ = SimpleArray<Real>::create(delta.z, stream);
             AxisSegmentHost<VariableSegment<Real>> segHostZ(
                 {startVal.z, startIsNeumann.z},
                 {endVal.z, endIsNeumann.z},
@@ -139,17 +139,17 @@ void buildBoundaryConfigAndLaunch(
     };
 
     auto dispatchY = [&](const auto& segHostX) {
-        if (deltas.y.size() == 1) {
+        if (delta.y.size() == 1) {
             AxisSegmentHost<UniformSegment<Real>> segHostY(
                 {startVal.y, startIsNeumann.y},
                 {endVal.y, endIsNeumann.y},
                 isStaggered,
-                deltas.y[0],
+                delta.y[0],
                 dim.rows
             );
             dispatchZ(segHostX, segHostY);
         } else {
-            SimpleArray<Real> arrayY = SimpleArray<Real>::create(deltas.y, stream);
+            SimpleArray<Real> arrayY = SimpleArray<Real>::create(delta.y, stream);
             AxisSegmentHost<VariableSegment<Real>> segHostY(
                 {startVal.y, startIsNeumann.y},
                 {endVal.y, endIsNeumann.y},
@@ -159,17 +159,17 @@ void buildBoundaryConfigAndLaunch(
         }
     };
 
-    if (deltas.x.size() == 1) {
+    if (delta.x.size() == 1) {
         AxisSegmentHost<UniformSegment<Real>> segHostX(
                 {startVal.x, startIsNeumann.x},
                 {endVal.x, endIsNeumann.x},
                 isStaggered,
-                deltas.x[0],
+                delta.x[0],
                 dim.cols
             );
         dispatchY(segHostX);
     } else {
-        SimpleArray<Real> arrayX = SimpleArray<Real>::create(deltas.x, stream);
+        SimpleArray<Real> arrayX = SimpleArray<Real>::create(delta.x, stream);
         AxisSegmentHost<VariableSegment<Real>> segHostX(
                 {startVal.x, startIsNeumann.x},
                 {endVal.x, endIsNeumann.x},

@@ -12,7 +12,7 @@
                 Do j=1,Ny1
                     FDRHP(j,k,i) = ( VMxNew( j,k,i ) - VMxNew(j,k,i-1) ) / Hx12(i-1) &
                             + ( VMyNew( j,k,i ) - VMyNew(j-1,k,i) ) / Hy12(j-1) &
-                            + ( VMzNew( j,k,i ) - VMzNew(j,k,i-1) ) / Hz12(k-1)
+                            + ( VMzNew( j,k,i ) - VMzNew(j,k-1,i) ) / Hz12(k-1)
                 End Do
             End Do
         End Do

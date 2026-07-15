@@ -11,7 +11,7 @@ Subroutine Get_Potential
     Do j=1,Ny1
         Do k=1,Nz
             Do i=1,Nx
-                DVx_dz = ( VMx(j,k,i+1) - VMx(j,k,i) ) / HPz(k)
+                DVx_dz = ( VMx(j,k+1,i) - VMx(j,k,i) ) / HPz(k)
                 DVz_dx = ( VMz(j,k,i+1) - VMz(j,k,i) ) / HPx(i)
                 FDRHP(j,k,i) = DVz_dx - DVx_dz
             End Do

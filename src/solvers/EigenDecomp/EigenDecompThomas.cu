@@ -26,7 +26,7 @@ __device__ void solveThomas3dLap(
     DeviceData1d<Real>& superPrimeBuffer,
     DeviceData1d<Real>& rhsPrimeBuffer,
     const SegmentT& seg,
-    const Real eigenSum,
+    const Real modifyMainDiag,
     const bool singular
     ) {
 
@@ -37,7 +37,7 @@ __device__ void solveThomas3dLap(
         superPrimeBuffer[0] = 0;
         rhsPrimeBuffer[0] = 0;
     }else {
-        row[0] = eigenSum;
+        row[0] = modifyMainDiag;
         seg.start.setL(row[0], row[1]);
         superPrimeBuffer[0] = row[1] / row[0];
         rhsPrimeBuffer[0] = rhs[0] / row[0];
@@ -45,13 +45,13 @@ __device__ void solveThomas3dLap(
 
     size_t n = x.cols - 1;
     for (size_t i = 1; i < n; i++) {
-        row[0] = eigenSum;
+        row[0] = modifyMainDiag;
         seg.setInteriorL(row[0], row[-1], row[1], i);
         Real denom = 1 / (row[0] - row[-1] * superPrimeBuffer[i - 1]);
         superPrimeBuffer[i] = row[1] * denom;
         rhsPrimeBuffer[i] = (rhs[i] - row[-1] * rhsPrimeBuffer[i - 1]) * denom;
     }
-    row[0] = eigenSum;
+    row[0] = modifyMainDiag;
     seg.end.setL(row[0], row[-1]);
     Real denom = 1 / (row[0] - row[-1] * superPrimeBuffer[n - 1]);
     rhsPrimeBuffer[n] = (rhs[n] - row[-1] * rhsPrimeBuffer[n - 1]) * denom;
@@ -87,7 +87,8 @@ __global__ void solveThomas3dLaplacianKernel(//TODO: for the buffers, should I b
     DeviceData3d<Real> superPrime,
     DeviceData3d<Real> bPrime,
     SegmentT seg,
-    bool isSingular
+    bool isSingular,
+    const Real helmholtzShift
 ) {//width is layers and height is rows
     GridInd3d system(idy(), 0, idx());
     if (system.row >= x.rows || system.layer >= x.layers) return;
@@ -103,7 +104,7 @@ __global__ void solveThomas3dLaplacianKernel(//TODO: for the buffers, should I b
         colSuperPrime,
         colRHSPrime,
         seg,
-        eValsY[system.row] + eValsZ[system.layer],
+        eValsY[system.row] + eValsZ[system.layer] - helmholtzShift,
         isSingular && system.row == 0 && system.layer == 0
     );
 }
@@ -111,17 +112,15 @@ __global__ void solveThomas3dLaplacianKernel(//TODO: for the buffers, should I b
 template<typename T, typename SegmentT>
 void EigenDecompThomas<T, SegmentT>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const {
 
-    this->eigen.vecsInv.multCols(b, x, hand);
+    this->lapEigen.vecsInv.multCols(b, x, hand);
 
-    this->eigen.vecsInv.multDepths(x, this->sizeOfB, hand);
+    this->lapEigen.vecsInv.multDepths(x, this->sizeOfB, hand);
 
     this->multLEigenValInverse(this->sizeOfB, x, hand);
 
-    this->eigen.vecs.multCols(x, this->sizeOfB, hand);
+    this->lapEigen.vecs.multCols(x, this->sizeOfB, hand);
 
-    this->eigen.vecs.multDepths(this->sizeOfB, x, hand);
-
-
+    this->lapEigen.vecs.multDepths(this->sizeOfB, x, hand);
 }
 
 
@@ -131,21 +130,23 @@ void EigenDecompThomas<T, SegmentT>::multLEigenValInverse(const SimpleArray<T> &
     solveThomas3dLaplacianKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, hand>>>(
         dst.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
         src.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
-        this->eigen.vals.y.toKernel1d(),
-        this->eigen.vals.z.toKernel1d(),
+        this->lapEigen.vals.y.toKernel1d(),
+        this->lapEigen.vals.z.toKernel1d(),
         workSpaceSuperPrime.toKernel3d(),
         workSpaceRHSPrime.toKernel3d(),
         boundaryX.forDevice(),
-        this->isSingular
+        this->isSingular,
+        this->helmholtzShift
     );
 }
 //EigenDecomp3d(const poisson::Eigen<T> &eigen, SimpleArray<T>& sizeOfB, Vec<T>& size1IfSingular, bool isSingular);
 template<typename T, typename SegmentT>
-EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const AxisSegmentHost<SegmentT>& boundX, Mat<T> &sizeOfBX3, bool isSingular):
+EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const AxisSegmentHost<SegmentT>& boundX, Mat<T> &sizeOfBX3, bool isSingular, T helmholtzShift):
     EigenDecomp3d<T>(
         eigen,
         sizeOfBX3.col(0),
-        isSingular
+        isSingular,
+        helmholtzShift
     ),
     workSpaceSuperPrime(sizeOfBX3.col(1).tensor(eigen.dim().rows, eigen.dim().layers)),
     workSpaceRHSPrime(sizeOfBX3.col(2).tensor(eigen.dim().rows, eigen.dim().layers)),
@@ -156,8 +157,8 @@ EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const A
 
 template<typename T, typename SegmentT>
 template<typename SegY, typename SegZ>
-    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3):
-        EigenDecomp3d<T>(boundary.forDevice(), hand3, event2, sizeOfBX3.col(0)),
+    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3, T helmholtzShift):
+        EigenDecomp3d<T>(boundary.forDevice(), hand3, event2, sizeOfBX3.col(0), helmholtzShift),
         workSpaceSuperPrime(sizeOfBX3.col(1).tensor(boundary.forDevice().dim().rows, boundary.forDevice().dim().layers)),
         workSpaceRHSPrime(sizeOfBX3.col(2).tensor(boundary.forDevice().dim().rows, boundary.forDevice().dim().layers)),
         boundaryX(boundary.x)
@@ -165,8 +166,8 @@ template<typename SegY, typename SegZ>
 
 template<typename T, typename SegmentT>
 template<typename SegY, typename SegZ>
-    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2):
-        EigenDecompThomas(boundary, hand3, event2, Mat<T>::create(boundary.forDevice().dim().size(), 3))
+    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, T helmholtzShift):
+        EigenDecompThomas(boundary, hand3, event2, Mat<T>::create(boundary.forDevice().dim().size(), 3), helmholtzShift)
 {
 }
 // ==============================================================================
@@ -184,9 +185,9 @@ template class EigenDecompThomas<double, VariableSegment<double>>;
 // Note: We use <Real, SegX> for the class, and deduce the BoundaryConfigT from the args.
 #define INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, SegX, SegY, SegZ) \
 template EigenDecompThomas<Real, SegX>::EigenDecompThomas( \
-    const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*); \
+    const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Real); \
 template EigenDecompThomas<Real, SegX>::EigenDecompThomas( \
-    const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>);
+    const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>, Real);
 
 
 // 3. Generate all combinations of Uniform and Variable segments

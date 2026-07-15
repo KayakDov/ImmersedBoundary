@@ -157,7 +157,7 @@ void Mat<T>::set(std::istream& input_stream, bool isText, bool isColMjr, Handle*
     if(!isColMjr){
         Mat<T> temp = Mat<T>::create(this->_cols, this->_rows);
         temp.set(input_stream, isText, !isColMjr, h);
-        temp.transpose(*this, h);
+        temp.transpose(*this, *h);
         return;
     }
 
@@ -191,7 +191,7 @@ std::ostream &Mat<T>::get(std::ostream &output_stream, bool isText, bool printCo
 
     if(!printColMajor) {
         auto transposed = Mat<T>::create(this->_cols, this->_rows);
-        this -> transpose(transposed, &hand);
+        this -> transpose(transposed, hand);
         transposed.get(output_stream, isText, true, hand);
         return output_stream;
     }
@@ -310,28 +310,16 @@ void Mat<T>::mult(const Singleton<T>& alpha, Handle* handle) {
     );
 }
 
-
-
-/**
- * Transposes the matrix. This method creates and returns a new CuArray2D
- * object with transposed dimensions.
- * @param result Optional pointer to an existing CuArray2D to store the result.
- * @param handle Optional Cuda handle for stream/context management.
- * @return A new CuArray2D object containing the transposed matrix.
- */
 template <typename T>
 void Mat<T>::transpose(
     Mat<T>& result,
-    Handle* handle
-) const {    
-    
-    std::unique_ptr<Handle> temp_hand_ptr;
-    Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+    Handle& handle
+) const {
 
     if constexpr (std::is_same_v<T, float>) {
 
         CHECK_CUBLAS_ERROR(cublasSgeam(
-            *h,
+            handle,
             CUBLAS_OP_T, // Transpose A
             CUBLAS_OP_N, // Don't transpose B (it's not used)
             this->_cols, // Result rows
@@ -343,7 +331,7 @@ void Mat<T>::transpose(
         ));
     } else if constexpr (std::is_same_v<T, double>) {
         CHECK_CUBLAS_ERROR(cublasDgeam(
-            *h,
+            handle,
             CUBLAS_OP_T, 
             CUBLAS_OP_N,
             this->_cols,
@@ -376,7 +364,7 @@ void Mat<T>::transpose(Handle* handle, Mat<T>* temp) {
     if (temp_ptr->_rows != this->_cols || temp_ptr->_cols != this->_rows)
         throw std::invalid_argument("Provided temporary matrix has incorrect dimensions for transpose.");
     
-    this->transpose(*temp_ptr, handle);
+    this->transpose(*temp_ptr, *handle);
 
     this->set(*temp_ptr, *handle);
 }

@@ -23,7 +23,7 @@
                     ! Complete kinetic energy calculation:
                     SS = SS + 0.125D0 * ( ( VMx(j,k,i) + VMx(j,k,i-1) )**2 + &
                             ( VMy(j,k,i) + VMy(j-1,k,i) )**2 + &
-                            ( VMz(j,k,i) + VMz(j,k,i-1) )**2 ) * &
+                            ( VMz(j,k,i) + VMz(j,k-1,i) )**2 ) * &
                             Hx12(i-1) * Hy12(j-1) * Hz12(k-1)
                 End Do
             End Do
@@ -57,7 +57,7 @@
         Do j=1,Ny1
           Do k=1,Nz1
   !          DT = ( Tmpr(0,j,k) - Tmpr(1,j,k) ) / HPx(0)
-            DT = ( f0 * Tmpr(0,j,k) + f1 * Tmpr(1,j,k) + f2 * Tmpr(2,j,k) ) / div 
+            DT = ( f0 * Tmpr(j,k,0) + f1 * Tmpr(j,k,1) + f2 * Tmpr(j,k,2) ) / div 
 
              Snu = Snu + DT*Hy12(j-1)*Hz12(k-1)
              
@@ -85,7 +85,7 @@
 
  !$OMP Parallel Do Private(j,k,DT), Reduction(+:Snu)
         Do k=1,Nz1
-            DT = ( Tmpr(0,Ny2/2,k) - Tmpr(1,Ny2/2,k) ) / HPx(0)
+            DT = ( Tmpr(Ny2/2,k,0) - Tmpr(Ny2/2,k,1) ) / HPx(0)
 
              Snu = Snu + DT*Hz12(k-1)
          End Do

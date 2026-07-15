@@ -43,12 +43,15 @@ Subroutine    Solution_time
     ! .........  Background Temperature Initialization ....................
 
     Do i=0,Nx2
-        Teta(i,0:Ny2,0:Nz2) = 1.D0 - X12(i) / AspRa
+        Teta(0:Ny2,0:Nz2,i) = 1.D0 - X12(i) / AspRa
     End Do
 
     ! ############ Introducing initial values #######################
 
     Call   Init
+
+    Call Initialize_GPU_Solvers()
+
     Write (*,*) ' Initial: Nu=', Nusselt(),'   Ekin=', Ekinem()
 
     TmpNew = Tmpr
@@ -75,7 +78,7 @@ Subroutine    Solution_time
 
     Ek = Ekinem(); Anu = Nusselt()
     Write (25,*) TimCur, Ek, Anu
-    Write (26,*) TimCur, VMz(i_x_write,j_y_write,k_z_write), Tmpr(i_x_write,j_y_write,k_z_write)
+    Write (26,*) TimCur, VMz(j_y_write,k_z_write,i_x_write), Tmpr(j_y_write,k_z_write,i_x_write)
 
     If(I_Fourier == 0) Call Fourier_sum
     !         End If
@@ -154,7 +157,8 @@ Contains
         Open(123, file='Amplitudes.dat', status='unknown', form='formatted')
         Open(124, file='Average_velocity.ddd', status='unknown', form='unformatted')
 
-        Tmp_Amplitude(0,0:Nx2,0:Ny2,0:Nz2) = Tmp_Amplitude(0,0:Nx2,0:Ny2,0:Nz2) / Time_Interval + Teta(0:Nx2,0:Ny2,0:Nz2)
+        ! Arrays are now (Y,Z,X) = (j,k,i); Tmp_Amplitude is (L, Y, Z, X).
+        Tmp_Amplitude(0,0:Ny2,0:Nz2,0:Nx2) = Tmp_Amplitude(0,0:Ny2,0:Nz2,0:Nx2) / Time_Interval + Teta(0:Ny2,0:Nz2,0:Nx2)
 
         VMx_Av = VMx_Av / Time_Interval
         VMy_Av = VMy_Av / Time_Interval
@@ -182,16 +186,21 @@ Contains
         Do k=0,Nz2
             Do j=0,Ny2
                 Do i=0,Nx2
-                    Write (123,310) X12(i), Y12(j), Z12(k), (Tmp_Amplitude(L,i,j,k), L=-N_fourier, N_fourier)
+                    ! Same point order in the file as before; only the in-memory
+                    ! index order changed: (L, x, y, z) -> (L, y, z, x).
+                    Write (123,310) X12(i), Y12(j), Z12(k), (Tmp_Amplitude(L,j,k,i), L=-N_fourier, N_fourier)
                 End Do
             End Do
         End Do
         Rewind 124
-        Write (124) ((( VMx_Av(i,j,k), i=0,Nx1), j=0,Ny2), k=0,Nz2)
-        Write (124) ((( VMy_Av(i,j,k), i=0,Nx2), j=0,Ny1), k=0,Nz2)
-        Write (124) ((( VMz_Av(i,j,k), i=0,Nx2), j=0,Ny2), k=0,Nz1)
-        Write (124) ((( Tmp_Av(i,j,k), i=0,Nx2), j=0,Ny2), k=0,Nz2)
-        Write (124) ((( Prs_Av(i,j,k), i=1,Nx1), j=1,Ny1), k=1,Nz1)
+        ! Keep the LEGACY file byte order (x fastest, then y, then z) so files
+        ! remain readable by the original tools. Only the in-memory index order
+        ! of the arrays changed to (j,k,i).
+        Write (124) ((( VMx_Av(j,k,i), i=0,Nx1), j=0,Ny2), k=0,Nz2)
+        Write (124) ((( VMy_Av(j,k,i), i=0,Nx2), j=0,Ny1), k=0,Nz2)
+        Write (124) ((( VMz_Av(j,k,i), i=0,Nx2), j=0,Ny2), k=0,Nz1)
+        Write (124) ((( Tmp_Av(j,k,i), i=0,Nx2), j=0,Ny2), k=0,Nz2)
+        Write (124) ((( Prs_Av(j,k,i), i=1,Nx1), j=1,Ny1), k=1,Nz1)
 
         VMx = VMx_Av;  VMy = VMy_Av;  VMz = VMz_Av;  Tmpr = Tmp_Av; Prs = Prs_Av
 

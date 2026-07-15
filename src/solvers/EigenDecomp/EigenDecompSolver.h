@@ -63,8 +63,9 @@ public:
     /**
      * The eigen vectors and values.
      */
-    Eigen<T> eigen;//Note, storing the inverse spectral matrix of L would be faster but more memory consuming than storing the eigen values for L_i
+    Eigen<T> lapEigen;//Note, storing the inverse spectral matrix of L would be faster but more memory consuming than storing the eigen values for L_i
 
+    const T helmholtzShift;
     /**
      * The dimensions of the grid.
      */
@@ -84,6 +85,8 @@ public:
     bool isInLColSpace(const Vec<T> &rhs, Vec<T> &bufferSizeOfB, Singleton<T> &bufferSing, double tolerance, Handle &hand) const;
 
 
+
+
     /**
      * @brief Construct and immediately solve the Poisson problem.
      *
@@ -96,26 +99,30 @@ public:
      * @param eMatsAndVecs The eigen matrices and values for the laplacian.
      * @param sizeOfB An array the size of b = xLength * yLength * zLength that will be overwritten.  You may use b for this.
      * @param isSingular set to true if singular.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
-    EigenDecompSolver(const Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular);
+    EigenDecompSolver(const Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular, T helmholtzShift);
+
     /**
      *
      * @param boundary The boundary conditions.
      * @param hands A handle for each dimension.
      * @param events If 3d, then 2 events, if 2d then 1 event.
      * @param sizeOfB a buffer that is the same size as b.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
-    template<typename BoundaryConfigT>
-    EigenDecompSolver(const BoundaryConfigT &boundary, Handle *hands, Event *events, SimpleArray<T> sizeOfB);
+    template<class BoundaryConfigT>
+    EigenDecompSolver(const BoundaryConfigT &boundary, Handle *hands, Event *events, SimpleArray<T> sizeOfB, T helmholtzShift);
 
     /**
      * Created an eigen decomposition solver where all memory is owned by this object.
      * @param boundary The boundary conditions.
      * @param hands A handle for each dimension.
      * @param events 2 for 3d and 1 for 2d.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
-    template<typename BoundaryConfigT>
-    EigenDecompSolver(const BoundaryConfigT &boundary, Handle *hands, Event *events);
+    template<class BoundaryConfigT>
+    EigenDecompSolver(const BoundaryConfigT &boundary, Handle *hands, Event *events, T helmholtzShift);
 
     /**
      * Solves for A x = b

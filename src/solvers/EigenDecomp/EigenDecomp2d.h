@@ -33,9 +33,11 @@ public:
      * @param boundary The boundary conditions.
      * @param hand2 2 contexts.
      * @param event an empty event.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     *
      */
-    template<typename BoundaryConfigT>
-    EigenDecomp2d(const BoundaryConfigT &boundary, Handle *hand2, Event &event);
+    template<class BoundaryConfigT>
+    EigenDecomp2d(const BoundaryConfigT &boundary, Handle *hand2, Event &event, T helmholtzShift = 0);
 
 
     /**
@@ -45,7 +47,7 @@ public:
      * @param b The rhs of the equation Lx = b.
      * @param hand
      */
-    void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
+    void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const override;
 };
 
 #endif //CUDABANDED_EIGENDECOMP2D_H

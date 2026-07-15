@@ -18,14 +18,15 @@ size_t EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
     bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann,
     bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
     double leftVal, double rightVal, double topVal, double bottomVal,
-    double frontVal, double backVal, bool isStaggered, bool thomas)
+    double frontVal, double backVal, bool isStaggered, bool thomas,
+    double helmholtzShift)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_d
     size_t SHC_rv = eigen::initEigenDecomp_d(rows, cols, layers, dx, dy,
         dz, uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
         rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann,
         backIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
-        backVal, isStaggered, thomas);
+        backVal, isStaggered, thomas, helmholtzShift);
     return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_d
 }
@@ -36,14 +37,14 @@ size_t EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
     bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
     bool frontIsNeumann, bool backIsNeumann, float leftVal,
     float rightVal, float topVal, float bottomVal, float frontVal,
-    float backVal, bool isStaggered, bool thomas)
+    float backVal, bool isStaggered, bool thomas, float helmholtzShift)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_s
     size_t SHC_rv = eigen::initEigenDecomp_s(rows, cols, layers, dx, dy,
         dz, uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
         rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann,
         backIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
-        backVal, isStaggered, thomas);
+        backVal, isStaggered, thomas, helmholtzShift);
     return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_s
 }

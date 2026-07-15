@@ -48,16 +48,15 @@ protected:
      */
     void multLEigenValInverse(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const override;
 
-
-
 public:
     /**
      * @brief Constructs the hybrid solver using existing matrix workspaces.
      * @param eigen The eigen vectors and values.
      * @param sizeOfBX3 A 3-column matrix providing scratch space for [Solution, SuperPrime, RHSPrime].
      * @param isSingular true if the laplacian is singular.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
-    EigenDecompThomas(const Eigen<T> &eigen, const AxisSegmentHost<SegmentT> &boundX, Mat<T> &sizeOfBX3, bool isSingular);
+    EigenDecompThomas(const Eigen<T> &eigen, const AxisSegmentHost<SegmentT> &boundX, Mat<T> &sizeOfBX3, bool isSingular, T helmholtzShift = 0);
 
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.
@@ -66,9 +65,10 @@ public:
      * @param event2 Event for stream synchronization.
      * @param sizeOfBX3 allocated memory for the right hand side, and the thomas calculations.  It should have as amny rows
      * as there are rows in L, and 3 columns.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
     template<typename SegY, typename SegZ>
-    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3);
+    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3, T helmholtzShift = 0);
 
 
 
@@ -78,9 +78,10 @@ public:
      * @param boundary The boundary conditions.
      * @param hand3 Pointer to array of Handles.
      * @param event2 Event for stream synchronization.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
     template<class SegY, class SegZ>
-    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ> &boundary, Handle *hand3, Event *event2);
+    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ> &boundary, Handle *hand3, Event *event2, T helmholtzShift = 0);
 
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const override;
 };
@@ -88,12 +89,12 @@ public:
 
 // Guide for Constructor 2 (Without Mat workspace)
 template<typename Real, typename SegX, typename SegY, typename SegZ>
-EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*)
+EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Real)
     -> EigenDecompThomas<Real, SegX>;
 
-// Guide for Constructor 1 (With Mat workspace)
+// FIXED CODE
 template<typename Real, typename SegX, typename SegY, typename SegZ>
-EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>)
+EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>, Real)
     -> EigenDecompThomas<Real, SegX>;
 
 #endif //CUDABANDED_EIGENDECOMPTHOMAS_CUH

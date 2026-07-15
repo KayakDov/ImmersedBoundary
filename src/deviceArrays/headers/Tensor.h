@@ -141,6 +141,22 @@ public:
     SimpleArray<T> col(size_t col, size_t layer);
 
     /**
+     * Sets this tensor from an array flatened in row major order, with the z index changing slowest.
+     * @param host The array that represents a flatened tensor.
+     * @param buffer Should be the same size as this tensor.
+     * @param hand
+     */
+    void setXYZ(T *host, SimpleArray<T> buffer, Handle &hand);
+
+    /**
+     * Sets this tensor from an array that has been flattened with the z index changing slowest.
+     * @param host
+     * @param buffer Should be the same size as this tensor.
+     * @param hand
+     */
+    void setYXZ(T *host, SimpleArray<T> buffer, Handle &hand);
+
+    /**
      * @brief Returns a single element of the tensor as a Singleton<T>.
      *
      * @param row Row index (0-based).

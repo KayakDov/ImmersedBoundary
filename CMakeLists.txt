@@ -40,12 +40,29 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 
 # =========================
+# FORCED DEBUG STRIP (ADD THIS ENTIRE BLOCK)
+# =========================
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+
+add_compile_options(
+        $<$<COMPILE_LANGUAGE:CXX>:-g>
+        $<$<COMPILE_LANGUAGE:CXX>:-O0>
+        $<$<COMPILE_LANGUAGE:C>:-g>
+        $<$<COMPILE_LANGUAGE:C>:-O0>
+        # CUDA requires -G for device code debugging and -g for host code
+        $<$<COMPILE_LANGUAGE:CUDA>:-g>
+        $<$<COMPILE_LANGUAGE:CUDA>:-G>
+        $<$<COMPILE_LANGUAGE:CUDA>:-O0>
+)
+# =========================
+# END OF DEBUG STRIP
+# =========================
+
+# =========================
 # Standards
 # =========================
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CUDA_STANDARD 17)
-set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_Fortran_STANDARD 2008)
 set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 

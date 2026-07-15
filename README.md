@@ -2,7 +2,7 @@
 
 This library provides solvers for the following systems:
 
-(1) $$L x = b + bc$$
+(1) $$(L - \sigma I) x = b + bc$$
 
 (2) $$(L + 2 B^T B)x = 2 B^T F + p + bc$$
 
@@ -13,7 +13,8 @@ and solves the following system for $p'$ and $F'$:
 $$F' = 2(Bp' + (\frac{3}{2 \Delta t})\nabla\cdot u^*)$$
 
 Where $L$ is the laplacian and $bc$ is the right hand side modifier do to boundary conditions.
-It uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion ($L^{-1}$) and BiCGSTAB to solve the coupled system. Additionally, the library exposes standalone Direct Eigendecomposition solvers for the discrete Poisson equation with an optional Thomas variant.
+It uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion ($L^{-1}$) and BiCGSTAB to solve the coupled system. 
+The standalone Direct Eigendecomposition fast poisson solvers for the discrete Poisson and Helmholtz equations have an optional Thomas variant which will offer faster perfomance with increassed numerical error.
 
 ---
 
@@ -70,7 +71,7 @@ call finalize_eigen_decomp_d()
 ---
 
 ## 3. Direct Eigendecomposition (Standalone)
-For problems requiring a direct solution to $L x = b$, the library provides an optimized Eigendecomposition solver.
+For problems requiring a direct solution to $(L - \sigma I)x = b$, the library provides an optimized Eigendecomposition solver.
 
 ### Thomas Optimization
 The solver includes an optimized "Thomas" variant for the 1D tridiagonal sub-problems. This can be toggled via the `thomas` logical flag during initialization.
@@ -173,6 +174,7 @@ Creates a new eigendecomposition solver and returns a solver handle.
 | leftVal ... backVal | real | Boundary condition values (derivative or constant). |
 | isStaggered | logical | `.true.` if using a staggered grid discretization. |
 | thomas | logical | `.true.` to use optimized Thomas algorithm. |
+| helmholtzShift | real | The scalar shift $\sigma$. Set to `0.0` for standard Poisson, or a non-zero value to solve $(L - \sigma I)x = b$. |
 
 ### Solve Routine (`solve_eigen_decomp_*`)
 Performs the spectral solve on the GPU.
@@ -240,10 +242,26 @@ This module provides standalone direct Eigendecomposition solvers for the Poisso
 | :--- | :--- | :--- |
 | `init_eigen_decomp_d` | Double | Create a new eigendecomposition solver and return its solver handle. |
 | `init_eigen_decomp_s` | Single | Create a new eigendecomposition solver and return its solver handle. |
-| `solve_eigen_decomp_d` | Double | Solve using an existing solver handle. ($\nabla^2 x = b$). |
-| `solve_eigen_decomp_s` | Single | Solve using an existing solver handle. ($\nabla^2 x = b$). |
+| `solve_eigen_decomp_d` | Double | Solve using an existing solver handle. ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). |
+| `solve_eigen_decomp_s` | Single | Solve using an existing solver handle. ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). |
 | `finalize_eigen_decomp_d` | N/A | Free Eigendecomposition GPU resources. |
 | `finalize_eigen_decomp_s` | N/A | Free Eigendecomposition GPU resources. |
+
+
+### Global Configuration
+Before calling any of the init methods, you may configure the global input format to define how your grid's flattened array is interpreted by the solver.
+
+| Constant | Value | Description                                                                                                      |
+| :--- | :--- |:-----------------------------------------------------------------------------------------------------------------|
+| `INPUT_FORMAT_XYZ` | 0 | Columns chang fastest, then rows, then layers. A form of row major order.                                        |
+| `INPUT_FORMAT_YXZ` | 1 | Rows change fastest, then columns, then layers. A form of column major order.                                    |
+| `INPUT_FORMAT_YZX` | 2 | Rows change fastest, then layers, then columns. This format will run faster than the other two, and the defualt. |
+
+| Routine | Purpose |
+| :--- | :--- |
+| `set_input_format` | Sets the grid interpretation format for subsequent solver initializations. |
+
+Note, there is only one input format stored globally.  The most recent value set is the global value for all other function calls.
 
 ## 10. Flatened Indexing
 When mapping from (row, col, layer) = (y, x, z) indices to a flatened indexing, 

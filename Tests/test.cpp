@@ -14,6 +14,21 @@
 #include "kronecker/KroneckerTriplet.h"
 #include "poisson/Laplacian1d.cuh"
 
+template<typename T>
+void expectMatrixNear(const Mat<T>& A, const Mat<T>& B, Handle& hand, T tol = 1e-6) {
+    ASSERT_EQ(A._rows, B._rows);
+    ASSERT_EQ(A._cols, B._cols);
+
+    std::vector<T> aCpu(A.size(), 0), bCpu(B.size(), 0);
+    A.get(aCpu.data(), hand);
+    B.get(bCpu.data(), hand);
+
+    cudaStreamSynchronize(hand);
+
+    for (size_t i = 0; i < aCpu.size(); i++)
+        ASSERT_NEAR(aCpu[i], bCpu[i], tol) << "Mismatch at (" << i % A._rows << "," << i / A._rows << ")";
+}
+
 template <typename Real, typename Int, typename BoundaryConfigT>
 SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vector<Real>& x0Host, SquareMat<Real>& lhsOperator, std::vector<Int>& rowOffsetsB, std::vector<Real>& valuesB, std::vector<Int>& colIndsB, Handle& hand) {
 
@@ -32,8 +47,27 @@ SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vect
     return B;
 }
 
-TEST(FortranWrapper, MultipleEigenSolversSideBySide)
-{
+TEST(CudaWrapper, tranpose) {
+    using Real = double;
+    Handle hand;
+    size_t rows = 2, cols = 3;
+    std::vector<Real> host = {1, 2, 3, 4, 5, 6};
+    std::vector<Real> tranpose = {1, 3, 5, 2, 4, 6};
+    auto a = Mat<Real>::create(rows, cols);
+    auto aT = Mat<Real>::create(cols, rows);
+    auto aTFromHost = Mat<Real>::create(cols, rows);
+
+    a.set(host.data(), hand);
+    aTFromHost.set(tranpose.data(), hand);
+
+    a.transpose(aT, hand);
+
+    expectMatrixNear(aT, aTFromHost, hand);
+}
+
+
+
+TEST(FortranWrapper, MultipleEigenSolversSideBySide){
     using Real = double;
     constexpr size_t N = 64;
 
@@ -59,17 +93,17 @@ TEST(FortranWrapper, MultipleEigenSolversSideBySide)
     size_t h1 = eigen::initEigenDecomp_d(
             N, N, N, d.x.data(), d.y.data(), d.z.data(),
             false, false, false, false, false, false, false, false, false,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false); // Standard
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, 0); // Standard
 
     size_t h2 = eigen::initEigenDecomp_d(
             N, N, N, d.x.data(), d.y.data(), d.z.data(),
             false, false, false, false, false, false, false, false, false,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, true);  // Thomas
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, true, 0);  // Thomas
 
     size_t h3 = eigen::initEigenDecomp_d(
             N, N, N, d.x.data(), d.y.data(), d.z.data(),
             false, false, false, false, false, false, false, false, false,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false); // Standard 2
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, 0); // Standard 2
 
     // 2. Verify the wrapper assigned unique handles to the vector
     ASSERT_NE(h1, h2);
@@ -139,7 +173,7 @@ TEST(FortranWrapper, SmokeTestAlex)
             false, false, false,
             false, false, false,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            false, false
+            false, false, 0
         );
 
     size_t handleThomas = eigen::initEigenDecomp_d(
@@ -149,7 +183,7 @@ TEST(FortranWrapper, SmokeTestAlex)
             false, false, false,
             false, false, false,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            false, true
+            false, true, 0
         );
 
     eigen::solveEigenDecomp_d(handleStandard, xStandard.data(), rhs.data());
@@ -322,22 +356,6 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
 
     for (size_t i = 0; i < resultP.size(); ++i) ASSERT_NEAR(resultP[i], i + 1, 1e-4);
 
-}
-
-
-template<typename T>
-void expectMatrixNear(const Mat<T>& A, const Mat<T>& B, Handle& hand, T tol = 1e-6) {
-    ASSERT_EQ(A._rows, B._rows);
-    ASSERT_EQ(A._cols, B._cols);
-
-    std::vector<T> aCpu(A.size(), 0), bCpu(B.size(), 0);
-    A.get(aCpu.data(), hand);
-    B.get(bCpu.data(), hand);
-
-    cudaStreamSynchronize(hand);
-
-    for (size_t i = 0; i < aCpu.size(); i++)
-        ASSERT_NEAR(aCpu[i], bCpu[i], tol) << "Mismatch at (" << i % A._rows << "," << i / A._rows << ")";
 }
 
 // ---------- test ----------

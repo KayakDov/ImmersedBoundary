@@ -30,17 +30,19 @@ public:
      * @param eigen The eigens.
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
      * @param isSingular Is the laplacian singular (all boundary conditions are Neumann)
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
-    EigenDecomp3d(const Eigen<T> &eigen, SimpleArray<T> sizeOfB, bool isSingular);
+    EigenDecomp3d(const Eigen<T> &eigen, SimpleArray<T> sizeOfB, bool isSingular, T helmholtzShift = 0);
 
     /**
      * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.
      * @param boundary The boundary conditions.
      * @param hand3 3 contexts for parallel streaming
      * @param event2 an event for controlling stream dependency.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
     template<typename BoundaryConfigT>
-    EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2);
+    EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2, T helmholtzShift = 0);
 
 
 
@@ -51,9 +53,10 @@ public:
      * @param hand3 3 contexts for parallel streaming.
      * @param sizeOfB A scratch space the size of the RHS.  This will be overwritten.
      * @param event2 an event for controlling stream dependency.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
     template<typename BoundaryConfigT>
-    EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB);
+    EigenDecomp3d(BoundaryConfigT boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB, T helmholtzShift = 0);
 
     /**
      * Be sure that b is in the column space of L.  Otheriwise you will receive a projection onto the column space

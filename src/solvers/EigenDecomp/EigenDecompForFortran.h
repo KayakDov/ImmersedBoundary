@@ -44,6 +44,7 @@ public:
      * @param backVal
      * @param isStaggered
      * @param thomas True if Thomas algorythm should be used for the z direction, false otherwise.
+     * @param helmholtzShift to solve (L - sigma I) x = b where this variable is sigma.
      * @param sizeOfBForX Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
      * @param sizeOfBForRHS Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
      * @param sizeOfBForBAdj Allocated gpu space.  It should be at least rows * cols * layers number of elements.  It will be overwritten.
@@ -56,7 +57,7 @@ public:
         bool topIsNeumann, bool bottomIsNeumann,
         bool backIsNeumann, bool frontIsNeumann,
         Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
-        bool isStaggered, bool thomas,
+        bool isStaggered, bool thomas, Real helmholtzShift,
         SimpleArray<Real> sizeOfBForX, SimpleArray<Real> sizeOfBForRHS, SimpleArray<Real> sizeOfBForBAdj);
     /**
      * Solves the equation L x = b.

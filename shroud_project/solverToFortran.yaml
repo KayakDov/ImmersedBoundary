@@ -26,9 +26,10 @@ declarations:
 
   - decl: namespace eigen
     declarations:
-      - decl: size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas)
-      - decl: size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas)
+      - decl: size_t initEigenDecomp_d(size_t rows, size_t cols, size_t layers, double* dx +intent(in) +rank(1), double* dy +intent(in) +rank(1), double* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal, bool isStaggered, bool thomas, double helmholtzShift)
+      - decl: size_t initEigenDecomp_s(size_t rows, size_t cols, size_t layers, float* dx +intent(in) +rank(1), float* dy +intent(in) +rank(1), float* dz +intent(in) +rank(1), bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann, float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal, bool isStaggered, bool thomas, float helmholtzShift)
       - decl: void solveEigenDecomp_d(size_t solverHandle, double *x +intent(out) +rank(1), double* b +intent(in) +rank(1))
       - decl: void solveEigenDecomp_s(size_t solverHandle, float *x +intent(out) +rank(1), float* b +intent(in) +rank(1))
       - decl: void finalizeEigenDecomp_d()
       - decl: void finalizeEigenDecomp_s()
+      - decl: void setGlobalInputFormat(int format)

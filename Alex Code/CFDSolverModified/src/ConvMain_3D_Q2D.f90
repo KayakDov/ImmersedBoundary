@@ -145,9 +145,10 @@ If(I_fourier == 0) then
     Allocate( Tmp_Amplitude(-N_fourier:N_fourier,0:Ny2,0:Nz2,0:Nx2), Omega(N_Fourier) )
     Allocate( VMx_Av(0:Ny2,0:Nz2,0:Nx1), VMy_Av(0:Ny1,0:Nz2,0:Nx2), VMz_Av(0:Ny2,0:Nz1,0:Nx2) )
     Allocate( Tmp_Av(0:Ny2,0:Nz2,0:Nx2) )
+    Allocate( Prs_Av(1:Ny1,1:Nz1,1:Nx1) )
 
     Tmp_Amplitude = 0.d0
-    VMx_Av = 0.d0;   VMy_Av = 0.d0;   VMz_Av = 0.d0
+    VMx_Av = 0.d0;   VMy_Av = 0.d0;   VMz_Av = 0.d0;   Prs_Av = 0.d0
 
     If(I_Fourier ==0) then
         Do i=1,N_Fourier
@@ -169,7 +170,6 @@ Write (*,*) omp_get_max_threads(), '  CPUs will be used'
 ! ---------------------------------------------------------
 ! 1. GPU SETUP: External Call to your new file
 ! ---------------------------------------------------------
-Call Initialize_GPU_Solvers()
 
 Call    Solution_time
 
@@ -181,7 +181,11 @@ Call    Solution_time
 ! ******** Calculate Nusselt ********************
 
 If(I_Fourier == 0) then
-    Tmpr = Tmpr_Av;  VMx = VMx_Av;  VMy = VMy_Av;  VMz = VMz_Av
+    ! NOTE: the original code read "Tmpr = Tmpr_Av; ... VMz = VMx_Az" -- both
+    ! Tmpr_Av and VMx_Az are undeclared and, via implicit typing, were silently
+    ! treated as uninitialized scalars (a pre-existing bug). Corrected to the
+    ! evident intent:
+    Tmpr = Tmp_Av;  VMx = VMx_Av;  VMy = VMy_Av;  VMz = VMz_Av
 End If
 
 Write (*,*) '          Nusselt number  = ', Nusselt()

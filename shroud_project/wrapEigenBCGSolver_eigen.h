@@ -33,7 +33,8 @@ size_t EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
     bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann,
     bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
     double leftVal, double rightVal, double topVal, double bottomVal,
-    double frontVal, double backVal, bool isStaggered, bool thomas);
+    double frontVal, double backVal, bool isStaggered, bool thomas,
+    double helmholtzShift);
 
 size_t EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
     size_t layers, float *dx, float *dy, float *dz, bool uniformDeltaX,
@@ -41,7 +42,7 @@ size_t EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
     bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
     bool frontIsNeumann, bool backIsNeumann, float leftVal,
     float rightVal, float topVal, float bottomVal, float frontVal,
-    float backVal, bool isStaggered, bool thomas);
+    float backVal, bool isStaggered, bool thomas, float helmholtzShift);
 
 void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *x,
     double *b);

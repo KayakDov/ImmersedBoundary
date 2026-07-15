@@ -87,7 +87,6 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel"
     add_compile_options(
             $<$<COMPILE_LANGUAGE:Fortran>:-g>
             $<$<COMPILE_LANGUAGE:Fortran>:-O0>
-            $<$<COMPILE_LANGUAGE:Fortran>:-r8>
             $<$<COMPILE_LANGUAGE:Fortran>:-qmkl>
             $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>
             $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
@@ -103,6 +102,15 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel"
         )
     endif()
 
+endif()
+
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang|IntelLLVM|Intel")
+    add_compile_options(
+            $<$<COMPILE_LANGUAGE:CXX>:-g>
+            $<$<COMPILE_LANGUAGE:CXX>:-O0>
+    )
 endif()
 
 # ==========================================================

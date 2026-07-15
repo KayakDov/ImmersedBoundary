@@ -257,8 +257,22 @@ namespace eigen {
         bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
         Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
         bool isStaggered,
-        bool thomas
+        bool thomas,
+        Real helmholtzShift
     ) {
+
+    std::cout << "\n========== EigenDecompForFortran Constructor ==========\n";
+
+     std::cout << "Dimensions:\n";
+     std::cout << "  rows   = " << rows   << '\n';
+     std::cout << "  cols   = " << cols   << '\n';
+     std::cout << "  layers = " << layers << '\n';
+
+
+
+     std::cout << "=======================================================" << std::endl;
+
+
         auto xb = Mat<Real>::create(rows * cols * layers, 3);
 
         size_t solverHandle = solvers<Real>.size();
@@ -271,7 +285,9 @@ namespace eigen {
                 leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
                 isStaggered,
-                thomas, xb.col(0), xb.col(1), xb.col(2)
+                thomas,
+                helmholtzShift,
+                xb.col(0), xb.col(1), xb.col(2)
             )
         );
         return solverHandle;
@@ -281,6 +297,15 @@ namespace eigen {
     void runDecompSolver(size_t solverHandle, Real* xHost, Real* bHost) {
         if (solverHandle >= solvers<Real>.size() || !solvers<Real>[solverHandle])
             throw std::runtime_error("Invalid eigen solver handle.");
+
+        std::cout << "\n========== EigenDecompForFortran Solve ==========\n";
+
+        std::cout << "Dimensions:\n";
+        std::cout << "  solver Handle   = " << solverHandle   << " out of " << solvers<Real>.size() << '\n';
+
+
+        std::cout << "=======================================================" << std::endl;
+
 
         solvers<Real>[solverHandle]->solve(xHost, bHost);
         cudaDeviceSynchronize();
@@ -300,7 +325,8 @@ namespace eigen {
             bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
             double leftVal, double rightVal, double topVal, double bottomVal, double frontVal, double backVal,
             bool isStaggered,
-            bool thomas
+            bool thomas,
+            double helmholtzShift
         ) {
             return initEigenDecompSolver<double>(
                 rows, cols, layers,
@@ -308,7 +334,7 @@ namespace eigen {
                 uniformDeltaX, uniformDeltaY, uniformDeltaZ,
                 leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
-                isStaggered, thomas);
+                isStaggered, thomas, helmholtzShift);
         }
 
         inline size_t initEigenDecomp_s(
@@ -318,7 +344,8 @@ namespace eigen {
             bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
             float leftVal, float rightVal, float topVal, float bottomVal, float frontVal, float backVal,
             bool isStaggered,
-            bool thomas
+            bool thomas,
+            float helmholtzShift
         ) {
             return initEigenDecompSolver<float>(
                 rows, cols, layers,
@@ -326,7 +353,7 @@ namespace eigen {
                 uniformDeltaX, uniformDeltaY, uniformDeltaZ,
                 leftIsNeumann, rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann, backIsNeumann,
                 leftVal, rightVal, topVal, bottomVal, frontVal, backVal,
-                isStaggered, thomas
+                isStaggered, thomas, helmholtzShift
             );
         }
 
