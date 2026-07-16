@@ -12,39 +12,48 @@ extern "C" {
 // splicer begin namespace.eigen.C_definitions
 // splicer end namespace.eigen.C_definitions
 
-size_t EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
-    size_t layers, double *dx, double *dy, double *dz,
-    bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
-    bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann,
-    bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
-    double leftVal, double rightVal, double topVal, double bottomVal,
-    double frontVal, double backVal, bool isStaggered, bool thomas,
+size_t EIG_eigen_initEigenDecomp_d(size_t dim1Length, size_t dim2Length,
+    size_t dim3Length, double *dim1Delta, double *dim2Delta,
+    double *dim3Delta, bool dim1UniformDelta, bool dim2UniformDelta,
+    bool dim3UniformDelta, bool dim1StartIsNeumann,
+    bool dim1EndIsNeumann, bool dim2StartIsNeumann,
+    bool dim2EndIsNeumann, bool dim3StartIsNeumann,
+    bool dim3EndIsNeumann, double dim1StartVal, double dim1EndVal,
+    double dim2StartVal, double dim2EndVal, double dim3StartVal,
+    double dim3EndVal, bool isStaggered, bool thomas,
     double helmholtzShift)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_d
-    size_t SHC_rv = eigen::initEigenDecomp_d(rows, cols, layers, dx, dy,
-        dz, uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
-        rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann,
-        backIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
-        backVal, isStaggered, thomas, helmholtzShift);
+    size_t SHC_rv = eigen::initEigenDecomp_d(dim1Length, dim2Length,
+        dim3Length, dim1Delta, dim2Delta, dim3Delta, dim1UniformDelta,
+        dim2UniformDelta, dim3UniformDelta, dim1StartIsNeumann,
+        dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
+        dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, dim1EndVal,
+        dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, isStaggered,
+        thomas, helmholtzShift);
     return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_d
 }
 
-size_t EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
-    size_t layers, float *dx, float *dy, float *dz, bool uniformDeltaX,
-    bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann,
-    bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
-    bool frontIsNeumann, bool backIsNeumann, float leftVal,
-    float rightVal, float topVal, float bottomVal, float frontVal,
-    float backVal, bool isStaggered, bool thomas, float helmholtzShift)
+size_t EIG_eigen_initEigenDecomp_s(size_t dim1Length, size_t dim2Length,
+    size_t dim3Length, float *dim1Delta, float *dim2Delta,
+    float *dim3Delta, bool dim1UniformDelta, bool dim2UniformDelta,
+    bool dim3UniformDelta, bool dim1StartIsNeumann,
+    bool dim1EndIsNeumann, bool dim2StartIsNeumann,
+    bool dim2EndIsNeumann, bool dim3StartIsNeumann,
+    bool dim3EndIsNeumann, float dim1StartVal, float dim1EndVal,
+    float dim2StartVal, float dim2EndVal, float dim3StartVal,
+    float dim3EndVal, bool isStaggered, bool thomas,
+    float helmholtzShift)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_s
-    size_t SHC_rv = eigen::initEigenDecomp_s(rows, cols, layers, dx, dy,
-        dz, uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann,
-        rightIsNeumann, topIsNeumann, bottomIsNeumann, frontIsNeumann,
-        backIsNeumann, leftVal, rightVal, topVal, bottomVal, frontVal,
-        backVal, isStaggered, thomas, helmholtzShift);
+    size_t SHC_rv = eigen::initEigenDecomp_s(dim1Length, dim2Length,
+        dim3Length, dim1Delta, dim2Delta, dim3Delta, dim1UniformDelta,
+        dim2UniformDelta, dim3UniformDelta, dim1StartIsNeumann,
+        dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
+        dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, dim1EndVal,
+        dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, isStaggered,
+        thomas, helmholtzShift);
     return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_s
 }

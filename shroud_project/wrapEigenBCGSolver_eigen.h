@@ -27,22 +27,27 @@ extern "C" {
 // splicer begin namespace.eigen.C_declarations
 // splicer end namespace.eigen.C_declarations
 
-size_t EIG_eigen_initEigenDecomp_d(size_t rows, size_t cols,
-    size_t layers, double *dx, double *dy, double *dz,
-    bool uniformDeltaX, bool uniformDeltaY, bool uniformDeltaZ,
-    bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann,
-    bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
-    double leftVal, double rightVal, double topVal, double bottomVal,
-    double frontVal, double backVal, bool isStaggered, bool thomas,
+size_t EIG_eigen_initEigenDecomp_d(size_t dim1Length, size_t dim2Length,
+    size_t dim3Length, double *dim1Delta, double *dim2Delta,
+    double *dim3Delta, bool dim1UniformDelta, bool dim2UniformDelta,
+    bool dim3UniformDelta, bool dim1StartIsNeumann,
+    bool dim1EndIsNeumann, bool dim2StartIsNeumann,
+    bool dim2EndIsNeumann, bool dim3StartIsNeumann,
+    bool dim3EndIsNeumann, double dim1StartVal, double dim1EndVal,
+    double dim2StartVal, double dim2EndVal, double dim3StartVal,
+    double dim3EndVal, bool isStaggered, bool thomas,
     double helmholtzShift);
 
-size_t EIG_eigen_initEigenDecomp_s(size_t rows, size_t cols,
-    size_t layers, float *dx, float *dy, float *dz, bool uniformDeltaX,
-    bool uniformDeltaY, bool uniformDeltaZ, bool leftIsNeumann,
-    bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann,
-    bool frontIsNeumann, bool backIsNeumann, float leftVal,
-    float rightVal, float topVal, float bottomVal, float frontVal,
-    float backVal, bool isStaggered, bool thomas, float helmholtzShift);
+size_t EIG_eigen_initEigenDecomp_s(size_t dim1Length, size_t dim2Length,
+    size_t dim3Length, float *dim1Delta, float *dim2Delta,
+    float *dim3Delta, bool dim1UniformDelta, bool dim2UniformDelta,
+    bool dim3UniformDelta, bool dim1StartIsNeumann,
+    bool dim1EndIsNeumann, bool dim2StartIsNeumann,
+    bool dim2EndIsNeumann, bool dim3StartIsNeumann,
+    bool dim3EndIsNeumann, float dim1StartVal, float dim1EndVal,
+    float dim2StartVal, float dim2EndVal, float dim3StartVal,
+    float dim3EndVal, bool isStaggered, bool thomas,
+    float helmholtzShift);
 
 void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *x,
     double *b);

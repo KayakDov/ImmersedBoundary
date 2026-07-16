@@ -45,3 +45,48 @@
  i=  4  Y= 0.9976      Hy12= 0.2427E-02  Y12= 0.9392      HPy= 0.5958E-01
  i=  5  Y=  1.000                        Y12= 0.9988      HPy= 0.1214E-02
  i=  6                                   Y12=  1.000    
+
+
+  Istp=    1   Time Step= 0.1000E-03 Time= 0.10000000E-03   End Time= 0.10000000E-02
+  RNSx= 0.4500E-03  RNSy= 0.7268E-05  RNSz= 0.7429E-03  RTmpr= 0.1000E-05  RDP=  6.182    
+
+
+  Istp=    2   Time Step= 0.1000E-03 Time= 0.20000000E-03   End Time= 0.10000000E-02
+  RNSx= 0.1569E-01  RNSy= 0.1063E-03  RNSz= 0.2051E-01  RTmpr= 0.4018E-06  RDP=  202.5    
+
+
+  Istp=    3   Time Step= 0.1000E-03 Time= 0.30000000E-03   End Time= 0.10000000E-02
+  RNSx=  1.026      RNSy= 0.1631E-02  RNSz=  1.042      RTmpr= 0.1741E-04  RDP=  6946.    
+
+
+  Istp=    4   Time Step= 0.1000E-03 Time= 0.40000000E-03   End Time= 0.10000000E-02
+  RNSx=  1.026      RNSy= 0.2502E-01  RNSz=  1.055      RTmpr= 0.7197E-03  RDP= 0.2450E+06
+
+
+  Istp=    5   Time Step= 0.1000E-03 Time= 0.50000000E-03   End Time= 0.10000000E-02
+  RNSx=  1.026      RNSy=  1.066      RNSz=  1.102      RTmpr= 0.2905E-01  RDP= 0.8903E+07
+
+
+  Istp=    6   Time Step= 0.1000E-03 Time= 0.60000000E-03   End Time= 0.10000000E-02
+  RNSx=  1.027      RNSy=  1.067      RNSz=  1.574      RTmpr=  1.291      RDP= 0.3143E+09
+
+
+  Istp=    7   Time Step= 0.1000E-03 Time= 0.70000000E-03   End Time= 0.10000000E-02
+  RNSx=  1.079      RNSy=  1.448      RNSz=  1.090      RTmpr=  237.9      RDP= 0.3352E+11
+
+
+  Istp=    8   Time Step= 0.1000E-03 Time= 0.80000000E-03   End Time= 0.10000000E-02
+  RNSx=  1.000      RNSy=  1.000      RNSz=  1.001      RTmpr= 0.4217E+05  RDP= 0.5246E+16
+
+
+  Istp=    9   Time Step= 0.1000E-03 Time= 0.90000000E-03   End Time= 0.10000000E-02
+  RNSx=  1.000      RNSy=  1.000      RNSz=  1.000      RTmpr= 0.2201E+11  RDP= 0.1490E+27
+
+
+  Istp=   10   Time Step= 0.1000E-03 Time= 0.10000000E-02   End Time= 0.10000000E-02
+  RNSx=  1.000      RNSy=  1.000      RNSz=  1.000      RTmpr= 0.7714E+21  RDP= 0.1166E+48
+           Nusselt number  =  -9.781032321625358E+033
+  Midplane Nusselt number  =  -9.652531493834344E+033
+            kinetic energy =   6.659113453240589E+084
+       2D Nusselt number  = -9.652425867388099E+033
+       2D kinetic energy  =  1.331822689126806E+085

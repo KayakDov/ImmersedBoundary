@@ -246,7 +246,9 @@ public:
      * @param rowIndsR     Row indices for CSC Matrix R.
      * @param valuesR      Non-zero values for Matrix R.
      * @param UGamma       Pointer to prescribed boundary velocities/states.
-     * @param uStar        Pointer to the intermediate staggered velocity field.
+     * @param uStar        Pointer to the intermediate staggered velocity field.  The first contiguouse third should be
+     * in the x component of each velocity vector, then next contiguouse third in the y component of each velocity
+     * vector, and the final contiguouse third thousl be the z component of the velocity vector.
      */
     void solve(Real *resultP, Real *resultF, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR,
                Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real *uStar);

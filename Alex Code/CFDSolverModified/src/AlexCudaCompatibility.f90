@@ -33,7 +33,19 @@ contains
         logical :: pX, pY, pZ    ! potential:   Neumann on both ends of axis?
 
         ! ==================================================================
-        ! SPACING ARRAYS.  For an axis with n unknowns, CudaBandedLib's
+        ! DIMENSION CONVENTION (isotropic API).  The library defines
+        !     dim1 = the dimension whose FLATTENED indices change fastest,
+        !     dim2 = next fastest,  dim3 = slowest.
+        ! Fortran is column-major, so for our arrays laid out (Y, Z, X) --
+        ! i.e. Field(j,k,i) with j the first index -- the mapping is simply
+        ! the natural Fortran index order:
+        !     dim1 = Y,   dim2 = Z,   dim3 = X.
+        ! No transposition anywhere: dimNLength is just SIZE(field, N), and
+        ! the deltas/BC flags for dimN belong to the axis of index N.
+        ! ==================================================================
+
+        ! ==================================================================
+        ! SPACING ARRAYS.  For an axis with n unknowns, the library's
         ! VariableSegment expects n+1 deltas = distances between ADJACENT
         ! UNKNOWNS, where delta(0) is wall-to-first-unknown and delta(n) is
         ! last-unknown-to-wall.  Each axis of this code has two node
@@ -61,9 +73,11 @@ contains
         ! i.e. it solves (alpha*L - (Ckor/Htime)*Dtm) x = rhs, with
         !     temperature: alpha = 1/GrPr, Dtm = Istat
         !     velocities : alpha = DGr,    Dtm = 1
-        ! We solve the equivalent system  (L + shift) x = rhs / alpha :
-        !     shift(temperature) = -Ckor*Istat*GrPr/Htime, rhs scaled by GrPr
-        !     shift(velocity)    = -Ckor/(Htime*DGr),      rhs scaled by 1/DGr
+        ! The GPU library solves (L - helmholtzShift*I) x = b, so we pass a
+        ! POSITIVE shift and solve the equivalent system
+        !     (L - shift*I) x = rhs / alpha :
+        !     shift(temperature) = +Ckor*Istat*GrPr/Htime, rhs scaled by GrPr
+        !     shift(velocity)    = +Ckor/(Htime*DGr),      rhs scaled by 1/DGr
         ! The rhs scaling lives in time_step_Q2D.f90 where the GPU staging
         ! arrays are filled.  Pressure and Potential are pure Poisson
         ! (shift = 0, no scaling).
@@ -81,108 +95,172 @@ contains
         !   Velocities (EVD_lapVx/y/z): Dirichlet everywhere, unconditionally
         !   Pressure (EVD_lapP):        Neumann everywhere, unconditionally
         !   Potential (EVD_lap_Fi):     Neumann per axis when EVD_Pot_? == 1
-        ! Axis naming in the library: left/right = x, top/bottom = y,
-        ! front/back = z.  All boundary values in this code are homogeneous.
+        ! All boundary VALUES in this code are homogeneous (0.d0).
         ! ==================================================================
-        tX = (EVD_BCx   == 1);  tY = (EVD_BCy   == 1);  tZ = (EVD_BCz   == 1)
-        pX = (EVD_Pot_X == 1);  pY = (EVD_Pot_Y == 1);  pZ = (EVD_Pot_Z == 1)
+        tX = (EVD_BCx == 1);   tY = (EVD_BCy == 1);   tZ = (EVD_BCz == 1)
+        pX = (EVD_Pot_X == 1); pY = (EVD_Pot_Y == 1); pZ = (EVD_Pot_Z == 1)
 
-        ! ---------------- Temperature: (Ny1, Nx1, Nz1), cell-centred -------
-        call assert_spacing_sizes("Temperature", HPx(0:Nx1), HPy(0:Ny1), HPz(0:Nz1), Nx1, Ny1, Nz1)
+        ! --- sanity checks: n+1 deltas per axis, all strictly positive -----
+        Call assert_spacing_sizes()
+
+        ! ==================================================================
+        ! Handle 0: TEMPERATURE.  TmpNew(1:Ny1, 1:Nz1, 1:Nx1); cell-centred
+        ! on every axis.  dim1=Y, dim2=Z, dim3=X.
+        ! ==================================================================
         TemperatureHandle = init_eigen_decomp_d( &
-                rows=int(Ny1,C_SIZE_T), cols=int(Nx1,C_SIZE_T), layers=int(Nz1,C_SIZE_T), &
-                dx=HPx(0:Nx1), dy=HPy(0:Ny1), dz=HPz(0:Nz1), &
-                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
-                leftIsNeumann=tX, rightIsNeumann=tX, &
-                topIsNeumann=tY, bottomIsNeumann=tY, &
-                frontIsNeumann=tZ, backIsNeumann=tZ, &
-                leftVal=0.d0, rightVal=0.d0, topVal=0.d0, bottomVal=0.d0, &
-                frontVal=0.d0, backVal=0.d0, isStaggered=.false., &
-                helmholtzShift=shiftTemperature, thomas=.true. )
+                dim1Length = Int(Ny1, C_SIZE_T), &
+                dim2Length = Int(Nz1, C_SIZE_T), &
+                dim3Length = Int(Nx1, C_SIZE_T), &
+                dim1Delta = HPy(0:Ny1), &
+                dim2Delta = HPz(0:Nz1), &
+                dim3Delta = HPx(0:Nx1), &
+                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1StartIsNeumann = tY, dim1EndIsNeumann = tY, &
+                dim2StartIsNeumann = tZ, dim2EndIsNeumann = tZ, &
+                dim3StartIsNeumann = tX, dim3EndIsNeumann = tX, &
+                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
+                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
+                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
+                isStaggered = .false., thomas = .true., &
+                helmholtzShift = shiftTemperature )
 
-        ! ---------------- Vx: (Ny1, Nx, Nz1), node-centred in x ------------
-        call assert_spacing_sizes("Vx", Hx12(0:Nx), HPy(0:Ny1), HPz(0:Nz1), Nx, Ny1, Nz1)
+        ! ==================================================================
+        ! Handle 1: Vx.  VMxNew(1:Ny1, 1:Nz1, 1:Nx); node-centred along its
+        ! own (x) axis, cell-centred along y and z.  Dirichlet everywhere.
+        ! ==================================================================
         VxHandle = init_eigen_decomp_d( &
-                rows=int(Ny1,C_SIZE_T), cols=int(Nx,C_SIZE_T), layers=int(Nz1,C_SIZE_T), &
-                dx=Hx12(0:Nx), dy=HPy(0:Ny1), dz=HPz(0:Nz1), &
-                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
-                leftIsNeumann=.false., rightIsNeumann=.false., &
-                topIsNeumann=.false., bottomIsNeumann=.false., &
-                frontIsNeumann=.false., backIsNeumann=.false., &
-                leftVal=0.d0, rightVal=0.d0, topVal=0.d0, bottomVal=0.d0, &
-                frontVal=0.d0, backVal=0.d0, isStaggered=.false., &
-                helmholtzShift=shiftVelocity, thomas=.true. )
+                dim1Length = Int(Ny1, C_SIZE_T), &
+                dim2Length = Int(Nz1, C_SIZE_T), &
+                dim3Length = Int(Nx,  C_SIZE_T), &
+                dim1Delta = HPy(0:Ny1), &
+                dim2Delta = HPz(0:Nz1), &
+                dim3Delta = Hx12(0:Nx), &
+                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1StartIsNeumann = .false., dim1EndIsNeumann = .false., &
+                dim2StartIsNeumann = .false., dim2EndIsNeumann = .false., &
+                dim3StartIsNeumann = .false., dim3EndIsNeumann = .false., &
+                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
+                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
+                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
+                isStaggered = .false., thomas = .true., &
+                helmholtzShift = shiftVelocity )
 
-        ! ---------------- Vy: (Ny, Nx1, Nz1), node-centred in y ------------
-        call assert_spacing_sizes("Vy", HPx(0:Nx1), Hy12(0:Ny), HPz(0:Nz1), Nx1, Ny, Nz1)
+        ! ==================================================================
+        ! Handle 2: Vy.  VMyNew(1:Ny, 1:Nz1, 1:Nx1); node-centred along y,
+        ! cell-centred along z and x.  Dirichlet everywhere.
+        ! ==================================================================
         VyHandle = init_eigen_decomp_d( &
-                rows=int(Ny,C_SIZE_T), cols=int(Nx1,C_SIZE_T), layers=int(Nz1,C_SIZE_T), &
-                dx=HPx(0:Nx1), dy=Hy12(0:Ny), dz=HPz(0:Nz1), &
-                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
-                leftIsNeumann=.false., rightIsNeumann=.false., &
-                topIsNeumann=.false., bottomIsNeumann=.false., &
-                frontIsNeumann=.false., backIsNeumann=.false., &
-                leftVal=0.d0, rightVal=0.d0, topVal=0.d0, bottomVal=0.d0, &
-                frontVal=0.d0, backVal=0.d0, isStaggered=.false., &
-                helmholtzShift=shiftVelocity, thomas=.true. )
+                dim1Length = Int(Ny,  C_SIZE_T), &
+                dim2Length = Int(Nz1, C_SIZE_T), &
+                dim3Length = Int(Nx1, C_SIZE_T), &
+                dim1Delta = Hy12(0:Ny), &
+                dim2Delta = HPz(0:Nz1), &
+                dim3Delta = HPx(0:Nx1), &
+                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1StartIsNeumann = .false., dim1EndIsNeumann = .false., &
+                dim2StartIsNeumann = .false., dim2EndIsNeumann = .false., &
+                dim3StartIsNeumann = .false., dim3EndIsNeumann = .false., &
+                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
+                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
+                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
+                isStaggered = .false., thomas = .true., &
+                helmholtzShift = shiftVelocity )
 
-        ! ---------------- Vz: (Ny1, Nx1, Nz), node-centred in z ------------
-        call assert_spacing_sizes("Vz", HPx(0:Nx1), HPy(0:Ny1), Hz12(0:Nz), Nx1, Ny1, Nz)
+        ! ==================================================================
+        ! Handle 3: Vz.  VMzNew(1:Ny1, 1:Nz, 1:Nx1); node-centred along z,
+        ! cell-centred along y and x.  Dirichlet everywhere.
+        ! ==================================================================
         VzHandle = init_eigen_decomp_d( &
-                rows=int(Ny1,C_SIZE_T), cols=int(Nx1,C_SIZE_T), layers=int(Nz,C_SIZE_T), &
-                dx=HPx(0:Nx1), dy=HPy(0:Ny1), dz=Hz12(0:Nz), &
-                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
-                leftIsNeumann=.false., rightIsNeumann=.false., &
-                topIsNeumann=.false., bottomIsNeumann=.false., &
-                frontIsNeumann=.false., backIsNeumann=.false., &
-                leftVal=0.d0, rightVal=0.d0, topVal=0.d0, bottomVal=0.d0, &
-                frontVal=0.d0, backVal=0.d0, isStaggered=.false., &
-                helmholtzShift=shiftVelocity, thomas=.true. )
+                dim1Length = Int(Ny1, C_SIZE_T), &
+                dim2Length = Int(Nz,  C_SIZE_T), &
+                dim3Length = Int(Nx1, C_SIZE_T), &
+                dim1Delta = HPy(0:Ny1), &
+                dim2Delta = Hz12(0:Nz), &
+                dim3Delta = HPx(0:Nx1), &
+                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1StartIsNeumann = .false., dim1EndIsNeumann = .false., &
+                dim2StartIsNeumann = .false., dim2EndIsNeumann = .false., &
+                dim3StartIsNeumann = .false., dim3EndIsNeumann = .false., &
+                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
+                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
+                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
+                isStaggered = .false., thomas = .true., &
+                helmholtzShift = shiftVelocity )
 
-        ! ---------------- Pressure: (Ny1, Nx1, Nz1), ALL NEUMANN -----------
-        ! EVD_lapP applies Neumann on every boundary unconditionally.  The
-        ! all-Neumann Laplacian is singular; the library's isSingular path
-        ! (zeroing the constant spectral mode) handles this, exactly like the
-        ! "if (abs(pdum) <= 1e-8) pdum = 1" guard in the CPU solver.
-        call assert_spacing_sizes("Pressure", HPx(0:Nx1), HPy(0:Ny1), HPz(0:Nz1), Nx1, Ny1, Nz1)
+        ! ==================================================================
+        ! Handle 4: PRESSURE (Dprs).  Dprs(1:Ny1, 1:Nz1, 1:Nx1); cell-centred
+        ! on every axis.  Pure Poisson (shift = 0), Neumann everywhere,
+        ! matching EVD_lapP which applies Neumann rows UNCONDITIONALLY.
+        ! The all-Neumann system is singular; the library's singular-mode
+        ! handling must stay engaged here (helmholtzShift == 0).
+        ! ==================================================================
         PressureHandle = init_eigen_decomp_d( &
-                rows=int(Ny1,C_SIZE_T), cols=int(Nx1,C_SIZE_T), layers=int(Nz1,C_SIZE_T), &
-                dx=HPx(0:Nx1), dy=HPy(0:Ny1), dz=HPz(0:Nz1), &
-                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
-                leftIsNeumann=.true., rightIsNeumann=.true., &
-                topIsNeumann=.true., bottomIsNeumann=.true., &
-                frontIsNeumann=.true., backIsNeumann=.true., &
-                leftVal=0.d0, rightVal=0.d0, topVal=0.d0, bottomVal=0.d0, &
-                frontVal=0.d0, backVal=0.d0, isStaggered=.false., &
-                helmholtzShift=0.d0, thomas=.false. )
+                dim1Length = Int(Ny1, C_SIZE_T), &
+                dim2Length = Int(Nz1, C_SIZE_T), &
+                dim3Length = Int(Nx1, C_SIZE_T), &
+                dim1Delta = HPy(0:Ny1), &
+                dim2Delta = HPz(0:Nz1), &
+                dim3Delta = HPx(0:Nx1), &
+                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1StartIsNeumann = .true., dim1EndIsNeumann = .true., &
+                dim2StartIsNeumann = .true., dim2EndIsNeumann = .true., &
+                dim3StartIsNeumann = .true., dim3EndIsNeumann = .true., &
+                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
+                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
+                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
+                isStaggered = .false., thomas = .false., &
+                helmholtzShift = 0.d0 )
 
-        ! ---------------- Potential: (Ny1, Nx, Nz), nodes in x,z -----------
-        call assert_spacing_sizes("Potential", Hx12(0:Nx), HPy(0:Ny1), Hz12(0:Nz), Nx, Ny1, Nz)
+        ! ==================================================================
+        ! Handle 5: POTENTIAL (Fi).  Potential(1:Ny1, 1:Nz, 1:Nx);
+        ! cell-centred along y, node-centred along z and x.  Pure Poisson
+        ! (shift = 0); Neumann per axis follows the EVD_Pot_? flags,
+        ! matching EVD_lap_Fi.
+        ! ==================================================================
         PotentialHandle = init_eigen_decomp_d( &
-                rows=int(Ny1,C_SIZE_T), cols=int(Nx,C_SIZE_T), layers=int(Nz,C_SIZE_T), &
-                dx=Hx12(0:Nx), dy=HPy(0:Ny1), dz=Hz12(0:Nz), &
-                uniformDeltaX=.false., uniformDeltaY=.false., uniformDeltaZ=.false., &
-                leftIsNeumann=pX, rightIsNeumann=pX, &
-                topIsNeumann=pY, bottomIsNeumann=pY, &
-                frontIsNeumann=pZ, backIsNeumann=pZ, &
-                leftVal=0.d0, rightVal=0.d0, topVal=0.d0, bottomVal=0.d0, &
-                frontVal=0.d0, backVal=0.d0, isStaggered=.false., &
-                helmholtzShift=0.d0, thomas=.false. )
+                dim1Length = Int(Ny1, C_SIZE_T), &
+                dim2Length = Int(Nz,  C_SIZE_T), &
+                dim3Length = Int(Nx,  C_SIZE_T), &
+                dim1Delta = HPy(0:Ny1), &
+                dim2Delta = Hz12(0:Nz), &
+                dim3Delta = Hx12(0:Nx), &
+                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1StartIsNeumann = pY, dim1EndIsNeumann = pY, &
+                dim2StartIsNeumann = pZ, dim2EndIsNeumann = pZ, &
+                dim3StartIsNeumann = pX, dim3EndIsNeumann = pX, &
+                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
+                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
+                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
+                isStaggered = .false., thomas = .false., &
+                helmholtzShift = 0.d0 )
+
     End Subroutine Initialize_GPU_Solvers
 
-    subroutine assert_spacing_sizes(name, dx, dy, dz, ncol, nrow, nlay)
-        implicit none
-        character(len=*), intent(in) :: name
-        real(kind=8), intent(in) :: dx(:), dy(:), dz(:)
-        integer, intent(in) :: ncol, nrow, nlay
-        ! The library reads exactly cols+1 / rows+1 / layers+1 elements.
-        if (size(dx) /= ncol+1) error stop "dx size mismatch: "//trim(name)
-        if (size(dy) /= nrow+1) error stop "dy size mismatch: "//trim(name)
-        if (size(dz) /= nlay+1) error stop "dz size mismatch: "//trim(name)
-        ! A zero or negative spacing means an unassigned element was passed in.
-        if (minval(dx) <= 0.d0) error stop "dx has non-positive entry: "//trim(name)
-        if (minval(dy) <= 0.d0) error stop "dy has non-positive entry: "//trim(name)
-        if (minval(dz) <= 0.d0) error stop "dz has non-positive entry: "//trim(name)
-    end subroutine assert_spacing_sizes
+    ! ----------------------------------------------------------------------
+    ! Guard against the exact failure that produced the original NaN run:
+    ! every delta slice must have n+1 entries and be strictly positive.
+    ! ----------------------------------------------------------------------
+    Subroutine assert_spacing_sizes()
+        Use Numbers
+        Use Grid
+        Implicit None
+        Call assert_positive(HPy (0:Ny1), 'HPy (0:Ny1)')
+        Call assert_positive(HPz (0:Nz1), 'HPz (0:Nz1)')
+        Call assert_positive(HPx (0:Nx1), 'HPx (0:Nx1)')
+        Call assert_positive(Hy12(0:Ny ), 'Hy12(0:Ny )')
+        Call assert_positive(Hz12(0:Nz ), 'Hz12(0:Nz )')
+        Call assert_positive(Hx12(0:Nx ), 'Hx12(0:Nx )')
+    End Subroutine assert_spacing_sizes
+
+    Subroutine assert_positive(d, name)
+        Implicit None
+        Real(kind=8), Intent(in) :: d(:)
+        Character(len=*), Intent(in) :: name
+        If ( Minval(d) <= 0.d0 ) Then
+            Write(*,*) 'FATAL: spacing array ', name, ' contains a non-positive entry: ', Minval(d)
+            Write(*,*) '       (uninitialized element or mesh error) -- refusing to build a singular operator.'
+            Stop 1
+        End If
+    End Subroutine assert_positive
 
 end module AlexCudaCompatibility

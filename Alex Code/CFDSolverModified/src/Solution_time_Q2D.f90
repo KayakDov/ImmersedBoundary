@@ -7,6 +7,8 @@
 ! ************************************************************
 Subroutine    Solution_time
 
+    Use ValidateGPU
+
     Use Numbers
     Use Parameters
     Use Numerica
@@ -51,6 +53,8 @@ Subroutine    Solution_time
     Call   Init
 
     Call Initialize_GPU_Solvers()
+
+    Call Validate_GPU_Solvers   ! VALIDATION ONLY
 
     Write (*,*) ' Initial: Nu=', Nusselt(),'   Ekin=', Ekinem()
 

@@ -13,8 +13,8 @@ and solves the following system for $p'$ and $F'$:
 $$F' = 2(Bp' + (\frac{3}{2 \Delta t})\nabla\cdot u^*)$$
 
 Where $L$ is the laplacian and $bc$ is the right hand side modifier do to boundary conditions.
-It uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion ($L^{-1}$) and BiCGSTAB to solve the coupled system. 
-The standalone Direct Eigendecomposition fast poisson solvers for the discrete Poisson and Helmholtz equations have an optional Thomas variant which will offer faster perfomance with increassed numerical error.
+It uses CUDA-accelerated Eigen Decomposition to handle the Laplacian inversion ($L^{-1}$) and BiCGSTAB to solve the coupled system.
+The standalone Direct Eigendecomposition fast poisson solvers for the discrete Poisson and Helmholtz equations have an optional Thomas variant which will offer faster performance with increased numerical error.
 
 ---
 
@@ -82,7 +82,7 @@ The solver includes an optimized "Thomas" variant for the 1D tridiagonal sub-pro
 
 ### Indexing: The Zero-Base Trap
 Fortran is 1-based, but the underlying CUDA kernels are 0-based.
-* **The Rule:** When filling `rowPtrs` and `colOffsets` for the sparse matrix $B$, you must subtract 1 from your indices.
+* **The Rule:** When filling `rowOffsetsB` and `colIndsB` for the sparse matrix $B$, you must subtract 1 from your indices.
 * **Example:** To point to the very first node in the grid, your Fortran code must store the value 0.
 
 ### Data Types
@@ -110,48 +110,53 @@ The solver uses a persistent state on the GPU. Failing to release this state bef
 Allocates GPU memory and pre-computes the Laplacian Eigen Decomposition.
 
 | Argument | Type | Description |
-| :--- | :--- |:-------------------------------------------|
-| gridHeight, gridWidth, gridDepth | integer(C_SIZE_T) | Grid dimensions (Y, X, Z). |
-| leftIsNeumann ... frontIsNeumann | logical | Boundary condition type flags (`.true.` = Neumann, `.false.` = Dirichlet). |
-| leftVal ... backVal | real | Boundary condition values (derivative or constant). |
-| isStaggered | logical | `.true.` if using a staggered grid discretization. |
-| nnzMaxB | integer(C_SIZE_T) | Max non-zeros allowed in matrix $B$. |
-| p | real array | Pressure vector (Size: H*W*D). |
-| f | real array | Force vector (Size: heightB). |
-| dx, dy, dz | real array | Physical grid spacing arrays (Size 1 if uniform, otherwise axis dimension + 1). |
-| dt | real | Time step size. |
-| uniformDeltaX, Y, Z | logical | `.true.` if the corresponding delta array is uniform (single element). |
-| tolerance | real | Solver convergence threshold. |
-| maxBCGIterations | integer(C_SIZE_T) | Max iterations for the BiCGSTAB solver. |
+| :--- | :--- | :--- |
+| `dim1Length`, `dim2Length`, `dim3Length` | integer(C_SIZE_T) | Number of grid points along the first, second, and third logical dimensions. The solver is isotropic and does not assign any physical meaning (such as X, Y, or Z) to these dimensions. |
+| `dim1StartIsNeumann`, `dim1EndIsNeumann` | logical | Boundary-condition type at the beginning and end of the first logical dimension (`.true.` = Neumann, `.false.` = Dirichlet). |
+| `dim2StartIsNeumann`, `dim2EndIsNeumann` | logical | Boundary-condition type for the second logical dimension. |
+| `dim3StartIsNeumann`, `dim3EndIsNeumann` | logical | Boundary-condition type for the third logical dimension. |
+| `dim1StartVal`, `dim1EndVal` | real | Boundary values associated with the first logical dimension. |
+| `dim2StartVal`, `dim2EndVal` | real | Boundary values associated with the second logical dimension. |
+| `dim3StartVal`, `dim3EndVal` | real | Boundary values associated with the third logical dimension. |
+| `isStaggered` | logical | `.true.` if using a staggered grid discretization. |
+| `forceSize` | integer(C_SIZE_T) | Size of the force vector. |
+| `nnzMax` | integer(C_SIZE_T) | Maximum number of non-zeros permitted in sparse matrix $B$. |
+| `p` | real array | Initial pressure vector. |
+| `f` | real array | Initial immersed-boundary force vector. |
+| `dim1Delta`, `dim2Delta`, `dim3Delta` | real array | Grid spacing arrays corresponding to each logical dimension. For non-uniform grids, each spacing array must contain `dimLength+1` values. For uniform grids, pass a single-element array and set the corresponding `dim*UniformDelta` flag to `.true.`. |
+| `dt` | real | Time-step size. |
+| `dim1UniformDelta`, `dim2UniformDelta`, `dim3UniformDelta` | logical | `.true.` if the corresponding spacing array contains a single uniform value. |
+| `tol` | real | BiCGSTAB convergence tolerance. |
+| `maxIterations` | integer(C_SIZE_T) | Maximum number of BiCGSTAB iterations. |
 
 ### Solve Routine (`solve_immersed_eq_*`)
 Executes the iterative solver for a specific state of CSR matrix $B$ or CSC of $B^T$.
 
 | Argument    | Type | Description |
 |:------------| :--- |:------------------------------------------------|
-| result      | real array | Output: Array overwritten by $x$. |
-| nnzB        | integer(C_SIZE_T) | Current non-zero count in matrix $B$. |
-| offsetsB    | integer array | Sparse row offsets (MUST BE 0-BASED). |
-| indsB       | integer array | Sparse column indices (MUST BE 0-BASED). |
-| valuesB     | real array | Non-zero values for matrix $B$. |
+| `result`    | real array | Output: Array overwritten by $x$. |
+| `nnzB`      | integer(C_SIZE_T) | Current non-zero count in matrix $B$. |
+| `rowOffsetsB`| integer array | Sparse row offsets (MUST BE 0-BASED). |
+| `colIndsB`  | integer array | Sparse column indices (MUST BE 0-BASED). |
+| `val`       | real array | Non-zero values for matrix $B$. |
 
 ### Solve Primes Routine (`solve_immersed_eq_primes_*`)
 Executes the iterative solver for the coupled Pressure ($P'$) and Force ($F'$) system.
 
 | Argument | Type | Description |
 | :--- | :--- | :--- |
-| resultPPrime | real array | Output: Array overwritten by $P'$. |
-| resultFPrime | real array | Output: Array overwritten by $F'$. |
-| nnzB | integer(C_SIZE_T) | Current non-zero count in matrix $B$. |
-| rowOffsetsB | integer array | Sparse row offsets for $B$ (MUST BE 0-BASED). |
-| colIndsB | integer array | Sparse column indices for $B$ (MUST BE 0-BASED). |
-| valuesB | real array | Non-zero values for matrix $B$. |
-| nnzR | integer(C_SIZE_T) | Current non-zero count in matrix $R$. |
-| colOffsetsR | integer array | Sparse column offsets for $R$ (MUST BE 0-BASED). |
-| rowIndsR | integer array | Sparse row indices for $R$ (MUST BE 0-BASED). |
-| valuesR | real array | Non-zero values for matrix $R$. |
-| UGamma | real array | Immersed boundary velocity vector $\Gamma$. |
-| uStar | real array | Intermediate velocity field $u^*$. |
+| `resultPPrime` | real array | Output: Array overwritten by $P'$. |
+| `resultFPrime` | real array | Output: Array overwritten by $F'$. |
+| `nnzB` | integer(C_SIZE_T) | Current non-zero count in matrix $B$. |
+| `rowOffsetsB` | integer array | Sparse row offsets for $B$ (MUST BE 0-BASED). |
+| `colIndsB` | integer array | Sparse column indices for $B$ (MUST BE 0-BASED). |
+| `valuesB` | real array | Non-zero values for matrix $B$. |
+| `nnzR` | integer(C_SIZE_T) | Current non-zero count in matrix $R$. |
+| `colOffsetsR` | integer array | Sparse column offsets for $R$ (MUST BE 0-BASED). |
+| `rowIndsR` | integer array | Sparse row indices for $R$ (MUST BE 0-BASED). |
+| `valuesR` | real array | Non-zero values for matrix $R$. |
+| `UGamma` | real array | Immersed boundary velocity vector $\Gamma$. |
+| `uStar` | real array | Intermediate velocity field $u^*$. The first contiguous third should be the x component of each velocity vector, then y, then z component of the velocity vector. |
 
 ---
 
@@ -167,14 +172,18 @@ Creates a new eigendecomposition solver and returns a solver handle.
 
 | Argument | Type | Description |
 | :--- | :--- | :--- |
-| rows, cols, layers | integer(C_SIZE_T) | Grid dimensions. |
-| dx, dy, dz | real array | Grid spacing arrays (Size 1 if uniform, otherwise axis dimension + 1). |
-| uniformDeltaX, Y, Z | logical | `.true.` if the corresponding delta array is uniform (single element). |
-| leftIsNeumann ... frontIsNeumann | logical | Boundary condition type flags (`.true.` = Neumann, `.false.` = Dirichlet). |
-| leftVal ... backVal | real | Boundary condition values (derivative or constant). |
-| isStaggered | logical | `.true.` if using a staggered grid discretization. |
-| thomas | logical | `.true.` to use optimized Thomas algorithm. |
-| helmholtzShift | real | The scalar shift $\sigma$. Set to `0.0` for standard Poisson, or a non-zero value to solve $(L - \sigma I)x = b$. |
+| `dim1Length`, `dim2Length`, `dim3Length` | integer(C_SIZE_T) | Number of grid points along the first, second, and third logical dimensions. The solver is isotropic and does not assign any physical meaning (such as X, Y, or Z) to these dimensions. |
+| `dim1Delta`, `dim2Delta`, `dim3Delta` | real array | Grid spacing arrays corresponding to each logical dimension. For non-uniform grids, each spacing array must contain `dimLength+1` values. For uniform grids, pass a single-element array and set the corresponding `dim*UniformDelta` flag to `.true.`. |
+| `dim1UniformDelta`, `dim2UniformDelta`, `dim3UniformDelta` | logical | `.true.` if the corresponding spacing array contains a single uniform value. |
+| `dim1StartIsNeumann`, `dim1EndIsNeumann` | logical | Boundary-condition type at the beginning and end of the first logical dimension (`.true.` = Neumann, `.false.` = Dirichlet). |
+| `dim2StartIsNeumann`, `dim2EndIsNeumann` | logical | Boundary-condition type for the second logical dimension. |
+| `dim3StartIsNeumann`, `dim3EndIsNeumann` | logical | Boundary-condition type for the third logical dimension. |
+| `dim1StartVal`, `dim1EndVal` | real | Boundary values associated with the first logical dimension. |
+| `dim2StartVal`, `dim2EndVal` | real | Boundary values associated with the second logical dimension. |
+| `dim3StartVal`, `dim3EndVal` | real | Boundary values associated with the third logical dimension. |
+| `isStaggered` | logical | `.true.` if using a staggered-grid discretization. |
+| `thomas` | logical | `.true.` to use the optimized Thomas variant for the direct eigendecomposition solver. |
+| `helmholtzShift` | real | Scalar shift $\sigma$. Set to `0.0` for the Poisson equation or a non-zero value to solve $(L - \sigma I)x = b$. |
 
 ### Solve Routine (`solve_eigen_decomp_*`)
 Performs the spectral solve on the GPU.
@@ -247,23 +256,25 @@ This module provides standalone direct Eigendecomposition solvers for the Poisso
 | `finalize_eigen_decomp_d` | N/A | Free Eigendecomposition GPU resources. |
 | `finalize_eigen_decomp_s` | N/A | Free Eigendecomposition GPU resources. |
 
-
 ### Global Configuration
 Before calling any of the init methods, you may configure the global input format to define how your grid's flattened array is interpreted by the solver.
 
-| Constant | Value | Description                                                                                                      |
-| :--- | :--- |:-----------------------------------------------------------------------------------------------------------------|
-| `INPUT_FORMAT_XYZ` | 0 | Columns chang fastest, then rows, then layers. A form of row major order.                                        |
-| `INPUT_FORMAT_YXZ` | 1 | Rows change fastest, then columns, then layers. A form of column major order.                                    |
-| `INPUT_FORMAT_YZX` | 2 | Rows change fastest, then layers, then columns. This format will run faster than the other two, and the defualt. |
+| Constant | Value | Description |
+| :--- | :--- | :--- |
+| `INPUT_FORMAT_XYZ` | 0 | Columns (X) change fastest, then rows (Y), then layers (Z). A form of row-major order. |
+| `INPUT_FORMAT_YXZ` | 1 | Rows (Y) change fastest, then columns (X), then layers (Z). A form of column-major order. |
+| `INPUT_FORMAT_YZX` | 2 | Rows (Y) change fastest, then layers (Z), then columns (X). This is the default and fastest format. |
 
 | Routine | Purpose |
 | :--- | :--- |
-| `set_input_format` | Sets the grid interpretation format for subsequent solver initializations. |
+| `set_global_input_format` | Sets the grid interpretation format for subsequent solver initializations. |
 
-Note, there is only one input format stored globally.  The most recent value set is the global value for all other function calls.
+Note, there is only one input format stored globally. The most recent value set is the global value for all subsequent function calls.
 
-## 10. Flatened Indexing
-When mapping from (row, col, layer) = (y, x, z) indices to a flatened indexing, 
-y changes fastest, then z, then x changes slowest.  That is a column major indexing where all the first columns
-in each later are would be itereatred over before all the second columns in each layer and so on.
+---
+
+## 10. Flattened Indexing
+
+When mapping multi-dimensional grids to a flattened 1D array, **`dim1` is the dimension whose flattened indices change fastest, then `dim2`, and `dim3`'s flattened indices change slowest.**
+
+This is a column-major style indexing layout, where all elements along `dim1` are iterated over before advancing to the next index in `dim2`, and so on.

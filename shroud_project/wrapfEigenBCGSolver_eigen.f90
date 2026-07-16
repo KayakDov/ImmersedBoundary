@@ -16,74 +16,78 @@ module eigenbcgsolver_eigen_mod
 
     interface
 
-        function c_init_eigen_decomp_d(rows, cols, layers, dx, dy, dz, &
-                uniformDeltaX, uniformDeltaY, uniformDeltaZ, &
-                leftIsNeumann, rightIsNeumann, topIsNeumann, &
-                bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
-                rightVal, topVal, bottomVal, frontVal, backVal, &
-                isStaggered, thomas, helmholtzShift) &
+        function c_init_eigen_decomp_d(dim1Length, dim2Length, &
+                dim3Length, dim1Delta, dim2Delta, dim3Delta, &
+                dim1UniformDelta, dim2UniformDelta, dim3UniformDelta, &
+                dim1StartIsNeumann, dim1EndIsNeumann, &
+                dim2StartIsNeumann, dim2EndIsNeumann, &
+                dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
+                dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
+                dim3EndVal, isStaggered, thomas, helmholtzShift) &
                 result(SHT_rv) &
                 bind(C, name="EIG_eigen_initEigenDecomp_d")
             use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
             implicit none
-            integer(C_SIZE_T), value, intent(IN) :: rows
-            integer(C_SIZE_T), value, intent(IN) :: cols
-            integer(C_SIZE_T), value, intent(IN) :: layers
-            real(C_DOUBLE), intent(IN) :: dx(*)
-            real(C_DOUBLE), intent(IN) :: dy(*)
-            real(C_DOUBLE), intent(IN) :: dz(*)
-            logical(C_BOOL), value, intent(IN) :: uniformDeltaX
-            logical(C_BOOL), value, intent(IN) :: uniformDeltaY
-            logical(C_BOOL), value, intent(IN) :: uniformDeltaZ
-            logical(C_BOOL), value, intent(IN) :: leftIsNeumann
-            logical(C_BOOL), value, intent(IN) :: rightIsNeumann
-            logical(C_BOOL), value, intent(IN) :: topIsNeumann
-            logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
-            logical(C_BOOL), value, intent(IN) :: frontIsNeumann
-            logical(C_BOOL), value, intent(IN) :: backIsNeumann
-            real(C_DOUBLE), value, intent(IN) :: leftVal
-            real(C_DOUBLE), value, intent(IN) :: rightVal
-            real(C_DOUBLE), value, intent(IN) :: topVal
-            real(C_DOUBLE), value, intent(IN) :: bottomVal
-            real(C_DOUBLE), value, intent(IN) :: frontVal
-            real(C_DOUBLE), value, intent(IN) :: backVal
+            integer(C_SIZE_T), value, intent(IN) :: dim1Length
+            integer(C_SIZE_T), value, intent(IN) :: dim2Length
+            integer(C_SIZE_T), value, intent(IN) :: dim3Length
+            real(C_DOUBLE), intent(IN) :: dim1Delta(*)
+            real(C_DOUBLE), intent(IN) :: dim2Delta(*)
+            real(C_DOUBLE), intent(IN) :: dim3Delta(*)
+            logical(C_BOOL), value, intent(IN) :: dim1UniformDelta
+            logical(C_BOOL), value, intent(IN) :: dim2UniformDelta
+            logical(C_BOOL), value, intent(IN) :: dim3UniformDelta
+            logical(C_BOOL), value, intent(IN) :: dim1StartIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim1EndIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim2StartIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim2EndIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim3StartIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim3EndIsNeumann
+            real(C_DOUBLE), value, intent(IN) :: dim1StartVal
+            real(C_DOUBLE), value, intent(IN) :: dim1EndVal
+            real(C_DOUBLE), value, intent(IN) :: dim2StartVal
+            real(C_DOUBLE), value, intent(IN) :: dim2EndVal
+            real(C_DOUBLE), value, intent(IN) :: dim3StartVal
+            real(C_DOUBLE), value, intent(IN) :: dim3EndVal
             logical(C_BOOL), value, intent(IN) :: isStaggered
             logical(C_BOOL), value, intent(IN) :: thomas
             real(C_DOUBLE), value, intent(IN) :: helmholtzShift
             integer(C_SIZE_T) :: SHT_rv
         end function c_init_eigen_decomp_d
 
-        function c_init_eigen_decomp_s(rows, cols, layers, dx, dy, dz, &
-                uniformDeltaX, uniformDeltaY, uniformDeltaZ, &
-                leftIsNeumann, rightIsNeumann, topIsNeumann, &
-                bottomIsNeumann, frontIsNeumann, backIsNeumann, leftVal, &
-                rightVal, topVal, bottomVal, frontVal, backVal, &
-                isStaggered, thomas, helmholtzShift) &
+        function c_init_eigen_decomp_s(dim1Length, dim2Length, &
+                dim3Length, dim1Delta, dim2Delta, dim3Delta, &
+                dim1UniformDelta, dim2UniformDelta, dim3UniformDelta, &
+                dim1StartIsNeumann, dim1EndIsNeumann, &
+                dim2StartIsNeumann, dim2EndIsNeumann, &
+                dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
+                dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
+                dim3EndVal, isStaggered, thomas, helmholtzShift) &
                 result(SHT_rv) &
                 bind(C, name="EIG_eigen_initEigenDecomp_s")
             use iso_c_binding, only : C_BOOL, C_FLOAT, C_SIZE_T
             implicit none
-            integer(C_SIZE_T), value, intent(IN) :: rows
-            integer(C_SIZE_T), value, intent(IN) :: cols
-            integer(C_SIZE_T), value, intent(IN) :: layers
-            real(C_FLOAT), intent(IN) :: dx(*)
-            real(C_FLOAT), intent(IN) :: dy(*)
-            real(C_FLOAT), intent(IN) :: dz(*)
-            logical(C_BOOL), value, intent(IN) :: uniformDeltaX
-            logical(C_BOOL), value, intent(IN) :: uniformDeltaY
-            logical(C_BOOL), value, intent(IN) :: uniformDeltaZ
-            logical(C_BOOL), value, intent(IN) :: leftIsNeumann
-            logical(C_BOOL), value, intent(IN) :: rightIsNeumann
-            logical(C_BOOL), value, intent(IN) :: topIsNeumann
-            logical(C_BOOL), value, intent(IN) :: bottomIsNeumann
-            logical(C_BOOL), value, intent(IN) :: frontIsNeumann
-            logical(C_BOOL), value, intent(IN) :: backIsNeumann
-            real(C_FLOAT), value, intent(IN) :: leftVal
-            real(C_FLOAT), value, intent(IN) :: rightVal
-            real(C_FLOAT), value, intent(IN) :: topVal
-            real(C_FLOAT), value, intent(IN) :: bottomVal
-            real(C_FLOAT), value, intent(IN) :: frontVal
-            real(C_FLOAT), value, intent(IN) :: backVal
+            integer(C_SIZE_T), value, intent(IN) :: dim1Length
+            integer(C_SIZE_T), value, intent(IN) :: dim2Length
+            integer(C_SIZE_T), value, intent(IN) :: dim3Length
+            real(C_FLOAT), intent(IN) :: dim1Delta(*)
+            real(C_FLOAT), intent(IN) :: dim2Delta(*)
+            real(C_FLOAT), intent(IN) :: dim3Delta(*)
+            logical(C_BOOL), value, intent(IN) :: dim1UniformDelta
+            logical(C_BOOL), value, intent(IN) :: dim2UniformDelta
+            logical(C_BOOL), value, intent(IN) :: dim3UniformDelta
+            logical(C_BOOL), value, intent(IN) :: dim1StartIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim1EndIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim2StartIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim2EndIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim3StartIsNeumann
+            logical(C_BOOL), value, intent(IN) :: dim3EndIsNeumann
+            real(C_FLOAT), value, intent(IN) :: dim1StartVal
+            real(C_FLOAT), value, intent(IN) :: dim1EndVal
+            real(C_FLOAT), value, intent(IN) :: dim2StartVal
+            real(C_FLOAT), value, intent(IN) :: dim2EndVal
+            real(C_FLOAT), value, intent(IN) :: dim3StartVal
+            real(C_FLOAT), value, intent(IN) :: dim3EndVal
             logical(C_BOOL), value, intent(IN) :: isStaggered
             logical(C_BOOL), value, intent(IN) :: thomas
             real(C_FLOAT), value, intent(IN) :: helmholtzShift
@@ -124,137 +128,141 @@ module eigenbcgsolver_eigen_mod
 
 contains
 
-    function init_eigen_decomp_d(rows, cols, layers, dx, dy, dz, &
-            uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann, &
-            rightIsNeumann, topIsNeumann, bottomIsNeumann, &
-            frontIsNeumann, backIsNeumann, leftVal, rightVal, topVal, &
-            bottomVal, frontVal, backVal, isStaggered, thomas, &
-            helmholtzShift) &
+    function init_eigen_decomp_d(dim1Length, dim2Length, dim3Length, &
+            dim1Delta, dim2Delta, dim3Delta, dim1UniformDelta, &
+            dim2UniformDelta, dim3UniformDelta, dim1StartIsNeumann, &
+            dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann, &
+            dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
+            dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
+            dim3EndVal, isStaggered, thomas, helmholtzShift) &
             result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
-        integer(C_SIZE_T), value, intent(IN) :: rows
-        integer(C_SIZE_T), value, intent(IN) :: cols
-        integer(C_SIZE_T), value, intent(IN) :: layers
-        real(C_DOUBLE), intent(IN) :: dx(:)
-        real(C_DOUBLE), intent(IN) :: dy(:)
-        real(C_DOUBLE), intent(IN) :: dz(:)
-        logical, value, intent(IN) :: uniformDeltaX
-        logical, value, intent(IN) :: uniformDeltaY
-        logical, value, intent(IN) :: uniformDeltaZ
-        logical, value, intent(IN) :: leftIsNeumann
-        logical, value, intent(IN) :: rightIsNeumann
-        logical, value, intent(IN) :: topIsNeumann
-        logical, value, intent(IN) :: bottomIsNeumann
-        logical, value, intent(IN) :: frontIsNeumann
-        logical, value, intent(IN) :: backIsNeumann
-        real(C_DOUBLE), value, intent(IN) :: leftVal
-        real(C_DOUBLE), value, intent(IN) :: rightVal
-        real(C_DOUBLE), value, intent(IN) :: topVal
-        real(C_DOUBLE), value, intent(IN) :: bottomVal
-        real(C_DOUBLE), value, intent(IN) :: frontVal
-        real(C_DOUBLE), value, intent(IN) :: backVal
+        integer(C_SIZE_T), value, intent(IN) :: dim1Length
+        integer(C_SIZE_T), value, intent(IN) :: dim2Length
+        integer(C_SIZE_T), value, intent(IN) :: dim3Length
+        real(C_DOUBLE), intent(IN) :: dim1Delta(:)
+        real(C_DOUBLE), intent(IN) :: dim2Delta(:)
+        real(C_DOUBLE), intent(IN) :: dim3Delta(:)
+        logical, value, intent(IN) :: dim1UniformDelta
+        logical, value, intent(IN) :: dim2UniformDelta
+        logical, value, intent(IN) :: dim3UniformDelta
+        logical, value, intent(IN) :: dim1StartIsNeumann
+        logical, value, intent(IN) :: dim1EndIsNeumann
+        logical, value, intent(IN) :: dim2StartIsNeumann
+        logical, value, intent(IN) :: dim2EndIsNeumann
+        logical, value, intent(IN) :: dim3StartIsNeumann
+        logical, value, intent(IN) :: dim3EndIsNeumann
+        real(C_DOUBLE), value, intent(IN) :: dim1StartVal
+        real(C_DOUBLE), value, intent(IN) :: dim1EndVal
+        real(C_DOUBLE), value, intent(IN) :: dim2StartVal
+        real(C_DOUBLE), value, intent(IN) :: dim2EndVal
+        real(C_DOUBLE), value, intent(IN) :: dim3StartVal
+        real(C_DOUBLE), value, intent(IN) :: dim3EndVal
         logical, value, intent(IN) :: isStaggered
         logical, value, intent(IN) :: thomas
         real(C_DOUBLE), value, intent(IN) :: helmholtzShift
         integer(C_SIZE_T) :: SHT_rv
         ! splicer begin namespace.eigen.function.init_eigen_decomp_d
-        logical(C_BOOL) :: SHT_uniformDeltaX_cxx
-        logical(C_BOOL) :: SHT_uniformDeltaY_cxx
-        logical(C_BOOL) :: SHT_uniformDeltaZ_cxx
-        logical(C_BOOL) :: SHT_leftIsNeumann_cxx
-        logical(C_BOOL) :: SHT_rightIsNeumann_cxx
-        logical(C_BOOL) :: SHT_topIsNeumann_cxx
-        logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
-        logical(C_BOOL) :: SHT_frontIsNeumann_cxx
-        logical(C_BOOL) :: SHT_backIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim1UniformDelta_cxx
+        logical(C_BOOL) :: SHT_dim2UniformDelta_cxx
+        logical(C_BOOL) :: SHT_dim3UniformDelta_cxx
+        logical(C_BOOL) :: SHT_dim1StartIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim1EndIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim2StartIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim2EndIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim3StartIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim3EndIsNeumann_cxx
         logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_thomas_cxx
-        SHT_uniformDeltaX_cxx = uniformDeltaX  ! coerce to C_BOOL
-        SHT_uniformDeltaY_cxx = uniformDeltaY  ! coerce to C_BOOL
-        SHT_uniformDeltaZ_cxx = uniformDeltaZ  ! coerce to C_BOOL
-        SHT_leftIsNeumann_cxx = leftIsNeumann  ! coerce to C_BOOL
-        SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
-        SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
-        SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
-        SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
-        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
+        SHT_dim1UniformDelta_cxx = dim1UniformDelta  ! coerce to C_BOOL
+        SHT_dim2UniformDelta_cxx = dim2UniformDelta  ! coerce to C_BOOL
+        SHT_dim3UniformDelta_cxx = dim3UniformDelta  ! coerce to C_BOOL
+        SHT_dim1StartIsNeumann_cxx = dim1StartIsNeumann  ! coerce to C_BOOL
+        SHT_dim1EndIsNeumann_cxx = dim1EndIsNeumann  ! coerce to C_BOOL
+        SHT_dim2StartIsNeumann_cxx = dim2StartIsNeumann  ! coerce to C_BOOL
+        SHT_dim2EndIsNeumann_cxx = dim2EndIsNeumann  ! coerce to C_BOOL
+        SHT_dim3StartIsNeumann_cxx = dim3StartIsNeumann  ! coerce to C_BOOL
+        SHT_dim3EndIsNeumann_cxx = dim3EndIsNeumann  ! coerce to C_BOOL
         SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SHT_thomas_cxx = thomas  ! coerce to C_BOOL
-        SHT_rv = c_init_eigen_decomp_d(rows, cols, layers, dx, dy, dz, &
-            SHT_uniformDeltaX_cxx, SHT_uniformDeltaY_cxx, &
-            SHT_uniformDeltaZ_cxx, SHT_leftIsNeumann_cxx, &
-            SHT_rightIsNeumann_cxx, SHT_topIsNeumann_cxx, &
-            SHT_bottomIsNeumann_cxx, SHT_frontIsNeumann_cxx, &
-            SHT_backIsNeumann_cxx, leftVal, rightVal, topVal, bottomVal, &
-            frontVal, backVal, SHT_isStaggered_cxx, SHT_thomas_cxx, &
-            helmholtzShift)
+        SHT_rv = c_init_eigen_decomp_d(dim1Length, dim2Length, &
+            dim3Length, dim1Delta, dim2Delta, dim3Delta, &
+            SHT_dim1UniformDelta_cxx, SHT_dim2UniformDelta_cxx, &
+            SHT_dim3UniformDelta_cxx, SHT_dim1StartIsNeumann_cxx, &
+            SHT_dim1EndIsNeumann_cxx, SHT_dim2StartIsNeumann_cxx, &
+            SHT_dim2EndIsNeumann_cxx, SHT_dim3StartIsNeumann_cxx, &
+            SHT_dim3EndIsNeumann_cxx, dim1StartVal, dim1EndVal, &
+            dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, &
+            SHT_isStaggered_cxx, SHT_thomas_cxx, helmholtzShift)
         ! splicer end namespace.eigen.function.init_eigen_decomp_d
     end function init_eigen_decomp_d
 
-    function init_eigen_decomp_s(rows, cols, layers, dx, dy, dz, &
-            uniformDeltaX, uniformDeltaY, uniformDeltaZ, leftIsNeumann, &
-            rightIsNeumann, topIsNeumann, bottomIsNeumann, &
-            frontIsNeumann, backIsNeumann, leftVal, rightVal, topVal, &
-            bottomVal, frontVal, backVal, isStaggered, thomas, &
-            helmholtzShift) &
+    function init_eigen_decomp_s(dim1Length, dim2Length, dim3Length, &
+            dim1Delta, dim2Delta, dim3Delta, dim1UniformDelta, &
+            dim2UniformDelta, dim3UniformDelta, dim1StartIsNeumann, &
+            dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann, &
+            dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
+            dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
+            dim3EndVal, isStaggered, thomas, helmholtzShift) &
             result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_FLOAT, C_SIZE_T
-        integer(C_SIZE_T), value, intent(IN) :: rows
-        integer(C_SIZE_T), value, intent(IN) :: cols
-        integer(C_SIZE_T), value, intent(IN) :: layers
-        real(C_FLOAT), intent(IN) :: dx(:)
-        real(C_FLOAT), intent(IN) :: dy(:)
-        real(C_FLOAT), intent(IN) :: dz(:)
-        logical, value, intent(IN) :: uniformDeltaX
-        logical, value, intent(IN) :: uniformDeltaY
-        logical, value, intent(IN) :: uniformDeltaZ
-        logical, value, intent(IN) :: leftIsNeumann
-        logical, value, intent(IN) :: rightIsNeumann
-        logical, value, intent(IN) :: topIsNeumann
-        logical, value, intent(IN) :: bottomIsNeumann
-        logical, value, intent(IN) :: frontIsNeumann
-        logical, value, intent(IN) :: backIsNeumann
-        real(C_FLOAT), value, intent(IN) :: leftVal
-        real(C_FLOAT), value, intent(IN) :: rightVal
-        real(C_FLOAT), value, intent(IN) :: topVal
-        real(C_FLOAT), value, intent(IN) :: bottomVal
-        real(C_FLOAT), value, intent(IN) :: frontVal
-        real(C_FLOAT), value, intent(IN) :: backVal
+        integer(C_SIZE_T), value, intent(IN) :: dim1Length
+        integer(C_SIZE_T), value, intent(IN) :: dim2Length
+        integer(C_SIZE_T), value, intent(IN) :: dim3Length
+        real(C_FLOAT), intent(IN) :: dim1Delta(:)
+        real(C_FLOAT), intent(IN) :: dim2Delta(:)
+        real(C_FLOAT), intent(IN) :: dim3Delta(:)
+        logical, value, intent(IN) :: dim1UniformDelta
+        logical, value, intent(IN) :: dim2UniformDelta
+        logical, value, intent(IN) :: dim3UniformDelta
+        logical, value, intent(IN) :: dim1StartIsNeumann
+        logical, value, intent(IN) :: dim1EndIsNeumann
+        logical, value, intent(IN) :: dim2StartIsNeumann
+        logical, value, intent(IN) :: dim2EndIsNeumann
+        logical, value, intent(IN) :: dim3StartIsNeumann
+        logical, value, intent(IN) :: dim3EndIsNeumann
+        real(C_FLOAT), value, intent(IN) :: dim1StartVal
+        real(C_FLOAT), value, intent(IN) :: dim1EndVal
+        real(C_FLOAT), value, intent(IN) :: dim2StartVal
+        real(C_FLOAT), value, intent(IN) :: dim2EndVal
+        real(C_FLOAT), value, intent(IN) :: dim3StartVal
+        real(C_FLOAT), value, intent(IN) :: dim3EndVal
         logical, value, intent(IN) :: isStaggered
         logical, value, intent(IN) :: thomas
         real(C_FLOAT), value, intent(IN) :: helmholtzShift
         integer(C_SIZE_T) :: SHT_rv
         ! splicer begin namespace.eigen.function.init_eigen_decomp_s
-        logical(C_BOOL) :: SHT_uniformDeltaX_cxx
-        logical(C_BOOL) :: SHT_uniformDeltaY_cxx
-        logical(C_BOOL) :: SHT_uniformDeltaZ_cxx
-        logical(C_BOOL) :: SHT_leftIsNeumann_cxx
-        logical(C_BOOL) :: SHT_rightIsNeumann_cxx
-        logical(C_BOOL) :: SHT_topIsNeumann_cxx
-        logical(C_BOOL) :: SHT_bottomIsNeumann_cxx
-        logical(C_BOOL) :: SHT_frontIsNeumann_cxx
-        logical(C_BOOL) :: SHT_backIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim1UniformDelta_cxx
+        logical(C_BOOL) :: SHT_dim2UniformDelta_cxx
+        logical(C_BOOL) :: SHT_dim3UniformDelta_cxx
+        logical(C_BOOL) :: SHT_dim1StartIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim1EndIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim2StartIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim2EndIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim3StartIsNeumann_cxx
+        logical(C_BOOL) :: SHT_dim3EndIsNeumann_cxx
         logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_thomas_cxx
-        SHT_uniformDeltaX_cxx = uniformDeltaX  ! coerce to C_BOOL
-        SHT_uniformDeltaY_cxx = uniformDeltaY  ! coerce to C_BOOL
-        SHT_uniformDeltaZ_cxx = uniformDeltaZ  ! coerce to C_BOOL
-        SHT_leftIsNeumann_cxx = leftIsNeumann  ! coerce to C_BOOL
-        SHT_rightIsNeumann_cxx = rightIsNeumann  ! coerce to C_BOOL
-        SHT_topIsNeumann_cxx = topIsNeumann  ! coerce to C_BOOL
-        SHT_bottomIsNeumann_cxx = bottomIsNeumann  ! coerce to C_BOOL
-        SHT_frontIsNeumann_cxx = frontIsNeumann  ! coerce to C_BOOL
-        SHT_backIsNeumann_cxx = backIsNeumann  ! coerce to C_BOOL
+        SHT_dim1UniformDelta_cxx = dim1UniformDelta  ! coerce to C_BOOL
+        SHT_dim2UniformDelta_cxx = dim2UniformDelta  ! coerce to C_BOOL
+        SHT_dim3UniformDelta_cxx = dim3UniformDelta  ! coerce to C_BOOL
+        SHT_dim1StartIsNeumann_cxx = dim1StartIsNeumann  ! coerce to C_BOOL
+        SHT_dim1EndIsNeumann_cxx = dim1EndIsNeumann  ! coerce to C_BOOL
+        SHT_dim2StartIsNeumann_cxx = dim2StartIsNeumann  ! coerce to C_BOOL
+        SHT_dim2EndIsNeumann_cxx = dim2EndIsNeumann  ! coerce to C_BOOL
+        SHT_dim3StartIsNeumann_cxx = dim3StartIsNeumann  ! coerce to C_BOOL
+        SHT_dim3EndIsNeumann_cxx = dim3EndIsNeumann  ! coerce to C_BOOL
         SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
         SHT_thomas_cxx = thomas  ! coerce to C_BOOL
-        SHT_rv = c_init_eigen_decomp_s(rows, cols, layers, dx, dy, dz, &
-            SHT_uniformDeltaX_cxx, SHT_uniformDeltaY_cxx, &
-            SHT_uniformDeltaZ_cxx, SHT_leftIsNeumann_cxx, &
-            SHT_rightIsNeumann_cxx, SHT_topIsNeumann_cxx, &
-            SHT_bottomIsNeumann_cxx, SHT_frontIsNeumann_cxx, &
-            SHT_backIsNeumann_cxx, leftVal, rightVal, topVal, bottomVal, &
-            frontVal, backVal, SHT_isStaggered_cxx, SHT_thomas_cxx, &
-            helmholtzShift)
+        SHT_rv = c_init_eigen_decomp_s(dim1Length, dim2Length, &
+            dim3Length, dim1Delta, dim2Delta, dim3Delta, &
+            SHT_dim1UniformDelta_cxx, SHT_dim2UniformDelta_cxx, &
+            SHT_dim3UniformDelta_cxx, SHT_dim1StartIsNeumann_cxx, &
+            SHT_dim1EndIsNeumann_cxx, SHT_dim2StartIsNeumann_cxx, &
+            SHT_dim2EndIsNeumann_cxx, SHT_dim3StartIsNeumann_cxx, &
+            SHT_dim3EndIsNeumann_cxx, dim1StartVal, dim1EndVal, &
+            dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, &
+            SHT_isStaggered_cxx, SHT_thomas_cxx, helmholtzShift)
         ! splicer end namespace.eigen.function.init_eigen_decomp_s
     end function init_eigen_decomp_s
 
