@@ -254,44 +254,51 @@ double SquareMat<T>::determinant(SimpleArray<int32_t>& sizeOfNumRows, Singleton<
 
 
 template<typename T>
-double SquareMat<T>::determinant(Handle& hand) { //TODO: This method should call my LU decomp method.
-    int lwork = 0;
+double SquareMat<T>::determinant(Handle& hand) {
+    //TODO: This method should call my LU decomp method.
+    if constexpr (!std::is_floating_point_v<T>) {
+        throw std::runtime_error("determinent requires a floating-point matrix (float or double).");
+    } else {
 
-    if constexpr (std::is_same_v<T, double>)
-        CHECK_CUSOLVER_ERROR(
-            cusolverDnDgetrf_bufferSize(
-                hand,
-                this->_rows,
-                this->_cols,
-                this->toKernel2d(),
-                this->_ld,
-                &lwork));
 
-    else if constexpr (std::is_same_v<T, float>)
-        CHECK_CUSOLVER_ERROR(
-            cusolverDnSgetrf_bufferSize(
-                hand,
-                this->_rows,
-                this->_cols,
-                this->toKernel2d(),
-                this->_ld,
-                &lwork));
+        int lwork = 0;
 
-    else throw std::invalid_argument("Unsupported type.");
+        if constexpr (std::is_same_v<T, double>)
+            CHECK_CUSOLVER_ERROR(
+                cusolverDnDgetrf_bufferSize(
+                    hand,
+                    this->_rows,
+                    this->_cols,
+                    this->toKernel2d(),
+                    this->_ld,
+                    &lwork));
 
-    auto rowSwaps = SimpleArray<int32_t>::create(this->_rows, hand);
+        else if constexpr (std::is_same_v<T, float>)
+            CHECK_CUSOLVER_ERROR(
+                cusolverDnSgetrf_bufferSize(
+                    hand,
+                    this->_rows,
+                    this->_cols,
+                    this->toKernel2d(),
+                    this->_ld,
+                    &lwork));
 
-    auto info = Singleton<int32_t>::create(hand);
+        else throw std::invalid_argument("Unsupported type.");
 
-    auto workSpace = SimpleArray<T>::create(
-        std::max(
-            lwork,
-            static_cast<int>(KernelPrep(this->_rows).numBlocks.x)
-        ),
-        hand
-    );
+        auto rowSwaps = SimpleArray<int32_t>::create(this->_rows, hand);
 
-    return determinant(rowSwaps, info, workSpace, hand);
+        auto info = Singleton<int32_t>::create(hand);
+
+        auto workSpace = SimpleArray<T>::create(
+            std::max(
+                lwork,
+                static_cast<int>(KernelPrep(this->_rows).numBlocks.x)
+            ),
+            hand
+        );
+
+        return determinant(rowSwaps, info, workSpace, hand);
+    }
 }
 
 

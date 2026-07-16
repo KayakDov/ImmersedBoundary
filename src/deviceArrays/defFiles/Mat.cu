@@ -554,46 +554,46 @@ void Mat<T>::factorLU(Handle& hand, SimpleArray<Int>& rowSwaps, Singleton<int32_
     if constexpr (!std::is_floating_point_v<T>) {
         throw std::runtime_error("LU Factorization is not defined for non-floating point types.");
         return;
-    }
-    if constexpr (std::is_same_v<Int, int32_t>) {
-        // Pure 32-bit library execution path
-        if constexpr (std::is_same_v<T, double>)
-            CHECK_CUSOLVER_ERROR(cusolverDnDgetrf(hand, this->_rows, this->_cols, this->data(), this->_ld, workSpace.data(), rowSwaps.data(), info.data()));
-        else if constexpr (std::is_same_v<T, float>)
-            CHECK_CUSOLVER_ERROR(cusolverDnSgetrf(hand, this->_rows, this->_cols, this->data(), this->_ld, workSpace.data(), rowSwaps.data(), info.data()));
-    }
-    else if constexpr (std::is_same_v<Int, int64_t>) {
-        // Pure 64-bit library execution path
-        cudaDataType_t dataType = std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
+    } else{
+        if constexpr (std::is_same_v<Int, int32_t>) {
+            // Pure 32-bit library execution path
+            if constexpr (std::is_same_v<T, double>)
+                CHECK_CUSOLVER_ERROR(cusolverDnDgetrf(hand, this->_rows, this->_cols, this->data(), this->_ld, workSpace.data(), rowSwaps.data(), info.data()));
+            else if constexpr (std::is_same_v<T, float>)
+                CHECK_CUSOLVER_ERROR(cusolverDnSgetrf(hand, this->_rows, this->_cols, this->data(), this->_ld, workSpace.data(), rowSwaps.data(), info.data()));
+        }
+        else if constexpr (std::is_same_v<Int, int64_t>) {
+            // Pure 64-bit library execution path
+            cudaDataType_t dataType = std::is_same_v<T, double> ? CUDA_R_64F : CUDA_R_32F;
 
-        cusolverDnParams_t params;
-        CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
+            cusolverDnParams_t params;
+            CHECK_CUSOLVER_ERROR(cusolverDnCreateParams(&params));
 
-        // We have to query the sizes again to know how much Host memory to allocate
-        size_t workspaceInBytesOnDevice = 0;
-        size_t workspaceInBytesOnHost = 0;
-        CHECK_CUSOLVER_ERROR(cusolverDnXgetrf_bufferSize(
-            hand, params, this->_rows, this->_cols,
-            dataType, this->data(), this->_ld,
-            dataType, &workspaceInBytesOnDevice, &workspaceInBytesOnHost
-        ));
+            // We have to query the sizes again to know how much Host memory to allocate
+            size_t workspaceInBytesOnDevice = 0;
+            size_t workspaceInBytesOnHost = 0;
+            CHECK_CUSOLVER_ERROR(cusolverDnXgetrf_bufferSize(
+                hand, params, this->_rows, this->_cols,
+                dataType, this->data(), this->_ld,
+                dataType, &workspaceInBytesOnDevice, &workspaceInBytesOnHost
+            ));
 
-        // Allocate the mandatory CPU/Host workspace required by Xgetrf
-        std::vector<uint8_t> hostWorkspace(workspaceInBytesOnHost);
+            // Allocate the mandatory CPU/Host workspace required by Xgetrf
+            std::vector<uint8_t> hostWorkspace(workspaceInBytesOnHost);
 
-        CHECK_CUSOLVER_ERROR(cusolverDnXgetrf(
-            hand, params, this->_rows, this->_cols,
-            dataType, this->data(), this->_ld,
-            rowSwaps.data(), // Flawlessly accepts int64_t*
-            dataType, workSpace.data(), workspaceInBytesOnDevice,
-            hostWorkspace.data(), hostWorkspace.size(),
-            info.data() // Flawlessly accepts int32_t*
-        ));
+            CHECK_CUSOLVER_ERROR(cusolverDnXgetrf(
+                hand, params, this->_rows, this->_cols,
+                dataType, this->data(), this->_ld,
+                rowSwaps.data(), // Flawlessly accepts int64_t*
+                dataType, workSpace.data(), workspaceInBytesOnDevice,
+                hostWorkspace.data(), hostWorkspace.size(),
+                info.data() // Flawlessly accepts int32_t*
+            ));
 
-        CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
+            CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
+        }
     }
 }
-
 template<typename T>
 void Mat<T>::initDescr() const{
     cusparseDnMatDescr_t rawDescr;
