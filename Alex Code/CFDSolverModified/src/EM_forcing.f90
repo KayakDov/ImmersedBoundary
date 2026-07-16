@@ -2,6 +2,8 @@ Subroutine Get_Potential
     Use Grid; Use Numbers; Use Numerica; Use Operators; Use Variables
     Use AlexCudaCompatibility, only : PotentialHandle
     Use eigenbcgsolver_eigen_mod, only : solve_eigen_decomp_d
+    Use EVD_Operators, only : ExxP, Ex_invP, EyP, Ey_invP, EzP, Ez_invP, &
+            LambxP, LambyP, LambzP
     Implicit Real(kind=8) (A-H,O-Z)
 
     Real(kind=8), Dimension(Ny1, Nz, Nx) :: Potential_flat

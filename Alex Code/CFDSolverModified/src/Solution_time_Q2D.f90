@@ -52,9 +52,14 @@ Subroutine    Solution_time
 
     Call   Init
 
-    Call Initialize_GPU_Solvers()
+    Call Initialize_GPU_Solvers
 
-    Call Validate_GPU_Solvers   ! VALIDATION ONLY
+    ! Build Alex's pressure eigensystem once, after the grid is initialized
+    ! and before the first call to TimeStep.
+    Call EVDLapP
+
+    ! Temporary validation call; this can be removed after testing.
+    Call Validate_GPU_Solvers
 
     Write (*,*) ' Initial: Nu=', Nusselt(),'   Ekin=', Ekinem()
 

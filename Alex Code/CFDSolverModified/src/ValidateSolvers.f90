@@ -66,7 +66,7 @@ Contains
         Call EVDLapVx
         Call EVDLapVy
         Call EVDLapVz
-        Call EVDLapP
+!        Call EVDLapP
         Call EVD_Fi
 
         dt_temp = Dble(Istat)
@@ -135,23 +135,8 @@ Contains
         Call report('Vz         ', x_c, x_g, Nx1, Ny1, Nz, .false.)
         Deallocate(rhs_c, x_c, rhs_g, x_g)
 
-        ! ------------------- Pressure (Nx1 x Ny1 x Nz1), all-Neumann ---------
-        ! Singular system: solutions defined up to a constant; compare de-meaned.
-        Allocate( rhs_c(1:Nx1,1:Ny1,1:Nz1), x_c(1:Nx1,1:Ny1,1:Nz1) )
-        Allocate( rhs_g(1:Ny1,1:Nz1,1:Nx1), x_g(1:Ny1,1:Nz1,1:Nx1) )
-        Call fill_rhs(rhs_c, Nx1, Ny1, Nz1)
-        Call EVDmethod (x_c, rhs_c, &
-                ExxP(1:Nx1,1:Nx1), Ex_invP(1:Nx1,1:Nx1), &
-                EyP(1:Ny1,1:Ny1),  Ey_invP(1:Ny1,1:Ny1), &
-                EzP(1:Nz1,1:Nz1),  Ez_invP(1:Nz1,1:Nz1), &
-                LambxP(1:Nx1), LambyP(1:Ny1), LambzP(1:Nz1), &
-                Nx1, Ny1, Nz1, 1.D0, 1.D0, 1.D0, 0.D0)
-        Call to_gpu_layout(rhs_c, rhs_g, Nx1, Ny1, Nz1, 1.D0)
-        Call solve_eigen_decomp_d(PressureHandle, x_g, rhs_g)
-        Call report('Pressure   ', x_c, x_g, Nx1, Ny1, Nz1, .true.)
-        Deallocate(rhs_c, x_c, rhs_g, x_g)
-
-        ! ------------------- Potential (Nx x Ny1 x Nz) -----------------------
+        ! Pressure intentionally remains on Alex's CPU solver.
+        Write(*,*) '   Pressure     uses Alex CPU solver (GPU comparison skipped)'  ! ------------------- Potential (Nx x Ny1 x Nz) -----------------------
         potSingular = (EVD_Pot_X == 1) .and. (EVD_Pot_Y == 1) .and. (EVD_Pot_Z == 1)
         Allocate( rhs_c(1:Nx,1:Ny1,1:Nz), x_c(1:Nx,1:Ny1,1:Nz) )
         Allocate( rhs_g(1:Ny1,1:Nz,1:Nx), x_g(1:Ny1,1:Nz,1:Nx) )

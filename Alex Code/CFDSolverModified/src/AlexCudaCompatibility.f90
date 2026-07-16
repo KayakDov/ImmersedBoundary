@@ -2,14 +2,14 @@ module AlexCudaCompatibility
     use iso_c_binding, only : C_SIZE_T
     implicit none
 
-    public :: TemperatureHandle, VxHandle, VyHandle, VzHandle, PressureHandle, PotentialHandle
+    public :: TemperatureHandle, VxHandle, VyHandle, VzHandle, PotentialHandle!, PressureHandle
     public :: Initialize_GPU_Solvers, GrPr
 
     integer(C_SIZE_T) :: TemperatureHandle = 0_C_SIZE_T
     integer(C_SIZE_T) :: VxHandle          = 0_C_SIZE_T
     integer(C_SIZE_T) :: VyHandle          = 0_C_SIZE_T
     integer(C_SIZE_T) :: VzHandle          = 0_C_SIZE_T
-    integer(C_SIZE_T) :: PressureHandle    = 0_C_SIZE_T
+!    integer(C_SIZE_T) :: PressureHandle    = 0_C_SIZE_T
     integer(C_SIZE_T) :: PotentialHandle   = 0_C_SIZE_T
 
     ! Temperature diffusivity scale of the CPU operator (Prandtl/DGr, or 1 when
@@ -194,22 +194,22 @@ contains
         ! The all-Neumann system is singular; the library's singular-mode
         ! handling must stay engaged here (helmholtzShift == 0).
         ! ==================================================================
-        PressureHandle = init_eigen_decomp_d( &
-                dim1Length = Int(Ny1, C_SIZE_T), &
-                dim2Length = Int(Nz1, C_SIZE_T), &
-                dim3Length = Int(Nx1, C_SIZE_T), &
-                dim1Delta = HPy(0:Ny1), &
-                dim2Delta = HPz(0:Nz1), &
-                dim3Delta = HPx(0:Nx1), &
-                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
-                dim1StartIsNeumann = .true., dim1EndIsNeumann = .true., &
-                dim2StartIsNeumann = .true., dim2EndIsNeumann = .true., &
-                dim3StartIsNeumann = .true., dim3EndIsNeumann = .true., &
-                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
-                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
-                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
-                isStaggered = .false., thomas = .false., &
-                helmholtzShift = 0.d0 )
+!        PressureHandle = init_eigen_decomp_d( &
+!                dim1Length = Int(Ny1, C_SIZE_T), &
+!                dim2Length = Int(Nz1, C_SIZE_T), &
+!                dim3Length = Int(Nx1, C_SIZE_T), &
+!                dim1Delta = HPy(0:Ny1), &
+!                dim2Delta = HPz(0:Nz1), &
+!                dim3Delta = HPx(0:Nx1), &
+!                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+!                dim1StartIsNeumann = .true., dim1EndIsNeumann = .true., &
+!                dim2StartIsNeumann = .true., dim2EndIsNeumann = .true., &
+!                dim3StartIsNeumann = .true., dim3EndIsNeumann = .true., &
+!                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
+!                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
+!                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
+!                isStaggered = .false., thomas = .false., &
+!                helmholtzShift = 0.d0 )
 
         ! ==================================================================
         ! Handle 5: POTENTIAL (Fi).  Potential(1:Ny1, 1:Nz, 1:Nx);
