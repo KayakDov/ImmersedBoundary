@@ -21,8 +21,9 @@ module eigenbcgsolver_imeq_mod
                 dim2StartIsNeumann, dim2EndIsNeumann, &
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
                 dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
-                dim3EndVal, isStaggered, forceSize, nnzMax, p, f, &
-                dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
+                dim3EndVal, dim1SegSpacing, dim2SegSpacing, &
+                dim3SegSpacing, forceSize, nnzMax, p, f, dim1Delta, &
+                dim2Delta, dim3Delta, dt, dim1UniformDelta, &
                 dim2UniformDelta, dim3UniformDelta, tol, maxIterations) &
                 bind(C, name="EIG_ImEq_initImmersedEq_d_i32")
             use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
@@ -42,7 +43,9 @@ module eigenbcgsolver_imeq_mod
             real(C_DOUBLE), value, intent(IN) :: dim2EndVal
             real(C_DOUBLE), value, intent(IN) :: dim3StartVal
             real(C_DOUBLE), value, intent(IN) :: dim3EndVal
-            logical(C_BOOL), value, intent(IN) :: isStaggered
+            integer(C_SIZE_T), value, intent(IN) :: dim1SegSpacing
+            integer(C_SIZE_T), value, intent(IN) :: dim2SegSpacing
+            integer(C_SIZE_T), value, intent(IN) :: dim3SegSpacing
             integer(C_SIZE_T), value, intent(IN) :: forceSize
             integer(C_SIZE_T), value, intent(IN) :: nnzMax
             real(C_DOUBLE), intent(IN) :: p(*)
@@ -63,8 +66,9 @@ module eigenbcgsolver_imeq_mod
                 dim2StartIsNeumann, dim2EndIsNeumann, &
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
                 dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
-                dim3EndVal, isStaggered, forceSize, nnzMax, p, f, &
-                dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
+                dim3EndVal, dim1SegSpacing, dim2SegSpacing, &
+                dim3SegSpacing, forceSize, nnzMax, p, f, dim1Delta, &
+                dim2Delta, dim3Delta, dt, dim1UniformDelta, &
                 dim2UniformDelta, dim3UniformDelta, tol, maxIterations) &
                 bind(C, name="EIG_ImEq_initImmersedEq_s_i32")
             use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
@@ -84,7 +88,9 @@ module eigenbcgsolver_imeq_mod
             real(C_DOUBLE), value, intent(IN) :: dim2EndVal
             real(C_DOUBLE), value, intent(IN) :: dim3StartVal
             real(C_DOUBLE), value, intent(IN) :: dim3EndVal
-            logical(C_BOOL), value, intent(IN) :: isStaggered
+            integer(C_SIZE_T), value, intent(IN) :: dim1SegSpacing
+            integer(C_SIZE_T), value, intent(IN) :: dim2SegSpacing
+            integer(C_SIZE_T), value, intent(IN) :: dim3SegSpacing
             integer(C_SIZE_T), value, intent(IN) :: forceSize
             integer(C_SIZE_T), value, intent(IN) :: nnzMax
             real(C_FLOAT), intent(IN) :: p(*)
@@ -105,8 +111,9 @@ module eigenbcgsolver_imeq_mod
                 dim2StartIsNeumann, dim2EndIsNeumann, &
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
                 dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
-                dim3EndVal, isStaggered, forceSize, nnzMax, p, f, &
-                dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
+                dim3EndVal, dim1SegSpacing, dim2SegSpacing, &
+                dim3SegSpacing, forceSize, nnzMax, p, f, dim1Delta, &
+                dim2Delta, dim3Delta, dt, dim1UniformDelta, &
                 dim2UniformDelta, dim3UniformDelta, tol, maxIterations) &
                 bind(C, name="EIG_ImEq_initImmersedEq_d_i64")
             use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
@@ -126,7 +133,9 @@ module eigenbcgsolver_imeq_mod
             real(C_DOUBLE), value, intent(IN) :: dim2EndVal
             real(C_DOUBLE), value, intent(IN) :: dim3StartVal
             real(C_DOUBLE), value, intent(IN) :: dim3EndVal
-            logical(C_BOOL), value, intent(IN) :: isStaggered
+            integer(C_SIZE_T), value, intent(IN) :: dim1SegSpacing
+            integer(C_SIZE_T), value, intent(IN) :: dim2SegSpacing
+            integer(C_SIZE_T), value, intent(IN) :: dim3SegSpacing
             integer(C_SIZE_T), value, intent(IN) :: forceSize
             integer(C_SIZE_T), value, intent(IN) :: nnzMax
             real(C_DOUBLE), intent(IN) :: p(*)
@@ -147,8 +156,9 @@ module eigenbcgsolver_imeq_mod
                 dim2StartIsNeumann, dim2EndIsNeumann, &
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
                 dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
-                dim3EndVal, isStaggered, forceSize, nnzMax, p, f, &
-                dim1Delta, dim2Delta, dt, dim3Delta, dim1UniformDelta, &
+                dim3EndVal, dim1SegSpacing, dim2SegSpacing, &
+                dim3SegSpacing, forceSize, nnzMax, p, f, dim1Delta, &
+                dim2Delta, dim3Delta, dt, dim1UniformDelta, &
                 dim2UniformDelta, dim3UniformDelta, tol, maxIterations) &
                 bind(C, name="EIG_ImEq_initImmersedEq_s_i64")
             use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
@@ -168,15 +178,17 @@ module eigenbcgsolver_imeq_mod
             real(C_FLOAT), value, intent(IN) :: dim2EndVal
             real(C_FLOAT), value, intent(IN) :: dim3StartVal
             real(C_FLOAT), value, intent(IN) :: dim3EndVal
-            logical(C_BOOL), value, intent(IN) :: isStaggered
+            integer(C_SIZE_T), value, intent(IN) :: dim1SegSpacing
+            integer(C_SIZE_T), value, intent(IN) :: dim2SegSpacing
+            integer(C_SIZE_T), value, intent(IN) :: dim3SegSpacing
             integer(C_SIZE_T), value, intent(IN) :: forceSize
             integer(C_SIZE_T), value, intent(IN) :: nnzMax
             real(C_FLOAT), intent(IN) :: p(*)
             real(C_FLOAT), intent(IN) :: f(*)
             real(C_FLOAT), intent(IN) :: dim1Delta(*)
             real(C_FLOAT), intent(IN) :: dim2Delta(*)
-            real(C_DOUBLE), value, intent(IN) :: dt
             real(C_FLOAT), intent(IN) :: dim3Delta(*)
+            real(C_DOUBLE), value, intent(IN) :: dt
             logical(C_BOOL), value, intent(IN) :: dim1UniformDelta
             logical(C_BOOL), value, intent(IN) :: dim2UniformDelta
             logical(C_BOOL), value, intent(IN) :: dim3UniformDelta
@@ -414,8 +426,9 @@ contains
             dim3Length, dim1StartIsNeumann, dim1EndIsNeumann, &
             dim2StartIsNeumann, dim2EndIsNeumann, dim3StartIsNeumann, &
             dim3EndIsNeumann, dim1StartVal, dim1EndVal, dim2StartVal, &
-            dim2EndVal, dim3StartVal, dim3EndVal, isStaggered, nnzMax, &
-            p, f, dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
+            dim2EndVal, dim3StartVal, dim3EndVal, dim1SegSpacing, &
+            dim2SegSpacing, dim3SegSpacing, forceSize, nnzMax, p, f, &
+            dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
             dim2UniformDelta, dim3UniformDelta, tol, maxIterations)
         use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: dim1Length
@@ -433,8 +446,10 @@ contains
         real(C_DOUBLE), value, intent(IN) :: dim2EndVal
         real(C_DOUBLE), value, intent(IN) :: dim3StartVal
         real(C_DOUBLE), value, intent(IN) :: dim3EndVal
-        logical, value, intent(IN) :: isStaggered
-        integer(C_SIZE_T) :: SH_forceSize
+        integer(C_SIZE_T), value, intent(IN) :: dim1SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: dim2SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: dim3SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: forceSize
         integer(C_SIZE_T), value, intent(IN) :: nnzMax
         real(C_DOUBLE), intent(IN) :: p(:)
         real(C_DOUBLE), intent(IN) :: f(:)
@@ -454,7 +469,6 @@ contains
         logical(C_BOOL) :: SHT_dim2EndIsNeumann_cxx
         logical(C_BOOL) :: SHT_dim3StartIsNeumann_cxx
         logical(C_BOOL) :: SHT_dim3EndIsNeumann_cxx
-        logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_dim1UniformDelta_cxx
         logical(C_BOOL) :: SHT_dim2UniformDelta_cxx
         logical(C_BOOL) :: SHT_dim3UniformDelta_cxx
@@ -464,8 +478,6 @@ contains
         SHT_dim2EndIsNeumann_cxx = dim2EndIsNeumann  ! coerce to C_BOOL
         SHT_dim3StartIsNeumann_cxx = dim3StartIsNeumann  ! coerce to C_BOOL
         SHT_dim3EndIsNeumann_cxx = dim3EndIsNeumann  ! coerce to C_BOOL
-        SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
-        SH_forceSize = size(f,kind=C_SIZE_T)
         SHT_dim1UniformDelta_cxx = dim1UniformDelta  ! coerce to C_BOOL
         SHT_dim2UniformDelta_cxx = dim2UniformDelta  ! coerce to C_BOOL
         SHT_dim3UniformDelta_cxx = dim3UniformDelta  ! coerce to C_BOOL
@@ -475,10 +487,10 @@ contains
             SHT_dim2EndIsNeumann_cxx, SHT_dim3StartIsNeumann_cxx, &
             SHT_dim3EndIsNeumann_cxx, dim1StartVal, dim1EndVal, &
             dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, &
-            SHT_isStaggered_cxx, SH_forceSize, nnzMax, p, f, dim1Delta, &
-            dim2Delta, dim3Delta, dt, SHT_dim1UniformDelta_cxx, &
-            SHT_dim2UniformDelta_cxx, SHT_dim3UniformDelta_cxx, tol, &
-            maxIterations)
+            dim1SegSpacing, dim2SegSpacing, dim3SegSpacing, forceSize, &
+            nnzMax, p, f, dim1Delta, dim2Delta, dim3Delta, dt, &
+            SHT_dim1UniformDelta_cxx, SHT_dim2UniformDelta_cxx, &
+            SHT_dim3UniformDelta_cxx, tol, maxIterations)
         ! splicer end namespace.ImEq.function.init_immersed_eq_d_i32
     end subroutine init_immersed_eq_d_i32
 
@@ -486,8 +498,9 @@ contains
             dim3Length, dim1StartIsNeumann, dim1EndIsNeumann, &
             dim2StartIsNeumann, dim2EndIsNeumann, dim3StartIsNeumann, &
             dim3EndIsNeumann, dim1StartVal, dim1EndVal, dim2StartVal, &
-            dim2EndVal, dim3StartVal, dim3EndVal, isStaggered, nnzMax, &
-            p, f, dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
+            dim2EndVal, dim3StartVal, dim3EndVal, dim1SegSpacing, &
+            dim2SegSpacing, dim3SegSpacing, forceSize, nnzMax, p, f, &
+            dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
             dim2UniformDelta, dim3UniformDelta, tol, maxIterations)
         use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: dim1Length
@@ -505,8 +518,10 @@ contains
         real(C_DOUBLE), value, intent(IN) :: dim2EndVal
         real(C_DOUBLE), value, intent(IN) :: dim3StartVal
         real(C_DOUBLE), value, intent(IN) :: dim3EndVal
-        logical, value, intent(IN) :: isStaggered
-        integer(C_SIZE_T) :: SH_forceSize
+        integer(C_SIZE_T), value, intent(IN) :: dim1SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: dim2SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: dim3SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: forceSize
         integer(C_SIZE_T), value, intent(IN) :: nnzMax
         real(C_FLOAT), intent(IN) :: p(:)
         real(C_FLOAT), intent(IN) :: f(:)
@@ -526,7 +541,6 @@ contains
         logical(C_BOOL) :: SHT_dim2EndIsNeumann_cxx
         logical(C_BOOL) :: SHT_dim3StartIsNeumann_cxx
         logical(C_BOOL) :: SHT_dim3EndIsNeumann_cxx
-        logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_dim1UniformDelta_cxx
         logical(C_BOOL) :: SHT_dim2UniformDelta_cxx
         logical(C_BOOL) :: SHT_dim3UniformDelta_cxx
@@ -536,8 +550,6 @@ contains
         SHT_dim2EndIsNeumann_cxx = dim2EndIsNeumann  ! coerce to C_BOOL
         SHT_dim3StartIsNeumann_cxx = dim3StartIsNeumann  ! coerce to C_BOOL
         SHT_dim3EndIsNeumann_cxx = dim3EndIsNeumann  ! coerce to C_BOOL
-        SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
-        SH_forceSize = size(f,kind=C_SIZE_T)
         SHT_dim1UniformDelta_cxx = dim1UniformDelta  ! coerce to C_BOOL
         SHT_dim2UniformDelta_cxx = dim2UniformDelta  ! coerce to C_BOOL
         SHT_dim3UniformDelta_cxx = dim3UniformDelta  ! coerce to C_BOOL
@@ -547,10 +559,10 @@ contains
             SHT_dim2EndIsNeumann_cxx, SHT_dim3StartIsNeumann_cxx, &
             SHT_dim3EndIsNeumann_cxx, dim1StartVal, dim1EndVal, &
             dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, &
-            SHT_isStaggered_cxx, SH_forceSize, nnzMax, p, f, dim1Delta, &
-            dim2Delta, dim3Delta, dt, SHT_dim1UniformDelta_cxx, &
-            SHT_dim2UniformDelta_cxx, SHT_dim3UniformDelta_cxx, tol, &
-            maxIterations)
+            dim1SegSpacing, dim2SegSpacing, dim3SegSpacing, forceSize, &
+            nnzMax, p, f, dim1Delta, dim2Delta, dim3Delta, dt, &
+            SHT_dim1UniformDelta_cxx, SHT_dim2UniformDelta_cxx, &
+            SHT_dim3UniformDelta_cxx, tol, maxIterations)
         ! splicer end namespace.ImEq.function.init_immersed_eq_s_i32
     end subroutine init_immersed_eq_s_i32
 
@@ -558,8 +570,9 @@ contains
             dim3Length, dim1StartIsNeumann, dim1EndIsNeumann, &
             dim2StartIsNeumann, dim2EndIsNeumann, dim3StartIsNeumann, &
             dim3EndIsNeumann, dim1StartVal, dim1EndVal, dim2StartVal, &
-            dim2EndVal, dim3StartVal, dim3EndVal, isStaggered, nnzMax, &
-            p, f, dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
+            dim2EndVal, dim3StartVal, dim3EndVal, dim1SegSpacing, &
+            dim2SegSpacing, dim3SegSpacing, forceSize, nnzMax, p, f, &
+            dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
             dim2UniformDelta, dim3UniformDelta, tol, maxIterations)
         use iso_c_binding, only : C_BOOL, C_DOUBLE, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: dim1Length
@@ -577,8 +590,10 @@ contains
         real(C_DOUBLE), value, intent(IN) :: dim2EndVal
         real(C_DOUBLE), value, intent(IN) :: dim3StartVal
         real(C_DOUBLE), value, intent(IN) :: dim3EndVal
-        logical, value, intent(IN) :: isStaggered
-        integer(C_SIZE_T) :: SH_forceSize
+        integer(C_SIZE_T), value, intent(IN) :: dim1SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: dim2SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: dim3SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: forceSize
         integer(C_SIZE_T), value, intent(IN) :: nnzMax
         real(C_DOUBLE), intent(IN) :: p(:)
         real(C_DOUBLE), intent(IN) :: f(:)
@@ -598,7 +613,6 @@ contains
         logical(C_BOOL) :: SHT_dim2EndIsNeumann_cxx
         logical(C_BOOL) :: SHT_dim3StartIsNeumann_cxx
         logical(C_BOOL) :: SHT_dim3EndIsNeumann_cxx
-        logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_dim1UniformDelta_cxx
         logical(C_BOOL) :: SHT_dim2UniformDelta_cxx
         logical(C_BOOL) :: SHT_dim3UniformDelta_cxx
@@ -608,8 +622,6 @@ contains
         SHT_dim2EndIsNeumann_cxx = dim2EndIsNeumann  ! coerce to C_BOOL
         SHT_dim3StartIsNeumann_cxx = dim3StartIsNeumann  ! coerce to C_BOOL
         SHT_dim3EndIsNeumann_cxx = dim3EndIsNeumann  ! coerce to C_BOOL
-        SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
-        SH_forceSize = size(f,kind=C_SIZE_T)
         SHT_dim1UniformDelta_cxx = dim1UniformDelta  ! coerce to C_BOOL
         SHT_dim2UniformDelta_cxx = dim2UniformDelta  ! coerce to C_BOOL
         SHT_dim3UniformDelta_cxx = dim3UniformDelta  ! coerce to C_BOOL
@@ -619,10 +631,10 @@ contains
             SHT_dim2EndIsNeumann_cxx, SHT_dim3StartIsNeumann_cxx, &
             SHT_dim3EndIsNeumann_cxx, dim1StartVal, dim1EndVal, &
             dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, &
-            SHT_isStaggered_cxx, SH_forceSize, nnzMax, p, f, dim1Delta, &
-            dim2Delta, dim3Delta, dt, SHT_dim1UniformDelta_cxx, &
-            SHT_dim2UniformDelta_cxx, SHT_dim3UniformDelta_cxx, tol, &
-            maxIterations)
+            dim1SegSpacing, dim2SegSpacing, dim3SegSpacing, forceSize, &
+            nnzMax, p, f, dim1Delta, dim2Delta, dim3Delta, dt, &
+            SHT_dim1UniformDelta_cxx, SHT_dim2UniformDelta_cxx, &
+            SHT_dim3UniformDelta_cxx, tol, maxIterations)
         ! splicer end namespace.ImEq.function.init_immersed_eq_d_i64
     end subroutine init_immersed_eq_d_i64
 
@@ -630,8 +642,9 @@ contains
             dim3Length, dim1StartIsNeumann, dim1EndIsNeumann, &
             dim2StartIsNeumann, dim2EndIsNeumann, dim3StartIsNeumann, &
             dim3EndIsNeumann, dim1StartVal, dim1EndVal, dim2StartVal, &
-            dim2EndVal, dim3StartVal, dim3EndVal, isStaggered, nnzMax, &
-            p, f, dim1Delta, dim2Delta, dt, dim3Delta, dim1UniformDelta, &
+            dim2EndVal, dim3StartVal, dim3EndVal, dim1SegSpacing, &
+            dim2SegSpacing, dim3SegSpacing, forceSize, nnzMax, p, f, &
+            dim1Delta, dim2Delta, dim3Delta, dt, dim1UniformDelta, &
             dim2UniformDelta, dim3UniformDelta, tol, maxIterations)
         use iso_c_binding, only : C_BOOL, C_DOUBLE, C_FLOAT, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: dim1Length
@@ -649,15 +662,17 @@ contains
         real(C_FLOAT), value, intent(IN) :: dim2EndVal
         real(C_FLOAT), value, intent(IN) :: dim3StartVal
         real(C_FLOAT), value, intent(IN) :: dim3EndVal
-        logical, value, intent(IN) :: isStaggered
-        integer(C_SIZE_T) :: SH_forceSize
+        integer(C_SIZE_T), value, intent(IN) :: dim1SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: dim2SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: dim3SegSpacing
+        integer(C_SIZE_T), value, intent(IN) :: forceSize
         integer(C_SIZE_T), value, intent(IN) :: nnzMax
         real(C_FLOAT), intent(IN) :: p(:)
         real(C_FLOAT), intent(IN) :: f(:)
         real(C_FLOAT), intent(IN) :: dim1Delta(:)
         real(C_FLOAT), intent(IN) :: dim2Delta(:)
-        real(C_DOUBLE), value, intent(IN) :: dt
         real(C_FLOAT), intent(IN) :: dim3Delta(:)
+        real(C_DOUBLE), value, intent(IN) :: dt
         logical, value, intent(IN) :: dim1UniformDelta
         logical, value, intent(IN) :: dim2UniformDelta
         logical, value, intent(IN) :: dim3UniformDelta
@@ -670,7 +685,6 @@ contains
         logical(C_BOOL) :: SHT_dim2EndIsNeumann_cxx
         logical(C_BOOL) :: SHT_dim3StartIsNeumann_cxx
         logical(C_BOOL) :: SHT_dim3EndIsNeumann_cxx
-        logical(C_BOOL) :: SHT_isStaggered_cxx
         logical(C_BOOL) :: SHT_dim1UniformDelta_cxx
         logical(C_BOOL) :: SHT_dim2UniformDelta_cxx
         logical(C_BOOL) :: SHT_dim3UniformDelta_cxx
@@ -680,8 +694,6 @@ contains
         SHT_dim2EndIsNeumann_cxx = dim2EndIsNeumann  ! coerce to C_BOOL
         SHT_dim3StartIsNeumann_cxx = dim3StartIsNeumann  ! coerce to C_BOOL
         SHT_dim3EndIsNeumann_cxx = dim3EndIsNeumann  ! coerce to C_BOOL
-        SHT_isStaggered_cxx = isStaggered  ! coerce to C_BOOL
-        SH_forceSize = size(f,kind=C_SIZE_T)
         SHT_dim1UniformDelta_cxx = dim1UniformDelta  ! coerce to C_BOOL
         SHT_dim2UniformDelta_cxx = dim2UniformDelta  ! coerce to C_BOOL
         SHT_dim3UniformDelta_cxx = dim3UniformDelta  ! coerce to C_BOOL
@@ -691,10 +703,10 @@ contains
             SHT_dim2EndIsNeumann_cxx, SHT_dim3StartIsNeumann_cxx, &
             SHT_dim3EndIsNeumann_cxx, dim1StartVal, dim1EndVal, &
             dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, &
-            SHT_isStaggered_cxx, SH_forceSize, nnzMax, p, f, dim1Delta, &
-            dim2Delta, dt, dim3Delta, SHT_dim1UniformDelta_cxx, &
-            SHT_dim2UniformDelta_cxx, SHT_dim3UniformDelta_cxx, tol, &
-            maxIterations)
+            dim1SegSpacing, dim2SegSpacing, dim3SegSpacing, forceSize, &
+            nnzMax, p, f, dim1Delta, dim2Delta, dim3Delta, dt, &
+            SHT_dim1UniformDelta_cxx, SHT_dim2UniformDelta_cxx, &
+            SHT_dim3UniformDelta_cxx, tol, maxIterations)
         ! splicer end namespace.ImEq.function.init_immersed_eq_s_i64
     end subroutine init_immersed_eq_s_i64
 

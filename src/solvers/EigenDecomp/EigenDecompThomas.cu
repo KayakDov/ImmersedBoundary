@@ -3,6 +3,7 @@
 #include "EigenDecompThomas.cuh"
 
 #include "deviceArrays/headers/Support/Streamable.h"
+#include "poisson/BoundaryConfig.cuh"
 
 /**
  * @brief Core implementation of the Thomas Algorithm (TDMA) for a 1D tridiagonal system.
@@ -174,32 +175,25 @@ template<typename SegY, typename SegZ>
 // EXPLICIT TEMPLATE INSTANTIATIONS
 // ==============================================================================
 
-// 1. Instantiate the class itself for all precision and Segment types
-template class EigenDecompThomas<float, UniformSegment<float>>;
+// 1. Explicitly instantiate the class for all required segment types
+template class EigenDecompThomas<double, FluxLaplacian<double>>;
 template class EigenDecompThomas<double, UniformSegment<double>>;
-template class EigenDecompThomas<float, VariableSegment<float>>;
 template class EigenDecompThomas<double, VariableSegment<double>>;
 
+template class EigenDecompThomas<float, FluxLaplacian<float>>;
+template class EigenDecompThomas<float, UniformSegment<float>>;
+template class EigenDecompThomas<float, VariableSegment<float>>;
 
-// 2. Define macro to instantiate the templated constructors
-// Note: We use <Real, SegX> for the class, and deduce the BoundaryConfigT from the args.
-#define INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, SegX, SegY, SegZ) \
-template EigenDecompThomas<Real, SegX>::EigenDecompThomas( \
-    const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Real); \
-template EigenDecompThomas<Real, SegX>::EigenDecompThomas( \
-    const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>, Real);
+// 2. Macro for the Thomas constructor
+// Note the addition of <SegY, SegZ> in the template instantiation
+#define INSTANTIATE_EIGEN_DECOMP_THOMAS_CONSTRUCTORS(Real, SegX, SegY, SegZ) \
+template EigenDecompThomas<Real, SegX>::EigenDecompThomas<SegY, SegZ>(   \
+const BoundaryConfigHost<Real, SegX, SegY, SegZ>& boundary,          \
+Handle* hands,                                                       \
+Event* event,                                                        \
+Real helmholtzShift                                                  \
+);
 
-
-// 3. Generate all combinations of Uniform and Variable segments
-#define INSTANTIATE_EIGEN_ALL(Real) \
-INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
-INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_THOMAS_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
-
-INSTANTIATE_EIGEN_ALL(float)
-INSTANTIATE_EIGEN_ALL(double)
+// 3. Apply permutations
+APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_EIGEN_DECOMP_THOMAS_CONSTRUCTORS)
+APPLY_TO_ALL_SEGMENT_COMBOS(float, INSTANTIATE_EIGEN_DECOMP_THOMAS_CONSTRUCTORS)

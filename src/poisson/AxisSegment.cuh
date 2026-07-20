@@ -10,8 +10,46 @@
 #ifndef CUDABANDED_AXISSEGMENT_CUH
 #define CUDABANDED_AXISSEGMENT_CUH
 
+#include <vector>
+#include <stdexcept>
+#include <cmath>
+#include <algorithm>
+
 #include "deviceArrays/headers/SimpleArray.h"
 #include "poisson/BoundaryCondition.cuh"
+
+/**
+ * @brief Host-side reconstruction of finite-volume cell widths from deltas.
+ *
+ * For a FluxLapl axis with n unknowns, the n+1 deltas are
+ * {wall-to-centre_0, centre-to-centre, ..., centre_{n-1}-to-wall}, and the
+ * n cell widths satisfy d_0 = W_0/2, d_i = (W_{i-1}+W_i)/2, d_n = W_{n-1}/2.
+ * Solving front-to-back gives the recursion below; the leftover equation
+ * W_{n-1} == 2 d_n is a consistency check that the deltas really came from
+ * cell centres of cells tiling the segment wall-to-wall.
+ *
+ * @throws std::invalid_argument if the deltas are inconsistent with a
+ *         wall-to-wall cell tiling, or any reconstructed width is <= 0.
+ */
+template<typename Real>
+std::vector<Real> makeFvmWidths(const std::vector<Real>& d) {
+    if (d.size() < 2) throw std::invalid_argument("FluxLapl axis needs at least 2 deltas (1 unknown).");
+    const size_t n = d.size() - 1;
+    std::vector<Real> w(n);
+    w[0] = 2*d[0];
+    for (size_t i = 1; i < n; ++i) w[i] = 2*d[i] - w[i-1];
+
+    Real scale = 0;
+    for (size_t i = 0; i <= n; ++i) scale = std::max(scale, std::abs(d[i]));
+    if (std::abs(w[n-1] - 2*d[n]) > Real(1e-10) * scale)
+        throw std::invalid_argument(
+            "FluxLapl deltas are inconsistent: the reconstructed last cell width "
+            "does not equal twice the last delta. The n+1 deltas must be the "
+            "wall/centre distances of n cells tiling the segment wall-to-wall.");
+    for (size_t i = 0; i < n; ++i)
+        if (!(w[i] > 0)) throw std::invalid_argument("FluxLapl reconstructed a non-positive cell width.");
+    return w;
+}
 
 template<typename Real>
 struct Delta1d {
@@ -143,6 +181,17 @@ public:
 
     }
 
+    /**
+     * Diagonal of D^2 in the symmetrizing similarity S = -D L D^{-1}
+     * used by the eigendecomposition (Eigen.cu).  L = M^{-1} K with K
+     * symmetric (K offdiag = 1/delta) and M_i proportional to this value,
+     * so D = sqrt(symmScale) makes S symmetric.  Any positive constant
+     * factor cancels; this keeps the historical convention d_i + d_{i+1}.
+     */
+    __device__ T symmScale(const size_t i) const {
+        return delta[i] + delta[i + 1];
+    }
+
     Delta1d<T> getDelta() const{
         return Delta1d<T>(false, delta);
     }
@@ -154,6 +203,76 @@ public:
 
     __host__ __device__ friend bool operator!=(const VariableSegment& lhs,
                                                const VariableSegment& rhs) {
+        return !(lhs == rhs);
+    }
+};
+
+/**
+ * @class FluxLaplacian
+ * @brief Conservative finite-volume Laplacian axis with variable spacing.
+ *
+ * Unknowns are cell averages at the centres of n cells that tile the segment
+ * wall-to-wall.  Interior row i is the flux difference over cell i:
+ *     ( (u_{i+1}-u_i)/d_{i+1} - (u_i-u_{i-1})/d_i ) / W_i
+ * Summing W_i * row_i telescopes interior fluxes, so the operator is
+ * discretely conservative and equals div(grad) built from the same faces --
+ * the property required inside projection methods.  Contrast VariableSegment,
+ * which is the pointwise 3-point formula at nodes (faces implicitly at
+ * midpoints); the two coincide on locally uniform interiors and differ on
+ * stretched meshes and at wall-adjacent rows.
+ */
+template<typename T>
+class FluxLaplacian : public AxisSegment<T, FluxBoundary<T, false>, FluxBoundary<T, true>> {
+public:
+    /** n+1 centre/wall distances (same layout as VariableSegment's delta). */
+    const DeviceData1d<T> delta;
+
+    /** n reconstructed cell widths (see makeFvmWidths). */
+    const DeviceData1d<T> width;
+
+    FluxLaplacian(bool beginIsNeumann, bool endIsNeumann, T beginVal, T endVal,
+                  const SimpleArray<T>& delta, const SimpleArray<T>& width) :
+        AxisSegment<T, FluxBoundary<T, false>, FluxBoundary<T, true>>(
+            delta.size() - 1,
+            FluxBoundary<T, false>(beginIsNeumann, beginVal, delta.subArray(0, 2), width.subArray(0, 1)),
+            FluxBoundary<T, true>(endIsNeumann, endVal, delta.subArray(delta.size() - 2, 2), width.subArray(width.size() - 1, 1))
+        ),
+        delta(delta),
+        width(width) {}
+
+    __device__ void setInteriorL(T& mainDiagVal, T& prevVal, T& nextVal, const size_t indexInLine) const {
+
+        T W = width[indexInLine];
+        prevVal = 1 / (W * delta[indexInLine]);
+        nextVal = 1 / (W * delta[indexInLine + 1]);
+        mainDiagVal -= prevVal + nextVal;
+
+    }
+
+    /**
+     * Diagonal of D^2 in the symmetrizing similarity S = -D L D^{-1}
+     * (see VariableSegment::symmScale).  The flux operator is
+     * L = W^{-1} K with the SAME symmetric K, so the scale is the cell
+     * width; the factor 2 keeps the same convention as VariableSegment
+     * (whose scale equals twice the midpoint control volume) and cancels
+     * in the similarity anyway.
+     */
+    __device__ T symmScale(const size_t i) const {
+        return 2 * width[i];
+    }
+
+    Delta1d<T> getDelta() const{
+        return Delta1d<T>(false, delta);
+    }
+
+    __host__ __device__ friend bool operator==(const FluxLaplacian& lhs,
+                                               const FluxLaplacian& rhs) {
+        return (lhs.start == rhs.start) && (lhs.end == rhs.end) && (lhs.numNodes == rhs.numNodes)
+            && lhs.delta.data == rhs.delta.data && lhs.width.data == rhs.width.data;
+    }
+
+    __host__ __device__ friend bool operator!=(const FluxLaplacian& lhs,
+                                               const FluxLaplacian& rhs) {
         return !(lhs == rhs);
     }
 };
@@ -278,6 +397,34 @@ public:
 
 
 
+// --- SPECIALIZATION FOR FLUX (FINITE-VOLUME) SEGMENTS ---
+template<typename Real>
+class AxisSegmentHost<FluxLaplacian<Real>> {
+
+    BoundaryConditionHost<Real> start, end;
+    SimpleArray<Real> varDelta; // Manages host lifetime / prevents premature cudaFree!
+    SimpleArray<Real> fvWidth;  // Reconstructed cell widths; same lifetime rules.
+
+public:
+
+    using SegmentType = FluxLaplacian<Real>;
+
+    /**
+     * Builds the widths itself from the host deltas, so makeFvmWidths (and
+     * its consistency checks) run exactly where the FluxLapl concept lives.
+     */
+    AxisSegmentHost(BoundaryConditionHost<Real> start, BoundaryConditionHost<Real> end,
+                    const std::vector<Real>& hostDelta, cudaStream_t stream)
+        : start(start), end(end),
+          varDelta(SimpleArray<Real>::create(hostDelta, stream)),
+          fvWidth(SimpleArray<Real>::create(makeFvmWidths(hostDelta), stream)) {}
+
+    FluxLaplacian<Real> forDevice() const {
+        return FluxLaplacian<Real>(start.isNeumann, end.isNeumann,
+                                    start.value, end.value,
+                                    varDelta, fvWidth); // Implicitly decay to DeviceData1d
+    }
+};
 
 
 template<typename T>
@@ -307,6 +454,38 @@ bool operator!=(const VariableSegment<T>& lhs,
                 const UniformSegment<T>& rhs) {
     return !(lhs == rhs);
 }
+
+template<typename T>
+__host__ __device__
+bool operator==(const FluxLaplacian<T>&, const UniformSegment<T>&) { return false; }
+
+template<typename T>
+__host__ __device__
+bool operator==(const UniformSegment<T>&, const FluxLaplacian<T>&) { return false; }
+
+template<typename T>
+__host__ __device__
+bool operator==(const FluxLaplacian<T>&, const VariableSegment<T>&) { return false; }
+
+template<typename T>
+__host__ __device__
+bool operator==(const VariableSegment<T>&, const FluxLaplacian<T>&) { return false; }
+
+template<typename T>
+__host__ __device__
+bool operator!=(const FluxLaplacian<T>& lhs, const UniformSegment<T>& rhs) { return !(lhs == rhs); }
+
+template<typename T>
+__host__ __device__
+bool operator!=(const UniformSegment<T>& lhs, const FluxLaplacian<T>& rhs) { return !(lhs == rhs); }
+
+template<typename T>
+__host__ __device__
+bool operator!=(const FluxLaplacian<T>& lhs, const VariableSegment<T>& rhs) { return !(lhs == rhs); }
+
+template<typename T>
+__host__ __device__
+bool operator!=(const VariableSegment<T>& lhs, const FluxLaplacian<T>& rhs) { return !(lhs == rhs); }
 
 
 #endif //CUDABANDED_AXISSEGMENT_CUH

@@ -1,45 +1,55 @@
-. src/deviceArrays/defFiles/../headers/GpuArray.h
-.. src/deviceArrays/defFiles/../headers/DeviceData.cuh
-... src/deviceArrays/defFiles/../headers/KernelSupport.cuh
-.... /usr/include/c++/13/cstddef
-..... /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h
-...... /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h
-....... /usr/include/features.h
-........ /usr/include/features-time64.h
-......... /usr/include/x86_64-linux-gnu/bits/wordsize.h
-......... /usr/include/x86_64-linux-gnu/bits/timesize.h
-.......... /usr/include/x86_64-linux-gnu/bits/wordsize.h
-........ /usr/include/x86_64-linux-gnu/sys/cdefs.h
-......... /usr/include/x86_64-linux-gnu/bits/wordsize.h
-......... /usr/include/x86_64-linux-gnu/bits/long-double.h
-........ /usr/include/x86_64-linux-gnu/gnu/stubs.h
-......... /usr/include/x86_64-linux-gnu/gnu/stubs-64.h
-...... /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h
-...... /usr/include/c++/13/pstl/pstl_config.h
-..... /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h
-.... /usr/include/c++/13/cstdint
-..... /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h
-...... /usr/include/stdint.h
-....... /usr/include/x86_64-linux-gnu/bits/libc-header-start.h
-....... /usr/include/x86_64-linux-gnu/bits/types.h
-........ /usr/include/x86_64-linux-gnu/bits/wordsize.h
-........ /usr/include/x86_64-linux-gnu/bits/timesize.h
-......... /usr/include/x86_64-linux-gnu/bits/wordsize.h
-........ /usr/include/x86_64-linux-gnu/bits/typesizes.h
-........ /usr/include/x86_64-linux-gnu/bits/time64.h
-....... /usr/include/x86_64-linux-gnu/bits/wchar.h
-....... /usr/include/x86_64-linux-gnu/bits/wordsize.h
-....... /usr/include/x86_64-linux-gnu/bits/stdint-intn.h
-....... /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h
-....... /usr/include/x86_64-linux-gnu/bits/stdint-least.h
-.... src/deviceArrays/defFiles/../headers/Support/GridDim.hpp
-..... src/deviceArrays/defFiles/../headers/Support/KernelPrep.cuh
-In file included from src/deviceArrays/defFiles/../headers/Support/GridDim.hpp:7,
-                 from src/deviceArrays/defFiles/../headers/KernelSupport.cuh:7,
-                 from src/deviceArrays/defFiles/../headers/DeviceData.cuh:8,
-                 from src/deviceArrays/defFiles/../headers/GpuArray.h:8,
-                 from src/deviceArrays/defFiles/streamHelper.cpp:1:
-src/deviceArrays/defFiles/../headers/Support/KernelPrep.cuh:4:10: fatal error: cuda_runtime.h: No such file or directory
-    4 | #include <cuda_runtime.h>
+. /home/usr/Documents/TelAvivU/src/wrapper/EigenDecompForFortran.h
+.. /home/usr/Documents/TelAvivU/src/wrapper/../solvers/EigenDecomp/EigenDecomp2d.h
+... /home/usr/Documents/TelAvivU/src/wrapper/../solvers/EigenDecomp/EigenDecompSolver.h
+.... /home/usr/Documents/TelAvivU/src/deviceArrays/headers/SquareMat.h
+..... /home/usr/Documents/TelAvivU/src/deviceArrays/headers/Mat.h
+...... /home/usr/Documents/TelAvivU/src/deviceArrays/headers/GpuArray.h
+....... /home/usr/Documents/TelAvivU/src/deviceArrays/headers/DeviceData.cuh
+........ /home/usr/Documents/TelAvivU/src/deviceArrays/headers/KernelSupport.cuh
+......... /usr/include/c++/13/cstddef
+.......... /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h
+........... /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h
+............ /usr/include/features.h
+............. /usr/include/features-time64.h
+.............. /usr/include/x86_64-linux-gnu/bits/wordsize.h
+.............. /usr/include/x86_64-linux-gnu/bits/timesize.h
+............... /usr/include/x86_64-linux-gnu/bits/wordsize.h
+............. /usr/include/x86_64-linux-gnu/sys/cdefs.h
+.............. /usr/include/x86_64-linux-gnu/bits/wordsize.h
+.............. /usr/include/x86_64-linux-gnu/bits/long-double.h
+............. /usr/include/x86_64-linux-gnu/gnu/stubs.h
+.............. /usr/include/x86_64-linux-gnu/gnu/stubs-64.h
+........... /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h
+........... /usr/include/c++/13/pstl/pstl_config.h
+.......... /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h
+......... /usr/include/c++/13/cstdint
+.......... /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h
+........... /usr/include/stdint.h
+............ /usr/include/x86_64-linux-gnu/bits/libc-header-start.h
+............ /usr/include/x86_64-linux-gnu/bits/types.h
+............. /usr/include/x86_64-linux-gnu/bits/wordsize.h
+............. /usr/include/x86_64-linux-gnu/bits/timesize.h
+.............. /usr/include/x86_64-linux-gnu/bits/wordsize.h
+............. /usr/include/x86_64-linux-gnu/bits/typesizes.h
+............. /usr/include/x86_64-linux-gnu/bits/time64.h
+............ /usr/include/x86_64-linux-gnu/bits/wchar.h
+............ /usr/include/x86_64-linux-gnu/bits/wordsize.h
+............ /usr/include/x86_64-linux-gnu/bits/stdint-intn.h
+............ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h
+............ /usr/include/x86_64-linux-gnu/bits/stdint-least.h
+......... /home/usr/Documents/TelAvivU/src/deviceArrays/headers/Support/GridDim.hpp
+.......... /home/usr/Documents/TelAvivU/src/deviceArrays/headers/Support/KernelPrep.cuh
+In file included from /home/usr/Documents/TelAvivU/src/deviceArrays/headers/Support/GridDim.hpp:12,
+                 from /home/usr/Documents/TelAvivU/src/deviceArrays/headers/KernelSupport.cuh:16,
+                 from /home/usr/Documents/TelAvivU/src/deviceArrays/headers/DeviceData.cuh:13,
+                 from /home/usr/Documents/TelAvivU/src/deviceArrays/headers/GpuArray.h:14,
+                 from /home/usr/Documents/TelAvivU/src/deviceArrays/headers/Mat.h:14,
+                 from /home/usr/Documents/TelAvivU/src/deviceArrays/headers/SquareMat.h:13,
+                 from /home/usr/Documents/TelAvivU/src/wrapper/../solvers/EigenDecomp/EigenDecompSolver.h:13,
+                 from /home/usr/Documents/TelAvivU/src/wrapper/../solvers/EigenDecomp/EigenDecomp2d.h:14,
+                 from /home/usr/Documents/TelAvivU/src/wrapper/EigenDecompForFortran.h:12,
+                 from /home/usr/Documents/TelAvivU/src/wrapper/EigenDecompForFortran.cpp:2:
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Support/KernelPrep.cuh:13:10: fatal error: cuda_runtime.h: No such file or directory
+   13 | #include <cuda_runtime.h>
       |          ^~~~~~~~~~~~~~~~
 compilation terminated.

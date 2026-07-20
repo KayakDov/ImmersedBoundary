@@ -1,12 +1,14 @@
+#pragma once
+
 #include <memory>
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+#include "wrapper/LaplOperatorType.h"
 
-
-
-#include "solvers/EigenDecomp/EigenDecompForFortran.h"
 #include "immersedBoundary/ImerssedEquation.h"
+#include "wrapper/EigenDecompForFortran.h"
+
 
 /**
  * @file ImmersedEquationInterface.hpp
@@ -30,7 +32,7 @@ namespace ImEq {
         size_t height, size_t width, size_t depth,
         bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool frontIsNeumann, bool backIsNeumann,
         Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
-        bool isStaggered,
+        size_t xSegSpacing, size_t ySegSpacing, size_t zSegSpacing,
         size_t forceSize,
         size_t nnzMax,
         Real *p, Real *f,
@@ -51,7 +53,11 @@ namespace ImEq {
             XYZ<bool>(rightIsNeumann, bottomIsNeumann, backIsNeumann),
             XYZ<Real>(leftVal, topVal, frontVal),
             XYZ<Real>(rightVal, bottomVal, backVal),
-            isStaggered,
+            XYZ<eigen::LaplOperatorT>(
+                static_cast<eigen::LaplOperatorT>(xSegSpacing),
+                static_cast<eigen::LaplOperatorT>(ySegSpacing),
+                static_cast<eigen::LaplOperatorT>(zSegSpacing)
+            ),
             0,
             [&](const auto& boundary) {
                     eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int>>(boundary, forceSize, nnzMax, p, f, dt, tol, maxIterations);
@@ -83,7 +89,7 @@ namespace ImEq {
             size_t dim1Length, size_t dim2Length, size_t dim3Length,
             bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann,
             double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal,
-            bool isStaggered,
+            size_t dim1SegSpacing, size_t dim2SegSpacing, size_t dim3SegSpacing,
             size_t forceSize,
             size_t nnzMax,
             double *p, double *f,
@@ -95,7 +101,7 @@ namespace ImEq {
                 dim1Length, dim3Length, dim2Length,
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartIsNeumann, dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
                 dim3StartVal, dim3EndVal, dim1StartVal, dim1EndVal, dim2StartVal, dim2EndVal,
-                isStaggered,
+                dim3SegSpacing, dim1SegSpacing, dim2SegSpacing,
                 forceSize,
                 nnzMax,
                 p, f,
@@ -109,7 +115,7 @@ namespace ImEq {
             size_t dim1Length, size_t dim2Length, size_t dim3Length,
             bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann,
             double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal,
-            bool isStaggered,
+            size_t dim1SegSpacing, size_t dim2SegSpacing, size_t dim3SegSpacing,
             size_t forceSize,
             size_t nnzMax,
             float *p, float *f,
@@ -121,7 +127,7 @@ namespace ImEq {
                 dim1Length, dim3Length, dim2Length,
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartIsNeumann, dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
                 dim3StartVal, dim3EndVal, dim1StartVal, dim1EndVal, dim2StartVal, dim2EndVal,
-                isStaggered,
+                dim3SegSpacing, dim1SegSpacing, dim2SegSpacing,
                 forceSize,
                 nnzMax,
                 p, f,
@@ -135,7 +141,7 @@ namespace ImEq {
             size_t dim1Length, size_t dim2Length, size_t dim3Length,
             bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann,
             double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal,
-            bool isStaggered,
+            size_t dim1SegSpacing, size_t dim2SegSpacing, size_t dim3SegSpacing,
             size_t forceSize,
             size_t nnzMax,
             double *p, double *f,
@@ -147,7 +153,7 @@ namespace ImEq {
                 dim1Length, dim3Length, dim2Length,
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartIsNeumann, dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
                 dim3StartVal, dim3EndVal, dim1StartVal, dim1EndVal, dim2StartVal, dim2EndVal,
-                isStaggered,
+                dim3SegSpacing, dim1SegSpacing, dim2SegSpacing,
                 forceSize,
                 nnzMax,
                 p, f,
@@ -161,11 +167,11 @@ namespace ImEq {
             size_t dim1Length, size_t dim2Length, size_t dim3Length,
             bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann,
             float dim1StartVal, float dim1EndVal, float dim2StartVal, float dim2EndVal, float dim3StartVal, float dim3EndVal,
-            bool isStaggered,
+            size_t dim1SegSpacing, size_t dim2SegSpacing, size_t dim3SegSpacing,
             size_t forceSize,
             size_t nnzMax,
             float *p, float *f,
-            float* dim1Delta, float* dim2Delta, double dt, float* dim3Delta,
+            float* dim1Delta, float* dim2Delta, float* dim3Delta, double dt,
             bool dim1UniformDelta, bool dim2UniformDelta, bool dim3UniformDelta,
             double tol, size_t maxIterations
         ) {
@@ -173,7 +179,7 @@ namespace ImEq {
                 dim1Length, dim3Length, dim2Length,
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartIsNeumann, dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
                 dim3StartVal, dim3EndVal, dim1StartVal, dim1EndVal, dim2StartVal, dim2EndVal,
-                isStaggered,
+                dim3SegSpacing, dim1SegSpacing, dim2SegSpacing,
                 forceSize,
                 nnzMax,
                 p, f,
@@ -233,6 +239,8 @@ namespace ImEq {
     }
 }
 
+
+
 namespace eigen {
 
     template<typename Real>
@@ -241,39 +249,36 @@ namespace eigen {
     template<typename Real>
     size_t initEigenDecompSolver(
         size_t rows, size_t cols, size_t layers,
-        Real* dim3Delta, Real* dim1Delta, Real* dim2Delta,
-        bool dim3UniformDelta, bool dim1UniformDelta, bool dim2UniformDelta,
-        bool dim3StartIsNeumann, bool dim3EndIsNeumann, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann,
-        Real dim3StartVal, Real dim3EndVal, Real dim1StartVal, Real dim1EndVal, Real dim2StartVal, Real dim2EndVal,
-        bool isStaggered,
+        const Real* xDelta, const Real* yDelta, const Real* zDelta,
+        size_t xSegSpacing, size_t ySegSpacing, size_t zSegSpacing,
+        bool xStartIsNeumann, bool xEndIsNeumann, bool yStartIsNeumann, bool yEndIsNeumann, bool zStartIsNeumann, bool zEndIsNeumann,
+        Real xStartVal, Real xEndVal, Real yStartVal, Real yEndVal, Real zStartVal, Real zEndVal,
         bool thomas,
         Real helmholtzShift
     ) {
-
-    std::cout << "\n========== EigenDecompForFortran Constructor ==========\n";
-
-     std::cout << "Dimensions:\n";
-     std::cout << "  rows   = " << rows   << '\n';
-     std::cout << "  cols   = " << cols   << '\n';
-     std::cout << "  layers = " << layers << '\n';
-
-
-
-     std::cout << "=======================================================" << std::endl;
-
-
         auto xb = Mat<Real>::create(rows * cols * layers, 3);
 
+        XYZ<std::vector<Real>> delta(
+            std::vector<Real>(xDelta, xDelta + (hasVariableDelta(xSegSpacing) ? cols + 1 : 1)),
+            std::vector<Real>(yDelta, yDelta + (hasVariableDelta(ySegSpacing) ? rows + 1 : 1)),
+            std::vector<Real>(zDelta, zDelta + (hasVariableDelta(zSegSpacing) ? layers + 1 : 1))
+        );
+
         size_t solverHandle = solvers<Real>.size();
+
         solvers<Real>.push_back(
             std::make_unique<EigenDecompForFortran<Real>>(
-                rows, cols, layers,
-                std::vector<Real>(dim3Delta, dim3Delta + (dim3UniformDelta ? 1 : cols + 1)),
-                std::vector<Real>(dim1Delta, dim1Delta + (dim1UniformDelta ? 1 : rows + 1)),
-                std::vector<Real>(dim2Delta, dim2Delta + (dim2UniformDelta ? 1 : layers + 1)),
-                dim3StartIsNeumann, dim3EndIsNeumann, dim1StartIsNeumann, dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
-                dim3StartVal, dim3EndVal, dim1StartVal, dim1EndVal, dim2StartVal, dim2EndVal,
-                isStaggered,
+                GridDim(rows, cols, layers),
+                delta,
+                XYZ<bool>(xStartIsNeumann, yStartIsNeumann, zStartIsNeumann),
+                XYZ<bool>(xEndIsNeumann, yEndIsNeumann, zEndIsNeumann),
+                XYZ<Real>(xStartVal, yStartVal, zStartVal),
+                XYZ<Real>(xEndVal, yEndVal, zEndVal),
+                XYZ<eigen::LaplOperatorT>(
+                    static_cast<eigen::LaplOperatorT>(xSegSpacing),
+                    static_cast<eigen::LaplOperatorT>(ySegSpacing),
+                    static_cast<eigen::LaplOperatorT>(zSegSpacing)
+                ),
                 thomas,
                 helmholtzShift,
                 xb.col(0), xb.col(1), xb.col(2)
@@ -286,15 +291,6 @@ namespace eigen {
     void runDecompSolver(size_t solverHandle, Real* xHost, Real* bHost) {
         if (solverHandle >= solvers<Real>.size() || !solvers<Real>[solverHandle])
             throw std::runtime_error("Invalid eigen solver handle.");
-
-        std::cout << "\n========== EigenDecompForFortran Solve ==========\n";
-
-        std::cout << "Dimensions:\n";
-        std::cout << "  solver Handle   = " << solverHandle   << " out of " << solvers<Real>.size() << '\n';
-
-
-        std::cout << "=======================================================" << std::endl;
-
 
         solvers<Real>[solverHandle]->solve(xHost, bHost);
         cudaDeviceSynchronize();
@@ -309,40 +305,37 @@ namespace eigen {
     extern "C" {
         inline size_t initEigenDecomp_d(
             size_t dim1Length, size_t dim2Length, size_t dim3Length,
-            double* dim1Delta, double* dim2Delta, double* dim3Delta,
-            bool dim1UniformDelta, bool dim2UniformDelta, bool dim3UniformDelta,
+            const double* dim1Delta, const double* dim2Delta, const double* dim3Delta,
+            int dim1SegType, int dim2SegType, int dim3SegType,
             bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann,
             double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal,
-            bool isStaggered,
             bool thomas,
             double helmholtzShift
         ) {
             return initEigenDecompSolver<double>(
                 dim1Length, dim3Length, dim2Length,
                 dim3Delta, dim1Delta, dim2Delta,
-                dim3UniformDelta, dim1UniformDelta, dim2UniformDelta,
+                dim3SegType, dim1SegType, dim2SegType,
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartIsNeumann, dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
                 dim3StartVal, dim3EndVal, dim1StartVal, dim1EndVal, dim2StartVal, dim2EndVal,
-                isStaggered, thomas, helmholtzShift);
+                thomas, helmholtzShift);
         }
 
         inline size_t initEigenDecomp_s(
             size_t dim1Length, size_t dim2Length, size_t dim3Length,
-            float* dim1Delta, float* dim2Delta, float* dim3Delta,
-            bool dim1UniformDelta, bool dim2UniformDelta, bool dim3UniformDelta,
+            const float* dim1Delta, const float* dim2Delta, const float* dim3Delta,
+            int dim1SegType, int dim2SegType, int dim3SegType,
             bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann,
             float dim1StartVal, float dim1EndVal, float dim2StartVal, float dim2EndVal, float dim3StartVal, float dim3EndVal,
-            bool isStaggered,
-            bool thomas,
-            float helmholtzShift
+            bool thomas, float helmholtzShift
         ) {
             return initEigenDecompSolver<float>(
                 dim1Length, dim3Length, dim2Length,
                 dim3Delta, dim1Delta, dim2Delta,
-                dim3UniformDelta, dim1UniformDelta, dim2UniformDelta,
+                dim3SegType, dim1SegType, dim2SegType,
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartIsNeumann, dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
                 dim3StartVal, dim3EndVal, dim1StartVal, dim1EndVal, dim2StartVal, dim2EndVal,
-                isStaggered, thomas, helmholtzShift
+                thomas, helmholtzShift
             );
         }
 

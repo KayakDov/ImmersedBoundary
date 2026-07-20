@@ -11,9 +11,10 @@
 #define CUDABANDED_BOUNDARYCONFIG_CUH
 
 #include <functional>
-#include "deviceArrays/headers/sparse/BandedMat.h"
+
 #include "poisson/AxisSegment.cuh"
-#include "solvers/Event.h"
+# include "wrapper/LaplOperatorType.h"
+
 
 /**
  * @struct BoundaryConfig
@@ -95,7 +96,7 @@ public:
  * @param endIsNeumann XYZ struct of Neumann flags for the end boundaries.
  * @param startVal XYZ struct of boundary values for the start boundaries.
  * @param endVal XYZ struct of boundary values for the end boundaries.
- * @param isStaggered True if using a staggered grid discretization.
+ * @param segType True if using a staggered grid discretization.
  * @param stream CUDA stream used for asynchronous GPU allocations.
  * @param launchParams The lambda callback to execute once types are deduced.  This is a lambda expression that takes in a single boundaryConfig, and does something with it.
  */
@@ -107,75 +108,115 @@ void buildBoundaryConfigAndLaunch(
     const XYZ<bool>& endIsNeumann,
     const XYZ<Real>& startVal,
     const XYZ<Real>& endVal,
-    bool isStaggered,
+    const XYZ<eigen::LaplOperatorT>& segType,
     cudaStream_t stream,
     Callback&& launchParams
 ) {
+
     auto dispatchZ = [&](const auto& segHostX, const auto& segHostY) {
         using SegX = typename std::decay_t<decltype(segHostX)>::SegmentType;
         using SegY = typename std::decay_t<decltype(segHostY)>::SegmentType;
-        if (delta.z.size() == 1) {
-            AxisSegmentHost<UniformSegment<Real>> segHostZ(
-                {startVal.z, startIsNeumann.z},
-                {endVal.z, endIsNeumann.z},
-                isStaggered,
-                delta.z[0],
-                dim.layers
-            );
-            launchParams(
-                BoundaryConfigHost<Real, SegX, SegY, UniformSegment<Real>>(segHostX, segHostY, segHostZ)
-            );
-        } else {
-            SimpleArray<Real> arrayZ = SimpleArray<Real>::create(delta.z, stream);
-            AxisSegmentHost<VariableSegment<Real>> segHostZ(
-                {startVal.z, startIsNeumann.z},
-                {endVal.z, endIsNeumann.z},
-                arrayZ
-            );
-            launchParams(
-                BoundaryConfigHost<Real, SegX, SegY, VariableSegment<Real>>(segHostX, segHostY, segHostZ)
-            );
+        switch (segType.z) {
+            case eigen::FluxLapl: {
+                AxisSegmentHost<FluxLaplacian<Real>> segHostZ(
+                    {startVal.z, startIsNeumann.z},
+                    {endVal.z, endIsNeumann.z},
+                    delta.z, stream
+                );
+                launchParams(
+                    BoundaryConfigHost<Real, SegX, SegY, FluxLaplacian<Real>>(segHostX, segHostY, segHostZ)
+                );
+                break;
+            }
+            case eigen::VariableDeltaLapl: {
+                SimpleArray<Real> arrayZ = SimpleArray<Real>::create(delta.z, stream);
+                AxisSegmentHost<VariableSegment<Real>> segHostZ(
+                    {startVal.z, startIsNeumann.z},
+                    {endVal.z, endIsNeumann.z},
+                    arrayZ
+                );
+                launchParams(
+                    BoundaryConfigHost<Real, SegX, SegY, VariableSegment<Real>>(segHostX, segHostY, segHostZ)
+                );
+                break;
+            }
+            default: {
+                AxisSegmentHost<UniformSegment<Real>> segHostZ(
+                    {startVal.z, startIsNeumann.z},
+                    {endVal.z, endIsNeumann.z},
+                    segType.z == eigen::UniformDeltaStaggeredLapl,
+                    delta.z[0],
+                    dim.layers
+                );
+                launchParams(BoundaryConfigHost<Real, SegX, SegY, UniformSegment<Real>>(segHostX, segHostY, segHostZ));
+            }
         }
     };
 
     auto dispatchY = [&](const auto& segHostX) {
-        if (delta.y.size() == 1) {
-            AxisSegmentHost<UniformSegment<Real>> segHostY(
-                {startVal.y, startIsNeumann.y},
-                {endVal.y, endIsNeumann.y},
-                isStaggered,
-                delta.y[0],
-                dim.rows
-            );
-            dispatchZ(segHostX, segHostY);
-        } else {
-            SimpleArray<Real> arrayY = SimpleArray<Real>::create(delta.y, stream);
-            AxisSegmentHost<VariableSegment<Real>> segHostY(
-                {startVal.y, startIsNeumann.y},
-                {endVal.y, endIsNeumann.y},
-                arrayY
-            );
-            dispatchZ(segHostX, segHostY);
+        switch (segType.y) {
+            case eigen::FluxLapl: {
+                AxisSegmentHost<FluxLaplacian<Real>> segHostY(
+                    {startVal.y, startIsNeumann.y},
+                    {endVal.y, endIsNeumann.y},
+                    delta.y, stream
+                );
+                dispatchZ(segHostX, segHostY);
+                break;
+            }
+            case eigen::VariableDeltaLapl: {
+                SimpleArray<Real> arrayY = SimpleArray<Real>::create(delta.y, stream);
+                AxisSegmentHost<VariableSegment<Real>> segHostY(
+                    {startVal.y, startIsNeumann.y},
+                    {endVal.y, endIsNeumann.y},
+                    arrayY
+                );
+                dispatchZ(segHostX, segHostY);
+                break;
+            }
+            default: {
+                AxisSegmentHost<UniformSegment<Real>> segHostY(
+                    {startVal.y, startIsNeumann.y},
+                    {endVal.y, endIsNeumann.y},
+                    segType.y == eigen::UniformDeltaStaggeredLapl,
+                    delta.y[0],
+                    dim.rows
+                );
+                dispatchZ(segHostX, segHostY);
+            }
         }
     };
 
-    if (delta.x.size() == 1) {
-        AxisSegmentHost<UniformSegment<Real>> segHostX(
+    switch (segType.x) {
+        case eigen::FluxLapl: {
+            AxisSegmentHost<FluxLaplacian<Real>> segHostX(
+                    {startVal.x, startIsNeumann.x},
+                    {endVal.x, endIsNeumann.x},
+                    delta.x, stream
+                );
+            dispatchY(segHostX);
+            break;
+        }
+        case eigen::VariableDeltaLapl: {
+            SimpleArray<Real> arrayX = SimpleArray<Real>::create(delta.x, stream);
+            AxisSegmentHost<VariableSegment<Real>> segHostX(
+                    {startVal.x, startIsNeumann.x},
+                    {endVal.x, endIsNeumann.x},
+                    arrayX
+                );
+            dispatchY(segHostX);
+            break;
+        }
+        default: {
+            AxisSegmentHost<UniformSegment<Real>> segHostX(
                 {startVal.x, startIsNeumann.x},
                 {endVal.x, endIsNeumann.x},
-                isStaggered,
+                segType.x == eigen::UniformDeltaStaggeredLapl,
                 delta.x[0],
                 dim.cols
             );
-        dispatchY(segHostX);
-    } else {
-        SimpleArray<Real> arrayX = SimpleArray<Real>::create(delta.x, stream);
-        AxisSegmentHost<VariableSegment<Real>> segHostX(
-                {startVal.x, startIsNeumann.x},
-                {endVal.x, endIsNeumann.x},
-                arrayX
-            );
-        dispatchY(segHostX);
+            dispatchY(segHostX);
+        }
     }
 }
 
@@ -203,16 +244,35 @@ static auto makeUniformBoundaryConfigHost(
 #ifndef INSTANTIATION_MACROS_H
 #define INSTANTIATION_MACROS_H
 
-// Applies a given MACRO_NAME to all 8 segment combinations for a specific Real type
+// Applies a given MACRO_NAME to all 27 segment combinations for a specific Real type
 #define APPLY_TO_ALL_SEGMENT_COMBOS(Real, MACRO_NAME) \
-MACRO_NAME(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
-MACRO_NAME(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
-MACRO_NAME(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
-MACRO_NAME(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
-MACRO_NAME(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
-MACRO_NAME(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
-MACRO_NAME(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
-MACRO_NAME(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
+MACRO_NAME(Real, UniformSegment<Real>, UniformSegment<Real>, UniformSegment<Real>) \
+MACRO_NAME(Real, UniformSegment<Real>, UniformSegment<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, UniformSegment<Real>, UniformSegment<Real>, FluxLaplacian<Real>) \
+MACRO_NAME(Real, UniformSegment<Real>, VariableSegment<Real>, UniformSegment<Real>) \
+MACRO_NAME(Real, UniformSegment<Real>, VariableSegment<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, UniformSegment<Real>, VariableSegment<Real>, FluxLaplacian<Real>) \
+MACRO_NAME(Real, UniformSegment<Real>, FluxLaplacian<Real>, UniformSegment<Real>) \
+MACRO_NAME(Real, UniformSegment<Real>, FluxLaplacian<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, UniformSegment<Real>, FluxLaplacian<Real>, FluxLaplacian<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, UniformSegment<Real>, UniformSegment<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, UniformSegment<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, UniformSegment<Real>, FluxLaplacian<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, VariableSegment<Real>, FluxLaplacian<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, FluxLaplacian<Real>, UniformSegment<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, FluxLaplacian<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, VariableSegment<Real>, FluxLaplacian<Real>, FluxLaplacian<Real>) \
+MACRO_NAME(Real, FluxLaplacian<Real>, UniformSegment<Real>, UniformSegment<Real>) \
+MACRO_NAME(Real, FluxLaplacian<Real>, UniformSegment<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, FluxLaplacian<Real>, UniformSegment<Real>, FluxLaplacian<Real>) \
+MACRO_NAME(Real, FluxLaplacian<Real>, VariableSegment<Real>, UniformSegment<Real>) \
+MACRO_NAME(Real, FluxLaplacian<Real>, VariableSegment<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, FluxLaplacian<Real>, VariableSegment<Real>, FluxLaplacian<Real>) \
+MACRO_NAME(Real, FluxLaplacian<Real>, FluxLaplacian<Real>, UniformSegment<Real>) \
+MACRO_NAME(Real, FluxLaplacian<Real>, FluxLaplacian<Real>, VariableSegment<Real>) \
+MACRO_NAME(Real, FluxLaplacian<Real>, FluxLaplacian<Real>, FluxLaplacian<Real>)
 
 #endif // INSTANTIATION_MACROS_H
 #endif // CUDABANDED_BOUNDARYCONFIG_CUH

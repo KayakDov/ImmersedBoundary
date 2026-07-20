@@ -244,14 +244,14 @@ __global__ void setSymetrizationMatrix(DeviceData1d<T> symnetrizationBand, Delta
  * @param primaryDiag  The primary diagonal of S.
  * @param subDiag The sub diagoanl of S.
  * @param superDiag The super diagonal of S.
- * @param axisSegment
+ * @param axisSegment //TODO: verify this method is correct for AxisSegT = FluxSegment
  */
-template <typename T>
+template <typename T, typename AxisSegmentT>
 __global__ void setSymetricMatrix(
     DeviceData1d<T> primaryDiag,
     DeviceData1d<T> subDiag,
     DeviceData1d<T> superDiag,
-    const VariableSegment<T> axisSegment
+    const AxisSegmentT axisSegment
 ) {
     size_t i = idx();
     if (i >= primaryDiag.cols) return;
@@ -291,8 +291,8 @@ __global__ void setSymetricMatrix(
  * @param eigenInv The inverse of the eigen matrix will be stored here, with V_L^{-1} = V_S^T D^{-1}
  * @param axisSegment
  */
-template<typename T>
-__global__ void mapEigenSymmToEigenLapInv(const DeviceData2d<T> eigen, DeviceData2d<T> eigenInv, const VariableSegment<T> axisSegment) {
+template<typename T, typename AxisSegT>
+__global__ void mapEigenSymmToEigenLapInv(const DeviceData2d<T> eigen, DeviceData2d<T> eigenInv, const AxisSegT axisSegment) {
     if (GridInd2d ind; ind < eigenInv) {
         // V_L^{-1}[i, j] = V_S[j, i] * D_j
         T d_col = sqrt(axisSegment.delta[ind.col] + axisSegment.delta[ind.col + 1]);
@@ -300,8 +300,8 @@ __global__ void mapEigenSymmToEigenLapInv(const DeviceData2d<T> eigen, DeviceDat
     }
 }
 
-template<typename T>
-__global__ void mapEigenSymmToEigenLap(DeviceData2d<T> eigen, const VariableSegment<T> axisSegment) {
+template<typename T, typename AxisSegT>
+__global__ void mapEigenSymmToEigenLap(DeviceData2d<T> eigen, const AxisSegT axisSegment) {
     if (GridInd2d ind; ind < eigen) {
         // V_L[i, j] = V_S[i, j] / D_i
         T d_row = sqrt(axisSegment.delta[ind.row] + axisSegment.delta[ind.row + 1]);
@@ -309,13 +309,13 @@ __global__ void mapEigenSymmToEigenLap(DeviceData2d<T> eigen, const VariableSegm
     }
 }
 
-template<typename T>
-void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eVecsInv, Vec<T>& eVals, const VariableSegment<T> &axisSegment) {
 
+template<typename T, typename AxisSegT>
+void generateEigenVariableSpacing(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eVecsInv, Vec<T>& eVals, const AxisSegT &axisSegment) {
     eVecs.fill(0, hand);
 
     auto kp1d = eVals.kernelPrep();
-    setSymetricMatrix<<<kp1d.numBlocks, kp1d.threadsPerBlock, 0, hand>>>(
+    setSymetricMatrix<T><<<kp1d.numBlocks, kp1d.threadsPerBlock, 0, hand>>>(
         eVecs.diag(0).toKernel1d(),
         eVecs.diag(-1).toKernel1d(),
         eVecs.diag(1).toKernel1d(),
@@ -325,18 +325,28 @@ void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eV
     eVecs.eigenSPD(eVals, hand);
 
     auto kp2d = eVecs.kernelPrep();
-    mapEigenSymmToEigenLapInv<<<kp2d.numBlocks, kp2d.threadsPerBlock, 0, hand>>>(
+    mapEigenSymmToEigenLapInv<T><<<kp2d.numBlocks, kp2d.threadsPerBlock, 0, hand>>>(
         eVecs.toKernel2d(),
         eVecsInv.toKernel2d(),
         axisSegment
     );
 
-    mapEigenSymmToEigenLap<<<kp2d.numBlocks, kp2d.threadsPerBlock, 0, hand>>>(
+    mapEigenSymmToEigenLap<T><<<kp2d.numBlocks, kp2d.threadsPerBlock, 0, hand>>>(
         eVecs.toKernel2d(),
         axisSegment
     );
 
-     eVals.mult(GPUScalar<T>::get(-1), &hand);
+    eVals.mult(GPUScalar<T>::get(-1), &hand);
+}
+
+template<typename T>
+void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eVecsInv, Vec<T>& eVals, const VariableSegment<T> &axisSegment) {
+    generateEigenVariableSpacing(hand, eVecs, eVecsInv, eVals, axisSegment);
+}
+
+template<typename T>
+void Eigen<T>::generateEigen(Handle &hand, SquareMat<T> &eVecs, SquareMat<T> &eVecsInv, Vec<T> &eVals, const FluxLaplacian<T> &axisSegment) {
+    generateEigenVariableSpacing(hand, eVecs, eVecsInv, eVals, axisSegment);
 }
 
 template<typename T>

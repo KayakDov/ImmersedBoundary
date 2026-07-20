@@ -15,6 +15,7 @@
 #include "../deviceArrays/headers/sparse/SparseCSC.cuh"
 #include "poisson/BoundaryConfig.cuh"
 #include "solvers/BiCGSTAB.cuh"
+#include "poisson/AxisSegment.cuh"
 
 
 template <typename Real, typename Int> class ImmersedEqSolver;

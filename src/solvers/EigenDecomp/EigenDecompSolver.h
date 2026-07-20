@@ -11,10 +11,9 @@
 #define EIGENDECOMPSOLVER_H
 
 #include "deviceArrays/headers/SquareMat.h"
-#include "deviceArrays/headers/Vec.h"
 #include "../Event.h"
 #include "poisson/Eigen.cuh"
-#include "poisson/Poisson.cuh"
+
 
 /**
  * @brief Direct Poisson solver using eigen-decomposition (Fast Diagonalization Method).

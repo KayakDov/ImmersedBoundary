@@ -8,7 +8,7 @@
 #include <random>
 
 
-#include "FortranBindings.hpp"
+#include "wrapper/FortranBindings.hpp"
 #include "deviceArrays/headers/DeviceMemory.h"
 #include "immersedBoundary/ImerssedEquation.h"
 #include "kronecker/KroneckerTriplet.h"
@@ -91,19 +91,21 @@ TEST(FortranWrapper, MultipleEigenSolversSideBySide){
 
     // 1. Initialize three independent solvers side-by-side
     size_t h1 = eigen::initEigenDecomp_d(
-            N, N, N, d.x.data(), d.y.data(), d.z.data(),
-            false, false, false, false, false, false, false, false, false,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, 0); // Standard
+            N, N, N,
+            d.x.data(), d.y.data(), d.z.data(),
+            false, false, false,
+            false, false, false, false, false, false,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0); // Standard
 
     size_t h2 = eigen::initEigenDecomp_d(
             N, N, N, d.x.data(), d.y.data(), d.z.data(),
             false, false, false, false, false, false, false, false, false,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, true, 0);  // Thomas
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false,0);  // Thomas
 
     size_t h3 = eigen::initEigenDecomp_d(
             N, N, N, d.x.data(), d.y.data(), d.z.data(),
             false, false, false, false, false, false, false, false, false,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, false, 0); // Standard 2
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0); // Standard 2
 
     // 2. Verify the wrapper assigned unique handles to the vector
     ASSERT_NE(h1, h2);
@@ -173,7 +175,7 @@ TEST(FortranWrapper, SmokeTestAlex)
             false, false, false,
             false, false, false,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            false, false, 0
+            false, 0
         );
 
     size_t handleThomas = eigen::initEigenDecomp_d(
@@ -183,7 +185,7 @@ TEST(FortranWrapper, SmokeTestAlex)
             false, false, false,
             false, false, false,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            false, true, 0
+            true, 0
         );
 
     eigen::solveEigenDecomp_d(handleStandard, xStandard.data(), rhs.data());
@@ -633,7 +635,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real, segX, segY, segZ>& 
 template <typename Real>
 void boundaryBattery(
     XYZ<bool> startIsN, XYZ<bool> endIsN, XYZ<Real> startVal, XYZ<Real> endVal,
-    GridDim dim, const XYZ<std::vector<Real>>& deltas, bool isStag,
+    GridDim dim, const XYZ<std::vector<Real>>& deltas, XYZ<eigen::LaplOperatorT> isStag,
     Handle* hand3, Event* event2, double tolerance, Mat<Real> bufferNXNPlus5) {
 
     std::stringstream ss;
@@ -746,7 +748,7 @@ TEST(LaplacianMath, laplacian) {
                  for (size_t y1IsN = 0; y1IsN < 2; ++y1IsN)
                      for (size_t z0IsN = 0; z0IsN < 2; ++z0IsN)
                          for (size_t z1IsN = 0; z1IsN < 2; ++z1IsN)
-                             for (size_t isStag = 0; isStag < 2; ++isStag)
+                             for (size_t isStag = 0; isStag < 3; ++isStag)
                                  for (size_t x0Val = 0; x0Val < 2; ++x0Val)
                                      for (size_t x1Val = 0; x1Val < 2; ++x1Val)
                                          for (size_t y0Val = 0; y0Val < 2; ++y0Val)
@@ -761,7 +763,8 @@ TEST(LaplacianMath, laplacian) {
                                                                      XYZ<bool> endIsN(x1IsN, y1IsN, z1IsN);
                                                                      XYZ<Real> startVal(static_cast<Real>(x0Val), static_cast<Real>(y0Val), static_cast<Real>(z0Val));
                                                                      XYZ<Real> endVal(static_cast<Real>(x1Val), static_cast<Real>(y1Val), static_cast<Real>(z1Val));
-                                                                     bool isStagered = isStag;
+                                                                     auto laplOp = static_cast<eigen::LaplOperatorT>(isStag);
+                                                                     XYZ<eigen::LaplOperatorT> isStagered(laplOp, laplOp, laplOp);
 
                                                                      // GridDim dim(2, 2, 1);
                                                                      // XYZ<bool> startIsN(0, 0, 0);
@@ -771,7 +774,7 @@ TEST(LaplacianMath, laplacian) {
                                                                      // bool isStagered = 0;
 
                                                                      // Determine spacing type and generate deterministic seed
-                                                                     bool testVariableSpacing = ((dim.rows + dim.cols + dim.layers + startIsN.x + isStagered) % 2 == 0);
+                                                                     bool testVariableSpacing = ((dim.rows + dim.cols + dim.layers + startIsN.x + isStag) % 2 == 0);
                                                                      size_t seedBase = dim.rows * dim.cols * dim.layers + startIsN.x;
 
                                                                      // Safely generate deltas via helper

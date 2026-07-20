@@ -1,13 +1,20 @@
 Subroutine Get_Potential
     Use Grid; Use Numbers; Use Numerica; Use Operators; Use Variables
-    Use AlexCudaCompatibility, only : PotentialHandle
-    Use eigenbcgsolver_eigen_mod, only : solve_eigen_decomp_d
-    Use EVD_Operators, only : ExxP, Ex_invP, EyP, Ey_invP, EzP, Ez_invP, &
-            LambxP, LambyP, LambzP
+    ! Potential intentionally uses Alex's CPU solver until the library's
+    ! per-axis finite-volume (cell-centred) mode is in place: the y-axis of
+    ! the Fi operator is cell-centred, where the current GPU stencil is a
+    ! different (valid but non-matching) discretization.  Unlike temperature
+    ! and the velocities there is no Helmholtz shift to damp the difference,
+    ! and the potential feeds the Lorentz force at coupling ~ DGr*Ha^2, so it
+    ! must reproduce Alex's operator exactly.  Same reasoning and same
+    ! transpose pattern as the pressure solve in time_step_Q2D.f90.
+    Use EVD_Operators, only : ExxFi, Ex_invFi, EyFi, Ey_invFi, EzFi, Ez_invFi, &
+            LambxFi, LambyFi, LambzFi
     Implicit Real(kind=8) (A-H,O-Z)
 
-    Real(kind=8), Dimension(Ny1, Nz, Nx) :: Potential_flat
-    Real(kind=8), Dimension(Ny1, Nz, Nx) :: FDRHP_flat
+    ! Alex's solver expects (x,y,z) index order; the CFD arrays are (y,z,x).
+    Real(kind=8), Dimension(1:Nx, 1:Ny1, 1:Nz) :: CPU_Fi
+    Real(kind=8), Dimension(1:Nx, 1:Ny1, 1:Nz) :: CPU_RHS_Fi
 
     !$OMP Parallel Do Private(i,j,k,DVx_dz,DVz_dx)
     Do j=1,Ny1
@@ -20,12 +27,31 @@ Subroutine Get_Potential
         End Do
     End Do
 
-    FDRHP_flat     = FDRHP(1:Ny1, 1:Nz, 1:Nx)
-    Potential_flat = Potential(1:Ny1, 1:Nz, 1:Nx)
+    Do k = 1, Nz
+        Do j = 1, Ny1
+            Do i = 1, Nx
+                CPU_RHS_Fi(i,j,k) = FDRHP(j,k,i)
+            End Do
+        End Do
+    End Do
 
-    Call solve_eigen_decomp_d(PotentialHandle, Potential_flat, FDRHP_flat)
+    CPU_Fi = 0.D0
 
-    Potential(1:Ny1, 1:Nz, 1:Nx) = Potential_flat
+    Call EVDmethod (CPU_Fi, CPU_RHS_Fi, &
+            ExxFi(1:Nx,1:Nx),   Ex_invFi(1:Nx,1:Nx), &
+            EyFi(1:Ny1,1:Ny1),  Ey_invFi(1:Ny1,1:Ny1), &
+            EzFi(1:Nz,1:Nz),    Ez_invFi(1:Nz,1:Nz), &
+            LambxFi(1:Nx), LambyFi(1:Ny1), LambzFi(1:Nz), &
+            Nx, Ny1, Nz, 1.D0, 1.D0, 1.D0, 0.D0)
+
+    ! Return to the CFD array layout.
+    Do k = 1, Nz
+        Do j = 1, Ny1
+            Do i = 1, Nx
+                Potential(j,k,i) = CPU_Fi(i,j,k)
+            End Do
+        End Do
+    End Do
 
     Potential = Potential - Potential(1,1,1)
 

@@ -6,6 +6,7 @@
 #include "solvers/EigenDecomp/EigenDecomp2d.h"
 #include "solvers/EigenDecomp/EigenDecomp3d.cuh"
 #include <string>
+#include "poisson/Poisson.cuh"
 
 //TODO: Split this into a class that deals with memory allocation, and a class that does everything else.
 

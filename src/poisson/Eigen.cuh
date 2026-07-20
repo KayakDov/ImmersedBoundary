@@ -67,6 +67,8 @@ public:
 
     static void generateEigen(Handle &hand, SquareMat<T> &eVecs, SquareMat<T> &eVecsInv, Vec<T> &eVals, const VariableSegment<T> &axisSegment);
 
+    static void generateEigen(Handle &hand, SquareMat<T> &eVecs, SquareMat<T> &eVecsInv, Vec<T> &eVals, const FluxLaplacian<T> &axisSegment);
+
     /**
      * Assigns the eigenvectors and eigen values.
      * @tparam axisSegmentT Should either be a VariableSegment or a UniformSegment.

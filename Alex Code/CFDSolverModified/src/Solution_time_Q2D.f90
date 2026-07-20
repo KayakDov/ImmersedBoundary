@@ -54,9 +54,10 @@ Subroutine    Solution_time
 
     Call Initialize_GPU_Solvers
 
-    ! Build Alex's pressure eigensystem once, after the grid is initialized
-    ! and before the first call to TimeStep.
+    ! Build Alex's pressure and potential eigensystems once, after the grid
+    ! is initialized and before the first call to TimeStep.
     Call EVDLapP
+    Call EVD_Fi
 
     ! Temporary validation call; this can be removed after testing.
     Call Validate_GPU_Solvers

@@ -1,6 +1,7 @@
 
 
 #include "EigenDecomp2d.h"
+#include "poisson/BoundaryConfig.cuh"
 
 template<typename T>
 __global__ void eValsLInvMultKernel(DeviceData2d<T> dst,
@@ -49,22 +50,19 @@ void EigenDecomp2d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle 
     this->lapEigen.vecs.mult2d(x, x, this->sizeOfB, hand);
 }
 
+// Instantiate the class for both float and double
 template class EigenDecomp2d<double>;
 template class EigenDecomp2d<float>;
 
-#define INSTANTIATE_EIGEN2D_BOUNDARY(Real, SegX, SegY, SegZ) \
-template EigenDecomp2d<Real>::EigenDecomp2d( \
-const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event&, Real);
+// Macro for the 2D constructor
+#define INSTANTIATE_EIGEN_DECOMP_2D_CONSTRUCTORS(Real, SegX, SegY, SegZ) \
+template EigenDecomp2d<Real>::EigenDecomp2d(                         \
+const BoundaryConfig<Real, SegX, SegY, SegZ>& boundary,          \
+Handle* hands,                                                   \
+Event& event,                                                    \
+Real helmholtzShift                                              \
+);
 
-#define INSTANTIATE_EIGEN2D_ALL(Real) \
-INSTANTIATE_EIGEN2D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN2D_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN2D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN2D_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
-INSTANTIATE_EIGEN2D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN2D_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN2D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN2D_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
-
-INSTANTIATE_EIGEN2D_ALL(float)
-INSTANTIATE_EIGEN2D_ALL(double)
+// Apply permutations
+APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_EIGEN_DECOMP_2D_CONSTRUCTORS)
+APPLY_TO_ALL_SEGMENT_COMBOS(float, INSTANTIATE_EIGEN_DECOMP_2D_CONSTRUCTORS)

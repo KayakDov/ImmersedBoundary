@@ -67,7 +67,7 @@ Contains
         Call EVDLapVy
         Call EVDLapVz
 !        Call EVDLapP
-        Call EVD_Fi
+!        Call EVD_Fi
 
         dt_temp = Dble(Istat)
 
@@ -136,21 +136,8 @@ Contains
         Deallocate(rhs_c, x_c, rhs_g, x_g)
 
         ! Pressure intentionally remains on Alex's CPU solver.
-        Write(*,*) '   Pressure     uses Alex CPU solver (GPU comparison skipped)'  ! ------------------- Potential (Nx x Ny1 x Nz) -----------------------
-        potSingular = (EVD_Pot_X == 1) .and. (EVD_Pot_Y == 1) .and. (EVD_Pot_Z == 1)
-        Allocate( rhs_c(1:Nx,1:Ny1,1:Nz), x_c(1:Nx,1:Ny1,1:Nz) )
-        Allocate( rhs_g(1:Ny1,1:Nz,1:Nx), x_g(1:Ny1,1:Nz,1:Nx) )
-        Call fill_rhs(rhs_c, Nx, Ny1, Nz)
-        Call EVDmethod (x_c, rhs_c, &
-                ExxFi(1:Nx,1:Nx),  Ex_invFi(1:Nx,1:Nx), &
-                EyFi(1:Ny1,1:Ny1), Ey_invFi(1:Ny1,1:Ny1), &
-                EzFi(1:Nz,1:Nz),   Ez_invFi(1:Nz,1:Nz), &
-                LambxFi(1:Nx), LambyFi(1:Ny1), LambzFi(1:Nz), &
-                Nx, Ny1, Nz, 1.D0, 1.D0, 1.D0, 0.D0)
-        Call to_gpu_layout(rhs_c, rhs_g, Nx, Ny1, Nz, 1.D0)
-        Call solve_eigen_decomp_d(PotentialHandle, x_g, rhs_g)
-        Call report('Potential  ', x_c, x_g, Nx, Ny1, Nz, potSingular)
-        Deallocate(rhs_c, x_c, rhs_g, x_g)
+        Write(*,*) '   Pressure     uses Alex CPU solver (GPU comparison skipped)'  ! ------------------- Potential: intentionally on Alex's CPU solver ----
+        Write(*,*) '   Potential    uses Alex CPU solver (GPU comparison skipped)'
 
         Write(*,*) ' ==============================================================='
         Write(*,*) ''

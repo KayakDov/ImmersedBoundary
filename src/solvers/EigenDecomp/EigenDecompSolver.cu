@@ -2,7 +2,8 @@
 
 #include "../Event.h"
 #include "deviceArrays/headers/Support/Streamable.h"
-
+#include "deviceArrays/headers/Singleton.h"
+#include "poisson/BoundaryConfig.cuh"
 
 template<typename T>
 bool EigenDecompSolver<T>::isInLColSpace(const Vec<T> &rhs, Vec<T> &bufferSizeOfB, Singleton<T> &bufferSing, double tolerance, Handle &hand) const {
@@ -68,21 +69,22 @@ SquareMat<T> EigenDecompSolver<T>::inverseL(Handle &hand) const {
 template class EigenDecompSolver<double>;
 template class EigenDecompSolver<float>;
 
-#define INSTANTIATE_EIGEN_SOLVER_BOUNDARY(Real, SegX, SegY, SegZ) \
-template EigenDecompSolver<Real>::EigenDecompSolver( \
-const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*, SimpleArray<Real>, Real); \
-template EigenDecompSolver<Real>::EigenDecompSolver( \
-const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*, Real);
+// 2. Define a macro that specifically instantiates the two templated constructors
+#define INSTANTIATE_EIGEN_DECOMP_SOLVER_CONSTRUCTORS(Real, SegX, SegY, SegZ) \
+template EigenDecompSolver<Real>::EigenDecompSolver(                     \
+const BoundaryConfig<Real, SegX, SegY, SegZ>& boundary,              \
+Handle* hands,                                                       \
+Event* events,                                                       \
+SimpleArray<Real> sizeOfB,                                           \
+Real helmholtzShift                                                  \
+);                                                                       \
+template EigenDecompSolver<Real>::EigenDecompSolver(                     \
+const BoundaryConfig<Real, SegX, SegY, SegZ>& boundary,              \
+Handle* hands,                                                       \
+Event* events,                                                       \
+Real helmholtzShift                                                  \
+);
 
-#define INSTANTIATE_EIGEN_SOLVER_ALL(Real) \
-INSTANTIATE_EIGEN_SOLVER_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_SOLVER_BOUNDARY(Real, UniformSegment<Real>,  UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN_SOLVER_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_SOLVER_BOUNDARY(Real, UniformSegment<Real>,  VariableSegment<Real>, VariableSegment<Real>) \
-INSTANTIATE_EIGEN_SOLVER_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_SOLVER_BOUNDARY(Real, VariableSegment<Real>, UniformSegment<Real>,  VariableSegment<Real>) \
-INSTANTIATE_EIGEN_SOLVER_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, UniformSegment<Real>)  \
-INSTANTIATE_EIGEN_SOLVER_BOUNDARY(Real, VariableSegment<Real>, VariableSegment<Real>, VariableSegment<Real>)
-
-INSTANTIATE_EIGEN_SOLVER_ALL(float)
-INSTANTIATE_EIGEN_SOLVER_ALL(double)
+// 3. Invoke the 27-way permutation macro for both double and float
+APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_EIGEN_DECOMP_SOLVER_CONSTRUCTORS)
+APPLY_TO_ALL_SEGMENT_COMBOS(float, INSTANTIATE_EIGEN_DECOMP_SOLVER_CONSTRUCTORS)

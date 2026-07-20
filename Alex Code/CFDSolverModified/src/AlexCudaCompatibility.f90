@@ -1,16 +1,32 @@
 module AlexCudaCompatibility
-    use iso_c_binding, only : C_SIZE_T
+    use iso_c_binding, only : C_SIZE_T, C_INT
     implicit none
 
-    public :: TemperatureHandle, VxHandle, VyHandle, VzHandle, PotentialHandle!, PressureHandle
+    public :: TemperatureHandle, VxHandle, VyHandle, VzHandle, PressureHandle, PotentialHandle
     public :: Initialize_GPU_Solvers, GrPr
 
     integer(C_SIZE_T) :: TemperatureHandle = 0_C_SIZE_T
     integer(C_SIZE_T) :: VxHandle          = 0_C_SIZE_T
     integer(C_SIZE_T) :: VyHandle          = 0_C_SIZE_T
     integer(C_SIZE_T) :: VzHandle          = 0_C_SIZE_T
-!    integer(C_SIZE_T) :: PressureHandle    = 0_C_SIZE_T
+    integer(C_SIZE_T) :: PressureHandle    = 0_C_SIZE_T
     integer(C_SIZE_T) :: PotentialHandle   = 0_C_SIZE_T
+
+    ! Discretization selector per axis -- must match eigen::LaplOperatorT in
+    ! poisson/LaplOperatorType.h (passed to C as a plain integer):
+    !   VARIABLE_DELTA_LAPL : pointwise 3-point Laplacian, unknowns at grid
+    !                         nodes X(1..N); use with Hx12/Hy12/Hz12 deltas.
+    !   FLUX_LAPL           : conservative finite-volume Laplacian, unknowns
+    !                         at cell centres X12(1..N1); use with
+    !                         HPx/HPy/HPz deltas.  Reproduces Alex's
+    !                         cell-centred operators exactly (this is what
+    !                         makes the pressure projection discretely
+    !                         compatible and lets pressure and potential run
+    !                         on the GPU).
+    integer(C_INT), parameter :: UNIFORM_NODE_CENTERED_LAPL = 0
+    integer(C_INT), parameter :: UNIFORM_STAGGERED_LAPL     = 1
+    integer(C_INT), parameter :: VARIABLE_DELTA_LAPL        = 2
+    integer(C_INT), parameter :: FLUX_LAPL                  = 3
 
     ! Temperature diffusivity scale of the CPU operator (Prandtl/DGr, or 1 when
     ! Prandtl == 0).  Set in Initialize_GPU_Solvers; time_step_Q2D.f90 uses it
@@ -62,8 +78,15 @@ contains
         ! fills Hx12(0:Nx), so the final element of those slices is 0.0 and a
         ! zero spacing gives a division by zero (NaN eigendecomposition).
         !
-        ! isStaggered is ignored by the library on the variable-delta path,
-        ! so it is set to .false. everywhere.
+        ! (SegType now carries the discretization choice.)
+        !
+        ! PER-AXIS SEGMENT KIND (dimNSegType).  The rule is mechanical and
+        ! mirrors the delta choice above:
+        !     deltas are HPx/HPy/HPz  (cell centres)  ->  FLUX_LAPL
+        !     deltas are Hx12/Hy12/Hz12 (grid nodes)  ->  VARIABLE_DELTA_LAPL
+        ! Getting these right is REQUIRED: the pressure solve must reproduce
+        ! the CPU operator exactly or the projection step leaves residual
+        ! divergence and the time integration blows up geometrically.
         ! ==================================================================
 
         ! ==================================================================
@@ -114,14 +137,16 @@ contains
                 dim1Delta = HPy(0:Ny1), &
                 dim2Delta = HPz(0:Nz1), &
                 dim3Delta = HPx(0:Nx1), &
-                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1SegType = FLUX_LAPL, &
+                dim2SegType = FLUX_LAPL, &
+                dim3SegType = FLUX_LAPL, &
                 dim1StartIsNeumann = tY, dim1EndIsNeumann = tY, &
                 dim2StartIsNeumann = tZ, dim2EndIsNeumann = tZ, &
                 dim3StartIsNeumann = tX, dim3EndIsNeumann = tX, &
                 dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
-                isStaggered = .false., thomas = .true., &
+                thomas = .true., &
                 helmholtzShift = shiftTemperature )
 
         ! ==================================================================
@@ -135,14 +160,16 @@ contains
                 dim1Delta = HPy(0:Ny1), &
                 dim2Delta = HPz(0:Nz1), &
                 dim3Delta = Hx12(0:Nx), &
-                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1SegType = FLUX_LAPL, &
+                dim2SegType = FLUX_LAPL, &
+                dim3SegType = VARIABLE_DELTA_LAPL, &
                 dim1StartIsNeumann = .false., dim1EndIsNeumann = .false., &
                 dim2StartIsNeumann = .false., dim2EndIsNeumann = .false., &
                 dim3StartIsNeumann = .false., dim3EndIsNeumann = .false., &
                 dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
-                isStaggered = .false., thomas = .true., &
+                thomas = .true., &
                 helmholtzShift = shiftVelocity )
 
         ! ==================================================================
@@ -156,14 +183,16 @@ contains
                 dim1Delta = Hy12(0:Ny), &
                 dim2Delta = HPz(0:Nz1), &
                 dim3Delta = HPx(0:Nx1), &
-                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1SegType = VARIABLE_DELTA_LAPL, &
+                dim2SegType = FLUX_LAPL, &
+                dim3SegType = FLUX_LAPL, &
                 dim1StartIsNeumann = .false., dim1EndIsNeumann = .false., &
                 dim2StartIsNeumann = .false., dim2EndIsNeumann = .false., &
                 dim3StartIsNeumann = .false., dim3EndIsNeumann = .false., &
                 dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
-                isStaggered = .false., thomas = .true., &
+                thomas = .true., &
                 helmholtzShift = shiftVelocity )
 
         ! ==================================================================
@@ -177,14 +206,16 @@ contains
                 dim1Delta = HPy(0:Ny1), &
                 dim2Delta = Hz12(0:Nz), &
                 dim3Delta = HPx(0:Nx1), &
-                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1SegType = FLUX_LAPL, &
+                dim2SegType = VARIABLE_DELTA_LAPL, &
+                dim3SegType = FLUX_LAPL, &
                 dim1StartIsNeumann = .false., dim1EndIsNeumann = .false., &
                 dim2StartIsNeumann = .false., dim2EndIsNeumann = .false., &
                 dim3StartIsNeumann = .false., dim3EndIsNeumann = .false., &
                 dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
-                isStaggered = .false., thomas = .true., &
+                thomas = .true., &
                 helmholtzShift = shiftVelocity )
 
         ! ==================================================================
@@ -194,22 +225,24 @@ contains
         ! The all-Neumann system is singular; the library's singular-mode
         ! handling must stay engaged here (helmholtzShift == 0).
         ! ==================================================================
-!        PressureHandle = init_eigen_decomp_d( &
-!                dim1Length = Int(Ny1, C_SIZE_T), &
-!                dim2Length = Int(Nz1, C_SIZE_T), &
-!                dim3Length = Int(Nx1, C_SIZE_T), &
-!                dim1Delta = HPy(0:Ny1), &
-!                dim2Delta = HPz(0:Nz1), &
-!                dim3Delta = HPx(0:Nx1), &
-!                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
-!                dim1StartIsNeumann = .true., dim1EndIsNeumann = .true., &
-!                dim2StartIsNeumann = .true., dim2EndIsNeumann = .true., &
-!                dim3StartIsNeumann = .true., dim3EndIsNeumann = .true., &
-!                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
-!                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
-!                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
-!                isStaggered = .false., thomas = .false., &
-!                helmholtzShift = 0.d0 )
+        PressureHandle = init_eigen_decomp_d( &
+                dim1Length = Int(Ny1, C_SIZE_T), &
+                dim2Length = Int(Nz1, C_SIZE_T), &
+                dim3Length = Int(Nx1, C_SIZE_T), &
+                dim1Delta = HPy(0:Ny1), &
+                dim2Delta = HPz(0:Nz1), &
+                dim3Delta = HPx(0:Nx1), &
+                dim1SegType = FLUX_LAPL, &
+                dim2SegType = FLUX_LAPL, &
+                dim3SegType = FLUX_LAPL, &
+                dim1StartIsNeumann = .true., dim1EndIsNeumann = .true., &
+                dim2StartIsNeumann = .true., dim2EndIsNeumann = .true., &
+                dim3StartIsNeumann = .true., dim3EndIsNeumann = .true., &
+                dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
+                dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
+                dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
+                thomas = .false., &
+                helmholtzShift = 0.d0 )
 
         ! ==================================================================
         ! Handle 5: POTENTIAL (Fi).  Potential(1:Ny1, 1:Nz, 1:Nx);
@@ -224,14 +257,16 @@ contains
                 dim1Delta = HPy(0:Ny1), &
                 dim2Delta = Hz12(0:Nz), &
                 dim3Delta = Hx12(0:Nx), &
-                dim1UniformDelta = .false., dim2UniformDelta = .false., dim3UniformDelta = .false., &
+                dim1SegType = FLUX_LAPL, &
+                dim2SegType = VARIABLE_DELTA_LAPL, &
+                dim3SegType = VARIABLE_DELTA_LAPL, &
                 dim1StartIsNeumann = pY, dim1EndIsNeumann = pY, &
                 dim2StartIsNeumann = pZ, dim2EndIsNeumann = pZ, &
                 dim3StartIsNeumann = pX, dim3EndIsNeumann = pX, &
                 dim1StartVal = 0.d0, dim1EndVal = 0.d0, &
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
-                isStaggered = .false., thomas = .false., &
+                thomas = .false., &
                 helmholtzShift = 0.d0 )
 
     End Subroutine Initialize_GPU_Solvers

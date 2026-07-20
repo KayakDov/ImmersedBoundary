@@ -1,10 +1,13 @@
+
 #include "EigenDecompForFortran.h"
+
 #include <vector>
 #include <memory>
-
-#include "deviceArrays/headers/Support/Streamable.h"
-#include "poisson/AxisSegment.cuh"
 #include "poisson/BoundaryConfig.cuh"
+#include "poisson/Poisson.cuh"
+#include "solvers/EigenDecomp/EigenDecomp2d.h"
+#include "solvers/EigenDecomp/EigenDecomp3d.cuh"
+#include "solvers/EigenDecomp/EigenDecompThomas.cuh"
 
 /**
  * @brief Constructs the overarching Fortran interop wrapper for the Eigen Decomposition solver.
@@ -36,37 +39,25 @@
  */
 template<typename Real>
 EigenDecompForFortran<Real>::EigenDecompForFortran(
-    size_t rows, size_t cols, size_t layers,
-    const std::vector<Real>& dx, const std::vector<Real>& dy, const std::vector<Real>& dz,
-    bool leftIsNeumann, bool rightIsNeumann, bool topIsNeumann, bool bottomIsNeumann, bool backIsNeumann, bool frontIsNeumann,
-    Real leftVal, Real rightVal, Real topVal, Real bottomVal, Real frontVal, Real backVal,
-    bool isStaggered,
-    bool thomas,
-    Real helmholtzShift,
-    SimpleArray<Real> sizeOfBForX,
-    SimpleArray<Real> sizeOfBForRHS,
-    SimpleArray<Real> sizeOfBForBAdj
+    GridDim dim,
+    const XYZ<std::vector<Real>> &delta,
+    XYZ<bool> startIsNeumann, XYZ<bool> endIsNeumann, XYZ<Real> startVal, XYZ<Real> endVal,
+    XYZ<eigen::LaplOperatorT> segType,
+    bool thomas, Real helmholtzShift,
+    SimpleArray<Real> sizeOfBForX, SimpleArray<Real> sizeOfBForRHS, SimpleArray<Real> sizeOfBForBAdj
 ) : x(sizeOfBForX), b(sizeOfBForRHS), adjToB(sizeOfBForBAdj) {
     
     Handle hands[3];
     Event events[3];
-    cudaStream_t defaultStream = 0;
-
 
     buildBoundaryConfigAndLaunch<Real>(
-        GridDim{rows, cols, layers},
-        XYZ<std::vector<Real>>{dx, dy, dz},
-        XYZ<bool>{leftIsNeumann, topIsNeumann, frontIsNeumann},
-        XYZ<bool>{rightIsNeumann, bottomIsNeumann, backIsNeumann},
-        XYZ<Real>{leftVal, topVal, frontVal},
-        XYZ<Real>{rightVal, bottomVal, backVal},
-        isStaggered,
-        defaultStream,
+        dim, delta, startIsNeumann, endIsNeumann, startVal, endVal, segType,
+        hands[0],
         [&](const auto& boundaryHost) {
             poisson::boundaryCorrection(boundaryHost.forDevice(), sizeOfBForBAdj, hands[0]);
             using SegXType = typename std::decay_t<decltype(boundaryHost.x)>::SegmentType;
 
-            if (layers <= 1)
+            if (dim.layers <= 1)
                 eds = std::make_unique<EigenDecomp2d<Real>>(boundaryHost.forDevice(), hands, events[0]);
             else
                 eds = thomas ?
@@ -79,18 +70,16 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
         events[i].hold(hand);
     }
 }
+
+
 template<typename Real>
 void EigenDecompForFortran<Real>::solve(Real *xHost, Real *bHost)  {
 
     b.set(bHost, hand);
 
-    std::cout << "EigenDecompForFortran::solve() b = " << GpuOut<Real>(b, hand) << std::endl;
-
     b.add(adjToB, &GPUScalar<Real>::get(1), &hand);
 
     eds->solve(x, b, hand);
-
-    std::cout << "EigenDecompForFortran::solve() x = " << GpuOut<Real>(x, hand) << std::endl;
 
     x.get(xHost, hand);
 }

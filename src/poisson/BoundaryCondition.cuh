@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "deviceArrays/headers/SimpleArray.h"
-
 template<typename Real>
 class BoundaryCondition {
 public:
@@ -194,6 +192,79 @@ public:
     }
 
 };
+
+/**
+ * @class FluxBoundary
+ * @brief Boundary row of the conservative (finite-volume) flux Laplacian.
+ *
+ * Row for the boundary-adjacent cell, derived by integrating u'' over the
+ * cell and applying the divergence theorem: (flux_out - flux_in)/W, where W
+ * is the width of this cell.  The wall face takes the place of one
+ * neighbour: Dirichlet prescribes the value AT the wall (distance dWall
+ * from the cell centre); Neumann prescribes the wall flux itself, so the
+ * (u_0 - u_wall) term never forms.
+ *
+ * @tparam Real Floating-point type.
+ * @tparam isEnd false for the start (low-index) boundary, true for the end.
+ */
+template<typename Real, bool isEnd>
+class FluxBoundary: public BoundaryCondition<Real> {
+public:
+    /** Two deltas, exactly like VariableBoundary: for the start boundary
+     *  {wall-to-first-centre, first-to-second-centre}; for the end boundary
+     *  {second-last-to-last-centre, last-centre-to-wall}. */
+    const DeviceData1d<Real> deltaPM;
+
+    /** One-element view: the finite-volume width of THIS boundary-adjacent
+     *  cell (width[0] = W_0 at the start, W_{n-1} at the end). */
+    const DeviceData1d<Real> width;
+
+    FluxBoundary(bool isNeumann, Real val, const SimpleArray<Real>& deltaPM, const SimpleArray<Real>& width) :
+        BoundaryCondition<Real>(val, isNeumann),
+        deltaPM(deltaPM),
+        width(width)
+    {}
+
+    __device__ void setL(Real& mainDiagVal, Real& offDiagVal) const {
+        Real dp = deltaPM[1], dm = deltaPM[0];
+        Real W = width[0];
+        // distance to the wall face vs. distance to the interior neighbour
+        Real dWall = isEnd ? dp : dm;
+        Real dIn   = isEnd ? dm : dp;
+
+        if (this->isNeumann) {
+            mainDiagVal -= (offDiagVal = 1/(W * dIn));
+        } else {
+            offDiagVal = 1/(W * dIn);
+            mainDiagVal -= 1/(W * dIn) + 1/(W * dWall);
+        }
+    }
+
+    __device__ void setBoundaryRHS(Real& rhsVal) const {
+        Real contribution = 0;
+
+        Real dp = deltaPM[1], dm = deltaPM[0];
+        Real W = width[0];
+        Real dWall = isEnd ? dp : dm;
+
+        if (this->isNeumann) {
+            // prescribed wall flux enters as +-flux/W (outward-normal sign)
+            if constexpr (isEnd) contribution = this->value / W;
+            else contribution = -this->value / W;
+        } else {
+            // wall value moved to the RHS: -value * (wall coupling coefficient)
+            contribution = -this->value / (W * dWall);
+        }
+
+        atomicAdd(&rhsVal, contribution);
+    }
+
+    __device__ __host__ bool isUndefined() const {
+        return deltaPM.cols != 2;
+    }
+
+};
+
 
 template<typename Real>
 class BoundaryConditionHost {
