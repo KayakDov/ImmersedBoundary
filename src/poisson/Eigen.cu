@@ -244,7 +244,13 @@ __global__ void setSymetrizationMatrix(DeviceData1d<T> symnetrizationBand, Delta
  * @param primaryDiag  The primary diagonal of S.
  * @param subDiag The sub diagoanl of S.
  * @param superDiag The super diagonal of S.
- * @param axisSegment //TODO: verify this method is correct for AxisSegT = FluxSegment
+ * @param axisSegment Any segment type providing symmScale(i): the diagonal of
+ * D^2 in the symmetrizing similarity S = -D L D^{-1}.  VariableSegment returns
+ * delta[i]+delta[i+1] (identical to the historical hard-coded expression);
+ * FluxLaplacian returns 2*width[i].  Both operators factor as L = V^{-1} K
+ * with the SAME symmetric K (offdiagonals 1/delta) -- only the row-normalizing
+ * diagonal V differs -- so D = sqrt(symmScale) symmetrizes both exactly,
+ * including the boundary rows (verified algebraically for all BC combinations).
  */
 template <typename T, typename AxisSegmentT>
 __global__ void setSymetricMatrix(
@@ -256,27 +262,27 @@ __global__ void setSymetricMatrix(
     size_t i = idx();
     if (i >= primaryDiag.cols) return;
 
-    // d can be safely computed for all valid nodes
-    auto d = sqrt(axisSegment.delta[i] + axisSegment.delta[i + 1]);
+    // D entry for this row; see symmScale docs on the segment classes.
+    auto d = sqrt(axisSegment.symmScale(i));
 
     auto& main = primaryDiag[i];
 
     if (i == 0) {
         axisSegment.start.setL(main, superDiag[i]);
-        auto dp = sqrt(axisSegment.delta[i + 1] + axisSegment.delta[i + 2]);
+        auto dp = sqrt(axisSegment.symmScale(i + 1));
         superDiag[i] *= -d / dp;
     }
     else if (i < axisSegment.numNodes - 1) {
         axisSegment.setInteriorL(main, subDiag[i - 1], superDiag[i], i);
-        auto dp = sqrt(axisSegment.delta[i + 1] + axisSegment.delta[i + 2]);
-        auto dm = sqrt(axisSegment.delta[i - 1] + axisSegment.delta[i]);
+        auto dp = sqrt(axisSegment.symmScale(i + 1));
+        auto dm = sqrt(axisSegment.symmScale(i - 1));
 
         subDiag[i - 1] *= -d / dm;
         superDiag[i] *= -d / dp;
     }
     else if (i == axisSegment.numNodes - 1) {
         axisSegment.end.setL(main, subDiag[i - 1]);
-        auto dm = sqrt(axisSegment.delta[i - 1] + axisSegment.delta[i]);
+        auto dm = sqrt(axisSegment.symmScale(i - 1));
         subDiag[i - 1] *= -d / dm;
     }
     main *= -1;
@@ -295,7 +301,7 @@ template<typename T, typename AxisSegT>
 __global__ void mapEigenSymmToEigenLapInv(const DeviceData2d<T> eigen, DeviceData2d<T> eigenInv, const AxisSegT axisSegment) {
     if (GridInd2d ind; ind < eigenInv) {
         // V_L^{-1}[i, j] = V_S[j, i] * D_j
-        T d_col = sqrt(axisSegment.delta[ind.col] + axisSegment.delta[ind.col + 1]);
+        T d_col = sqrt(axisSegment.symmScale(ind.col));
         eigenInv[ind] = eigen(ind.col, ind.row) * d_col;
     }
 }
@@ -304,7 +310,7 @@ template<typename T, typename AxisSegT>
 __global__ void mapEigenSymmToEigenLap(DeviceData2d<T> eigen, const AxisSegT axisSegment) {
     if (GridInd2d ind; ind < eigen) {
         // V_L[i, j] = V_S[i, j] / D_i
-        T d_row = sqrt(axisSegment.delta[ind.row] + axisSegment.delta[ind.row + 1]);
+        T d_row = sqrt(axisSegment.symmScale(ind.row));
         eigen[ind] /= d_row;
     }
 }
@@ -420,7 +426,8 @@ XYZ<std::shared_ptr<Mat<T>>> Eigen<T>::generateEigen(const BoundaryConfigT& boun
         [](const auto& AxisSegmentT, Handle& hand) {
 
             size_t numCols = AxisSegmentT.numNodes + 1;
-            if constexpr (std::is_same_v<std::decay_t<decltype(AxisSegmentT)>, VariableSegment<T>>)
+            if constexpr (std::is_same_v<std::decay_t<decltype(AxisSegmentT)>, VariableSegment<T>>
+                || std::is_same_v<std::decay_t<decltype(AxisSegmentT)>, FluxLaplacian<T>>)
                 numCols = AxisSegmentT.numNodes * 2 + 1;
 
             auto mat = Mat<T>::create(AxisSegmentT.numNodes, numCols);
@@ -456,9 +463,12 @@ Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* 
         is3d ? eigenBack[2]->sqSubMatFirstBiggest() : SquareMat<T>::empty()
     );
 
-    constexpr bool orthoX = !std::is_same_v<std::decay_t<decltype(boundary.x)>, VariableSegment<T>>;
-    constexpr bool orthoY = !std::is_same_v<std::decay_t<decltype(boundary.y)>, VariableSegment<T>>;
-    constexpr bool orthoZ = !std::is_same_v<std::decay_t<decltype(boundary.z)>, VariableSegment<T>>;
+    constexpr bool orthoX = !std::is_same_v<std::decay_t<decltype(boundary.x)>, VariableSegment<T>>
+                      && !std::is_same_v<std::decay_t<decltype(boundary.x)>, FluxLaplacian<T>>;
+    constexpr bool orthoY = !std::is_same_v<std::decay_t<decltype(boundary.y)>, VariableSegment<T>>
+                          && !std::is_same_v<std::decay_t<decltype(boundary.y)>, FluxLaplacian<T>>;
+    constexpr bool orthoZ = !std::is_same_v<std::decay_t<decltype(boundary.z)>, VariableSegment<T>>
+                          && !std::is_same_v<std::decay_t<decltype(boundary.z)>, FluxLaplacian<T>>;
 
     XYZ<SquareMat<T>> vecsInv(
         orthoX ? vecs.x : eigenBack[0]->sqSubMat(0, vecs.x._cols, vecs.x._cols ),

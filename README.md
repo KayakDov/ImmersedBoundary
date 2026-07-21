@@ -73,6 +73,11 @@ call finalize_eigen_decomp_d()
 ## 3. Direct Eigendecomposition (Standalone)
 For problems requiring a direct solution to $(L - \sigma I)x = b$, the library provides an optimized Eigendecomposition solver.
 
+Each of the three logical dimensions independently selects one of four discretizations via `dim*SegType` (see section 9 for the full enum). Two of the four use variable (non-uniform) spacing and differ only in what $L$ means at each row:
+
+* **`VariableDeltaLapl`** -- the pointwise 3-point Laplacian: exact for quadratics at each node, with the implicit assumption that control-volume faces sit at the midpoints between adjacent unknowns.
+* **`FluxLapl`** -- the conservative finite-volume Laplacian: unknowns are cell averages at the centres of cells that tile the segment wall-to-wall, and each row is a flux difference divided by that cell's true width. Because it telescopes under summation, `FluxLapl` reproduces $\text{div}(\text{grad})$ discretely -- required whenever the operator must be compatible with a separate divergence operator built on the same mesh (e.g. pressure-projection methods). The two kinds coincide on a locally uniform mesh and differ at wall-adjacent rows and anywhere the mesh stretches; see section 9 for which deltas each one expects.
+
 ### Thomas Optimization
 The solver includes an optimized "Thomas" variant for the 1D tridiagonal sub-problems. This can be toggled via the `thomas` logical flag during initialization.
 
@@ -173,17 +178,18 @@ Creates a new eigendecomposition solver and returns a solver handle.
 | Argument | Type | Description |
 | :--- | :--- | :--- |
 | `dim1Length`, `dim2Length`, `dim3Length` | integer(C_SIZE_T) | Number of grid points along the first, second, and third logical dimensions. The solver is isotropic and does not assign any physical meaning (such as X, Y, or Z) to these dimensions. |
-| `dim1Delta`, `dim2Delta`, `dim3Delta` | real array | Grid spacing arrays corresponding to each logical dimension. For non-uniform grids, each spacing array must contain `dimLength+1` values. For uniform grids, pass a single-element array and set the corresponding `dim*UniformDelta` flag to `.true.`. |
-| `dim1UniformDelta`, `dim2UniformDelta`, `dim3UniformDelta` | logical | `.true.` if the corresponding spacing array contains a single uniform value. |
+| `dim1Delta`, `dim2Delta`, `dim3Delta` | real array | Grid spacing array for each logical dimension; see section 9 for the exact size and content required by each `dim*SegType`. |
+| `dim1SegType`, `dim2SegType`, `dim3SegType` | integer(C_INT) | Discretization kind for each logical dimension. One of `UNIFORM_NODE_CENTERED_LAPL`, `UNIFORM_STAGGERED_LAPL`, `VARIABLE_DELTA_LAPL`, or `FLUX_LAPL` (see section 9). Replaces the old `isStaggered`/`dim*UniformDelta` flags -- every axis states its own discretization independently. |
 | `dim1StartIsNeumann`, `dim1EndIsNeumann` | logical | Boundary-condition type at the beginning and end of the first logical dimension (`.true.` = Neumann, `.false.` = Dirichlet). |
 | `dim2StartIsNeumann`, `dim2EndIsNeumann` | logical | Boundary-condition type for the second logical dimension. |
 | `dim3StartIsNeumann`, `dim3EndIsNeumann` | logical | Boundary-condition type for the third logical dimension. |
 | `dim1StartVal`, `dim1EndVal` | real | Boundary values associated with the first logical dimension. |
 | `dim2StartVal`, `dim2EndVal` | real | Boundary values associated with the second logical dimension. |
 | `dim3StartVal`, `dim3EndVal` | real | Boundary values associated with the third logical dimension. |
-| `isStaggered` | logical | `.true.` if using a staggered-grid discretization. |
 | `thomas` | logical | `.true.` to use the optimized Thomas variant for the direct eigendecomposition solver. |
 | `helmholtzShift` | real | Scalar shift $\sigma$. Set to `0.0` for the Poisson equation or a non-zero value to solve $(L - \sigma I)x = b$. |
+
+> **Note:** `init_immersed_eq_*` (section 6) still uses the legacy global `isStaggered` / `dim*UniformDelta` flags and has not been migrated to `dim*SegType`. The two solvers currently have different initialization APIs; don't copy one's argument list to the other.
 
 ### Solve Routine (`solve_eigen_decomp_*`)
 Performs the spectral solve on the GPU.
@@ -255,6 +261,19 @@ This module provides standalone direct Eigendecomposition solvers for the Poisso
 | `solve_eigen_decomp_s` | Single | Solve using an existing solver handle. ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). |
 | `finalize_eigen_decomp_d` | N/A | Free Eigendecomposition GPU resources. |
 | `finalize_eigen_decomp_s` | N/A | Free Eigendecomposition GPU resources. |
+
+### Segment Types (`dim*SegType`)
+
+Each logical dimension's discretization is selected independently via a plain integer, matching `eigen::LaplOperatorT`:
+
+| Constant | Value | Deltas required | Description |
+| :--- | :--- | :--- | :--- |
+| `UNIFORM_NODE_CENTERED_LAPL` | 0 | Single-element array (one uniform spacing) | Uniform spacing, unknowns at grid nodes. |
+| `UNIFORM_STAGGERED_LAPL` | 1 | Single-element array (one uniform spacing) | Uniform spacing, unknowns at cell centres, walls half a spacing beyond the first/last unknown. |
+| `VARIABLE_DELTA_LAPL` | 2 | `dimLength+1` values: free, independent centre-to-centre/wall-to-centre distances | Non-uniform spacing, pointwise 3-point Laplacian (faces implicitly at midpoints between unknowns). |
+| `FLUX_LAPL` | 3 | `dimLength+1` values, but **constrained**: they must be the wall/centre distances of `dimLength` cells that tile the axis wall-to-wall (`d(0) = W(0)/2`, `d(i) = (W(i-1)+W(i))/2`, `d(n) = W(n-1)/2` for cell widths `W`) | Non-uniform spacing, conservative finite-volume Laplacian. The library reconstructs the cell widths from the deltas and will reject (`std::invalid_argument`) a delta array that isn't a valid wall-to-wall tiling -- free-form deltas that would be valid for `VARIABLE_DELTA_LAPL` are generally NOT valid for `FLUX_LAPL`. |
+
+`FLUX_LAPL` and `VARIABLE_DELTA_LAPL` may be mixed freely across `dim1`/`dim2`/`dim3` in the same solver, and with either uniform kind, in any combination -- a single call can e.g. use `FLUX_LAPL` on `dim1`, `UNIFORM_STAGGERED_LAPL` on `dim2`, and `VARIABLE_DELTA_LAPL` on `dim3`.
 
 ### Global Configuration
 Before calling any of the init methods, you may configure the global input format to define how your grid's flattened array is interpreted by the solver.

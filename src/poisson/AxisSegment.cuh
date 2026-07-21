@@ -402,6 +402,13 @@ template<typename Real>
 class AxisSegmentHost<FluxLaplacian<Real>> {
 
     BoundaryConditionHost<Real> start, end;
+    /** Host copy of the reconstructed widths.  MUST be a member, not a
+     *  temporary: SimpleArray::create enqueues an ASYNCHRONOUS host-to-device
+     *  copy on the stream, so the source buffer has to outlive the enqueue --
+     *  a temporary dies before the copy executes and the device array fills
+     *  with reused-heap garbage (the generateEigen use-after-free class).
+     *  Declared before the SimpleArrays so it is initialized first. */
+    std::vector<Real> hostWidth;
     SimpleArray<Real> varDelta; // Manages host lifetime / prevents premature cudaFree!
     SimpleArray<Real> fvWidth;  // Reconstructed cell widths; same lifetime rules.
 
@@ -416,8 +423,9 @@ public:
     AxisSegmentHost(BoundaryConditionHost<Real> start, BoundaryConditionHost<Real> end,
                     const std::vector<Real>& hostDelta, cudaStream_t stream)
         : start(start), end(end),
+          hostWidth(makeFvmWidths(hostDelta)),
           varDelta(SimpleArray<Real>::create(hostDelta, stream)),
-          fvWidth(SimpleArray<Real>::create(makeFvmWidths(hostDelta), stream)) {}
+          fvWidth(SimpleArray<Real>::create(hostWidth, stream)) {}
 
     FluxLaplacian<Real> forDevice() const {
         return FluxLaplacian<Real>(start.isNeumann, end.isNeumann,

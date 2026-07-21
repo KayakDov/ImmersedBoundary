@@ -61,6 +61,8 @@ template void Laplacian1d<float>::create<UniformSegment<float>>(const UniformSeg
 template void Laplacian1d<double>::create<UniformSegment<double>>(const UniformSegment<double>&, TriDiagonal<double>, Handle&);
 template void Laplacian1d<float>::create<VariableSegment<float>>(const VariableSegment<float>&, TriDiagonal<float>, Handle&);
 template void Laplacian1d<double>::create<VariableSegment<double>>(const VariableSegment<double>&, TriDiagonal<double>, Handle&);
+template void Laplacian1d<float>::create<FluxLaplacian<float>>(const FluxLaplacian<float>&, TriDiagonal<float>, Handle&);
+template void Laplacian1d<double>::create<FluxLaplacian<double>>(const FluxLaplacian<double>&, TriDiagonal<double>, Handle&);
 
 // 2. Explicitly instantiate the base class itself
 template class Laplacian1d<float>;
