@@ -150,6 +150,23 @@ file(GLOB ALEX_SOURCES CONFIGURE_DEPENDS
 # Exclude specific files from the general source list
 list(FILTER ALEX_SOURCES EXCLUDE REGEX ".*/Mesh_Intrp\\.f90$")
 
+# CudaBandedLib's Shroud-generated Fortran wrappers must NOT be compiled here.
+# CudaBandedLib's own build already compiles these (or should -- see its
+# CMakeLists.txt) and deposits the resulting .mod files in ${FORTRAN_MODULE_DIR}
+# (set below from ${DEP_LIB_DIR}/modules), which is already added as an include
+# directory for both targets. Compiling a second local copy of the same module
+# here would create two independent definitions of eigenbcgsolver_eigen_mod;
+# since Fortran_MODULE_DIRECTORY for THIS target points elsewhere
+# (${CMAKE_CURRENT_BINARY_DIR}/modules), the locally-compiled copy would shadow
+# CudaBandedLib's and silently reintroduce the stale-interface bug every time
+# the two copies drift apart (e.g. after regenerating with Shroud but only
+# updating one of them). Keep exactly one compiled copy of each wrapper, built
+# by CudaBandedLib, and consumed here purely via ${FORTRAN_MODULE_DIR} +
+# ${CUDA_BANDED_LIB}.
+list(FILTER ALEX_SOURCES EXCLUDE REGEX ".*/wrapfEigenBCGSolver_eigen\\.f90$")
+list(FILTER ALEX_SOURCES EXCLUDE REGEX ".*/wrapfEigenBCGSolver_ImEq\\.f90$")
+list(FILTER ALEX_SOURCES EXCLUDE REGEX ".*/wrapfeigenbcgsolver\\.f90$")
+
 # Create a list of common shared modules by removing the main CFD program
 set(COMMON_SOURCES ${ALEX_SOURCES})
 list(FILTER COMMON_SOURCES EXCLUDE REGEX ".*/ConvMain_3D_Q2D\\.f90$")
