@@ -6,10 +6,8 @@ Subroutine TimeStep ( Istp, RNSx, RNSy, RNSz, RTmpr, RDP )
     Use Grid
     Use Operators
     Use Variables
-    Use AlexCudaCompatibility, only : TemperatureHandle, VxHandle, VyHandle, VzHandle, GrPr!, PressureHandle
+    Use AlexCudaCompatibility, only : TemperatureHandle, VxHandle, VyHandle, VzHandle, PressureHandle, GrPr
     Use eigenbcgsolver_eigen_mod, only : solve_eigen_decomp_d
-    Use EVD_Operators, only : ExxP, Ex_invP, EyP, Ey_invP, EzP, Ez_invP, &
-            LambxP, LambyP, LambzP
 
     Implicit Real(kind=8) (A-H,O-Z)
 
@@ -17,8 +15,7 @@ Subroutine TimeStep ( Istp, RNSx, RNSy, RNSz, RTmpr, RDP )
     Real(kind=8), Allocatable, Save :: GPU_RHSx(:,:,:), GPU_VMxNew(:,:,:)
     Real(kind=8), Allocatable, Save :: GPU_RHSy(:,:,:), GPU_VMyNew(:,:,:)
     Real(kind=8), Allocatable, Save :: GPU_RHSz(:,:,:), GPU_VMzNew(:,:,:)
-    Real(kind=8), Allocatable, Save :: CPU_FDRHP_P(:,:,:), CPU_Dprs(:,:,:)
-    Integer :: i, j, k
+    Real(kind=8), Allocatable, Save :: GPU_FDRHP_P(:,:,:), GPU_Dprs(:,:,:)
 
     Ht = 2.D0 * Htime
     dt_temp = Dble(Istat)
@@ -28,8 +25,7 @@ Subroutine TimeStep ( Istp, RNSx, RNSy, RNSz, RTmpr, RDP )
         Allocate(GPU_RHSx(1:Ny1,1:Nz1,1:Nx), GPU_VMxNew(1:Ny1,1:Nz1,1:Nx))
         Allocate(GPU_RHSy(1:Ny,1:Nz1,1:Nx1), GPU_VMyNew(1:Ny,1:Nz1,1:Nx1))
         Allocate(GPU_RHSz(1:Ny1,1:Nz,1:Nx1), GPU_VMzNew(1:Ny1,1:Nz,1:Nx1))
-        Allocate(CPU_FDRHP_P(1:Nx1,1:Ny1,1:Nz1), &
-                CPU_Dprs  (1:Nx1,1:Ny1,1:Nz1))
+        Allocate(GPU_FDRHP_P(1:Ny1,1:Nz1,1:Nx1), GPU_Dprs(1:Ny1,1:Nz1,1:Nx1))
     End If
 
     FDRHP = 0.D0
@@ -120,34 +116,13 @@ Subroutine TimeStep ( Istp, RNSx, RNSy, RNSz, RTmpr, RDP )
 
     FDRHP = FDRHP * Ckor / Htime
 
-    ! Alex's pressure solver expects arrays in (x,y,z) order.
-    ! FDRHP and Dprs are stored by the CFD code in (y,z,x) order.
-
-    Do k = 1, Nz1
-        Do j = 1, Ny1
-            Do i = 1, Nx1
-                CPU_FDRHP_P(i,j,k) = FDRHP(j,k,i)
-            End Do
-        End Do
-    End Do
-
-    CPU_Dprs = 0.D0
-
-    Call EVDmethod (CPU_Dprs, CPU_FDRHP_P, &
-            ExxP(1:Nx1,1:Nx1), Ex_invP(1:Nx1,1:Nx1), &
-            EyP(1:Ny1,1:Ny1),  Ey_invP(1:Ny1,1:Ny1), &
-            EzP(1:Nz1,1:Nz1),  Ez_invP(1:Nz1,1:Nz1), &
-            LambxP(1:Nx1), LambyP(1:Ny1), LambzP(1:Nz1), &
-            Nx1, Ny1, Nz1, 1.D0, 1.D0, 1.D0, 0.D0)
-
-    ! Return Alex's pressure correction to the CFD array layout.
-    Do k = 1, Nz1
-        Do j = 1, Ny1
-            Do i = 1, Nx1
-                Dprs(j,k,i) = CPU_Dprs(i,j,k)
-            End Do
-        End Do
-    End Do
+    GPU_FDRHP_P(1:Ny1,1:Nz1,1:Nx1) = FDRHP(1:Ny1,1:Nz1,1:Nx1)
+    GPU_Dprs(1:Ny1,1:Nz1,1:Nx1) = Dprs(1:Ny1,1:Nz1,1:Nx1) ! (You already had this one right!)
+    Call solve_eigen_decomp_d( &
+            PressureHandle, &
+            GPU_Dprs, &
+            GPU_FDRHP_P)
+    Dprs(1:Ny1,1:Nz1,1:Nx1) = GPU_Dprs(1:Ny1,1:Nz1,1:Nx1)
 
     Call GradPx( RHSx(1:Ny1,1:Nz1,1:Nx), Dprs )
     Call GradPy( RHSy(1:Ny,1:Nz1,1:Nx1), Dprs )
