@@ -5,6 +5,7 @@
 #include "deviceArrays/headers/GpuArray.h"
 #include "deviceArrays/headers/handle.h"
 #include "deviceArrays/headers/Singleton.h"
+#include <string>
 
 template<typename T>
 GpuArray<T>::GpuArray(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr):_rows(rows), _cols(cols), _ld(ld), _ptr(_ptr) {

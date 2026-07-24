@@ -339,45 +339,45 @@
 
 
   Istp=    1   Time Step= 0.1000E-03 Time= 0.10000000E-03   End Time= 0.10000000E-02
-  RNSx= 0.2834E-04  RNSy= 0.2443E-04  RNSz= 0.6559E-04  RTmpr= 0.1000E-05  RDP= 0.4624    
+  RNSx= 0.2802E-04  RNSy= 0.2450E-04  RNSz= 0.6565E-04  RTmpr= 0.1000E-05  RDP= 0.4583    
 
 
   Istp=    2   Time Step= 0.1000E-03 Time= 0.20000000E-03   End Time= 0.10000000E-02
-  RNSx= 0.4471E-04  RNSy= 0.5453E-04  RNSz= 0.1250E-03  RTmpr= 0.2457E-06  RDP= 0.4692    
+  RNSx= 0.4273E-04  RNSy= 0.5545E-04  RNSz= 0.1267E-03  RTmpr= 0.2457E-06  RDP= 0.4953    
 
 
   Istp=    3   Time Step= 0.1000E-03 Time= 0.30000000E-03   End Time= 0.10000000E-02
-  RNSx= 0.1129E-03  RNSy= 0.1957E-03  RNSz= 0.3737E-03  RTmpr= 0.1393E-06  RDP= 0.5479    
+  RNSx= 0.1126E-03  RNSy= 0.1982E-03  RNSz= 0.3806E-03  RTmpr= 0.1393E-06  RDP= 0.5541    
 
 
   Istp=    4   Time Step= 0.1000E-03 Time= 0.40000000E-03   End Time= 0.10000000E-02
-  RNSx= 0.5861E-03  RNSy= 0.6284E-03  RNSz= 0.9882E-03  RTmpr= 0.1054E-06  RDP=  1.110    
+  RNSx= 0.5765E-03  RNSy= 0.6208E-03  RNSz= 0.9703E-03  RTmpr= 0.1049E-06  RDP=  1.091    
 
 
   Istp=    5   Time Step= 0.1000E-03 Time= 0.50000000E-03   End Time= 0.10000000E-02
-  RNSx= 0.2134E-02  RNSy= 0.2196E-02  RNSz= 0.2885E-02  RTmpr= 0.1164E-06  RDP=  3.451    
+  RNSx= 0.2083E-02  RNSy= 0.2179E-02  RNSz= 0.2943E-02  RTmpr= 0.1154E-06  RDP=  3.421    
 
 
   Istp=    6   Time Step= 0.1000E-03 Time= 0.60000000E-03   End Time= 0.10000000E-02
-  RNSx= 0.8053E-02  RNSy= 0.6058E-02  RNSz= 0.1114E-01  RTmpr= 0.2113E-06  RDP=  15.89    
+  RNSx= 0.7749E-02  RNSy= 0.5999E-02  RNSz= 0.1085E-01  RTmpr= 0.2094E-06  RDP=  16.95    
 
 
   Istp=    7   Time Step= 0.1000E-03 Time= 0.70000000E-03   End Time= 0.10000000E-02
-  RNSx= 0.2689E-01  RNSy= 0.1698E-01  RNSz= 0.3173E-01  RTmpr= 0.6651E-06  RDP=  64.64    
+  RNSx= 0.2549E-01  RNSy= 0.1593E-01  RNSz= 0.3094E-01  RTmpr= 0.6593E-06  RDP=  67.91    
 
 
   Istp=    8   Time Step= 0.1000E-03 Time= 0.80000000E-03   End Time= 0.10000000E-02
-  RNSx= 0.7971      RNSy= 0.6249E-01  RNSz= 0.8136      RTmpr= 0.1745E-05  RDP=  222.4    
+  RNSx= 0.7996      RNSy= 0.5988E-01  RNSz= 0.8068      RTmpr= 0.1722E-05  RDP=  232.0    
 
 
   Istp=    9   Time Step= 0.1000E-03 Time= 0.90000000E-03   End Time= 0.10000000E-02
-  RNSx= 0.9182      RNSy= 0.9518      RNSz=  1.068      RTmpr= 0.6029E-05  RDP=  715.8    
+  RNSx= 0.9015      RNSy= 0.9251      RNSz=  1.081      RTmpr= 0.5723E-05  RDP=  713.2    
 
 
   Istp=   10   Time Step= 0.1000E-03 Time= 0.10000000E-02   End Time= 0.10000000E-02
-  RNSx=  1.715      RNSy=  1.411      RNSz=  1.839      RTmpr= 0.2022E-04  RDP=  2401.    
-           Nusselt number  =   0.416182621923377     
-  Midplane Nusselt number  =   0.602203922193815     
-            kinetic energy =   0.345122891214242     
-       2D Nusselt number  =  0.554559167455388     
-       2D kinetic energy  =  0.593646981021624     
+  RNSx=  1.715      RNSy=  1.442      RNSz=  1.809      RTmpr= 0.1957E-04  RDP=  2202.    
+           Nusselt number  =    1.00000310262983     
+  Midplane Nusselt number  =    1.00000000000000     
+            kinetic energy =   0.317502144771851     
+       2D Nusselt number  =   1.00000000000000     
+       2D kinetic energy  =  0.539711703704672     
