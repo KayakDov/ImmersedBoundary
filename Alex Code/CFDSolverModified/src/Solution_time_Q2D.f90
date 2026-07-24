@@ -14,7 +14,6 @@
          Use Variables
          Use Operators
          Use AlexCudaCompatibility, only : Initialize_GPU_Solvers
-         Use ValidateGPU   ! VALIDATION ONLY -- remove after checking
 
         Implicit Real(kind=8) (A-H,O-Z)
         Character*50  Head
@@ -63,8 +62,6 @@
         ! by testing: building before Init silently captures Ckor's
         ! uninitialized (zero) value, giving shift = 0 for every solver.
         Call  Initialize_GPU_Solvers()
-
-        Call  Validate_GPU_Solvers   ! VALIDATION ONLY -- remove after checking
 
         Write (*,*) ' Initial: Nu=', Nusselt(),'   Ekin=', Ekinem()
 
@@ -225,6 +222,5 @@
 310        Format ( 12(E12.5,1x) )
     
     End Subroutine Plot_Amplitude
-
 
     End Subroutine Solution_time
