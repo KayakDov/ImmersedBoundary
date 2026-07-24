@@ -2,8 +2,9 @@
 ! EVD_Modules.f90 -- Alex's CPU-solver module data, restored
 ! VERBATIM from the original modfv_3D_Q2D.f90 so the original
 ! EVD_lap* / EVD_Thomas / EVDmethod files compile unchanged
-! alongside the GPU code, for CPU-vs-GPU validation only.
-! Remove this file (and the EVD_* files) once validated.
+! alongside the GPU code, for CPU-vs-GPU validation ONLY.
+! Remove this file (and the EVD_* files) after validating --
+! it is not part of production code.
 ! ============================================================
 
          Module EVD_Operators

@@ -91,7 +91,7 @@ Subroutine  EVDmethod (f_new, f_rhs, Ex, Ex_inv, Ey, Ey_inv, Ez, Ez_inv, Lambx, 
 
     Amat1(1:Nzsol,1:Nxsol) = Transpose( f_new(1:Nxsol,j,1:Nzsol) )
      Call DGEMM('N', 'N', Nzsol, Nxsol, Nzsol, 1.d0, Ez, Nzsol, Amat1, Nzsol, 0.d0, Amat2, Nzsol)
-    f_new(1:Nxsol,j,1:Nzsol) = Transpose( Amat2(1:Nzsol,1:Nxsol) )   ! was 1:Nysol - pre-existing typo, correct data by accident without bounds checks
+    f_new(1:Nxsol,j,1:Nzsol) = Transpose( Amat2(1:Nzsol,1:Nxsol) )   ! pre-existing typo (Nysol->Nxsol); dormant when Nx=Ny=Nz, fixed here to be safe under bounds-checking regardless of grid shape
    End Do
 !   Write (*,*) ' 7 fnew=', Sum(f_new)
     

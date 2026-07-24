@@ -28,48 +28,17 @@ Subroutine Init
         Allocate(bufT(0:Nx2, 0:Ny2, 0:Nz2))
         Allocate(bufP(1:Nx1, 1:Ny1, 1:Nz1))
 
-        ! 2. Read from file using ORIGINAL loop order (from legacy source)
+        ! 2. Read from file using the LEGACY (X, Y, Z) loop order, so restart
+        !    files written by the original code (or by Outp, which writes in
+        !    this same legacy byte order -- see outp_3D.f90) remain compatible.
         Read (3) ((( bufX(i,j,k), i=0,Nx1), j=0,Ny2), k=0,Nz2)
         Read (3) ((( bufY(i,j,k), i=0,Nx2), j=0,Ny1), k=0,Nz2)
         Read (3) ((( bufZ(i,j,k), i=0,Nx2), j=0,Ny2), k=0,Nz1)
-        ! [Your existing code]
         Read (3) ((( bufT(i,j,k), i=0,Nx2), j=0,Ny2), k=0,Nz2)
         Read (3) ((( bufP(i,j,k), i=1,Nx1), j=1,Ny1), k=1,Nz1)
 
-        ! ======================================================================
-        ! AUDIT MILESTONE A: Raw Buffer Data Ingestion (Legacy X, Y, Z order)
-        ! ======================================================================
-        print *, "--- [AUDIT A] Raw bufT Content from File (X, Y, Z space) ---"
-        do k = 0, Nz2
-            do j = 0, Ny2
-                do i = 0, Nx2
-                    if (bufT(i,j,k) /= 0.d0) then
-                        print *, "bufT(X=", i, ", Y=", j, ", Z=", k, ") = ", bufT(i,j,k)
-                    end if
-                end do
-            end do
-        end do
-
-        ! [Your existing mapping code]
-        Do k=0,Nz2; Do j=0,Ny2; Do i=0,Nx2; Tmpr(j,k,i) = bufT(i,j,k); EndDo; EndDo; EndDo
-        Do k=1,Nz1; Do j=1,Ny1; Do i=1,Nx1; Prs(j,k,i)  = bufP(i,j,k); EndDo; EndDo; EndDo
-
-        ! ======================================================================
-        ! AUDIT MILESTONE B: Transposed Global Array Structure (Y, Z, X order)
-        ! ======================================================================
-        print *, ""
-        print *, "--- [AUDIT B] Global Transposed Tmpr Array (Y, Z, X space) ---"
-        do i = 0, Nx2
-            do k = 0, Nz2
-                do j = 0, Ny2
-                    if (Tmpr(j,k,i) /= 0.d0) then
-                        print *, "Tmpr(Y=", j, ", Z=", k, ", X=", i, ") = ", Tmpr(j,k,i)
-                    end if
-                end do
-            end do
-        end do
-
-        ! 3. Map (X,Y,Z) buffer to (Y,Z,X) global arrays
+        ! 3. Map the legacy (X,Y,Z) buffers into the (Y,Z,X)-ordered global
+        !    arrays used throughout the rest of the code.
         Do k=0,Nz2; Do j=0,Ny2; Do i=0,Nx1; VMx(j,k,i) = bufX(i,j,k); EndDo; EndDo; EndDo
         Do k=0,Nz2; Do j=0,Ny1; Do i=0,Nx2; VMy(j,k,i) = bufY(i,j,k); EndDo; EndDo; EndDo
         Do k=0,Nz1; Do j=0,Ny2; Do i=0,Nx2; VMz(j,k,i) = bufZ(i,j,k); EndDo; EndDo; EndDo

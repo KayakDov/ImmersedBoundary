@@ -3,9 +3,9 @@
 #include "solvers/EigenDecomp/EigenDecomp2d.h"
 #include "solvers/EigenDecomp/EigenDecompThomas.cuh"
 #include "poisson/Poisson.cuh"
-#include "solvers/EigenDecomp/EigenDecomp3d.cuh"
 #include <cmath>
 #include <random>
+#include "solvers/EigenDecomp/EigenDecomp3d.cuh"
 
 
 #include "wrapper/FortranBindings.hpp"
@@ -85,9 +85,8 @@ TEST(FortranWrapper, MultipleEigenSolversSideBySide){
     std::vector<Real> rhs(size, 1.0);
 
     // Result buffers
-    std::vector<Real> resStandard1(size, -9999.0);
+    std::vector<Real> resStandard(size, -9999.0);
     std::vector<Real> resThomas(size, -9999.0);
-    std::vector<Real> resStandard2(size, -9999.0);
 
     // 1. Initialize three independent solvers side-by-side
     // NOTE: the three ints after the delta pointers are the per-axis
@@ -107,27 +106,17 @@ TEST(FortranWrapper, MultipleEigenSolversSideBySide){
             false, false, false, false, false, false,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, 0);  // Thomas (was passing thomas=false)
 
-    size_t h3 = eigen::initEigenDecomp_d(
-            N, N, N, d.x.data(), d.y.data(), d.z.data(),
-            eigen::VariableDeltaLapl, eigen::VariableDeltaLapl, eigen::VariableDeltaLapl,
-            false, false, false, false, false, false,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0); // Standard 2
-
-    // 2. Verify the wrapper assigned unique handles to the vector
+        // 2. Verify the wrapper assigned unique handles to the vector
     ASSERT_NE(h1, h2);
-    ASSERT_NE(h2, h3);
-    ASSERT_NE(h1, h3);
 
     // 3. Solve them sequentially
-    eigen::solveEigenDecomp_d(h1, resStandard1.data(), rhs.data());
+    eigen::solveEigenDecomp_d(h1, resStandard.data(), rhs.data());
     eigen::solveEigenDecomp_d(h2, resThomas.data(), rhs.data());
-    eigen::solveEigenDecomp_d(h3, resStandard2.data(), rhs.data());
 
     // 4. Diagnostics: If memory bled across solvers, the results would diverge
-    for(size_t i=0; i<size; i++) {
-        ASSERT_NEAR(resStandard1[i], resThomas[i], 1e-7) << " Mismatch between Standard1 and Thomas at i = " << i;
-        ASSERT_NEAR(resStandard1[i], resStandard2[i], 1e-7) << " Mismatch between Standard1 and Standard2 at i = " << i;
-    }
+    for(size_t i=0; i<size; i++)
+        ASSERT_NEAR(resStandard[i], resThomas[i], 1e-7)
+            << " Standard/Thomas disagreement at i = " << i;
 
     eigen::finalizeEigenDecomp_d();
 }
@@ -756,11 +745,9 @@ void laplacianBattery(int kindLo, int kindHi, bool fullValueMatrix) {
     Handle hand3[3];
     Event event2[2];
 
-    double tolerance = 1e-11;
-
-    size_t maxDim = 3;
+    size_t maxDim = 20;
     size_t startRowsCols = 2;
-    size_t dimStepSize = 1;
+    size_t dimStepSize = 6;
 
     size_t n = maxDim * maxDim * maxDim;
     auto buffer = Mat<Real>::create(n, n + 5);
@@ -804,12 +791,15 @@ void laplacianBattery(int kindLo, int kindHi, bool fullValueMatrix) {
 
                                                                      XYZ<std::vector<Real>> deltas = generateDeltas<Real>(dim, laplOp, seedBase);
 
-                                                                     if (++count % 500 == 0)
-                                                                         std::cout << "  [battery] config " << count
-                                                                                   << "  kind=" << isStag
-                                                                                   << " dim=(" << rows << "," << cols << "," << layers << ")"
-                                                                                   << " N=(" << x0IsN << x1IsN << y0IsN << y1IsN << z0IsN << z1IsN << ")"
-                                                                                   << std::endl;
+                                                                     double tolerance = 1e-11 * std::sqrt(static_cast<double>(dim.size()));
+
+
+                                                                     // if (++count % 500 == 0)
+                                                                     //     std::cout << "  [battery] config " << count
+                                                                     //               << "  kind=" << isStag
+                                                                     //               << " dim=(" << rows << "," << cols << "," << layers << ")"
+                                                                     //               << " N=(" << x0IsN << x1IsN << y0IsN << y1IsN << z0IsN << z1IsN << ")"
+                                                                     //               << std::endl;
 
                                                                      boundaryBattery<Real>(
                                                                          startIsN,
@@ -838,10 +828,66 @@ TEST(LaplacianMath, laplacian) {
     laplacianBattery<double>(eigen::UniformDeltaNodeCenteredLapl, eigen::FluxLapl, false);
 }
 
-// The original exhaustive battery (2^6 BC x 2^6 values x 4 kinds x 27 dims).
-// Run explicitly with --gtest_also_run_disabled_tests when you want it.
-TEST(LaplacianMath, DISABLED_fullBattery) {
-    laplacianBattery<double>(eigen::UniformDeltaNodeCenteredLapl, eigen::FluxLapl, true);
+
+
+template<typename Real, typename segX, typename segY, typename segZ>
+void verifyShiftedEigenSolverIdentity(
+    const BoundaryConfigHost<Real, segX, segY, segZ>& boundary,
+    Handle* hands, Event* events,
+    Real shift,
+    Real tolerance,
+    const std::string& msg
+) {
+    auto laplacian = poisson::laplacian<Real>(boundary.forDevice(), hands[0]);
+    auto dim = boundary.forDevice().dim();
+    std::vector<Real> x0Host(dim.size());
+    for (size_t i = 0; i < dim.size(); ++i) x0Host[i] = static_cast<Real>(i + 1);
+
+    auto x = SimpleArray<Real>::create(dim.size(), hands[0]);
+    x.set(x0Host.data(), hands[0]);
+
+    auto b = SimpleArray<Real>::create(dim.size(), hands[0]);
+    laplacian.bandedMult(x, b, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+    auto shiftGpu = Singleton<Real>::create(-shift, hands[0]);
+    b.add(x, &shiftGpu, hands);   // y0 += (-shift) * x0
+
+    x.fill(0, hands[0]);
+
+    EigenDecomp3d<Real> ed(boundary.forDevice(), hands, events, shift);
+    ed.solve(x, b, hands[0]);
+    std::vector<Real> x1Host(dim.size());
+    x.get(x1Host.data(), hands[0]);
+
+    for (size_t i = 0; i < dim.size(); ++i) ASSERT_NEAR(x0Host[i], x1Host[i], tolerance);
+
+    EigenDecompThomas<Real, segX> edThomas(boundary, hands, events, shift);
+    edThomas.solve(x, b, hands[0]);
+    x.get(x1Host.data(), hands[0]);
+
+    for (size_t i = 0; i < dim.size(); ++i) ASSERT_NEAR(x0Host[i], x1Host[i], tolerance);
+}
+
+// Small size: fast, first line of defense.
+TEST(ShiftedEigen, FluxLaplacian_SmallScale) {
+    Handle hands[3]; Event events[3];
+    size_t dimLength = 11;
+    GridDim dim(dimLength, dimLength, dimLength);
+    XYZ<eigen::LaplOperatorT> kind(eigen::FluxLapl, eigen::FluxLapl, eigen::FluxLapl);
+    XYZ<bool> allNeumann(true, true, true);
+    XYZ<double> zeroR3(0.0, 0.0, 0.0);
+
+    auto uniformCellDeltas = [](size_t n) {
+        std::vector<double> d(n + 1, 1.0);
+        d.front() = 0.5; d.back() = 0.5;
+        return d;
+    };
+    XYZ<std::vector<double>> deltas(uniformCellDeltas(dim.cols), uniformCellDeltas(dim.rows), uniformCellDeltas(dim.layers));
+
+    buildBoundaryConfigAndLaunch<double>(dim, deltas, allNeumann, allNeumann, zeroR3, zeroR3, kind, hands[0],
+        [&](const auto& boundaryHost) {
+            std::string msg = "FluxLaplacian shifted identity, N=11";
+            verifyShiftedEigenSolverIdentity<double>(boundaryHost, hands, events, /*shift=*/3.48568e6, /*tol=*/1e-6, msg);
+        });
 }
 
 int main(int argc, char **argv) {

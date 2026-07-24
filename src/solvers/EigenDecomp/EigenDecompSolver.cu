@@ -17,10 +17,16 @@ bool EigenDecompSolver<T>::isInLColSpace(const Vec<T> &rhs, Vec<T> &bufferSizeOf
     return std::abs(result) < tolerance;
 }
 
-
+template<typename T>
+__global__ void contains(T* result, DeviceData1d<T> vec1, DeviceData1d<T> vec2, DeviceData1d<T> vec3, T key, T tolerance) {
+    auto id = idx();
+    if (id < vec1.cols &&  vec1[id] - key <= tolerance && key - vec1[id] <= tolerance) *result = true;
+    else if (id < vec2.cols &&  vec2[id] - key <= tolerance && key - vec2[id] <= tolerance) *result = true;
+    else if (id < vec3.cols &&  vec3[id] - key <= tolerance && key - vec3[id] <= tolerance) *result = true;
+}
 
 template<typename T>
-EigenDecompSolver<T>::EigenDecompSolver(const Eigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular, T helmholtzShift) :
+EigenDecompSolver<T>::EigenDecompSolver(const Eigen<T>& eMatsAndVecs, SimpleArray<T> &sizeOfB, bool allNeumann, T helmholtzShift) :
     dim(
         eMatsAndVecs.vecs.y._rows,
         eMatsAndVecs.vecs.x._rows,
@@ -28,8 +34,9 @@ EigenDecompSolver<T>::EigenDecompSolver(const Eigen<T>& eMatsAndVecs, SimpleArra
     ),
     lapEigen(eMatsAndVecs),
     sizeOfB(sizeOfB),
-    isSingular(isSingular),
-    helmholtzShift(helmholtzShift){}
+    isSingular(allNeumann && helmholtzShift == 0),
+    helmholtzShift(helmholtzShift) {
+}
 
 template<typename T>
 template<typename BoundaryConfigT>

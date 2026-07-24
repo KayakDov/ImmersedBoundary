@@ -97,10 +97,10 @@ public:
      * These matrices will be overwritten.
      * @param eMatsAndVecs The eigen matrices and values for the laplacian.
      * @param sizeOfB An array the size of b = xLength * yLength * zLength that will be overwritten.  You may use b for this.
-     * @param isSingular set to true if singular.
+     * @param allNeumann set to true if singular.
      * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
-    EigenDecompSolver(const Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB, bool isSingular, T helmholtzShift);
+    EigenDecompSolver(const Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB, bool allNeumann, T helmholtzShift);
 
     /**
      *

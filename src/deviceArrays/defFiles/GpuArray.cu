@@ -227,6 +227,27 @@ DeviceData2d<T> GpuArray<T>::toKernel2d() { return DeviceData2d<T>(this->_rows, 
 template <typename T>
 DeviceData2d<T> GpuArray<T>::toKernel2d() const { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
 
+
+
+template <typename T>
+SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr){
+    if (index >= this->_cols) throw std::out_of_range(
+            "GpuArray::col access out of bounds: requested index " + std::to_string(index) +
+            " but the matrix, with " + std::to_string(this->_rows) + " rows has only has " + std::to_string(this->_cols) + " columns."
+        );
+    return SimpleArray<T>(this->_rows, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index * this->_ld), initDescr);
+}
+
+template <typename T>
+SimpleArray<T> GpuArray<T>::lastCol(bool initDescr){
+    return col(this->_cols - 1, initDescr);
+}
+
+template <typename T>
+SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr) const {
+    return SimpleArray<T>((const_cast<GpuArray<T>*>(this))->col(index, initDescr));
+}
+
 template class GpuArray<float>;
 template class GpuArray<double>;
 template class GpuArray<int32_t>;

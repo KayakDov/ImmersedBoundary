@@ -175,19 +175,19 @@ Creates a new eigendecomposition solver and returns a solver handle.
 | :--- | :--- | :--- |
 | solverHandle | integer(C_SIZE_T) | Identifier used in subsequent solve calls. |
 
-| Argument | Type | Description |
-| :--- | :--- | :--- |
-| `dim1Length`, `dim2Length`, `dim3Length` | integer(C_SIZE_T) | Number of grid points along the first, second, and third logical dimensions. The solver is isotropic and does not assign any physical meaning (such as X, Y, or Z) to these dimensions. |
-| `dim1Delta`, `dim2Delta`, `dim3Delta` | real array | Grid spacing array for each logical dimension; see section 9 for the exact size and content required by each `dim*SegType`. |
+| Argument | Type | Description                                                                                                                                                                                                                                                                              |
+| :--- | :--- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `dim1Length`, `dim2Length`, `dim3Length` | integer(C_SIZE_T) | Number of grid points along the first, second, and third logical dimensions. The solver is isotropic and does not assign any physical meaning (such as X, Y, or Z) to these dimensions.                                                                                                  |
+| `dim1Delta`, `dim2Delta`, `dim3Delta` | real array | Grid spacing array for each logical dimension; see section 9 for the exact size and content required by each `dim*SegType`.                                                                                                                                                              |
 | `dim1SegType`, `dim2SegType`, `dim3SegType` | integer(C_INT) | Discretization kind for each logical dimension. One of `UNIFORM_NODE_CENTERED_LAPL`, `UNIFORM_STAGGERED_LAPL`, `VARIABLE_DELTA_LAPL`, or `FLUX_LAPL` (see section 9). Replaces the old `isStaggered`/`dim*UniformDelta` flags -- every axis states its own discretization independently. |
-| `dim1StartIsNeumann`, `dim1EndIsNeumann` | logical | Boundary-condition type at the beginning and end of the first logical dimension (`.true.` = Neumann, `.false.` = Dirichlet). |
-| `dim2StartIsNeumann`, `dim2EndIsNeumann` | logical | Boundary-condition type for the second logical dimension. |
-| `dim3StartIsNeumann`, `dim3EndIsNeumann` | logical | Boundary-condition type for the third logical dimension. |
-| `dim1StartVal`, `dim1EndVal` | real | Boundary values associated with the first logical dimension. |
-| `dim2StartVal`, `dim2EndVal` | real | Boundary values associated with the second logical dimension. |
-| `dim3StartVal`, `dim3EndVal` | real | Boundary values associated with the third logical dimension. |
-| `thomas` | logical | `.true.` to use the optimized Thomas variant for the direct eigendecomposition solver. |
-| `helmholtzShift` | real | Scalar shift $\sigma$. Set to `0.0` for the Poisson equation or a non-zero value to solve $(L - \sigma I)x = b$. |
+| `dim1StartIsNeumann`, `dim1EndIsNeumann` | logical | Boundary-condition type at the beginning and end of the first logical dimension (`.true.` = Neumann, `.false.` = Dirichlet).                                                                                                                                                             |
+| `dim2StartIsNeumann`, `dim2EndIsNeumann` | logical | Boundary-condition type for the second logical dimension.                                                                                                                                                                                                                                |
+| `dim3StartIsNeumann`, `dim3EndIsNeumann` | logical | Boundary-condition type for the third logical dimension.                                                                                                                                                                                                                                 |
+| `dim1StartVal`, `dim1EndVal` | real | Boundary values associated with the first logical dimension.                                                                                                                                                                                                                             |
+| `dim2StartVal`, `dim2EndVal` | real | Boundary values associated with the second logical dimension.                                                                                                                                                                                                                            |
+| `dim3StartVal`, `dim3EndVal` | real | Boundary values associated with the third logical dimension.                                                                                                                                                                                                                             |
+| `thomas` | logical | `.true.` to use the optimized Thomas variant for the direct eigendecomposition solver.                                                                                                                                                                                                   |
+| `helmholtzShift` | real | Scalar shift $\sigma$. Set to `0.0` for the Poisson equation or a non-zero value to solve $(L - \sigma I)x = b$. If all boundary conditions are neumann, and \sigma > 0, be sure \sigma is not an eigenvalue of L.                                                                       |
 
 > **Note:** `init_immersed_eq_*` (section 6) still uses the legacy global `isStaggered` / `dim*UniformDelta` flags and has not been migrated to `dim*SegType`. The two solvers currently have different initialization APIs; don't copy one's argument list to the other.
 

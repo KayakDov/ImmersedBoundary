@@ -4,9 +4,9 @@
 0.0                   Biot number
 0.054                  Prandtl number
 1000.                  Hartmann number
-3                    Nx
-2                    Ny
-4                    Nz
+100                    Nx
+100                    Ny
+100                    Nz
 0.0000001               Eps
 0.000001                EpsCnv 
 9000                  ItMax

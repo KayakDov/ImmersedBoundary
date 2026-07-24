@@ -75,46 +75,12 @@ SimpleArray<T>::operator cusparseDnVecDescr_t() const {
     return getDescr();
 }
 
-template <typename T>
-SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr){
-    if (index >= this->_cols) throw std::out_of_range(
-            "GpuArray::col access out of bounds: requested index " + std::to_string(index) +
-            " but the matrix, with " + std::to_string(this->_rows) + " rows has only has " + std::to_string(this->_cols) + " columns."
-        );
-    return SimpleArray<T>(this->_rows, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index * this->_ld), initDescr);
-}
-
 template<typename T>
 Tensor<T> SimpleArray<T>::tensor(size_t rows, size_t layers) const{
     const size_t ld = rows * layers;
     const size_t cols = this->size()/ld;
     return Tensor<T>(rows, cols, layers, ld, this->_ptr);
 }
-
-
-template <typename T>
-SimpleArray<T> GpuArray<T>::lastCol(bool initDescr){
-    return col(this->_cols - 1, initDescr);
-}
-
-template <typename T>
-SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr) const {
-    return SimpleArray<T>((const_cast<GpuArray<T>*>(this))->col(index, initDescr));
-}
-
-template SimpleArray<float>        GpuArray<float>::col(size_t, bool);
-template SimpleArray<double>       GpuArray<double>::col(size_t, bool);
-template SimpleArray<size_t>       GpuArray<size_t>::col(size_t, bool);
-template SimpleArray<int>          GpuArray<int>::col(size_t, bool);
-template SimpleArray<unsigned char>GpuArray<unsigned char>::col(size_t, bool);
-template SimpleArray<uint32_t>     GpuArray<uint32_t>::col(size_t, bool);
-
-template SimpleArray<float> GpuArray<float>::col(size_t, bool) const;
-template SimpleArray<double> GpuArray<double>::col(size_t, bool) const;
-template SimpleArray<size_t> GpuArray<size_t>::col(size_t, bool) const; // Maps to 'unsigned long' in the error
-template SimpleArray<int> GpuArray<int>::col(size_t, bool) const;
-template SimpleArray<unsigned char> GpuArray<unsigned char>::col(size_t, bool) const;
-template SimpleArray<uint32_t> GpuArray<uint32_t>::col(size_t, bool) const;
 
 template class SimpleArray<uint32_t>;
 template class SimpleArray<int32_t>;
