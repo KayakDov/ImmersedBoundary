@@ -10,8 +10,7 @@
          Use Grid
          Use Variables
          Use Operators
-         Use AlexCudaCompatibility  ! GPU eigendecomposition bridge; see AlexCudaCompatibility.f90
-         Use eigenbcgsolver_eigen_mod, only : finalize_eigen_decomp_d
+         Use eigenbcgsolver_eigen_mod, only : finalize_eigen_decomp
 
         Implicit Real(kind=8) (A-H,O-Z)
  
@@ -185,7 +184,7 @@
             Call Average_flow
 
             ! GPU TEARDOWN: release CudaBandedLib's solver resources before exit.
-            Call finalize_eigen_decomp_d()
+            Call finalize_eigen_decomp()
          Stop
 881        Write (*,8001)  
         Stop

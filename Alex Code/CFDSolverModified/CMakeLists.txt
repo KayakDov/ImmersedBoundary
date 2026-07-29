@@ -85,12 +85,11 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel"
         CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
 
     add_compile_options(
-            $<$<COMPILE_LANGUAGE:Fortran>:-g>
-            $<$<COMPILE_LANGUAGE:Fortran>:-O0>
+            $<$<COMPILE_LANGUAGE:Fortran>:-O3>
+            $<$<COMPILE_LANGUAGE:Fortran>:-xHOST>
             $<$<COMPILE_LANGUAGE:Fortran>:-qmkl>
             $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>
             $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
-            $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
     )
 
     if(MKL_LIB_DIR)
@@ -104,12 +103,12 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel"
 
 endif()
 
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang|IntelLLVM|Intel")
     add_compile_options(
-            $<$<COMPILE_LANGUAGE:CXX>:-g>
-            $<$<COMPILE_LANGUAGE:CXX>:-O0>
+            $<$<COMPILE_LANGUAGE:CXX>:-O3>
+            $<$<COMPILE_LANGUAGE:CXX>:-march=native>
     )
 endif()
 

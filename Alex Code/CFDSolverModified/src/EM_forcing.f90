@@ -2,7 +2,16 @@
 !
 !   This potential is defined in the points X, Yp, Z
 
-Subroutine Get_Potential
+! Shared between Get_Potential_Launch and Get_Potential_Finish: a plain local
+! Save variable in each subroutine would NOT be the same storage (Fortran
+! locals are private per-subroutine even with Save), so these have to live
+! in a module both subroutines Use.
+Module GPU_Potential_Scratch
+    Real(kind=8), Allocatable, Save :: GPU_RHS_Pot(:,:,:), GPU_SOL_Pot(:,:,:)
+    Logical, Save :: GPU_Pot_Allocated = .false.
+End Module GPU_Potential_Scratch
+
+Subroutine Get_Potential_Launch
     Use Grid
     Use Numbers
     Use Numerica
@@ -10,10 +19,16 @@ Subroutine Get_Potential
     Use Variables
     Use AlexCudaCompatibility, only : PotentialHandle
     Use eigenbcgsolver_eigen_mod, only : solve_eigen_decomp_d
+    Use GPU_Potential_Scratch
 
     Implicit Real(kind=8) (A-H,O-Z)
 ! ___________________________________________________
-         
+
+    If (.not. GPU_Pot_Allocated) Then
+        Allocate( GPU_RHS_Pot(1:Nx,1:Ny1,1:Nz) )
+        Allocate( GPU_SOL_Pot(1:Nx,1:Ny1,1:Nz) )
+        GPU_Pot_Allocated = .true.
+    End If
 
 !$OMP Parallel Do Private(i,j,k,DVx_dz,Dvz_dx)
    Do i=1,Nx
@@ -21,48 +36,65 @@ Subroutine Get_Potential
       Do k=1,Nz
           DVx_dz = ( VMx(i,j,k+1) - VMx(i,j,k) ) / HPz(k)
           DVz_dx = ( VMz(i+1,j,k) - VMz(i,j,k) ) / HPx(i)
-          
-          FDRHP(i,j,k) = DVz_dx - DVx_dz 
+
+          FDRHP(i,j,k) = DVz_dx - DVx_dz
       End Do
      End Do
    End Do
-    
+
         ! GPU: pure Poisson (shift = 0, alpha = 1 on all axes -- no RHS
         ! scaling needed, no reindexing needed), was
         ! Call EVDmethod(..., 1,1,1, beta=0).
-        Call solve_eigen_decomp_d(PotentialHandle, Potential(1:Nx,1:Ny1,1:Nz), FDRHP(1:Nx,1:Ny1,1:Nz))
+        ! Launch only -- does NOT synch. GPU_SOL_Pot is not valid until
+        ! Get_Potential_Finish (called right before EM_force, which is
+        ! the first place Potential is actually read) calls synch_d.
+        GPU_RHS_Pot = FDRHP(1:Nx,1:Ny1,1:Nz)
+        Call solve_eigen_decomp_d(PotentialHandle, GPU_SOL_Pot, GPU_RHS_Pot)
 
-!      Call   EVD_Thomas (Potential(1:Nx,1:Ny1,1:Nz), FDRHP(1:Nx,1:Ny1,1:Nz),  &
-! &                           EyFi(1:Ny1,1:Ny1),  Ey_invFi(1:Ny1,1:Ny1),       &
-! &                           EzFi(1:Nz,1:Nz),  Ez_invFi(1:Nz,1:Nz),           &
-! &                           LambyFi(1:Ny1), LambzFi(1:Nz),                   &
-! &                           Fi_left(1:Nx), Fi_center(1:Nx), Fi_right(1:Nx),  &
-! &                           Nx, Ny1, Nz, 0.D0)
-      
+  Return
+End Subroutine Get_Potential_Launch
+
+
+Subroutine Get_Potential_Finish
+    Use Grid
+    Use Numbers
+    Use Numerica
+    Use Operators
+    Use Variables
+    Use AlexCudaCompatibility, only : PotentialHandle
+    Use eigenbcgsolver_eigen_mod, only : synch_d
+    Use GPU_Potential_Scratch
+
+    Implicit Real(kind=8) (A-H,O-Z)
+! ___________________________________________________
+
+        Call synch_d(PotentialHandle)
+        Potential(1:Nx,1:Ny1,1:Nz) = GPU_SOL_Pot
+
         Potential = Potential - Potential(1,1,1)
 
     If(EVD_Pot_X == 1 ) then
         Potential(0,:,:) = Potential(1,:,:);  Potential(Nx1,:,:) = Potential(Nx, :,:)
      else
         Potential(0,:,:) = 0.d0;  Potential(Nx1,:,:) = 0.d0
-    End If   
+    End If
 
      If(EVD_Pot_Y == 1 ) then
        Potential(:,0,:) = Potential(:,1,:);  Potential(:,Ny2,:) = Potential(:,Ny1,:)
      else
         Potential(:,0,:) = 0.d0;  Potential(:,Ny2,:) = 0.d0
-    End If   
-       
+    End If
+
      If(EVD_Pot_Z == 1 ) then
         Potential(:,:,0) = Potential(:,:,1);  Potential(:,:,Nz1) = Potential(:, :,Nz)
      else
         Potential(:,:,0) = 0.d0;  Potential(:,:,Nz1) = 0.d0
-    End If   
+    End If
 
  !   Write (*,*) ' EM: Potential=', Sum(Potential)
   Return
-End Subroutine Get_Potential
-    
+End Subroutine Get_Potential_Finish
+
 ! .......... Calculate electromagnetic force .......................
 
 Subroutine EM_force
@@ -82,7 +114,7 @@ Subroutine EM_force
      Do j=1,Ny1
       Do k=1,Nz1
           DFi_dz = ( Potential(i,j,k) - Potential(i,j,k-1) ) / Hz12(k-1)
-          
+
           RHSx(i,j,k) =  RHSx(i,j,k) + Coef * ( DFi_dz + VMx(i,j,k) )
       End Do
      End Do
@@ -103,7 +135,7 @@ Subroutine EM_force
 
 ! ........... Make div-free force .........................
 
-!        Call EVDbounds_V(Work_flow) 
+!        Call EVDbounds_V(Work_flow)
 !        Call Make_divfree(Stream, 0)
 
 !        Work_flow%P = 0.d0

@@ -70,18 +70,25 @@ void EIG_eigen_solveEigenDecomp_s(size_t solverHandle, float *x,
     // splicer end namespace.eigen.function.solveEigenDecomp_s
 }
 
-void EIG_eigen_finalizeEigenDecomp_d(void)
+void EIG_eigen_synch_d(size_t solverHandle)
 {
-    // splicer begin namespace.eigen.function.finalizeEigenDecomp_d
-    eigen::finalizeEigenDecomp_d();
-    // splicer end namespace.eigen.function.finalizeEigenDecomp_d
+    // splicer begin namespace.eigen.function.synch_d
+    eigen::synch_d(solverHandle);
+    // splicer end namespace.eigen.function.synch_d
 }
 
-void EIG_eigen_finalizeEigenDecomp_s(void)
+void EIG_eigen_synch_s(size_t solverHandle)
 {
-    // splicer begin namespace.eigen.function.finalizeEigenDecomp_s
-    eigen::finalizeEigenDecomp_s();
-    // splicer end namespace.eigen.function.finalizeEigenDecomp_s
+    // splicer begin namespace.eigen.function.synch_s
+    eigen::synch_s(solverHandle);
+    // splicer end namespace.eigen.function.synch_s
+}
+
+void EIG_eigen_finalizeEigenDecomp(void)
+{
+    // splicer begin namespace.eigen.function.finalizeEigenDecomp
+    eigen::finalizeEigenDecomp();
+    // splicer end namespace.eigen.function.finalizeEigenDecomp
 }
 
 }  // extern "C"

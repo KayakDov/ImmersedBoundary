@@ -118,7 +118,7 @@ TEST(FortranWrapper, MultipleEigenSolversSideBySide){
         ASSERT_NEAR(resStandard[i], resThomas[i], 1e-7)
             << " Standard/Thomas disagreement at i = " << i;
 
-    eigen::finalizeEigenDecomp_d();
+    eigen::finalizeEigenDecomp();
 }
 
 TEST(FortranWrapper, SmokeTestAlex)
@@ -197,7 +197,7 @@ TEST(FortranWrapper, SmokeTestAlex)
 
     for(size_t i=0;i<size;i++) ASSERT_NEAR(xThomas[i], xStandard[i], 1e-7) <<  " i = " << i;
 
-    eigen::finalizeEigenDecomp_d();
+    eigen::finalizeEigenDecomp();
 }
 
 TEST(ImmersedEq, SolvesPrimes_3x2x1) {

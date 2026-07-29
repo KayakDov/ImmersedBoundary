@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <cstddef>
 #include <cstdint>
@@ -246,6 +247,16 @@ namespace eigen {
     template<typename Real>
     std::vector<std::unique_ptr<EigenDecompForFortran<Real>>> solvers;
 
+    // inline double currentTime() {
+    //     return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
+    // }
+
+    // std::atomic<double> totalEigenSolverTime{0.0};
+    // inline void addSolverTime(double elapsed) {
+    //     double current = totalEigenSolverTime.load();
+    //     while (!totalEigenSolverTime.compare_exchange_weak(current, current + elapsed));
+    // }
+
     template<typename Real>
     size_t initEigenDecompSolver(
         size_t rows, size_t cols, size_t layers,
@@ -256,6 +267,8 @@ namespace eigen {
         bool thomas,
         Real helmholtzShift
     ) {
+
+        // double startTime = currentTime();
         auto xb = Mat<Real>::create(rows * cols * layers, 3);
 
         XYZ<std::vector<Real>> delta(
@@ -284,21 +297,39 @@ namespace eigen {
                 xb.col(0), xb.col(1), xb.col(2)
             )
         );
+
+        // addSolverTime(currentTime() - startTime);
+
         return solverHandle;
     }
 
     template<typename Real>
     void runDecompSolver(size_t solverHandle, Real* xHost, Real* bHost) {
+        // double startTime = currentTime();
+
         if (solverHandle >= solvers<Real>.size() || !solvers<Real>[solverHandle])
             throw std::runtime_error("Invalid eigen solver handle.");
 
         solvers<Real>[solverHandle]->solve(xHost, bHost);
-        cudaDeviceSynchronize();
+
+        // addSolverTime(currentTime() - startTime);
     }
 
     template<typename Real>
+    void synch(size_t solverHandle) {
+        // double startTime = currentTime();
+        if (solverHandle >= solvers<Real>.size() || !solvers<Real>[solverHandle])
+            throw std::runtime_error("Invalid eigen solver handle.");
+        solvers<Real>[solverHandle]->hand.synch();
+        // addSolverTime(currentTime() - startTime);
+    }
+
     void finalizeEigenDecomp() {
-        solvers<Real>.clear();
+        // double startTime = currentTime();
+        solvers<float>.clear();
+        solvers<double>.clear();
+        // addSolverTime(currentTime() - startTime);
+        // std::cout << "Total eigen decomp time: " << totalEigenSolverTime.load() << std::endl;
     }
 
     // --- Initialization Functions ---
@@ -347,12 +378,12 @@ namespace eigen {
             runDecompSolver(solverHandle, x, b);
         }
 
-        inline void finalizeEigenDecomp_d() {
-            finalizeEigenDecomp<double>();
+        inline void synch_d(size_t solverHandle) {
+            synch<double>(solverHandle);
         }
 
-        inline void finalizeEigenDecomp_s() {
-            finalizeEigenDecomp<float>();
+        inline void synch_s(size_t solverHandle) {
+            synch<float>(solverHandle);
         }
     }
 };

@@ -110,15 +110,24 @@ module eigenbcgsolver_eigen_mod
             real(C_FLOAT), intent(IN) :: b(*)
         end subroutine solve_eigen_decomp_s
 
-        subroutine finalize_eigen_decomp_d() &
-                bind(C, name="EIG_eigen_finalizeEigenDecomp_d")
+        subroutine synch_d(solverHandle) &
+                bind(C, name="EIG_eigen_synch_d")
+            use iso_c_binding, only : C_SIZE_T
             implicit none
-        end subroutine finalize_eigen_decomp_d
+            integer(C_SIZE_T), value, intent(IN) :: solverHandle
+        end subroutine synch_d
 
-        subroutine finalize_eigen_decomp_s() &
-                bind(C, name="EIG_eigen_finalizeEigenDecomp_s")
+        subroutine synch_s(solverHandle) &
+                bind(C, name="EIG_eigen_synch_s")
+            use iso_c_binding, only : C_SIZE_T
             implicit none
-        end subroutine finalize_eigen_decomp_s
+            integer(C_SIZE_T), value, intent(IN) :: solverHandle
+        end subroutine synch_s
+
+        subroutine finalize_eigen_decomp() &
+                bind(C, name="EIG_eigen_finalizeEigenDecomp")
+            implicit none
+        end subroutine finalize_eigen_decomp
     end interface
 
     ! splicer begin namespace.eigen.additional_declarations

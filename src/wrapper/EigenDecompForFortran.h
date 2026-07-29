@@ -19,9 +19,9 @@
 template<typename Real>
 class EigenDecompForFortran {
     std::unique_ptr<EigenDecompSolver<Real>> eds = nullptr;//This may hold any type of eigen solver, 2d, 3d, or Thomas.
-    Handle hand;
     SimpleArray<Real> x, b, adjToB;
 public:
+    Handle hand;
     /**
  * @brief Constructs an eigen-decomposition solver for a separable Cartesian Laplacian or Helmholtz operator.
  *

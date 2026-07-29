@@ -42,14 +42,17 @@ From the project root directory:
 
 The Eigendecomposition solver supports multiple independent solver instances.
 
-Each call to `init_eigen_decomp_*` creates a new solver and returns a solver handle. This handle uniquely identifies the precomputed eigendecomposition and must be supplied to subsequent calls to `solve_eigen_decomp_*`.
+Each call to `init_eigen_decomp_*` creates a new solver and returns a solver handle. This handle uniquely identifies the precomputed eigendecomposition and must be supplied to subsequent calls to `solve_eigen_decomp_*` and `synch_*`.
+
+Because solver calls launch work asynchronously on the GPU, you must call `synch_*` before accessing the solution array $x$ on the CPU to ensure kernel completion.
 
 Typical usage is:
 
 1. Initialize one solver for each grid or boundary configuration.
 2. Save the returned solver handle.
-3. Reuse that handle for as many solves as needed.
-4. Call `finalize_eigen_decomp_*()` once before program termination to release all eigendecomposition resources.
+3. Launch `solve_eigen_decomp_*` asynchronously.
+4. Call `synch_*` to wait for solver completion before using output fields on the host.
+5. Call `finalize_eigen_decomp_*()` once before program termination to release all eigendecomposition resources.
 
 Example:
 
@@ -58,16 +61,18 @@ integer(C_SIZE_T) :: pressureSolver
 integer(C_SIZE_T) :: temperatureSolver
 
 pressureSolver = init_eigen_decomp_d(...)
-
 temperatureSolver = init_eigen_decomp_d(...)
 
+! Asynchronous GPU launches
 call solve_eigen_decomp_d(pressureSolver, xp, bp)
-
 call solve_eigen_decomp_d(temperatureSolver, xt, bt)
+
+! Synchronize host with GPU execution for each handle before reading host buffers
+call synch_d(pressureSolver)
+call synch_d(temperatureSolver)
 
 call finalize_eigen_decomp_d()
 ```
-
 ---
 
 ## 3. Direct Eigendecomposition (Standalone)
@@ -189,8 +194,6 @@ Creates a new eigendecomposition solver and returns a solver handle.
 | `thomas` | logical | `.true.` to use the optimized Thomas variant for the direct eigendecomposition solver.                                                                                                                                                                                                   |
 | `helmholtzShift` | real | Scalar shift $\sigma$. Set to `0.0` for the Poisson equation or a non-zero value to solve $(L - \sigma I)x = b$. If all boundary conditions are neumann, and \sigma > 0, be sure \sigma is not an eigenvalue of L.                                                                       |
 
-> **Note:** `init_immersed_eq_*` (section 6) still uses the legacy global `isStaggered` / `dim*UniformDelta` flags and has not been migrated to `dim*SegType`. The two solvers currently have different initialization APIs; don't copy one's argument list to the other.
-
 ### Solve Routine (`solve_eigen_decomp_*`)
 Performs the spectral solve on the GPU.
 
@@ -200,6 +203,13 @@ Performs the spectral solve on the GPU.
 | x | real array | Output: The solved field.                                                            |
 | b | real array | Input: The source term (RHS).  Be sure this is in the column space of the laplacian. |
 
+
+### Synchronization Routine (`synch_*`)
+Blocks host execution until GPU operations for the given solver handle are complete.
+
+| Argument | Type | Description |
+| :--- | :--- | :---|
+| solverHandle | integer(C_SIZE_T) | Handle returned by `init_eigen_decomp_*`. |
 ---
 
 ## 8. Compiling & Linking
@@ -253,14 +263,13 @@ This module provides the coupled Immersed Boundary Method solvers.
 ### Module: `eigenbcgsolver_eigen_mod`
 This module provides standalone direct Eigendecomposition solvers for the Poisson equation.
 
-| Routine | Precision | Purpose |
-| :--- | :--- | :--- |
-| `init_eigen_decomp_d` | Double | Create a new eigendecomposition solver and return its solver handle. |
-| `init_eigen_decomp_s` | Single | Create a new eigendecomposition solver and return its solver handle. |
-| `solve_eigen_decomp_d` | Double | Solve using an existing solver handle. ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). |
-| `solve_eigen_decomp_s` | Single | Solve using an existing solver handle. ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). |
-| `finalize_eigen_decomp_d` | N/A | Free Eigendecomposition GPU resources. |
-| `finalize_eigen_decomp_s` | N/A | Free Eigendecomposition GPU resources. |
+| Routine                   | Precision | Purpose |
+|:--------------------------| :--- | :--- |
+| `init_eigen_decomp_d`     | Double | Create a new eigendecomposition solver and return its solver handle. |
+| `init_eigen_decomp_s`     | Single | Create a new eigendecomposition solver and return its solver handle. |
+| `solve_eigen_decomp_d`    | Double | Solve using an existing solver handle. ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). |
+| `solve_eigen_decomp_s`    | Single | Solve using an existing solver handle. ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). |
+| `finalize_eigen_decomp`   | N/A | Free Eigendecomposition GPU resources. |
 
 ### Segment Types (`dim*SegType`)
 

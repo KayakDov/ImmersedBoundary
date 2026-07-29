@@ -81,23 +81,12 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel"
    CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
 
     add_compile_options(
-
-        $<$<COMPILE_LANGUAGE:Fortran>:-g>
-
-        $<$<COMPILE_LANGUAGE:Fortran>:-O0>
-
+        $<$<COMPILE_LANGUAGE:Fortran>:-O3>
+        $<$<COMPILE_LANGUAGE:Fortran>:-xHOST>
         $<$<COMPILE_LANGUAGE:Fortran>:-r8>
-
         $<$<COMPILE_LANGUAGE:Fortran>:-qmkl>
-
         $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>
-
         $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
-
-        $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
-
-        $<$<COMPILE_LANGUAGE:Fortran>:-check=all>
-
     )
 
     if(MKL_LIB_DIR)
