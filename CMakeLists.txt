@@ -19,6 +19,59 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 endif()
 
 # =========================
+# Compiler discovery
+# =========================
+
+if(UNIX AND NOT APPLE)
+
+    # Prefer Intel C compiler if available
+    if(NOT DEFINED CMAKE_C_COMPILER)
+        file(GLOB _ICX_CANDIDATES
+                "/opt/intel/oneapi/compiler/*/bin/icx"
+                "$ENV{HOME}/intel/oneapi/compiler/*/bin/icx"
+                "$ENV{ONEAPI_ROOT}/compiler/*/bin/icx"
+        )
+        list(SORT _ICX_CANDIDATES ORDER DESCENDING)
+        list(LENGTH _ICX_CANDIDATES _ICX_COUNT)
+        if(_ICX_COUNT GREATER 0)
+            list(GET _ICX_CANDIDATES 0 _ICX)
+            set(CMAKE_C_COMPILER "${_ICX}")
+        endif()
+    endif()
+
+    # Prefer Intel C++ compiler if available
+    if(NOT DEFINED CMAKE_CXX_COMPILER)
+        file(GLOB _ICPX_CANDIDATES
+                "/opt/intel/oneapi/compiler/*/bin/icpx"
+                "$ENV{HOME}/intel/oneapi/compiler/*/bin/icpx"
+                "$ENV{ONEAPI_ROOT}/compiler/*/bin/icpx"
+        )
+        list(SORT _ICPX_CANDIDATES ORDER DESCENDING)
+        list(LENGTH _ICPX_CANDIDATES _ICPX_COUNT)
+        if(_ICPX_COUNT GREATER 0)
+            list(GET _ICPX_CANDIDATES 0 _ICPX)
+            set(CMAKE_CXX_COMPILER "${_ICPX}")
+        endif()
+    endif()
+
+    # Prefer Intel Fortran compiler if available
+    if(NOT DEFINED CMAKE_Fortran_COMPILER)
+        file(GLOB _IFX_CANDIDATES
+                "/opt/intel/oneapi/compiler/*/bin/ifx"
+                "$ENV{HOME}/intel/oneapi/compiler/*/bin/ifx"
+                "$ENV{ONEAPI_ROOT}/compiler/*/bin/ifx"
+        )
+        list(SORT _IFX_CANDIDATES ORDER DESCENDING)
+        list(LENGTH _IFX_CANDIDATES _IFX_COUNT)
+        if(_IFX_COUNT GREATER 0)
+            list(GET _IFX_CANDIDATES 0 _IFX)
+            set(CMAKE_Fortran_COMPILER "${_IFX}")
+        endif()
+    endif()
+
+endif()
+
+# =========================
 # Project Initialization
 # =========================
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
