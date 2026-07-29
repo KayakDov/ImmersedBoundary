@@ -71,7 +71,19 @@ set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 # =========================
 # Find CUDA toolkit (This will now rigidly use the 12.6 path defined above)
 find_package(CUDAToolkit REQUIRED)
+# Discover NVIDIA HPC SDK CUDA math library include dirs dynamically
+file(GLOB _HPC_MATH_ROOTS
+        "/opt/nvidia/hpc_sdk/Linux_x86_64/*/math_libs/*/targets/x86_64-linux"
+)
+list(SORT _HPC_MATH_ROOTS ORDER DESCENDING)
 
+foreach(_root IN LISTS _HPC_MATH_ROOTS)
+    if(EXISTS "${_root}/include/cusolverDn.h")
+        message(STATUS "Found NVIDIA HPC math libraries: ${_root}")
+        include_directories(SYSTEM "${_root}/include")
+        break()
+    endif()
+endforeach()
 # Discover Intel oneAPI compiler lib dirs dynamically (no hardcoded version number)
 file(GLOB _INTEL_COMPILER_LIB_DIRS
         "/opt/intel/oneapi/compiler/*/lib"      # system-wide install (Linux standard)
