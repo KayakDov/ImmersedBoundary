@@ -121,7 +121,17 @@ endif()
 
 find_package(CUDAToolkit REQUIRED)
 
-set(DEP_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake-build-debug" CACHE PATH "Path to CudaBandedLib's build output")
+set(DEP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+
+if(EXISTS "${DEP_ROOT}/cmake-build-release/libCudaBandedLib.a")
+    set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-release")
+elseif(EXISTS "${DEP_ROOT}/cmake-build-debug/libCudaBandedLib.a")
+    set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-debug")
+else()
+    set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-release")
+endif()
+
+message(STATUS "Using CudaBandedLib from ${DEP_LIB_DIR}")
 
 find_library(CUDA_BANDED_LIB
         NAMES CudaBandedLib
