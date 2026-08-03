@@ -1,19 +1,138 @@
 cmake_minimum_required(VERSION 3.23)
-cmake_policy(SET CMP0135 NEW)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# =========================
-# Hardware / Toolkit Alignment
-# =========================
+# ==========================================================
+# Intel Fortran compiler
+# ==========================================================
+
+if(NOT DEFINED CMAKE_Fortran_COMPILER)
+    file(GLOB _IFX_CANDIDATES
+            "/opt/intel/oneapi/compiler/*/bin/ifx"
+            "$ENV{HOME}/intel/oneapi/compiler/*/bin/ifx"
+            "$ENV{ONEAPI_ROOT}/compiler/*/bin/ifx"
+    )
+
+    list(SORT _IFX_CANDIDATES ORDER DESCENDING)
+
+    list(LENGTH _IFX_CANDIDATES _IFX_COUNT)
+
+    if(_IFX_COUNT GREATER 0)
+        list(GET _IFX_CANDIDATES 0 _IFX)
+        set(CMAKE_Fortran_COMPILER "${_IFX}")
+    else()
+        set(CMAKE_Fortran_COMPILER ifx)
+    endif()
+endif()
+
+project(CFDSolverOrig LANGUAGES Fortran CXX)
+
+# ==========================================================
+# Fortran standard
+# ==========================================================
+
+set(CMAKE_Fortran_STANDARD 2008)
+set(CMAKE_Fortran_STANDARD_REQUIRED ON)
+
+# ==========================================================
+# Intel runtime library discovery
+# ==========================================================
+
+file(GLOB _INTEL_COMPILER_LIB_DIRS
+        "/opt/intel/oneapi/compiler/*/lib"
+        "$ENV{HOME}/intel/oneapi/compiler/*/lib"
+        "$ENV{ONEAPI_ROOT}/compiler/*/lib"
+        "$ENV{ONEAPI_ROOT}/compiler/latest/lib"
+)
+
+list(SORT _INTEL_COMPILER_LIB_DIRS ORDER DESCENDING)
+
+find_library(INTLC_LIB
+        NAMES intlc
+        HINTS ${_INTEL_COMPILER_LIB_DIRS}
+)
+
+if(INTLC_LIB)
+    get_filename_component(INTLC_LIB_DIR "${INTLC_LIB}" DIRECTORY)
+    message(STATUS "Found libintlc: ${INTLC_LIB}")
+else()
+    message(WARNING "libintlc.so not found — CFDSolver/BinaryToTxt may fail at runtime.")
+endif()
+
+# ==========================================================
+# Intel MKL discovery
+# ==========================================================
+
+file(GLOB _MKL_LIB_CANDIDATES
+        "/opt/intel/oneapi/mkl/*/lib"
+        "$ENV{HOME}/intel/oneapi/mkl/*/lib"
+        "$ENV{ONEAPI_ROOT}/mkl/*/lib"
+)
+
+list(SORT _MKL_LIB_CANDIDATES ORDER DESCENDING)
+
+list(LENGTH _MKL_LIB_CANDIDATES _MKL_COUNT)
+
+if(_MKL_COUNT GREATER 0)
+    list(GET _MKL_LIB_CANDIDATES 0 MKL_LIB_DIR)
+endif()
+
+# ==========================================================
+# Compiler flags
+# ==========================================================
+
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel"
+        OR
+        CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+
+    add_compile_options(
+            $<$<COMPILE_LANGUAGE:Fortran>:-O3>
+            $<$<COMPILE_LANGUAGE:Fortran>:-xHOST>
+            $<$<COMPILE_LANGUAGE:Fortran>:-qmkl>
+            $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>
+            $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
+    )
+
+    if(MKL_LIB_DIR)
+        add_link_options(
+                -qmkl
+                -qopenmp
+                "-L${MKL_LIB_DIR}"
+                "-Wl,-rpath,${MKL_LIB_DIR}"
+        )
+    endif()
+
+endif()
+
+
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang|IntelLLVM|Intel")
+    add_compile_options(
+            $<$<COMPILE_LANGUAGE:CXX>:-O3>
+            $<$<COMPILE_LANGUAGE:CXX>:-march=native>
+    )
+endif()
+
+# ==========================================================
+# CudaBandedLib — link against prebuilt library
+# (modeled on fortran_app/CMakeLists.txt: no CUDA project()
+#  language needed here, so nvcc never has to resolve for
+#  *this* configure step — only in CudaBandedLib's own build)
+# ==========================================================
+
 # Auto-detect the driver's max supported CUDA version via `nvidia-smi`, then
 # pick the newest installed toolkit that doesn't exceed it. Two install
 # layouts are searched, since different machines use different install
 # methods:
 #   1. NVIDIA HPC SDK:        /opt/nvidia/hpc_sdk/Linux_x86_64/<sdk-ver>/cuda/<cuda-ver>
 #   2. Standard CUDA toolkit: /usr/local/cuda-<cuda-ver>
-# If neither layout is found on this machine, this block steps aside and
-# lets CMake's normal find_package(CUDAToolkit) search take over (PATH,
-# default system locations) rather than failing outright — a machine with
-# CUDA installed some other way should still be able to configure.
+# This MUST select the same toolkit version that CudaBandedLib itself was
+# built against — otherwise this executable will link against a different
+# major/minor cudart/cusolver/cublas than the .a file expects. This logic is
+# intentionally identical to the detection block in CudaBandedLib's own
+# CMakeLists.txt, so both projects converge on the same toolkit on any given
+# machine without either file hardcoding a path. If neither layout is found,
+# this block steps aside and lets CMake's normal find_package(CUDAToolkit)
+# search take over (PATH, default system locations) rather than failing.
 #
 # To override manually instead (e.g. to force a specific version), configure with:
 #   cmake -B build -DCUDA_TOOLKIT_VERSION=12.9
@@ -107,333 +226,134 @@ else()
     message(STATUS "Using manually specified CUDA toolkit: ${CUDAToolkit_ROOT}")
 endif()
 
-# ARCHITECTURE: Set this BEFORE project() to ensure it applies globally
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES all-major) # Better than 'all' for faster compile times
-endif()
-
-# =========================
-# Compiler discovery
-# =========================
-
-if(UNIX AND NOT APPLE)
-
-    # Prefer Intel C compiler if available
-    if(NOT DEFINED CMAKE_C_COMPILER)
-        file(GLOB _ICX_CANDIDATES
-                "/opt/intel/oneapi/compiler/*/bin/icx"
-                "$ENV{HOME}/intel/oneapi/compiler/*/bin/icx"
-                "$ENV{ONEAPI_ROOT}/compiler/*/bin/icx"
-        )
-        list(SORT _ICX_CANDIDATES ORDER DESCENDING)
-        list(LENGTH _ICX_CANDIDATES _ICX_COUNT)
-        if(_ICX_COUNT GREATER 0)
-            list(GET _ICX_CANDIDATES 0 _ICX)
-            set(CMAKE_C_COMPILER "${_ICX}")
-        endif()
-    endif()
-
-    # Prefer Intel C++ compiler if available
-    if(NOT DEFINED CMAKE_CXX_COMPILER)
-        file(GLOB _ICPX_CANDIDATES
-                "/opt/intel/oneapi/compiler/*/bin/icpx"
-                "$ENV{HOME}/intel/oneapi/compiler/*/bin/icpx"
-                "$ENV{ONEAPI_ROOT}/compiler/*/bin/icpx"
-        )
-        list(SORT _ICPX_CANDIDATES ORDER DESCENDING)
-        list(LENGTH _ICPX_CANDIDATES _ICPX_COUNT)
-        if(_ICPX_COUNT GREATER 0)
-            list(GET _ICPX_CANDIDATES 0 _ICPX)
-            set(CMAKE_CXX_COMPILER "${_ICPX}")
-        endif()
-    endif()
-
-    # Prefer Intel Fortran compiler if available
-    if(NOT DEFINED CMAKE_Fortran_COMPILER)
-        file(GLOB _IFX_CANDIDATES
-                "/opt/intel/oneapi/compiler/*/bin/ifx"
-                "$ENV{HOME}/intel/oneapi/compiler/*/bin/ifx"
-                "$ENV{ONEAPI_ROOT}/compiler/*/bin/ifx"
-        )
-        list(SORT _IFX_CANDIDATES ORDER DESCENDING)
-        list(LENGTH _IFX_CANDIDATES _IFX_COUNT)
-        if(_IFX_COUNT GREATER 0)
-            list(GET _IFX_CANDIDATES 0 _IFX)
-            set(CMAKE_Fortran_COMPILER "${_IFX}")
-        endif()
-    endif()
-
-endif()
-
-# =========================
-# Project Initialization
-# =========================
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-project(CudaBanded LANGUAGES C CXX CUDA Fortran)
-
-if(WIN32)
-    # Apply /Oy- ONLY to C and C++ so NVCC ignores it
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Oy->")
-    add_compile_options("$<$<COMPILE_LANGUAGE:C>:/Oy->")
-
-    # Bypass the strict MSVC STL vs. Intel Compiler version check
-    add_compile_definitions(_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
-else()
-    add_compile_options(-fno-omit-frame-pointer)
-endif()
-
-include(FortranCInterface)
-FortranCInterface_VERIFY(CXX)
-
-# =========================
-# FORCED DEBUG STRIP (ADD THIS ENTIRE BLOCK)
-# =========================
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
-
-add_compile_options(
-#        $<$<COMPILE_LANGUAGE:CXX>:-G>
-#        $<$<COMPILE_LANGUAGE:CXX>:-O0>
-        $<$<COMPILE_LANGUAGE:C>:-g>
-        $<$<COMPILE_LANGUAGE:C>:-O0>
-        # CUDA requires -G for device code debugging and -g for host code
-        $<$<COMPILE_LANGUAGE:CUDA>:-g>
-#        $<$<COMPILE_LANGUAGE:CUDA>:-G>
-#        $<$<COMPILE_LANGUAGE:CUDA>:-O0>
-)
-# =========================
-# END OF DEBUG STRIP
-# =========================
-
-# =========================
-# Standards
-# =========================
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_Fortran_STANDARD 2008)
-set(CMAKE_Fortran_STANDARD_REQUIRED ON)
-
-# =========================
-# Dependencies
-# =========================
-# Find CUDA toolkit (uses whichever CUDAToolkit_ROOT was auto-selected above)
 find_package(CUDAToolkit REQUIRED)
-# Discover NVIDIA HPC SDK CUDA math library include dirs dynamically
-file(GLOB _HPC_MATH_ROOTS
-        "/opt/nvidia/hpc_sdk/Linux_x86_64/*/math_libs/*/targets/x86_64-linux"
-)
-list(SORT _HPC_MATH_ROOTS ORDER DESCENDING)
 
-foreach(_root IN LISTS _HPC_MATH_ROOTS)
-    if(EXISTS "${_root}/include/cusolverDn.h")
-        message(STATUS "Found NVIDIA HPC math libraries: ${_root}")
-        include_directories(SYSTEM "${_root}/include")
-        break()
-    endif()
-endforeach()
-# Discover Intel oneAPI compiler lib dirs dynamically (no hardcoded version number)
-file(GLOB _INTEL_COMPILER_LIB_DIRS
-        "/opt/intel/oneapi/compiler/*/lib"      # system-wide install (Linux standard)
-        "$ENV{HOME}/intel/oneapi/compiler/*/lib" # user-local install
-        "$ENV{ONEAPI_ROOT}/compiler/*/lib"       # if env var is set, also check it
-        "$ENV{ONEAPI_ROOT}/compiler/latest/lib"
-)
-list(SORT _INTEL_COMPILER_LIB_DIRS ORDER DESCENDING) # prefer newest version first
+set(DEP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 
-find_library(INTLC_LIB
-        NAMES intlc
-        HINTS ${_INTEL_COMPILER_LIB_DIRS}
-)
-if(INTLC_LIB)
-    get_filename_component(INTLC_LIB_DIR "${INTLC_LIB}" DIRECTORY)
-    message(STATUS "Found libintlc: ${INTLC_LIB}")
+if(EXISTS "${DEP_ROOT}/cmake-build-release/libCudaBandedLib.a")
+    set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-release")
+elseif(EXISTS "${DEP_ROOT}/cmake-build-debug/libCudaBandedLib.a")
+    set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-debug")
 else()
-    message(WARNING "libintlc.so not found — run_unit_tests may fail at runtime.")
+    set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-release")
 endif()
 
-# Fetch GoogleTest
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-command-line-argument")
+message(STATUS "Using CudaBandedLib from ${DEP_LIB_DIR}")
 
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG        v1.17.0
-        GIT_SHALLOW    TRUE
+find_library(CUDA_BANDED_LIB
+        NAMES CudaBandedLib
+        PATHS ${DEP_LIB_DIR}
+        NO_DEFAULT_PATH
 )
-# For Windows compatibility
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
 
-# =========================
-# Source collection
-# =========================
-file(GLOB_RECURSE LIB_SOURCES CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cu"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
+if(NOT CUDA_BANDED_LIB)
+    message(FATAL_ERROR "CudaBandedLib not found in ${DEP_LIB_DIR}! Build CudaBandedLib standalone first, or set -DDEP_LIB_DIR=... to its build directory.")
+endif()
+
+message(STATUS "Found CudaBandedLib: ${CUDA_BANDED_LIB}")
+
+set(FORTRAN_MODULE_DIR "${DEP_LIB_DIR}/modules")
+
+# ==========================================================
+# Source files
+# ==========================================================
+
+file(GLOB ALEX_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.f90"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.f"
 )
 
-file(GLOB SHROUD_SOURCES CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/shroud_project/*.f90"
-)
+# Exclude specific files from the general source list
+list(FILTER ALEX_SOURCES EXCLUDE REGEX ".*/Mesh_Intrp\\.f90$")
 
-list(FILTER LIB_SOURCES EXCLUDE REGEX "[/\\\\]main\\.cu$")
+# CudaBandedLib's Shroud-generated Fortran wrappers must NOT be compiled here.
+# CudaBandedLib's own build already compiles these (or should -- see its
+# CMakeLists.txt) and deposits the resulting .mod files in ${FORTRAN_MODULE_DIR}
+# (set below from ${DEP_LIB_DIR}/modules), which is already added as an include
+# directory for both targets. Compiling a second local copy of the same module
+# here would create two independent definitions of eigenbcgsolver_eigen_mod;
+# since Fortran_MODULE_DIRECTORY for THIS target points elsewhere
+# (${CMAKE_CURRENT_BINARY_DIR}/modules), the locally-compiled copy would shadow
+# CudaBandedLib's and silently reintroduce the stale-interface bug every time
+# the two copies drift apart (e.g. after regenerating with Shroud but only
+# updating one of them). Keep exactly one compiled copy of each wrapper, built
+# by CudaBandedLib, and consumed here purely via ${FORTRAN_MODULE_DIR} +
+# ${CUDA_BANDED_LIB}.
+list(FILTER ALEX_SOURCES EXCLUDE REGEX ".*/wrapfEigenBCGSolver_eigen\\.f90$")
+list(FILTER ALEX_SOURCES EXCLUDE REGEX ".*/wrapfEigenBCGSolver_ImEq\\.f90$")
+list(FILTER ALEX_SOURCES EXCLUDE REGEX ".*/wrapfeigenbcgsolver\\.f90$")
 
-# =========================
-# Library Target
-# =========================
-# Defined early so they're available to target_include_directories' INSTALL_INTERFACE below.
-set(INSTALL_LIB_DIR lib)
-set(INSTALL_MOD_DIR include/fortran_modules)
+# Create a list of common shared modules by removing the main CFD program
+set(COMMON_SOURCES ${ALEX_SOURCES})
+list(FILTER COMMON_SOURCES EXCLUDE REGEX ".*/ConvMain_3D_Q2D\\.f90$")
 
-add_library(CudaBandedLib STATIC
-        ${LIB_SOURCES}
-        ${SHROUD_SOURCES}
-)
+# ==========================================================
+# Executables
+# ==========================================================
 
-set_target_properties(CudaBandedLib PROPERTIES
+# 1. Main CFD Solver
+add_executable(CFDSolver "${CMAKE_CURRENT_SOURCE_DIR}/src/ConvMain_3D_Q2D.f90" ${COMMON_SOURCES})
+
+# 2. Binary to Text Utility
+add_executable(BinaryToTxt "${CMAKE_CURRENT_SOURCE_DIR}/Auxilery/BinaryToTxt.f90" ${COMMON_SOURCES})
+
+# Apply properties to both targets
+set_target_properties(CFDSolver BinaryToTxt PROPERTIES
+        LINKER_LANGUAGE Fortran
         Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
-        POSITION_INDEPENDENT_CODE ON
-        CUDA_RUNTIME_LIBRARY Shared
 )
 
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modules")
-
-target_include_directories(CudaBandedLib
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shroud_project>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/modules>
-        $<INSTALL_INTERFACE:include>
-        $<INSTALL_INTERFACE:${INSTALL_MOD_DIR}>
+target_include_directories(CFDSolver PRIVATE
+        ${FORTRAN_MODULE_DIR}
         ${CUDAToolkit_INCLUDE_DIRS}
 )
 
-target_link_libraries(CudaBandedLib
-        INTERFACE
+target_include_directories(BinaryToTxt PRIVATE
+        ${FORTRAN_MODULE_DIR}
+        ${CUDAToolkit_INCLUDE_DIRS}
+)
+
+target_link_libraries(CFDSolver PRIVATE
+        ${CUDA_BANDED_LIB}
+        CUDA::cudart
         CUDA::cublas
         CUDA::cusolver
         CUDA::cusparse
-        CUDA::cuda_driver
+        stdc++
+        stdc++fs
 )
 
-# =========================
-# RPATH configuration
-# =========================
-# Force CMake to embed the library paths used during linking into the final executable
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# =========================
-# Unit Test Executable
-# =========================
-enable_testing()
-
-file(GLOB TEST_SOURCES CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cu"
-)
-list(FILTER TEST_SOURCES EXCLUDE REGEX "BenchMark\\.cpp$")
-
-add_executable(run_unit_tests ${TEST_SOURCES})
-
-set_target_properties(run_unit_tests PROPERTIES
-        CUDA_RUNTIME_LIBRARY Shared
-        BUILD_RPATH "${INTLC_LIB_DIR}"
-)
-target_link_libraries(run_unit_tests
-        PRIVATE
-        CudaBandedLib
-        GTest::gtest
-        GTest::gtest_main
+target_link_libraries(BinaryToTxt PRIVATE
+        ${CUDA_BANDED_LIB}
+        CUDA::cudart
+        CUDA::cublas
+        CUDA::cusolver
+        CUDA::cusparse
+        stdc++
+        stdc++fs
 )
 
-include(GoogleTest)
-gtest_discover_tests(run_unit_tests DISCOVERY_MODE PRE_TEST)
+# ==========================================================
+# Runtime search path
+# ==========================================================
 
-# =========================
-# Benchmark Executable
-# =========================
-add_executable(run_benchmarks
-        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/BenchMark.cpp"
-)
-
-set_target_properties(run_benchmarks PROPERTIES
-        CUDA_RUNTIME_LIBRARY Shared
-        BUILD_RPATH "${INTLC_LIB_DIR}"
-)
-target_link_libraries(run_benchmarks
-        PRIVATE
-        CudaBandedLib
-        GTest::gtest
-        GTest::gtest_main
-)
-
-if(NOT MSVC)
-    target_link_options(run_benchmarks PRIVATE
-            "-Wl,--no-undefined"
-            "-Wl,--disable-new-dtags"
-    )
-endif()
-# =========================
-# Install the library and Fortran modules for external projects
-# =========================
-install(TARGETS CudaBandedLib
-        EXPORT CudaBandedLibTargets
-        ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
-        LIBRARY DESTINATION ${INSTALL_LIB_DIR}
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include
-)
-
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
-        DESTINATION ${INSTALL_MOD_DIR}
-        FILES_MATCHING PATTERN "*.mod"
-)
-
-if(NOT MSVC)
-    target_link_options(run_unit_tests PRIVATE
-            "-Wl,--no-undefined"
-            "-Wl,--disable-new-dtags"   # Use DT_RPATH (propagates transitively) not DT_RUNPATH
+if(INTLC_LIB_DIR)
+    set_target_properties(CFDSolver BinaryToTxt PROPERTIES
+            BUILD_RPATH "${INTLC_LIB_DIR}"
     )
 endif()
 
-# =========================
-# Export package config so downstream projects can do:
-#   find_package(CudaBandedLib REQUIRED)
-#   target_link_libraries(<target> PRIVATE CudaBandedLib::CudaBandedLib)
-# =========================
-include(CMakePackageConfigHelpers)
+if(NOT MSVC)
+    target_link_options(CFDSolver PRIVATE "-Wl,--disable-new-dtags")
+    target_link_options(BinaryToTxt PRIVATE "-Wl,--disable-new-dtags")
+endif()
 
-set(INSTALL_CONFIG_DIR ${INSTALL_LIB_DIR}/cmake/CudaBandedLib)
-
-install(EXPORT CudaBandedLibTargets
-        FILE CudaBandedLibTargets.cmake
-        NAMESPACE CudaBandedLib::
-        DESTINATION ${INSTALL_CONFIG_DIR}
-)
-
-configure_package_config_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CudaBandedLibConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/CudaBandedLibConfig.cmake"
-        INSTALL_DESTINATION ${INSTALL_CONFIG_DIR}
-        PATH_VARS INSTALL_LIB_DIR INSTALL_MOD_DIR
-)
-
-write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/CudaBandedLibConfigVersion.cmake"
-        VERSION 1.0.0
-        COMPATIBILITY SameMajorVersion
-)
-
-install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/CudaBandedLibConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/CudaBandedLibConfigVersion.cmake"
-        DESTINATION ${INSTALL_CONFIG_DIR}
-)
+message(STATUS "")
+message(STATUS "===============================")
+message(STATUS "Intel compiler : ${CMAKE_Fortran_COMPILER}")
+message(STATUS "MKL library    : ${MKL_LIB_DIR}")
+message(STATUS "Intel runtime  : ${INTLC_LIB_DIR}")
+message(STATUS "CudaBandedLib  : ${CUDA_BANDED_LIB}")
+message(STATUS "CUDA toolkit   : ${CUDAToolkit_ROOT}")
+message(STATUS "===============================")
+message(STATUS "")
