@@ -4,16 +4,110 @@ cmake_policy(SET CMP0135 NEW)
 # =========================
 # Hardware / Toolkit Alignment
 # =========================
-# 1. Point CMake to the root of your SDK
-set(CUDA_SDK_ROOT "/opt/nvidia/hpc_sdk/Linux_x86_64/26.3/cuda")
+# Auto-detect the driver's max supported CUDA version via `nvidia-smi`, then
+# pick the newest installed toolkit that doesn't exceed it. Two install
+# layouts are searched, since different machines use different install
+# methods:
+#   1. NVIDIA HPC SDK:        /opt/nvidia/hpc_sdk/Linux_x86_64/<sdk-ver>/cuda/<cuda-ver>
+#   2. Standard CUDA toolkit: /usr/local/cuda-<cuda-ver>
+# If neither layout is found on this machine, this block steps aside and
+# lets CMake's normal find_package(CUDAToolkit) search take over (PATH,
+# default system locations) rather than failing outright — a machine with
+# CUDA installed some other way should still be able to configure.
+#
+# To override manually instead (e.g. to force a specific version), configure with:
+#   cmake -B build -DCUDA_TOOLKIT_VERSION=12.9
+if(NOT DEFINED CUDA_TOOLKIT_VERSION)
+    find_program(NVIDIA_SMI_EXECUTABLE nvidia-smi)
+    set(_DRIVER_MAX_CUDA "")
+    if(NVIDIA_SMI_EXECUTABLE)
+        execute_process(
+                COMMAND ${NVIDIA_SMI_EXECUTABLE}
+                OUTPUT_VARIABLE _NVIDIA_SMI_OUTPUT
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        string(REGEX MATCH "CUDA Version: ([0-9]+\\.[0-9]+)" _ "${_NVIDIA_SMI_OUTPUT}")
+        set(_DRIVER_MAX_CUDA "${CMAKE_MATCH_1}")
+    endif()
 
-# 2. Specify the exact folder version available in your SDK that satisfies your driver limit (<= 12.8)
-set(TARGET_CUDA_VERSION "12.6")
+    if(_DRIVER_MAX_CUDA)
+        message(STATUS "Driver reports max supported CUDA version: ${_DRIVER_MAX_CUDA}")
+    else()
+        message(STATUS "Could not detect driver's max CUDA version via nvidia-smi; will consider all installed toolkits with no ceiling.")
+    endif()
 
-# 3. Force CMake to use this specific toolkit path (FORCE ensures it overwrites old cache)
-set(CUDAToolkit_ROOT "${CUDA_SDK_ROOT}/${TARGET_CUDA_VERSION}" CACHE PATH "Preferred CUDA version" FORCE)
+    set(_CANDIDATE_VERSIONS "")
+    set(_CANDIDATE_DIRS "")
 
-# 4. ARCHITECTURE: Set this BEFORE project() to ensure it applies globally
+    # Layout 1: NVIDIA HPC SDK, e.g. /opt/nvidia/hpc_sdk/Linux_x86_64/25.7/cuda/12.9
+    file(GLOB _HPC_SDK_TOOLKIT_DIRS "/opt/nvidia/hpc_sdk/Linux_x86_64/*/cuda/*")
+    foreach(_dir ${_HPC_SDK_TOOLKIT_DIRS})
+        if(IS_DIRECTORY "${_dir}")
+            get_filename_component(_ver "${_dir}" NAME)
+            if(_ver MATCHES "^[0-9]+\\.[0-9]+$")
+                list(APPEND _CANDIDATE_VERSIONS "${_ver}")
+                list(APPEND _CANDIDATE_DIRS "${_dir}")
+            endif()
+        endif()
+    endforeach()
+
+    # Layout 2: standard NVIDIA .deb/.run install, e.g. /usr/local/cuda-12.4
+    file(GLOB _STANDARD_TOOLKIT_DIRS "/usr/local/cuda-*")
+    foreach(_dir ${_STANDARD_TOOLKIT_DIRS})
+        if(IS_DIRECTORY "${_dir}")
+            get_filename_component(_name "${_dir}" NAME)
+            string(REGEX MATCH "^cuda-([0-9]+\\.[0-9]+)$" _ "${_name}")
+            if(CMAKE_MATCH_1)
+                list(APPEND _CANDIDATE_VERSIONS "${CMAKE_MATCH_1}")
+                list(APPEND _CANDIDATE_DIRS "${_dir}")
+            endif()
+        endif()
+    endforeach()
+
+    list(LENGTH _CANDIDATE_VERSIONS _CANDIDATE_COUNT)
+    set(_BEST_VERSION "0.0")
+    set(_BEST_DIR "")
+
+    if(_CANDIDATE_COUNT GREATER 0)
+        math(EXPR _LAST_INDEX "${_CANDIDATE_COUNT} - 1")
+        foreach(_i RANGE ${_LAST_INDEX})
+            list(GET _CANDIDATE_VERSIONS ${_i} _ver)
+            list(GET _CANDIDATE_DIRS ${_i} _dir)
+            if(_DRIVER_MAX_CUDA AND _ver VERSION_GREATER "${_DRIVER_MAX_CUDA}")
+                continue()
+            endif()
+            if(_ver VERSION_GREATER _BEST_VERSION)
+                set(_BEST_VERSION "${_ver}")
+                set(_BEST_DIR "${_dir}")
+            endif()
+        endforeach()
+    endif()
+
+    if(_BEST_DIR)
+        set(CUDA_TOOLKIT_VERSION "${_BEST_VERSION}")
+        set(CUDAToolkit_ROOT "${_BEST_DIR}" CACHE PATH "Auto-selected CUDA toolkit compatible with installed driver" FORCE)
+        message(STATUS "Selected CUDA toolkit: ${CUDAToolkit_ROOT}")
+    elseif(_CANDIDATE_COUNT GREATER 0)
+        message(FATAL_ERROR "Found installed CUDA toolkit(s) (versions: ${_CANDIDATE_VERSIONS}), but none are compatible with the driver's max CUDA version (${_DRIVER_MAX_CUDA}). Update the driver, install a compatible toolkit, or pass -DCUDA_TOOLKIT_VERSION=<version> to override.")
+    else()
+        message(STATUS "No CUDA toolkit found under /opt/nvidia/hpc_sdk/Linux_x86_64/*/cuda/* or /usr/local/cuda-*; falling back to CMake's default CUDAToolkit search (PATH, standard system locations).")
+    endif()
+else()
+    # Manual override path: search both known layouts for the requested version
+    file(GLOB _MATCHING_DIRS
+            "/opt/nvidia/hpc_sdk/Linux_x86_64/*/cuda/${CUDA_TOOLKIT_VERSION}"
+            "/usr/local/cuda-${CUDA_TOOLKIT_VERSION}"
+    )
+    list(LENGTH _MATCHING_DIRS _MATCH_COUNT)
+    if(_MATCH_COUNT EQUAL 0)
+        message(FATAL_ERROR "Requested CUDA_TOOLKIT_VERSION=${CUDA_TOOLKIT_VERSION} not found under /opt/nvidia/hpc_sdk/Linux_x86_64/*/cuda/ or /usr/local/cuda-${CUDA_TOOLKIT_VERSION}.")
+    endif()
+    list(GET _MATCHING_DIRS 0 _CHOSEN_DIR)
+    set(CUDAToolkit_ROOT "${_CHOSEN_DIR}" CACHE PATH "Manually selected CUDA toolkit" FORCE)
+    message(STATUS "Using manually specified CUDA toolkit: ${CUDAToolkit_ROOT}")
+endif()
+
+# ARCHITECTURE: Set this BEFORE project() to ensure it applies globally
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES all-major) # Better than 'all' for faster compile times
 endif()
@@ -98,14 +192,14 @@ FortranCInterface_VERIFY(CXX)
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 
 add_compile_options(
-#        $<$<COMPILE_LANGUAGE:CXX>:-G>
-#        $<$<COMPILE_LANGUAGE:CXX>:-O0>
+        #        $<$<COMPILE_LANGUAGE:CXX>:-G>
+        #        $<$<COMPILE_LANGUAGE:CXX>:-O0>
         $<$<COMPILE_LANGUAGE:C>:-g>
         $<$<COMPILE_LANGUAGE:C>:-O0>
         # CUDA requires -G for device code debugging and -g for host code
         $<$<COMPILE_LANGUAGE:CUDA>:-g>
-#        $<$<COMPILE_LANGUAGE:CUDA>:-G>
-#        $<$<COMPILE_LANGUAGE:CUDA>:-O0>
+        #        $<$<COMPILE_LANGUAGE:CUDA>:-G>
+        #        $<$<COMPILE_LANGUAGE:CUDA>:-O0>
 )
 # =========================
 # END OF DEBUG STRIP
@@ -122,7 +216,7 @@ set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 # =========================
 # Dependencies
 # =========================
-# Find CUDA toolkit (This will now rigidly use the 12.6 path defined above)
+# Find CUDA toolkit (uses whichever CUDAToolkit_ROOT was auto-selected above)
 find_package(CUDAToolkit REQUIRED)
 # Discover NVIDIA HPC SDK CUDA math library include dirs dynamically
 file(GLOB _HPC_MATH_ROOTS
