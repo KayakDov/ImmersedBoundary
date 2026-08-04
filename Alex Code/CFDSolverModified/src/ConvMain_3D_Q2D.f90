@@ -17,7 +17,7 @@
         Character*50 sentns
         Character*80 balabo
 
-        Integer ::  omp_get_max_threads
+         Integer ::  omp_get_max_threads, omp_get_num_procs
       
         Real(kind=8) :: Nusselt, Nusselt_middle
 
@@ -155,7 +155,7 @@
 
 ! ########  Call of the main subroutine ################
 
-        Call omp_set_num_threads(Ncpus)
+         Call omp_set_num_threads(max(1, omp_get_num_procs() - 1))
         Write (*,*) omp_get_max_threads(), '  CPUs will be used'
         
         Call    Solution_time
