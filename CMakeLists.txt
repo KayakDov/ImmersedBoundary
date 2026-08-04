@@ -132,8 +132,14 @@ else()
 endif()
 
 # ARCHITECTURE: Set this BEFORE project() to ensure it applies globally
+# Restricted to 89 (Ada Lovelace, RTX 4080/4070 — this project's actual hardware).
+# 'all-major' previously generated code for architectures as old as ~sm_50,
+# which lack native double-precision atomicAdd (requires compute capability
+# >= 6.0) and caused spurious compile errors even though the real target (8.9)
+# supports it fine. Override with -DCMAKE_CUDA_ARCHITECTURES=<...> if building
+# for different hardware.
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES all-major) # Better than 'all' for faster compile times
+    set(CMAKE_CUDA_ARCHITECTURES 89)
 endif()
 
 # =========================
