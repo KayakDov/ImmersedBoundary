@@ -248,19 +248,39 @@ set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 # =========================
 # Find CUDA toolkit (uses whichever CUDAToolkit_ROOT was auto-selected above)
 find_package(CUDAToolkit REQUIRED)
-# Discover NVIDIA HPC SDK CUDA math library include dirs dynamically
-file(GLOB _HPC_MATH_ROOTS
-        "/opt/nvidia/hpc_sdk/Linux_x86_64/*/math_libs/*/targets/x86_64-linux"
-)
-list(SORT _HPC_MATH_ROOTS ORDER DESCENDING)
-
-foreach(_root IN LISTS _HPC_MATH_ROOTS)
-    if(EXISTS "${_root}/include/cusolverDn.h")
-        message(STATUS "Found NVIDIA HPC math libraries: ${_root}")
-        include_directories(SYSTEM "${_root}/include")
+# Discover NVIDIA HPC SDK CUDA math library include dirs dynamically.
+# Only used as a FALLBACK for lean HPC SDK installs that ship nvcc but omit
+# cusolver/cublas headers. If the selected CUDAToolkit_ROOT is a full
+# standalone toolkit (e.g. a local runfile install), it already has its own
+# complete cusolverDn.h/cublas headers, and injecting a *different* HPC SDK
+# math_libs version here globally (via include_directories, affecting every
+# target in this file) can mix incompatible header versions -- e.g. pulling
+# in CUDA 13.x-only types while compiling against a 12.x toolkit -- causing
+# spurious "unknown type name" errors in code that never asked for 13.x.
+set(_HAVE_CUSOLVER_ALREADY FALSE)
+foreach(_inc_dir ${CUDAToolkit_INCLUDE_DIRS})
+    if(EXISTS "${_inc_dir}/cusolverDn.h")
+        set(_HAVE_CUSOLVER_ALREADY TRUE)
         break()
     endif()
 endforeach()
+
+if(_HAVE_CUSOLVER_ALREADY)
+    message(STATUS "cusolverDn.h already provided by CUDAToolkit_INCLUDE_DIRS; skipping HPC SDK math_libs fallback")
+else()
+    file(GLOB _HPC_MATH_ROOTS
+            "/opt/nvidia/hpc_sdk/Linux_x86_64/*/math_libs/*/targets/x86_64-linux"
+    )
+    list(SORT _HPC_MATH_ROOTS ORDER DESCENDING)
+
+    foreach(_root IN LISTS _HPC_MATH_ROOTS)
+        if(EXISTS "${_root}/include/cusolverDn.h")
+            message(STATUS "Found NVIDIA HPC math libraries: ${_root}")
+            include_directories(SYSTEM "${_root}/include")
+            break()
+        endif()
+    endforeach()
+endif()
 # Discover Intel oneAPI compiler lib dirs dynamically (no hardcoded version number)
 file(GLOB _INTEL_COMPILER_LIB_DIRS
         "/opt/intel/oneapi/compiler/*/lib"      # system-wide install (Linux standard)
