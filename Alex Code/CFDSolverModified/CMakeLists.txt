@@ -183,6 +183,23 @@ if(NOT DEFINED CUDA_TOOLKIT_VERSION)
         endif()
     endforeach()
 
+    # Layout 3: user-local install with no root access, e.g. runfile installer
+    # run as `./cuda_*.run --toolkit --toolkitpath=$HOME/cuda-12.6`. Useful on
+    # shared machines where you can't write to /opt or /usr/local. MUST match
+    # whatever CudaBandedLib picked, so this glob mirrors CudaBandedLib's
+    # CMakeLists.txt exactly.
+    file(GLOB _USER_LOCAL_TOOLKIT_DIRS "$ENV{HOME}/cuda-*")
+    foreach(_dir ${_USER_LOCAL_TOOLKIT_DIRS})
+        if(IS_DIRECTORY "${_dir}")
+            get_filename_component(_name "${_dir}" NAME)
+            string(REGEX MATCH "^cuda-([0-9]+\\.[0-9]+)$" _ "${_name}")
+            if(CMAKE_MATCH_1)
+                list(APPEND _CANDIDATE_VERSIONS "${CMAKE_MATCH_1}")
+                list(APPEND _CANDIDATE_DIRS "${_dir}")
+            endif()
+        endif()
+    endforeach()
+
     list(LENGTH _CANDIDATE_VERSIONS _CANDIDATE_COUNT)
     set(_BEST_VERSION "0.0")
     set(_BEST_DIR "")
@@ -212,14 +229,15 @@ if(NOT DEFINED CUDA_TOOLKIT_VERSION)
         message(STATUS "No CUDA toolkit found under /opt/nvidia/hpc_sdk/Linux_x86_64/*/cuda/* or /usr/local/cuda-*; falling back to CMake's default CUDAToolkit search (PATH, standard system locations).")
     endif()
 else()
-    # Manual override path: search both known layouts for the requested version
+    # Manual override path: search all known layouts for the requested version
     file(GLOB _MATCHING_DIRS
             "/opt/nvidia/hpc_sdk/Linux_x86_64/*/cuda/${CUDA_TOOLKIT_VERSION}"
             "/usr/local/cuda-${CUDA_TOOLKIT_VERSION}"
+            "$ENV{HOME}/cuda-${CUDA_TOOLKIT_VERSION}"
     )
     list(LENGTH _MATCHING_DIRS _MATCH_COUNT)
     if(_MATCH_COUNT EQUAL 0)
-        message(FATAL_ERROR "Requested CUDA_TOOLKIT_VERSION=${CUDA_TOOLKIT_VERSION} not found under /opt/nvidia/hpc_sdk/Linux_x86_64/*/cuda/ or /usr/local/cuda-${CUDA_TOOLKIT_VERSION}.")
+        message(FATAL_ERROR "Requested CUDA_TOOLKIT_VERSION=${CUDA_TOOLKIT_VERSION} not found under /opt/nvidia/hpc_sdk/Linux_x86_64/*/cuda/, /usr/local/cuda-${CUDA_TOOLKIT_VERSION}, or $ENV{HOME}/cuda-${CUDA_TOOLKIT_VERSION}.")
     endif()
     list(GET _MATCHING_DIRS 0 _CHOSEN_DIR)
     set(CUDAToolkit_ROOT "${_CHOSEN_DIR}" CACHE PATH "Manually selected CUDA toolkit" FORCE)
