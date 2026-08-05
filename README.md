@@ -63,13 +63,21 @@ integer(C_SIZE_T) :: temperatureSolver
 pressureSolver = init_eigen_decomp_d(...)
 temperatureSolver = init_eigen_decomp_d(...)
 
-! Asynchronous GPU launches
-call solve_eigen_decomp_d(pressureSolver, xp, bp)
-call solve_eigen_decomp_d(temperatureSolver, xt, bt)
+! Asynchronous GPU launches. b is copied into an internal pinned staging
+! buffer immediately (so the caller's own bp/bt may be reused or
+! overwritten right after this call returns); the actual host-to-device
+! transfer and solve then proceed on the GPU without blocking the caller.
+call solve_eigen_decomp_d(pressureSolver, bp)
+call solve_eigen_decomp_d(temperatureSolver, bt)
 
-! Synchronize host with GPU execution for each handle before reading host buffers
-call synch_d(pressureSolver)
-call synch_d(temperatureSolver)
+! Wait for each handle's GPU work to finish and copy its result into x.
+! x must be a CONTIGUOUS array matching the solver's dim1*dim2*dim3 size
+! exactly (a whole array, or a slice that is the array's full declared
+! extent) -- a non-contiguous actual argument here forces the Fortran
+! compiler to insert its own hidden, non-pinned temporary around the call,
+! silently losing the benefit of the internal pinned staging buffer.
+call synch_d(pressureSolver, xp)
+call synch_d(temperatureSolver, xt)
 
 call finalize_eigen_decomp_d()
 ```
@@ -267,8 +275,10 @@ This module provides standalone direct Eigendecomposition solvers for the Poisso
 |:--------------------------| :--- | :--- |
 | `init_eigen_decomp_d`     | Double | Create a new eigendecomposition solver and return its solver handle. |
 | `init_eigen_decomp_s`     | Single | Create a new eigendecomposition solver and return its solver handle. |
-| `solve_eigen_decomp_d`    | Double | Solve using an existing solver handle. ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). |
-| `solve_eigen_decomp_s`    | Single | Solve using an existing solver handle. ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). |
+| `solve_eigen_decomp_d`    | Double | Launch a solve on an existing handle ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). Copies `b` into an internal pinned buffer and returns without waiting for the GPU -- does **not** take or write `x`. |
+| `solve_eigen_decomp_s`    | Single | Launch a solve on an existing handle. Same behavior as `solve_eigen_decomp_d`. |
+| `synch_d`                 | Double | Wait for a handle's launched solve to finish and copy the result into `x`. `x` must be contiguous and exactly `dim1*dim2*dim3` elements (see the usage example above). |
+| `synch_s`                 | Single | Wait for a handle's launched solve to finish and copy the result into `x`. Same requirement as `synch_d`. |
 | `finalize_eigen_decomp`   | N/A | Free Eigendecomposition GPU resources. |
 
 ### Segment Types (`dim*SegType`)

@@ -88,14 +88,14 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel"
             $<$<COMPILE_LANGUAGE:Fortran>:-O3>
             $<$<COMPILE_LANGUAGE:Fortran>:-xHOST>
             $<$<COMPILE_LANGUAGE:Fortran>:-qmkl>
-            $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>
+#            $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>
             $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
     )
 
     if(MKL_LIB_DIR)
         add_link_options(
                 -qmkl
-                -qopenmp
+#                -qopenmp
                 "-L${MKL_LIB_DIR}"
                 "-Wl,-rpath,${MKL_LIB_DIR}"
         )

@@ -26912,25 +26912,6 @@
                                     {
                                         "declarator": {
                                             "attrs": {
-                                                "intent": "out",
-                                                "rank": "1"
-                                            },
-                                            "name": "x",
-                                            "pointer": [
-                                                {
-                                                    "ptr": "*"
-                                                }
-                                            ],
-                                            "typemap_name": "double"
-                                        },
-                                        "specifier": [
-                                            "double"
-                                        ],
-                                        "typemap_name": "double"
-                                    },
-                                    {
-                                        "declarator": {
-                                            "attrs": {
                                                 "intent": "in",
                                                 "rank": "1"
                                             },
@@ -26955,8 +26936,8 @@
                             ],
                             "typemap_name": "void"
                         },
-                        "decl": "void solveEigenDecomp_d(size_t solverHandle, double* x +intent(out) +rank(1), double* b +intent(in) +rank(1))",
-                        "declgen": "void solveEigenDecomp_d(size_t solverHandle, double *x +intent(out)+rank(1), double *b +intent(in)+rank(1))",
+                        "decl": "void solveEigenDecomp_d(size_t solverHandle, double* b +intent(in) +rank(1))",
+                        "declgen": "void solveEigenDecomp_d(size_t solverHandle, double *b +intent(in)+rank(1))",
                         "linenumber": 31,
                         "name": "solveEigenDecomp_d",
                         "options": {},
@@ -26968,10 +26949,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::solveEigenDecomp_d(\tsolverHandle,\t x,\t b)",
-                                        "C_call_list": "solverHandle,\t x,\t b",
+                                        "C_call_function": "eigen::solveEigenDecomp_d(\tsolverHandle,\t b)",
+                                        "C_call_list": "solverHandle,\t b",
                                         "C_name": "EIG_eigen_solveEigenDecomp_d",
-                                        "C_prototype": "size_t solverHandle,\t double *x,\t double *b",
+                                        "C_prototype": "size_t solverHandle,\t double *b",
                                         "C_return_type": "void",
                                         "i_name_function": "c_solve_eigen_decomp_d",
                                         "stmt_name": "c_subroutine",
@@ -27043,51 +27024,21 @@
                                         "value": true
                                     },
                                     "stmt": "c_in_native"
-                                },
-                                "x": {
-                                    "fmtdict": {
-                                        "c_abstract_decl": "double *",
-                                        "c_addr": "",
-                                        "c_const": "",
-                                        "c_deref": "*",
-                                        "c_member": "->",
-                                        "c_type": "double",
-                                        "c_var": "x",
-                                        "cxx_abstract_decl": "double *",
-                                        "cxx_addr": "",
-                                        "cxx_member": "->",
-                                        "cxx_nonconst_ptr": "x",
-                                        "cxx_type": "double",
-                                        "cxx_var": "x",
-                                        "f_intent": "OUT",
-                                        "f_intent_attr": ", intent(OUT)",
-                                        "i_intent": "OUT",
-                                        "i_intent_attr": ", intent(OUT)",
-                                        "idtor": "0",
-                                        "stmt_name": "c_out_native*",
-                                        "typemap_name": "double"
-                                    },
-                                    "meta": {
-                                        "abstract": "native*",
-                                        "intent": "out",
-                                        "rank": 1
-                                    },
-                                    "stmt": "c_out_native*"
                                 }
                             },
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::solveEigenDecomp_d(\tsolverHandle,\t x,\t b)",
-                                        "C_call_list": "solverHandle,\t x,\t b",
+                                        "C_call_function": "eigen::solveEigenDecomp_d(\tsolverHandle,\t b)",
+                                        "C_call_list": "solverHandle,\t b",
                                         "C_name": "EIG_eigen_solveEigenDecomp_d",
-                                        "C_prototype": "size_t solverHandle,\t double *x,\t double *b",
+                                        "C_prototype": "size_t solverHandle,\t double *b",
                                         "C_return_type": "void",
-                                        "F_arg_c_call": "solverHandle,\t x,\t b",
-                                        "F_arguments": "solverHandle,\t x,\t b",
+                                        "F_arg_c_call": "solverHandle,\t b",
+                                        "F_arguments": "solverHandle,\t b",
                                         "F_subprogram": "subroutine",
                                         "f_call_function": "c_solve_eigen_decomp_d",
-                                        "i_arguments": "solverHandle,\t x,\t b",
+                                        "i_arguments": "solverHandle,\t b",
                                         "i_name_function": "solve_eigen_decomp_d",
                                         "i_subprogram": "subroutine",
                                         "stmt_name": "f_subroutine",
@@ -27182,50 +27133,6 @@
                                         "value": true
                                     },
                                     "stmt": "f_in_native"
-                                },
-                                "x": {
-                                    "fmtdict": {
-                                        "c_abstract_decl": "double *",
-                                        "c_addr": "",
-                                        "c_const": "",
-                                        "c_deref": "*",
-                                        "c_member": "->",
-                                        "c_type": "double",
-                                        "c_var": "x",
-                                        "cxx_abstract_decl": "double *",
-                                        "cxx_addr": "",
-                                        "cxx_member": "->",
-                                        "cxx_nonconst_ptr": "x",
-                                        "cxx_type": "double",
-                                        "cxx_var": "x",
-                                        "f_assumed_shape": "(:)",
-                                        "f_dimension": "(:)",
-                                        "f_intent": "OUT",
-                                        "f_intent_attr": ", intent(OUT)",
-                                        "f_kind": "C_DOUBLE",
-                                        "f_module_name": "iso_c_binding",
-                                        "f_size": "size(x)",
-                                        "f_type": "real(C_DOUBLE)",
-                                        "f_var": "x",
-                                        "fc_var": "x",
-                                        "i_dimension": "(*)",
-                                        "i_intent": "OUT",
-                                        "i_intent_attr": ", intent(OUT)",
-                                        "i_kind": "C_DOUBLE",
-                                        "i_module_name": "iso_c_binding",
-                                        "i_type": "real(C_DOUBLE)",
-                                        "i_var": "x",
-                                        "idtor": "0",
-                                        "rank": "1",
-                                        "stmt_name": "f_out_native*",
-                                        "typemap_name": "double"
-                                    },
-                                    "meta": {
-                                        "abstract": "native*",
-                                        "intent": "out",
-                                        "rank": 1
-                                    },
-                                    "stmt": "f_out_native*"
                                 }
                             },
                             "share": {
@@ -27248,13 +27155,6 @@
                                         "intent": "in",
                                         "value": true
                                     }
-                                },
-                                "x": {
-                                    "meta": {
-                                        "abstract": "native*",
-                                        "intent": "out",
-                                        "rank": 1
-                                    }
                                 }
                             }
                         },
@@ -27267,13 +27167,11 @@
                             "c_arglist": [
                                 "c_var",
                                 "solverHandle",
-                                "x",
                                 "b"
                             ],
                             "f_arglist": [
                                 "f_var",
                                 "solverHandle",
-                                "x",
                                 "b"
                             ],
                             "function_name": "solveEigenDecomp_d"
@@ -27294,25 +27192,6 @@
                                             "size_t"
                                         ],
                                         "typemap_name": "size_t"
-                                    },
-                                    {
-                                        "declarator": {
-                                            "attrs": {
-                                                "intent": "out",
-                                                "rank": "1"
-                                            },
-                                            "name": "x",
-                                            "pointer": [
-                                                {
-                                                    "ptr": "*"
-                                                }
-                                            ],
-                                            "typemap_name": "float"
-                                        },
-                                        "specifier": [
-                                            "float"
-                                        ],
-                                        "typemap_name": "float"
                                     },
                                     {
                                         "declarator": {
@@ -27341,8 +27220,8 @@
                             ],
                             "typemap_name": "void"
                         },
-                        "decl": "void solveEigenDecomp_s(size_t solverHandle, float* x +intent(out) +rank(1), float* b +intent(in) +rank(1))",
-                        "declgen": "void solveEigenDecomp_s(size_t solverHandle, float *x +intent(out)+rank(1), float *b +intent(in)+rank(1))",
+                        "decl": "void solveEigenDecomp_s(size_t solverHandle, float* b +intent(in) +rank(1))",
+                        "declgen": "void solveEigenDecomp_s(size_t solverHandle, float *b +intent(in)+rank(1))",
                         "linenumber": 32,
                         "name": "solveEigenDecomp_s",
                         "options": {},
@@ -27354,10 +27233,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::solveEigenDecomp_s(\tsolverHandle,\t x,\t b)",
-                                        "C_call_list": "solverHandle,\t x,\t b",
+                                        "C_call_function": "eigen::solveEigenDecomp_s(\tsolverHandle,\t b)",
+                                        "C_call_list": "solverHandle,\t b",
                                         "C_name": "EIG_eigen_solveEigenDecomp_s",
-                                        "C_prototype": "size_t solverHandle,\t float *x,\t float *b",
+                                        "C_prototype": "size_t solverHandle,\t float *b",
                                         "C_return_type": "void",
                                         "i_name_function": "c_solve_eigen_decomp_s",
                                         "stmt_name": "c_subroutine",
@@ -27429,51 +27308,21 @@
                                         "value": true
                                     },
                                     "stmt": "c_in_native"
-                                },
-                                "x": {
-                                    "fmtdict": {
-                                        "c_abstract_decl": "float *",
-                                        "c_addr": "",
-                                        "c_const": "",
-                                        "c_deref": "*",
-                                        "c_member": "->",
-                                        "c_type": "float",
-                                        "c_var": "x",
-                                        "cxx_abstract_decl": "float *",
-                                        "cxx_addr": "",
-                                        "cxx_member": "->",
-                                        "cxx_nonconst_ptr": "x",
-                                        "cxx_type": "float",
-                                        "cxx_var": "x",
-                                        "f_intent": "OUT",
-                                        "f_intent_attr": ", intent(OUT)",
-                                        "i_intent": "OUT",
-                                        "i_intent_attr": ", intent(OUT)",
-                                        "idtor": "0",
-                                        "stmt_name": "c_out_native*",
-                                        "typemap_name": "float"
-                                    },
-                                    "meta": {
-                                        "abstract": "native*",
-                                        "intent": "out",
-                                        "rank": 1
-                                    },
-                                    "stmt": "c_out_native*"
                                 }
                             },
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::solveEigenDecomp_s(\tsolverHandle,\t x,\t b)",
-                                        "C_call_list": "solverHandle,\t x,\t b",
+                                        "C_call_function": "eigen::solveEigenDecomp_s(\tsolverHandle,\t b)",
+                                        "C_call_list": "solverHandle,\t b",
                                         "C_name": "EIG_eigen_solveEigenDecomp_s",
-                                        "C_prototype": "size_t solverHandle,\t float *x,\t float *b",
+                                        "C_prototype": "size_t solverHandle,\t float *b",
                                         "C_return_type": "void",
-                                        "F_arg_c_call": "solverHandle,\t x,\t b",
-                                        "F_arguments": "solverHandle,\t x,\t b",
+                                        "F_arg_c_call": "solverHandle,\t b",
+                                        "F_arguments": "solverHandle,\t b",
                                         "F_subprogram": "subroutine",
                                         "f_call_function": "c_solve_eigen_decomp_s",
-                                        "i_arguments": "solverHandle,\t x,\t b",
+                                        "i_arguments": "solverHandle,\t b",
                                         "i_name_function": "solve_eigen_decomp_s",
                                         "i_subprogram": "subroutine",
                                         "stmt_name": "f_subroutine",
@@ -27568,6 +27417,530 @@
                                         "value": true
                                     },
                                     "stmt": "f_in_native"
+                                }
+                            },
+                            "share": {
+                                "+result": {
+                                    "meta": {
+                                        "abstract": "void",
+                                        "intent": "subroutine"
+                                    }
+                                },
+                                "b": {
+                                    "meta": {
+                                        "abstract": "native*",
+                                        "intent": "in",
+                                        "rank": 1
+                                    }
+                                },
+                                "solverHandle": {
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    }
+                                }
+                            }
+                        },
+                        "zz_fmtdict": {
+                            "C_name_api": "solveEigenDecomp_s",
+                            "F_name_api": "solve_eigen_decomp_s",
+                            "F_name_function": "solve_eigen_decomp_s",
+                            "F_name_generic": "solve_eigen_decomp_s",
+                            "F_name_impl": "solve_eigen_decomp_s",
+                            "c_arglist": [
+                                "c_var",
+                                "solverHandle",
+                                "b"
+                            ],
+                            "f_arglist": [
+                                "f_var",
+                                "solverHandle",
+                                "b"
+                            ],
+                            "function_name": "solveEigenDecomp_s"
+                        }
+                    },
+                    {
+                        "<FUNCTION>": "synch_d  24 ****************************************",
+                        "ast": {
+                            "declarator": {
+                                "name": "synch_d",
+                                "params": [
+                                    {
+                                        "declarator": {
+                                            "name": "solverHandle",
+                                            "typemap_name": "size_t"
+                                        },
+                                        "specifier": [
+                                            "size_t"
+                                        ],
+                                        "typemap_name": "size_t"
+                                    },
+                                    {
+                                        "declarator": {
+                                            "attrs": {
+                                                "intent": "out",
+                                                "rank": "1"
+                                            },
+                                            "name": "x",
+                                            "pointer": [
+                                                {
+                                                    "ptr": "*"
+                                                }
+                                            ],
+                                            "typemap_name": "double"
+                                        },
+                                        "specifier": [
+                                            "double"
+                                        ],
+                                        "typemap_name": "double"
+                                    }
+                                ],
+                                "typemap_name": "void"
+                            },
+                            "specifier": [
+                                "void"
+                            ],
+                            "typemap_name": "void"
+                        },
+                        "decl": "void synch_d(size_t solverHandle, double* x +intent(out) +rank(1))",
+                        "declgen": "void synch_d(size_t solverHandle, double *x +intent(out)+rank(1))",
+                        "linenumber": 33,
+                        "name": "synch_d",
+                        "options": {},
+                        "wrap": {
+                            "c": true,
+                            "fortran": true
+                        },
+                        "zz_bind": {
+                            "c": {
+                                "+result": {
+                                    "fmtdict": {
+                                        "C_call_function": "eigen::synch_d(\tsolverHandle,\t x)",
+                                        "C_call_list": "solverHandle,\t x",
+                                        "C_name": "EIG_eigen_synch_d",
+                                        "C_prototype": "size_t solverHandle,\t double *x",
+                                        "C_return_type": "void",
+                                        "i_name_function": "c_synch_d",
+                                        "stmt_name": "c_subroutine",
+                                        "typemap_name": "void"
+                                    },
+                                    "meta": {
+                                        "abstract": "void",
+                                        "intent": "subroutine"
+                                    },
+                                    "stmt": "c_subroutine"
+                                },
+                                "solverHandle": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "solverHandle",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&solverHandle",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "solverHandle",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_value_attr": ", value",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "c_in_native"
+                                },
+                                "x": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "double *",
+                                        "c_addr": "",
+                                        "c_const": "",
+                                        "c_deref": "*",
+                                        "c_member": "->",
+                                        "c_type": "double",
+                                        "c_var": "x",
+                                        "cxx_abstract_decl": "double *",
+                                        "cxx_addr": "",
+                                        "cxx_member": "->",
+                                        "cxx_nonconst_ptr": "x",
+                                        "cxx_type": "double",
+                                        "cxx_var": "x",
+                                        "f_intent": "OUT",
+                                        "f_intent_attr": ", intent(OUT)",
+                                        "i_intent": "OUT",
+                                        "i_intent_attr": ", intent(OUT)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_out_native*",
+                                        "typemap_name": "double"
+                                    },
+                                    "meta": {
+                                        "abstract": "native*",
+                                        "intent": "out",
+                                        "rank": 1
+                                    },
+                                    "stmt": "c_out_native*"
+                                }
+                            },
+                            "f": {
+                                "+result": {
+                                    "fmtdict": {
+                                        "C_call_function": "eigen::synch_d(\tsolverHandle,\t x)",
+                                        "C_call_list": "solverHandle,\t x",
+                                        "C_name": "EIG_eigen_synch_d",
+                                        "C_prototype": "size_t solverHandle,\t double *x",
+                                        "C_return_type": "void",
+                                        "F_arg_c_call": "solverHandle,\t x",
+                                        "F_arguments": "solverHandle,\t x",
+                                        "F_subprogram": "subroutine",
+                                        "f_call_function": "c_synch_d",
+                                        "i_arguments": "solverHandle,\t x",
+                                        "i_name_function": "synch_d",
+                                        "i_subprogram": "subroutine",
+                                        "stmt_name": "f_subroutine",
+                                        "typemap_name": "void"
+                                    },
+                                    "meta": {
+                                        "abstract": "void",
+                                        "intent": "subroutine"
+                                    },
+                                    "stmt": "f_subroutine"
+                                },
+                                "solverHandle": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "solverHandle",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&solverHandle",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "solverHandle",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_kind": "C_SIZE_T",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_type": "integer(C_SIZE_T)",
+                                        "f_value_attr": ", value",
+                                        "f_var": "solverHandle",
+                                        "fc_var": "solverHandle",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "i_kind": "C_SIZE_T",
+                                        "i_module_name": "iso_c_binding",
+                                        "i_type": "integer(C_SIZE_T)",
+                                        "i_var": "solverHandle",
+                                        "idtor": "0",
+                                        "stmt_name": "f_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "f_in_native"
+                                },
+                                "x": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "double *",
+                                        "c_addr": "",
+                                        "c_const": "",
+                                        "c_deref": "*",
+                                        "c_member": "->",
+                                        "c_type": "double",
+                                        "c_var": "x",
+                                        "cxx_abstract_decl": "double *",
+                                        "cxx_addr": "",
+                                        "cxx_member": "->",
+                                        "cxx_nonconst_ptr": "x",
+                                        "cxx_type": "double",
+                                        "cxx_var": "x",
+                                        "f_assumed_shape": "(:)",
+                                        "f_dimension": "(:)",
+                                        "f_intent": "OUT",
+                                        "f_intent_attr": ", intent(OUT)",
+                                        "f_kind": "C_DOUBLE",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_size": "size(x)",
+                                        "f_type": "real(C_DOUBLE)",
+                                        "f_var": "x",
+                                        "fc_var": "x",
+                                        "i_dimension": "(*)",
+                                        "i_intent": "OUT",
+                                        "i_intent_attr": ", intent(OUT)",
+                                        "i_kind": "C_DOUBLE",
+                                        "i_module_name": "iso_c_binding",
+                                        "i_type": "real(C_DOUBLE)",
+                                        "i_var": "x",
+                                        "idtor": "0",
+                                        "rank": "1",
+                                        "stmt_name": "f_out_native*",
+                                        "typemap_name": "double"
+                                    },
+                                    "meta": {
+                                        "abstract": "native*",
+                                        "intent": "out",
+                                        "rank": 1
+                                    },
+                                    "stmt": "f_out_native*"
+                                }
+                            },
+                            "share": {
+                                "+result": {
+                                    "meta": {
+                                        "abstract": "void",
+                                        "intent": "subroutine"
+                                    }
+                                },
+                                "solverHandle": {
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    }
+                                },
+                                "x": {
+                                    "meta": {
+                                        "abstract": "native*",
+                                        "intent": "out",
+                                        "rank": 1
+                                    }
+                                }
+                            }
+                        },
+                        "zz_fmtdict": {
+                            "C_name_api": "synch_d",
+                            "F_name_api": "synch_d",
+                            "F_name_function": "synch_d",
+                            "F_name_generic": "synch_d",
+                            "F_name_impl": "synch_d",
+                            "c_arglist": [
+                                "c_var",
+                                "solverHandle",
+                                "x"
+                            ],
+                            "f_arglist": [
+                                "f_var",
+                                "solverHandle",
+                                "x"
+                            ],
+                            "function_name": "synch_d"
+                        }
+                    },
+                    {
+                        "<FUNCTION>": "synch_s  25 ****************************************",
+                        "ast": {
+                            "declarator": {
+                                "name": "synch_s",
+                                "params": [
+                                    {
+                                        "declarator": {
+                                            "name": "solverHandle",
+                                            "typemap_name": "size_t"
+                                        },
+                                        "specifier": [
+                                            "size_t"
+                                        ],
+                                        "typemap_name": "size_t"
+                                    },
+                                    {
+                                        "declarator": {
+                                            "attrs": {
+                                                "intent": "out",
+                                                "rank": "1"
+                                            },
+                                            "name": "x",
+                                            "pointer": [
+                                                {
+                                                    "ptr": "*"
+                                                }
+                                            ],
+                                            "typemap_name": "float"
+                                        },
+                                        "specifier": [
+                                            "float"
+                                        ],
+                                        "typemap_name": "float"
+                                    }
+                                ],
+                                "typemap_name": "void"
+                            },
+                            "specifier": [
+                                "void"
+                            ],
+                            "typemap_name": "void"
+                        },
+                        "decl": "void synch_s(size_t solverHandle, float* x +intent(out) +rank(1))",
+                        "declgen": "void synch_s(size_t solverHandle, float *x +intent(out)+rank(1))",
+                        "linenumber": 34,
+                        "name": "synch_s",
+                        "options": {},
+                        "wrap": {
+                            "c": true,
+                            "fortran": true
+                        },
+                        "zz_bind": {
+                            "c": {
+                                "+result": {
+                                    "fmtdict": {
+                                        "C_call_function": "eigen::synch_s(\tsolverHandle,\t x)",
+                                        "C_call_list": "solverHandle,\t x",
+                                        "C_name": "EIG_eigen_synch_s",
+                                        "C_prototype": "size_t solverHandle,\t float *x",
+                                        "C_return_type": "void",
+                                        "i_name_function": "c_synch_s",
+                                        "stmt_name": "c_subroutine",
+                                        "typemap_name": "void"
+                                    },
+                                    "meta": {
+                                        "abstract": "void",
+                                        "intent": "subroutine"
+                                    },
+                                    "stmt": "c_subroutine"
+                                },
+                                "solverHandle": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "solverHandle",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&solverHandle",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "solverHandle",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_value_attr": ", value",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "c_in_native"
+                                },
+                                "x": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "float *",
+                                        "c_addr": "",
+                                        "c_const": "",
+                                        "c_deref": "*",
+                                        "c_member": "->",
+                                        "c_type": "float",
+                                        "c_var": "x",
+                                        "cxx_abstract_decl": "float *",
+                                        "cxx_addr": "",
+                                        "cxx_member": "->",
+                                        "cxx_nonconst_ptr": "x",
+                                        "cxx_type": "float",
+                                        "cxx_var": "x",
+                                        "f_intent": "OUT",
+                                        "f_intent_attr": ", intent(OUT)",
+                                        "i_intent": "OUT",
+                                        "i_intent_attr": ", intent(OUT)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_out_native*",
+                                        "typemap_name": "float"
+                                    },
+                                    "meta": {
+                                        "abstract": "native*",
+                                        "intent": "out",
+                                        "rank": 1
+                                    },
+                                    "stmt": "c_out_native*"
+                                }
+                            },
+                            "f": {
+                                "+result": {
+                                    "fmtdict": {
+                                        "C_call_function": "eigen::synch_s(\tsolverHandle,\t x)",
+                                        "C_call_list": "solverHandle,\t x",
+                                        "C_name": "EIG_eigen_synch_s",
+                                        "C_prototype": "size_t solverHandle,\t float *x",
+                                        "C_return_type": "void",
+                                        "F_arg_c_call": "solverHandle,\t x",
+                                        "F_arguments": "solverHandle,\t x",
+                                        "F_subprogram": "subroutine",
+                                        "f_call_function": "c_synch_s",
+                                        "i_arguments": "solverHandle,\t x",
+                                        "i_name_function": "synch_s",
+                                        "i_subprogram": "subroutine",
+                                        "stmt_name": "f_subroutine",
+                                        "typemap_name": "void"
+                                    },
+                                    "meta": {
+                                        "abstract": "void",
+                                        "intent": "subroutine"
+                                    },
+                                    "stmt": "f_subroutine"
+                                },
+                                "solverHandle": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "solverHandle",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&solverHandle",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "solverHandle",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_kind": "C_SIZE_T",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_type": "integer(C_SIZE_T)",
+                                        "f_value_attr": ", value",
+                                        "f_var": "solverHandle",
+                                        "fc_var": "solverHandle",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "i_kind": "C_SIZE_T",
+                                        "i_module_name": "iso_c_binding",
+                                        "i_type": "integer(C_SIZE_T)",
+                                        "i_var": "solverHandle",
+                                        "idtor": "0",
+                                        "stmt_name": "f_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "f_in_native"
                                 },
                                 "x": {
                                     "fmtdict": {
@@ -27621,13 +27994,6 @@
                                         "intent": "subroutine"
                                     }
                                 },
-                                "b": {
-                                    "meta": {
-                                        "abstract": "native*",
-                                        "intent": "in",
-                                        "rank": 1
-                                    }
-                                },
                                 "solverHandle": {
                                     "meta": {
                                         "abstract": "native",
@@ -27645,374 +28011,6 @@
                             }
                         },
                         "zz_fmtdict": {
-                            "C_name_api": "solveEigenDecomp_s",
-                            "F_name_api": "solve_eigen_decomp_s",
-                            "F_name_function": "solve_eigen_decomp_s",
-                            "F_name_generic": "solve_eigen_decomp_s",
-                            "F_name_impl": "solve_eigen_decomp_s",
-                            "c_arglist": [
-                                "c_var",
-                                "solverHandle",
-                                "x",
-                                "b"
-                            ],
-                            "f_arglist": [
-                                "f_var",
-                                "solverHandle",
-                                "x",
-                                "b"
-                            ],
-                            "function_name": "solveEigenDecomp_s"
-                        }
-                    },
-                    {
-                        "<FUNCTION>": "synch_d  24 ****************************************",
-                        "ast": {
-                            "declarator": {
-                                "name": "synch_d",
-                                "params": [
-                                    {
-                                        "declarator": {
-                                            "name": "solverHandle",
-                                            "typemap_name": "size_t"
-                                        },
-                                        "specifier": [
-                                            "size_t"
-                                        ],
-                                        "typemap_name": "size_t"
-                                    }
-                                ],
-                                "typemap_name": "void"
-                            },
-                            "specifier": [
-                                "void"
-                            ],
-                            "typemap_name": "void"
-                        },
-                        "decl": "void synch_d(size_t solverHandle)",
-                        "declgen": "void synch_d(size_t solverHandle)",
-                        "linenumber": 33,
-                        "name": "synch_d",
-                        "options": {},
-                        "wrap": {
-                            "c": true,
-                            "fortran": true
-                        },
-                        "zz_bind": {
-                            "c": {
-                                "+result": {
-                                    "fmtdict": {
-                                        "C_call_function": "eigen::synch_d(\tsolverHandle)",
-                                        "C_call_list": "solverHandle",
-                                        "C_name": "EIG_eigen_synch_d",
-                                        "C_prototype": "size_t solverHandle",
-                                        "C_return_type": "void",
-                                        "i_name_function": "c_synch_d",
-                                        "stmt_name": "c_subroutine",
-                                        "typemap_name": "void"
-                                    },
-                                    "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
-                                    },
-                                    "stmt": "c_subroutine"
-                                },
-                                "solverHandle": {
-                                    "fmtdict": {
-                                        "c_abstract_decl": "size_t",
-                                        "c_addr": "&",
-                                        "c_const": "",
-                                        "c_deref": "",
-                                        "c_member": ".",
-                                        "c_type": "size_t",
-                                        "c_var": "solverHandle",
-                                        "cxx_abstract_decl": "size_t",
-                                        "cxx_addr": "&",
-                                        "cxx_member": ".",
-                                        "cxx_nonconst_ptr": "&solverHandle",
-                                        "cxx_type": "size_t",
-                                        "cxx_var": "solverHandle",
-                                        "f_intent": "IN",
-                                        "f_intent_attr": ", intent(IN)",
-                                        "f_value_attr": ", value",
-                                        "i_intent": "IN",
-                                        "i_intent_attr": ", intent(IN)",
-                                        "idtor": "0",
-                                        "stmt_name": "c_in_native",
-                                        "typemap_name": "size_t"
-                                    },
-                                    "meta": {
-                                        "abstract": "native",
-                                        "intent": "in",
-                                        "value": true
-                                    },
-                                    "stmt": "c_in_native"
-                                }
-                            },
-                            "f": {
-                                "+result": {
-                                    "fmtdict": {
-                                        "C_call_function": "eigen::synch_d(\tsolverHandle)",
-                                        "C_call_list": "solverHandle",
-                                        "C_name": "EIG_eigen_synch_d",
-                                        "C_prototype": "size_t solverHandle",
-                                        "C_return_type": "void",
-                                        "F_arg_c_call": "solverHandle",
-                                        "F_arguments": "solverHandle",
-                                        "F_subprogram": "subroutine",
-                                        "f_call_function": "c_synch_d",
-                                        "i_arguments": "solverHandle",
-                                        "i_name_function": "synch_d",
-                                        "i_subprogram": "subroutine",
-                                        "stmt_name": "f_subroutine",
-                                        "typemap_name": "void"
-                                    },
-                                    "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
-                                    },
-                                    "stmt": "f_subroutine"
-                                },
-                                "solverHandle": {
-                                    "fmtdict": {
-                                        "c_abstract_decl": "size_t",
-                                        "c_addr": "&",
-                                        "c_const": "",
-                                        "c_deref": "",
-                                        "c_member": ".",
-                                        "c_type": "size_t",
-                                        "c_var": "solverHandle",
-                                        "cxx_abstract_decl": "size_t",
-                                        "cxx_addr": "&",
-                                        "cxx_member": ".",
-                                        "cxx_nonconst_ptr": "&solverHandle",
-                                        "cxx_type": "size_t",
-                                        "cxx_var": "solverHandle",
-                                        "f_intent": "IN",
-                                        "f_intent_attr": ", intent(IN)",
-                                        "f_kind": "C_SIZE_T",
-                                        "f_module_name": "iso_c_binding",
-                                        "f_type": "integer(C_SIZE_T)",
-                                        "f_value_attr": ", value",
-                                        "f_var": "solverHandle",
-                                        "fc_var": "solverHandle",
-                                        "i_intent": "IN",
-                                        "i_intent_attr": ", intent(IN)",
-                                        "i_kind": "C_SIZE_T",
-                                        "i_module_name": "iso_c_binding",
-                                        "i_type": "integer(C_SIZE_T)",
-                                        "i_var": "solverHandle",
-                                        "idtor": "0",
-                                        "stmt_name": "f_in_native",
-                                        "typemap_name": "size_t"
-                                    },
-                                    "meta": {
-                                        "abstract": "native",
-                                        "intent": "in",
-                                        "value": true
-                                    },
-                                    "stmt": "f_in_native"
-                                }
-                            },
-                            "share": {
-                                "+result": {
-                                    "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
-                                    }
-                                },
-                                "solverHandle": {
-                                    "meta": {
-                                        "abstract": "native",
-                                        "intent": "in",
-                                        "value": true
-                                    }
-                                }
-                            }
-                        },
-                        "zz_fmtdict": {
-                            "C_name_api": "synch_d",
-                            "F_name_api": "synch_d",
-                            "F_name_function": "synch_d",
-                            "F_name_generic": "synch_d",
-                            "F_name_impl": "synch_d",
-                            "c_arglist": [
-                                "c_var",
-                                "solverHandle"
-                            ],
-                            "f_arglist": [
-                                "f_var",
-                                "solverHandle"
-                            ],
-                            "function_name": "synch_d"
-                        }
-                    },
-                    {
-                        "<FUNCTION>": "synch_s  25 ****************************************",
-                        "ast": {
-                            "declarator": {
-                                "name": "synch_s",
-                                "params": [
-                                    {
-                                        "declarator": {
-                                            "name": "solverHandle",
-                                            "typemap_name": "size_t"
-                                        },
-                                        "specifier": [
-                                            "size_t"
-                                        ],
-                                        "typemap_name": "size_t"
-                                    }
-                                ],
-                                "typemap_name": "void"
-                            },
-                            "specifier": [
-                                "void"
-                            ],
-                            "typemap_name": "void"
-                        },
-                        "decl": "void synch_s(size_t solverHandle)",
-                        "declgen": "void synch_s(size_t solverHandle)",
-                        "linenumber": 34,
-                        "name": "synch_s",
-                        "options": {},
-                        "wrap": {
-                            "c": true,
-                            "fortran": true
-                        },
-                        "zz_bind": {
-                            "c": {
-                                "+result": {
-                                    "fmtdict": {
-                                        "C_call_function": "eigen::synch_s(\tsolverHandle)",
-                                        "C_call_list": "solverHandle",
-                                        "C_name": "EIG_eigen_synch_s",
-                                        "C_prototype": "size_t solverHandle",
-                                        "C_return_type": "void",
-                                        "i_name_function": "c_synch_s",
-                                        "stmt_name": "c_subroutine",
-                                        "typemap_name": "void"
-                                    },
-                                    "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
-                                    },
-                                    "stmt": "c_subroutine"
-                                },
-                                "solverHandle": {
-                                    "fmtdict": {
-                                        "c_abstract_decl": "size_t",
-                                        "c_addr": "&",
-                                        "c_const": "",
-                                        "c_deref": "",
-                                        "c_member": ".",
-                                        "c_type": "size_t",
-                                        "c_var": "solverHandle",
-                                        "cxx_abstract_decl": "size_t",
-                                        "cxx_addr": "&",
-                                        "cxx_member": ".",
-                                        "cxx_nonconst_ptr": "&solverHandle",
-                                        "cxx_type": "size_t",
-                                        "cxx_var": "solverHandle",
-                                        "f_intent": "IN",
-                                        "f_intent_attr": ", intent(IN)",
-                                        "f_value_attr": ", value",
-                                        "i_intent": "IN",
-                                        "i_intent_attr": ", intent(IN)",
-                                        "idtor": "0",
-                                        "stmt_name": "c_in_native",
-                                        "typemap_name": "size_t"
-                                    },
-                                    "meta": {
-                                        "abstract": "native",
-                                        "intent": "in",
-                                        "value": true
-                                    },
-                                    "stmt": "c_in_native"
-                                }
-                            },
-                            "f": {
-                                "+result": {
-                                    "fmtdict": {
-                                        "C_call_function": "eigen::synch_s(\tsolverHandle)",
-                                        "C_call_list": "solverHandle",
-                                        "C_name": "EIG_eigen_synch_s",
-                                        "C_prototype": "size_t solverHandle",
-                                        "C_return_type": "void",
-                                        "F_arg_c_call": "solverHandle",
-                                        "F_arguments": "solverHandle",
-                                        "F_subprogram": "subroutine",
-                                        "f_call_function": "c_synch_s",
-                                        "i_arguments": "solverHandle",
-                                        "i_name_function": "synch_s",
-                                        "i_subprogram": "subroutine",
-                                        "stmt_name": "f_subroutine",
-                                        "typemap_name": "void"
-                                    },
-                                    "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
-                                    },
-                                    "stmt": "f_subroutine"
-                                },
-                                "solverHandle": {
-                                    "fmtdict": {
-                                        "c_abstract_decl": "size_t",
-                                        "c_addr": "&",
-                                        "c_const": "",
-                                        "c_deref": "",
-                                        "c_member": ".",
-                                        "c_type": "size_t",
-                                        "c_var": "solverHandle",
-                                        "cxx_abstract_decl": "size_t",
-                                        "cxx_addr": "&",
-                                        "cxx_member": ".",
-                                        "cxx_nonconst_ptr": "&solverHandle",
-                                        "cxx_type": "size_t",
-                                        "cxx_var": "solverHandle",
-                                        "f_intent": "IN",
-                                        "f_intent_attr": ", intent(IN)",
-                                        "f_kind": "C_SIZE_T",
-                                        "f_module_name": "iso_c_binding",
-                                        "f_type": "integer(C_SIZE_T)",
-                                        "f_value_attr": ", value",
-                                        "f_var": "solverHandle",
-                                        "fc_var": "solverHandle",
-                                        "i_intent": "IN",
-                                        "i_intent_attr": ", intent(IN)",
-                                        "i_kind": "C_SIZE_T",
-                                        "i_module_name": "iso_c_binding",
-                                        "i_type": "integer(C_SIZE_T)",
-                                        "i_var": "solverHandle",
-                                        "idtor": "0",
-                                        "stmt_name": "f_in_native",
-                                        "typemap_name": "size_t"
-                                    },
-                                    "meta": {
-                                        "abstract": "native",
-                                        "intent": "in",
-                                        "value": true
-                                    },
-                                    "stmt": "f_in_native"
-                                }
-                            },
-                            "share": {
-                                "+result": {
-                                    "meta": {
-                                        "abstract": "void",
-                                        "intent": "subroutine"
-                                    }
-                                },
-                                "solverHandle": {
-                                    "meta": {
-                                        "abstract": "native",
-                                        "intent": "in",
-                                        "value": true
-                                    }
-                                }
-                            }
-                        },
-                        "zz_fmtdict": {
                             "C_name_api": "synch_s",
                             "F_name_api": "synch_s",
                             "F_name_function": "synch_s",
@@ -28020,11 +28018,13 @@
                             "F_name_impl": "synch_s",
                             "c_arglist": [
                                 "c_var",
-                                "solverHandle"
+                                "solverHandle",
+                                "x"
                             ],
                             "f_arglist": [
                                 "f_var",
-                                "solverHandle"
+                                "solverHandle",
+                                "x"
                             ],
                             "function_name": "synch_s"
                         }

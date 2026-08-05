@@ -28,8 +28,8 @@ declarations:
     declarations:
       - decl: size_t initEigenDecomp_d(size_t dim1Length, size_t dim2Length, size_t dim3Length, const double* dim1Delta +intent(in) +rank(1), const double* dim2Delta +intent(in) +rank(1), const double* dim3Delta +intent(in) +rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal, bool thomas, double helmholtzShift)
       - decl: size_t initEigenDecomp_s(size_t dim1Length, size_t dim2Length, size_t dim3Length, const float* dim1Delta +intent(in) +rank(1), const float* dim2Delta +intent(in) +rank(1), const float* dim3Delta +intent(in) +rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, float dim1StartVal, float dim1EndVal, float dim2StartVal, float dim2EndVal, float dim3StartVal, float dim3EndVal, bool thomas, float helmholtzShift)
-      - decl: void solveEigenDecomp_d(size_t solverHandle, double* x +intent(out) +rank(1), double* b +intent(in) +rank(1))
-      - decl: void solveEigenDecomp_s(size_t solverHandle, float* x +intent(out) +rank(1), float* b +intent(in) +rank(1))
-      - decl: void synch_d(size_t solverHandle)
-      - decl: void synch_s(size_t solverHandle)
+      - decl: void solveEigenDecomp_d(size_t solverHandle, double* b +intent(in) +rank(1))
+      - decl: void solveEigenDecomp_s(size_t solverHandle, float* b +intent(in) +rank(1))
+      - decl: void synch_d(size_t solverHandle, double* x +intent(out) +rank(1))
+      - decl: void synch_s(size_t solverHandle, float* x +intent(out) +rank(1))
       - decl: void finalizeEigenDecomp()

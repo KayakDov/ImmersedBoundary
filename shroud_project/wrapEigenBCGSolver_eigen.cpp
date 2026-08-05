@@ -54,33 +54,31 @@ size_t EIG_eigen_initEigenDecomp_s(size_t dim1Length, size_t dim2Length,
     // splicer end namespace.eigen.function.initEigenDecomp_s
 }
 
-void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *x,
-    double *b)
+void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *b)
 {
     // splicer begin namespace.eigen.function.solveEigenDecomp_d
-    eigen::solveEigenDecomp_d(solverHandle, x, b);
+    eigen::solveEigenDecomp_d(solverHandle, b);
     // splicer end namespace.eigen.function.solveEigenDecomp_d
 }
 
-void EIG_eigen_solveEigenDecomp_s(size_t solverHandle, float *x,
-    float *b)
+void EIG_eigen_solveEigenDecomp_s(size_t solverHandle, float *b)
 {
     // splicer begin namespace.eigen.function.solveEigenDecomp_s
-    eigen::solveEigenDecomp_s(solverHandle, x, b);
+    eigen::solveEigenDecomp_s(solverHandle, b);
     // splicer end namespace.eigen.function.solveEigenDecomp_s
 }
 
-void EIG_eigen_synch_d(size_t solverHandle)
+void EIG_eigen_synch_d(size_t solverHandle, double *x)
 {
     // splicer begin namespace.eigen.function.synch_d
-    eigen::synch_d(solverHandle);
+    eigen::synch_d(solverHandle, x);
     // splicer end namespace.eigen.function.synch_d
 }
 
-void EIG_eigen_synch_s(size_t solverHandle)
+void EIG_eigen_synch_s(size_t solverHandle, float *x)
 {
     // splicer begin namespace.eigen.function.synch_s
-    eigen::synch_s(solverHandle);
+    eigen::synch_s(solverHandle, x);
     // splicer end namespace.eigen.function.synch_s
 }
 

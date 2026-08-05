@@ -110,8 +110,11 @@ TEST(FortranWrapper, MultipleEigenSolversSideBySide){
     ASSERT_NE(h1, h2);
 
     // 3. Solve them sequentially
-    eigen::solveEigenDecomp_d(h1, resStandard.data(), rhs.data());
-    eigen::solveEigenDecomp_d(h2, resThomas.data(), rhs.data());
+    eigen::solveEigenDecomp_d(h1, rhs.data());
+    eigen::solveEigenDecomp_d(h2, rhs.data());
+
+    eigen::synch(h1, resStandard.data());
+    eigen::synch(h2, resThomas.data());
 
     // 4. Diagnostics: If memory bled across solvers, the results would diverge
     for(size_t i=0; i<size; i++)
@@ -187,8 +190,11 @@ TEST(FortranWrapper, SmokeTestAlex)
             true, 0
         );
 
-    eigen::solveEigenDecomp_d(handleStandard, xStandard.data(), rhs.data());
-    eigen::solveEigenDecomp_d(handleThomas, xThomas.data(), rhs.data());
+    eigen::solveEigenDecomp_d(handleStandard, rhs.data());
+    eigen::solveEigenDecomp_d(handleThomas, rhs.data());
+
+    eigen::synch(handleStandard, xStandard.data());
+    eigen::synch(handleThomas, xThomas.data());
 
 
     //------------------------------------------------------------------

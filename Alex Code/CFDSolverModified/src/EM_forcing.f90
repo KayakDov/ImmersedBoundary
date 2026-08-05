@@ -48,8 +48,14 @@ Subroutine Get_Potential_Launch
         ! Launch only -- does NOT synch. GPU_SOL_Pot is not valid until
         ! Get_Potential_Finish (called right before EM_force, which is
         ! the first place Potential is actually read) calls synch_d.
+        ! solve_eigen_decomp_d no longer takes x -- the result is retrieved by
+        ! synch_d instead (see Get_Potential_Finish). GPU_RHS_Pot is still
+        ! required here even though this is a pure copy (no scaling): FDRHP's
+        ! true shape is ghost-padded (0:Nx2,0:Ny2,0:Nz2), so the slice
+        ! FDRHP(1:Nx,1:Ny1,1:Nz) is not contiguous, and this exact-shape
+        ! buffer keeps the call safe for the C interop layer.
         GPU_RHS_Pot = FDRHP(1:Nx,1:Ny1,1:Nz)
-        Call solve_eigen_decomp_d(PotentialHandle, GPU_SOL_Pot, GPU_RHS_Pot)
+        Call solve_eigen_decomp_d(PotentialHandle, GPU_RHS_Pot)
 
   Return
 End Subroutine Get_Potential_Launch
@@ -68,7 +74,13 @@ Subroutine Get_Potential_Finish
     Implicit Real(kind=8) (A-H,O-Z)
 ! ___________________________________________________
 
-        Call synch_d(PotentialHandle)
+        ! synch_d now retrieves the result directly (was: bare wait, then a
+        ! separate Fortran array copy from GPU_SOL_Pot). GPU_SOL_Pot is kept
+        ! here (not eliminated) because Potential's true declared shape
+        ! (0:Nxx1,0:Nyy2,0:Nzz1) does not match this solve's region
+        ! (1:Nx,1:Ny1,1:Nz) -- passing Potential's slice directly would be
+        ! non-contiguous and force a hidden, non-pinned compiler temporary.
+        Call synch_d(PotentialHandle, GPU_SOL_Pot)
         Potential(1:Nx,1:Ny1,1:Nz) = GPU_SOL_Pot
 
         Potential = Potential - Potential(1,1,1)

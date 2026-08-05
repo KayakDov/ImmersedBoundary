@@ -45,7 +45,8 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
     XYZ<eigen::LaplOperatorT> segType,
     bool thomas, Real helmholtzShift,
     SimpleArray<Real> sizeOfBForX, SimpleArray<Real> sizeOfBForRHS, SimpleArray<Real> sizeOfBForBAdj
-) : x(sizeOfBForX), b(sizeOfBForRHS), adjToB(sizeOfBForBAdj) {
+    ) : x(sizeOfBForX), b(sizeOfBForRHS), adjToB(sizeOfBForBAdj),pinnedX(allocPinned(sizeOfBForX.size()), &cudaFreeHost),
+        pinnedB(allocPinned(sizeOfBForRHS.size()), &cudaFreeHost) {
     
     Handle hands[3];
     Event events[3];
@@ -73,15 +74,21 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
 
 
 template<typename Real>
-void EigenDecompForFortran<Real>::solve(Real *xHost, Real *bHost)  {
+void EigenDecompForFortran<Real>::solve(const Real *bHost)  {
 
-    b.set(bHost, hand);
+    std::memcpy(pinnedB.get(), bHost, b.size() * sizeof(Real));
+    b.set(pinnedB.get(), hand);
 
     b.add(adjToB, &GPUScalar<Real>::get(1), &hand);
-
     eds->solve(x, b, hand);
 
-    x.get(xHost, hand);
+    x.get(pinnedX.get(), hand);
+}
+
+template<typename Real>
+void EigenDecompForFortran<Real>::retrieveSoltion(Real *xHost) {
+    hand.synch();
+    std::memcpy(xHost, pinnedX.get(), x.size() * sizeof(Real));
 }
 
 template class EigenDecompForFortran<double>;

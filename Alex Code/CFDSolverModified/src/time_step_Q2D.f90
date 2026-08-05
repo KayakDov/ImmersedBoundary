@@ -28,6 +28,13 @@
         ! AlexCudaCompatibility.f90's Initialize_GPU_Solvers for the exact
         ! shift/scale derivation). No index reordering -- these are plain
         ! same-shape, same-order copies of FDRHP/RHSx/RHSy/RHSz.
+         ! GPU_SOL_T/Vx/Vy/Vz are still needed: TmpNew/VMxNew/VMyNew/VMzNew are
+         ! all ghost-padded (e.g. TmpNew is (0:Nx2,0:Ny2,0:Nz2) but the solve
+         ! region is (1:Nx1,1:Ny1,1:Nz1)), so passing a slice of them directly
+         ! to synch_d would be non-contiguous and force a hidden, non-pinned
+         ! compiler temporary. GPU_SOL_P is NOT needed: Dprs's declared shape
+         ! (1:Nx1,1:Ny1,1:Nz1) is an EXACT match to the pressure solve region,
+         ! so synch_d can write directly into Dprs with no staging buffer.
          Real(kind=8), Allocatable, Save :: GPU_RHS_T(:,:,:), GPU_SOL_T(:,:,:)
          Real(kind=8), Allocatable, Save :: GPU_RHS_Vx(:,:,:), GPU_RHS_Vy(:,:,:), GPU_RHS_Vz(:,:,:)
          Real(kind=8), Allocatable, Save :: GPU_SOL_Vx(:,:,:), GPU_SOL_Vy(:,:,:), GPU_SOL_Vz(:,:,:)
@@ -46,6 +53,7 @@
              Allocate( GPU_RHS_Vz(1:Nx1,1:Ny1,1:Nz ) )
              Allocate( GPU_SOL_Vz(1:Nx1,1:Ny1,1:Nz ) )
              Allocate( GPU_RHS_P (1:Nx1,1:Ny1,1:Nz1) )
+             ! (no GPU_SOL_P -- Dprs itself is the contiguous destination)
              GPU_RHS_Allocated = .true.
          End If
         
@@ -79,7 +87,7 @@
            ! so Vy's and Potential's independent right-hand sides are built
            ! (and their own solves launched) while this one is still running.
          GPU_RHS_T = FDRHP(1:Nx1,1:Ny1,1:Nz1) * GrPr
-         Call solve_eigen_decomp_d(TemperatureHandle, GPU_SOL_T, GPU_RHS_T)
+         Call solve_eigen_decomp_d(TemperatureHandle, GPU_RHS_T)
 
 ! ========= RHS/launch for Vy -- depends on neither Temperature nor =======
 ! ========= Potential (unlike Vx/Vz, never touched by EM_force),   ========
@@ -98,7 +106,7 @@
       ! after Vx/Vz below, by which point this has had the whole
       ! Temperature/Potential/Vx/Vz sequence to finish on the GPU.
          GPU_RHS_Vy = RHSy(1:Nx1,1:Ny,1:Nz1) / DGr
-         Call solve_eigen_decomp_d(VyHandle, GPU_SOL_Vy, GPU_RHS_Vy)
+         Call solve_eigen_decomp_d(VyHandle, GPU_RHS_Vy)
 
 ! ========= RHS/launch for Potential -- only needs VMx/VMz from the =======
 ! ========= start of this step, so it's independent of Temperature  =======
@@ -108,7 +116,7 @@
 
 ! ########### Temperature is needed now: synch #############################
 
-         Call synch_d(TemperatureHandle)
+         Call synch_d(TemperatureHandle, GPU_SOL_T)
          TmpNew(1:Nx1,1:Ny1,1:Nz1) = GPU_SOL_T
            
  !          Write (*,*) ' TmpNew=', Maxval(abs(TMpNew))
@@ -161,23 +169,23 @@
       ! Not synched here -- VMxNew isn't needed until the EVDbounds call
       ! below, after Vz is launched too.
          GPU_RHS_Vx = RHSx(1:Nx,1:Ny1,1:Nz1) / DGr
-         Call solve_eigen_decomp_d(VxHandle, GPU_SOL_Vx, GPU_RHS_Vx)
+         Call solve_eigen_decomp_d(VxHandle, GPU_RHS_Vx)
 
 ! ++++++++++++++ [Calculate Lap(w)^-1]*RHSz ++++++++++++++++++++++++++
       
       ! GPU: was Call EVD_Thomas(..., 1.D0), same DGr scaling as Vx/Vy.
          GPU_RHS_Vz = RHSz(1:Nx1,1:Ny1,1:Nz) / DGr
-         Call solve_eigen_decomp_d(VzHandle, GPU_SOL_Vz, GPU_RHS_Vz)
+         Call solve_eigen_decomp_d(VzHandle, GPU_RHS_Vz)
 
 ! ########### Vy, Vx, Vz are all needed now: synch each #####################
 
-         Call synch_d(VyHandle)
+         Call synch_d(VyHandle, GPU_SOL_Vy)
          VMyNew(1:Nx1,1:Ny,1:Nz1) = GPU_SOL_Vy
 
-         Call synch_d(VxHandle)
+         Call synch_d(VxHandle, GPU_SOL_Vx)
          VMxNew(1:Nx,1:Ny1,1:Nz1) = GPU_SOL_Vx
 
-         Call synch_d(VzHandle)
+         Call synch_d(VzHandle, GPU_SOL_Vz)
          VMzNew(1:Nx1,1:Ny1,1:Nz) = GPU_SOL_Vz
 
       Call EVDbounds 
@@ -210,9 +218,13 @@
        ! scaling needed), was Call EVDmethod(..., 1,1,1, beta=0).
        ! Nothing independent is left to overlap with at this point in the
        ! step, so synch immediately -- Dprs is needed by the very next line.
+         ! Dprs(1:Nx1,1:Ny1,1:Nz1) IS the array's whole declared extent (see
+         ! the Allocate in ConvMain_3D_Q2D.f90) -- contiguous, so synch_d can
+         ! write directly into it. No GPU_SOL_P needed (unlike Temperature/
+         ! Vx/Vy/Vz/Potential, whose destination arrays are ghost-padded).
          GPU_RHS_P = FDRHP(1:Nx1,1:Ny1,1:Nz1)
-         Call solve_eigen_decomp_d(PressureHandle, Dprs(1:Nx1,1:Ny1,1:Nz1), GPU_RHS_P)
-         Call synch_d(PressureHandle)
+         Call solve_eigen_decomp_d(PressureHandle, GPU_RHS_P)
+         Call synch_d(PressureHandle, Dprs(1:Nx1,1:Ny1,1:Nz1))
  !   Write (*,*) ' Dprs=', Sum(abs(Dprs))
 
 ! ++++++++++++ Calculate velocities ++++++++++++++++++++++++++++++

@@ -47,15 +47,13 @@ size_t EIG_eigen_initEigenDecomp_s(size_t dim1Length, size_t dim2Length,
     float dim3StartVal, float dim3EndVal, bool thomas,
     float helmholtzShift);
 
-void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *x,
-    double *b);
+void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *b);
 
-void EIG_eigen_solveEigenDecomp_s(size_t solverHandle, float *x,
-    float *b);
+void EIG_eigen_solveEigenDecomp_s(size_t solverHandle, float *b);
 
-void EIG_eigen_synch_d(size_t solverHandle);
+void EIG_eigen_synch_d(size_t solverHandle, double *x);
 
-void EIG_eigen_synch_s(size_t solverHandle);
+void EIG_eigen_synch_s(size_t solverHandle, float *x);
 
 void EIG_eigen_finalizeEigenDecomp(void);
 

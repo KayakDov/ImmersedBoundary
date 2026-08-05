@@ -20,6 +20,14 @@ template<typename Real>
 class EigenDecompForFortran {
     std::unique_ptr<EigenDecompSolver<Real>> eds = nullptr;//This may hold any type of eigen solver, 2d, 3d, or Thomas.
     SimpleArray<Real> x, b, adjToB;
+    std::unique_ptr<Real[], decltype(&cudaFreeHost)> pinnedB{nullptr, &cudaFreeHost};
+    std::unique_ptr<Real[], decltype(&cudaFreeHost)> pinnedX{nullptr, &cudaFreeHost};
+
+    static Real* allocPinned(size_t n) {
+        Real* p = nullptr;
+        cudaMallocHost(&p, n * sizeof(Real));
+        return p;
+    }
 public:
     Handle hand;
     /**
@@ -68,10 +76,15 @@ public:
                           SimpleArray<Real> sizeOfBForBAdj);
     /**
      * Solves the equation L x = b.
-     * @param xHost The solution overwrites this array.
      * @param bHost The rhs of the equation is input here.
      */
-    void solve(Real* xHost, Real* bHost);
+    void solve(const Real* bHost);
+
+    /**
+     * synchs this device with the gpu and copies the result to xHost.
+     * @param xHost Where the soltion to L x = b goes.
+     */
+    void retrieveSoltion(Real* xHost);
 };
 
 #endif //CUDABANDED_EIGENDECOMPFORFORTRAN_H

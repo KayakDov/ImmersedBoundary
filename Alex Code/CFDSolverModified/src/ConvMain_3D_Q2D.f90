@@ -155,7 +155,7 @@
 
 ! ########  Call of the main subroutine ################
 
-         Call omp_set_num_threads(max(1, omp_get_num_procs() - 1))
+         Call omp_set_num_threads(max(1, omp_get_num_procs()*2/3))
         Write (*,*) omp_get_max_threads(), '  CPUs will be used'
         
         Call    Solution_time

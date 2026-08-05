@@ -304,23 +304,23 @@ namespace eigen {
     }
 
     template<typename Real>
-    void runDecompSolver(size_t solverHandle, Real* xHost, Real* bHost) {
+    void runDecompSolver(size_t solverHandle, Real* bHost) {
         // double startTime = currentTime();
 
         if (solverHandle >= solvers<Real>.size() || !solvers<Real>[solverHandle])
             throw std::runtime_error("Invalid eigen solver handle.");
 
-        solvers<Real>[solverHandle]->solve(xHost, bHost);
+        solvers<Real>[solverHandle]->solve(bHost);
 
         // addSolverTime(currentTime() - startTime);
     }
 
     template<typename Real>
-    void synch(size_t solverHandle) {
+    void synch(size_t solverHandle, Real* x) {
         // double startTime = currentTime();
         if (solverHandle >= solvers<Real>.size() || !solvers<Real>[solverHandle])
             throw std::runtime_error("Invalid eigen solver handle.");
-        solvers<Real>[solverHandle]->hand.synch();
+        solvers<Real>[solverHandle]->retrieveSoltion(x);
         // addSolverTime(currentTime() - startTime);
     }
 
@@ -370,20 +370,20 @@ namespace eigen {
             );
         }
 
-        inline void solveEigenDecomp_d(size_t solverHandle, double *x, double* b) {
-            runDecompSolver(solverHandle, x, b);
+        inline void solveEigenDecomp_d(size_t solverHandle, double* b) {
+            runDecompSolver(solverHandle, b);
         }
 
-        inline void solveEigenDecomp_s(size_t solverHandle, float *x, float* b) {
-            runDecompSolver(solverHandle, x, b);
+        inline void solveEigenDecomp_s(size_t solverHandle, float* b) {
+            runDecompSolver(solverHandle, b);
         }
 
-        inline void synch_d(size_t solverHandle) {
-            synch<double>(solverHandle);
+        inline void synch_d(size_t solverHandle, double* x) {
+            synch<double>(solverHandle, x);
         }
 
-        inline void synch_s(size_t solverHandle) {
-            synch<float>(solverHandle);
+        inline void synch_s(size_t solverHandle, float* x) {
+            synch<float>(solverHandle, x);
         }
     }
 };
