@@ -40,6 +40,12 @@
          Real(kind=8), Allocatable, Save :: GPU_SOL_Vx(:,:,:), GPU_SOL_Vy(:,:,:), GPU_SOL_Vz(:,:,:)
          Real(kind=8), Allocatable, Save :: GPU_RHS_P(:,:,:)
          Logical, Save :: GPU_RHS_Allocated = .false.
+
+         ! Loop counters / per-array bounds for the explicit-loop rewrites
+         ! below (see the comments at each site). Implicit typing would
+         ! already make these Integer (i,j,k fall in the I-N range), but
+         ! they're declared explicitly for clarity since they're new.
+         Integer :: i, j, k, iLo, iHi, jLo, jHi, kLo, kHi
 	 
           Ht = 2.D0 * Htime
 
@@ -117,7 +123,19 @@
 ! ########### Temperature is needed now: synch #############################
 
          Call synch_d(TemperatureHandle, GPU_SOL_T)
-         TmpNew(1:Nx1,1:Ny1,1:Nz1) = GPU_SOL_T
+         ! Was: TmpNew(1:Nx1,1:Ny1,1:Nz1) = GPU_SOL_T -- TmpNew is
+         ! ghost-padded (0:Nx2,0:Ny2,0:Nz2, see ConvMain_3D_Q2D.f90), so
+         ! this slice isn't contiguous. Same fix as Get_Potential_Finish:
+         ! explicit loop instead of whole-array syntax on a module array,
+         ! plus free OMP parallelism. Bounds unchanged (still 1:Nx1,1:Ny1,1:Nz1).
+!$OMP Parallel Do Private(i,j,k)
+         Do i = 1, Nx1
+           Do j = 1, Ny1
+             Do k = 1, Nz1
+               TmpNew(i,j,k) = GPU_SOL_T(i,j,k)
+             End Do
+           End Do
+         End Do
            
  !          Write (*,*) ' TmpNew=', Maxval(abs(TMpNew))
 
@@ -180,13 +198,38 @@
 ! ########### Vy, Vx, Vz are all needed now: synch each #####################
 
          Call synch_d(VyHandle, GPU_SOL_Vy)
-         VMyNew(1:Nx1,1:Ny,1:Nz1) = GPU_SOL_Vy
+         ! Was: VMyNew(1:Nx1,1:Ny,1:Nz1) = GPU_SOL_Vy -- same ghost-padding
+         ! non-contiguity as TmpNew above; same fix.
+!$OMP Parallel Do Private(i,j,k)
+         Do i = 1, Nx1
+           Do j = 1, Ny
+             Do k = 1, Nz1
+               VMyNew(i,j,k) = GPU_SOL_Vy(i,j,k)
+             End Do
+           End Do
+         End Do
 
          Call synch_d(VxHandle, GPU_SOL_Vx)
-         VMxNew(1:Nx,1:Ny1,1:Nz1) = GPU_SOL_Vx
+         ! Was: VMxNew(1:Nx,1:Ny1,1:Nz1) = GPU_SOL_Vx
+!$OMP Parallel Do Private(i,j,k)
+         Do i = 1, Nx
+           Do j = 1, Ny1
+             Do k = 1, Nz1
+               VMxNew(i,j,k) = GPU_SOL_Vx(i,j,k)
+             End Do
+           End Do
+         End Do
 
          Call synch_d(VzHandle, GPU_SOL_Vz)
-         VMzNew(1:Nx1,1:Ny1,1:Nz) = GPU_SOL_Vz
+         ! Was: VMzNew(1:Nx1,1:Ny1,1:Nz) = GPU_SOL_Vz
+!$OMP Parallel Do Private(i,j,k)
+         Do i = 1, Nx1
+           Do j = 1, Ny1
+             Do k = 1, Nz
+               VMzNew(i,j,k) = GPU_SOL_Vz(i,j,k)
+             End Do
+           End Do
+         End Do
 
       Call EVDbounds 
          
@@ -268,15 +311,70 @@
 
 444     		Continue
 
-          VMxOld = VMx
-          VMyOld = VMy
-          VMzOld = VMz
-          TmpOld = Tmpr
+          ! Was 8 separate bare whole-array copies:
+          !   VMxOld = VMx;  VMyOld = VMy;  VMzOld = VMz;  TmpOld = Tmpr
+          !   VMx = VMxNew;  VMy = VMyNew;  VMz = VMzNew;  Tmpr = TmpNew
+          ! Bare colons/no bounds means each one walks its FULL declared
+          ! (ghost-padded) extent -- the largest copies in this routine,
+          ! done single-threaded every timestep. Same fix as elsewhere:
+          ! explicit loops under OMP, with bounds read via LBound/UBound so
+          ! this touches exactly the same elements as before. Each
+          ! variable's Old<-Current and Current<-New steps are fused into
+          ! one pass over (i,j,k): that's safe because for a given cell,
+          ! the old value is fully read into *Old before that same cell of
+          ! the variable is overwritten from *New, which is exactly the
+          ! order the original two separate statements executed in.
+          iLo = LBound(VMx,1);  iHi = UBound(VMx,1)
+          jLo = LBound(VMx,2);  jHi = UBound(VMx,2)
+          kLo = LBound(VMx,3);  kHi = UBound(VMx,3)
+!$OMP Parallel Do Private(i,j,k)
+          Do i = iLo, iHi
+            Do j = jLo, jHi
+              Do k = kLo, kHi
+                VMxOld(i,j,k) = VMx(i,j,k)
+                VMx(i,j,k)    = VMxNew(i,j,k)
+              End Do
+            End Do
+          End Do
 
-          VMx  = VMxNew
-          VMy  = VMyNew
-          VMz  = VMzNew
-          Tmpr = TmpNew
+          iLo = LBound(VMy,1);  iHi = UBound(VMy,1)
+          jLo = LBound(VMy,2);  jHi = UBound(VMy,2)
+          kLo = LBound(VMy,3);  kHi = UBound(VMy,3)
+!$OMP Parallel Do Private(i,j,k)
+          Do i = iLo, iHi
+            Do j = jLo, jHi
+              Do k = kLo, kHi
+                VMyOld(i,j,k) = VMy(i,j,k)
+                VMy(i,j,k)    = VMyNew(i,j,k)
+              End Do
+            End Do
+          End Do
+
+          iLo = LBound(VMz,1);  iHi = UBound(VMz,1)
+          jLo = LBound(VMz,2);  jHi = UBound(VMz,2)
+          kLo = LBound(VMz,3);  kHi = UBound(VMz,3)
+!$OMP Parallel Do Private(i,j,k)
+          Do i = iLo, iHi
+            Do j = jLo, jHi
+              Do k = kLo, kHi
+                VMzOld(i,j,k) = VMz(i,j,k)
+                VMz(i,j,k)    = VMzNew(i,j,k)
+              End Do
+            End Do
+          End Do
+
+          iLo = LBound(Tmpr,1);  iHi = UBound(Tmpr,1)
+          jLo = LBound(Tmpr,2);  jHi = UBound(Tmpr,2)
+          kLo = LBound(Tmpr,3);  kHi = UBound(Tmpr,3)
+!$OMP Parallel Do Private(i,j,k)
+          Do i = iLo, iHi
+            Do j = jLo, jHi
+              Do k = kLo, kHi
+                TmpOld(i,j,k) = Tmpr(i,j,k)
+                Tmpr(i,j,k)   = TmpNew(i,j,k)
+              End Do
+            End Do
+          End Do
 
         Return
         End

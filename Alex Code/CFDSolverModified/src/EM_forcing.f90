@@ -72,6 +72,15 @@ Subroutine Get_Potential_Finish
     Use GPU_Potential_Scratch
 
     Implicit Real(kind=8) (A-H,O-Z)
+
+    ! Loop counters and the full declared bounds of Potential (0:Nxx1,
+    ! 0:Nyy2,0:Nzz1 -- see the Allocate in ConvMain_3D_Q2D.f90). Pulled via
+    ! LBound/UBound rather than hardcoded so every statement below touches
+    ! exactly the same elements the original bare-colon ("Potential(:,:,:)")
+    ! syntax did -- this is a parallelization/temp-array fix only, not a
+    ! change to which cells get written.
+    Integer :: i, j, k, iLo, iHi, jLo, jHi, kLo, kHi
+    Real(kind=8) :: Pot000
 ! ___________________________________________________
 
         ! synch_d now retrieves the result directly (was: bare wait, then a
@@ -81,26 +90,105 @@ Subroutine Get_Potential_Finish
         ! (1:Nx,1:Ny1,1:Nz) -- passing Potential's slice directly would be
         ! non-contiguous and force a hidden, non-pinned compiler temporary.
         Call synch_d(PotentialHandle, GPU_SOL_Pot)
-        Potential(1:Nx,1:Ny1,1:Nz) = GPU_SOL_Pot
 
-        Potential = Potential - Potential(1,1,1)
+        ! Was: Potential(1:Nx,1:Ny1,1:Nz) = GPU_SOL_Pot
+        ! An explicit-shape whole-array assignment like that is exactly the
+        ! kind of statement ifx tends to route through a compiler-generated
+        ! temporary when the LHS is a module variable (it can't fully rule
+        ! out aliasing across the procedure boundary), which shows up at
+        ! runtime as a fresh Allocate/Deallocate (and the page faults that
+        ! come with touching brand-new pages) on every single timestep. An
+        ! explicit Do loop assigns element-by-element with no array
+        ! temporary possible, and doubles as free OpenMP parallelism.
+!$OMP Parallel Do Private(i,j,k)
+    Do i = 1, Nx
+      Do j = 1, Ny1
+        Do k = 1, Nz
+          Potential(i,j,k) = GPU_SOL_Pot(i,j,k)
+        End Do
+      End Do
+    End Do
+
+        ! Was: Potential = Potential - Potential(1,1,1)
+        ! Bare colons here default to Potential's FULL declared bounds
+        ! (0:Nxx1,0:Nyy2,0:Nzz1), not just the active (Nx,Ny1,Nz) region --
+        ! so this one statement was walking the entire preallocated buffer.
+        ! Fortran's array-assignment semantics guarantee the whole RHS
+        ! (including Potential(1,1,1)) is evaluated using the pre-assignment
+        ! values before anything is written, so the scalar is captured once,
+        ! up front, to reproduce that exactly under explicit looping/OpenMP.
+        Pot000 = Potential(1,1,1)
+        iLo = LBound(Potential,1);  iHi = UBound(Potential,1)
+        jLo = LBound(Potential,2);  jHi = UBound(Potential,2)
+        kLo = LBound(Potential,3);  kHi = UBound(Potential,3)
+
+!$OMP Parallel Do Private(i,j,k)
+    Do i = iLo, iHi
+      Do j = jLo, jHi
+        Do k = kLo, kHi
+          Potential(i,j,k) = Potential(i,j,k) - Pot000
+        End Do
+      End Do
+    End Do
 
     If(EVD_Pot_X == 1 ) then
-        Potential(0,:,:) = Potential(1,:,:);  Potential(Nx1,:,:) = Potential(Nx, :,:)
+        ! Was: Potential(0,:,:) = Potential(1,:,:);  Potential(Nx1,:,:) = Potential(Nx,:,:)
+!$OMP Parallel Do Private(j,k)
+        Do j = jLo, jHi
+          Do k = kLo, kHi
+             Potential(0,j,k)   = Potential(1,j,k)
+             Potential(Nx1,j,k) = Potential(Nx,j,k)
+          End Do
+        End Do
      else
-        Potential(0,:,:) = 0.d0;  Potential(Nx1,:,:) = 0.d0
+        ! Was: Potential(0,:,:) = 0.d0;  Potential(Nx1,:,:) = 0.d0
+!$OMP Parallel Do Private(j,k)
+        Do j = jLo, jHi
+          Do k = kLo, kHi
+             Potential(0,j,k)   = 0.d0
+             Potential(Nx1,j,k) = 0.d0
+          End Do
+        End Do
     End If
 
      If(EVD_Pot_Y == 1 ) then
-       Potential(:,0,:) = Potential(:,1,:);  Potential(:,Ny2,:) = Potential(:,Ny1,:)
+        ! Was: Potential(:,0,:) = Potential(:,1,:);  Potential(:,Ny2,:) = Potential(:,Ny1,:)
+!$OMP Parallel Do Private(i,k)
+       Do i = iLo, iHi
+         Do k = kLo, kHi
+            Potential(i,0,k)   = Potential(i,1,k)
+            Potential(i,Ny2,k) = Potential(i,Ny1,k)
+         End Do
+       End Do
      else
-        Potential(:,0,:) = 0.d0;  Potential(:,Ny2,:) = 0.d0
+        ! Was: Potential(:,0,:) = 0.d0;  Potential(:,Ny2,:) = 0.d0
+!$OMP Parallel Do Private(i,k)
+        Do i = iLo, iHi
+          Do k = kLo, kHi
+             Potential(i,0,k)   = 0.d0
+             Potential(i,Ny2,k) = 0.d0
+          End Do
+        End Do
     End If
 
      If(EVD_Pot_Z == 1 ) then
-        Potential(:,:,0) = Potential(:,:,1);  Potential(:,:,Nz1) = Potential(:, :,Nz)
+        ! Was: Potential(:,:,0) = Potential(:,:,1);  Potential(:,:,Nz1) = Potential(:,:,Nz)
+!$OMP Parallel Do Private(i,j)
+        Do i = iLo, iHi
+          Do j = jLo, jHi
+             Potential(i,j,0)   = Potential(i,j,1)
+             Potential(i,j,Nz1) = Potential(i,j,Nz)
+          End Do
+        End Do
      else
-        Potential(:,:,0) = 0.d0;  Potential(:,:,Nz1) = 0.d0
+        ! Was: Potential(:,:,0) = 0.d0;  Potential(:,:,Nz1) = 0.d0
+!$OMP Parallel Do Private(i,j)
+        Do i = iLo, iHi
+          Do j = jLo, jHi
+             Potential(i,j,0)   = 0.d0
+             Potential(i,j,Nz1) = 0.d0
+          End Do
+        End Do
     End If
 
  !   Write (*,*) ' EM: Potential=', Sum(Potential)
