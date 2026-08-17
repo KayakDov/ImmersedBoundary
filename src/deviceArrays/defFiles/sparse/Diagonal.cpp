@@ -21,7 +21,7 @@ const Singleton<int32_t>& Diagonal<T>::getSharedIndices(Handle &hand) {
 template<typename T>
 Diagonal<T>::Diagonal(size_t denseSqMatDim, Handle &hand)
     : BandedMat<T>(
-        Mat<T>::create(denseSqMatDim, 1),
+        Mat<T>::create(denseSqMatDim, 1, hand),
         getSharedIndices(hand)
     ) {
 }

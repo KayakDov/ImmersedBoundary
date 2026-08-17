@@ -430,7 +430,7 @@ XYZ<std::shared_ptr<Mat<T>>> Eigen<T>::generateEigen(const BoundaryConfigT& boun
                 || std::is_same_v<std::decay_t<decltype(AxisSegmentT)>, FluxLaplacian<T>>)
                 numCols = AxisSegmentT.numNodes * 2 + 1;
 
-            auto mat = Mat<T>::create(AxisSegmentT.numNodes, numCols);
+            auto mat = Mat<T>::create(AxisSegmentT.numNodes, numCols, hand);
             Eigen<T>::generateEigen(hand, mat, AxisSegmentT);
             return mat;
         }

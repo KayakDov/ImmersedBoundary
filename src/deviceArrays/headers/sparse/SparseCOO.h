@@ -66,7 +66,7 @@ inline void test() {
     std::vector<double>  valsHost = {1,2,3,4};
     coo.set(rowsHost.data(), colsHost.data(), valsHost.data(), hand);
 
-    auto dense = SquareMat<double>::create(6);
+    auto dense = SquareMat<double>::create(6, hand);
     coo.getDense(dense, hand);
     std::cout << GpuOut<double>(dense, hand) << std::endl;
 

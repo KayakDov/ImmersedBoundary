@@ -14,7 +14,7 @@ Laplacian1d<T>::Laplacian1d(const BoundaryConfigT &boundary, Handle& hand) :
     XYZ<TriDiagonal<T>>(
         {boundary.x.numNodes, hand},
         {boundary.y.numNodes, hand},
-        {boundary.dim().numDims() == 3 ? Mat<T>::create(boundary.z.numNodes, 3) : Mat<T>::empty(), hand}
+        {boundary.dim().numDims() == 3 ? Mat<T>::create(boundary.z.numNodes, 3, hand) : Mat<T>::empty(), hand}
     ){
 
     KernelPrep kp(std::max(std::max(this->x._rows, this->y._rows), this->z._rows));
@@ -28,9 +28,9 @@ Laplacian1d<T>::Laplacian1d(const BoundaryConfigT &boundary, Handle& hand) :
 }
 
 template<typename T>
-SquareMat<T> Laplacian1d<T>::dense(size_t dim, Handle& hand) {
-    auto square = SquareMat<T>::create((*this)[dim]._rows);
-    dense(dim, square, hand);
+SquareMat<T> Laplacian1d<T>::dense(size_t dimIndex, Handle& hand) {
+    auto square = SquareMat<T>::create((*this)[dimIndex]._rows, hand);
+    dense(dimIndex, square, hand);
     return square;
 }
 

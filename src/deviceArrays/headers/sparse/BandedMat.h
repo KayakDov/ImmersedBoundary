@@ -81,7 +81,7 @@ public:
     *
     * @return A newly allocated @c BandedMat with zero-initialized data.
     */
-    static BandedMat create(size_t denseSqMatDim, const Vec<int32_t> &indices);
+    static BandedMat create(size_t denseSqMatDim, const Vec<int32_t> &indices, Handle& hand);
 
     /**
      *
@@ -91,9 +91,10 @@ public:
      * @param data The values in the diagonals.
      * @param indices The indices of each diagonal.  The offset from the primary diagonal.
      * @param indsStride The stride of the indices data.
+     * @param hand
      * @return A banded matrix.  Memory management must be handled externally for banded matrices created here.
      */
-    static BandedMat create(size_t denseSqMatDim, size_t numDiagonals, size_t ld, T* data, int32_t* indices, size_t indsStride);
+    static BandedMat create(size_t denseSqMatDim, size_t numDiagonals, size_t ld, T *data, int32_t *indices, size_t indsStride, Handle &hand);
 
     /**
     * @brief Extracts diagonals from a dense square matrix and writes them

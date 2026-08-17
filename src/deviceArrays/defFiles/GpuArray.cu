@@ -127,7 +127,7 @@ void GpuArray<T>::mult(
         result->_rows, result->_cols, opACols,
         a->toKernel1d(),
         this->data(), this->_ld, other.data(), other._ld,
-        b->data(), result->data(), result->_ld));
+        b->toKernel1d(), result->data(), result->_ld));
     else throw std::invalid_argument("Unsupported type.");
 }
 

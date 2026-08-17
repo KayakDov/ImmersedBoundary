@@ -7,27 +7,27 @@ template<typename T>
 Singleton<T>::Singleton(std::shared_ptr<T> ptr):SimpleArray<T>(1, ptr) {}
 
 template<typename T>
-Singleton<T> Singleton<T>::create(cudaStream_t stream) {
+Singleton<T> Singleton<T>::create(Handle& stream) {
     Vec<T> preSing = Vec<T>::create(static_cast<size_t>(1), stream);
     return preSing.get(0);
 }
 
 template<typename T>
-Singleton<T> Singleton<T>::create(T val, cudaStream_t stream) {
+Singleton<T> Singleton<T>::create(T val, Handle& stream) {
     Singleton<T> temp = create(stream);
     temp.set(val, stream);
     return temp;
 }
 
 template <typename T>
-T Singleton<T>::get(cudaStream_t stream) const{
+T Singleton<T>::get(Handle& stream) const{
     T cpuPointer[1];
     this->Vec<T>::get(cpuPointer, stream);
     cudaStreamSynchronize(stream);
     return cpuPointer[0];
 }
 template <typename T>
-void Singleton<T>::set(const T val, cudaStream_t stream){
+void Singleton<T>::set(const T val, Handle& stream){
     T cpuPointer[1];
     cpuPointer[0] = val;
     this->Vec<T>::set(cpuPointer, stream);    
@@ -43,7 +43,7 @@ __global__ void setProductOfQuotientsKernel(T* result, const T* numA, const T* d
 
 
 template<typename T>
-void Singleton<T>::setProductOfQuotients(const Singleton<T> &numA, const Singleton<T> &denA, const Singleton<T> &numB, const Singleton<T> &denB, cudaStream_t stream) {
+void Singleton<T>::setProductOfQuotients(const Singleton<T> &numA, const Singleton<T> &denA, const Singleton<T> &numB, const Singleton<T> &denB, Handle& stream) {
 
     constexpr int THREADS_PER_BLOCK = 1;
     int numBlocks = 1;
@@ -58,7 +58,7 @@ void Singleton<T>::setProductOfQuotients(const Singleton<T> &numA, const Singlet
 }
 
 template <typename T>
-Singleton<T>* Singleton<T>::_get_or_create_target(Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique, cudaStream_t stream) {
+Singleton<T>* Singleton<T>::_get_or_create_target(Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique, Handle& stream) {
     if (result) return result;
     else {
         out_ptr_unique = std::make_unique<Singleton<T>>(Singleton<T>::create(stream));

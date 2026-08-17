@@ -16,15 +16,15 @@
 // ----------------------------------------------------------------------
 
 template<typename T>
-StreamContext<T>::StreamContext(const cudaStream_t &s, bool text, bool colMjr): stream(s), isText(text), colMajor(colMjr) {
+StreamContext<T>::StreamContext(const Handle &s, bool text, bool colMjr): stream(s), isText(text), colMajor(colMjr) {
 }
 
 template<typename T>
-GpuIn<T>::GpuIn(GpuArray<T> &dst, const cudaStream_t &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(dst){
+GpuIn<T>::GpuIn(GpuArray<T> &dst, const Handle &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(dst){
 }
 
 template<typename T>
-GpuIn<T>::GpuIn(Tensor<T>& dst, const cudaStream_t &stream, bool isText, bool columnMjr)
+GpuIn<T>::GpuIn(Tensor<T>& dst, const Handle &stream, bool isText, bool columnMjr)
     : GpuIn<T>(dst.utilityMatrix, stream, isText, columnMjr) {}
 
 
@@ -67,11 +67,11 @@ std::istream& GpuIn<T>::read(std::istream& is) {
 // ----------------------------------------------------------------------
 
 template<typename T>
-GpuOut<T>::GpuOut(const GpuArray<T>& src, const cudaStream_t &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(src) {
+GpuOut<T>::GpuOut(const GpuArray<T>& src, const Handle &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(src) {
 }
 
 template<typename T>
-GpuOut<T>::GpuOut(const Tensor<T>& src, const cudaStream_t &stream, bool isText, bool columnMjr)
+GpuOut<T>::GpuOut(const Tensor<T>& src, const Handle &stream, bool isText, bool columnMjr)
     : GpuOut<T>(src.utilityMatrix, stream, isText, columnMjr) {}
 
 
@@ -80,16 +80,14 @@ std::ostream& GpuOut<T>::write(std::ostream& os) const {
     size_t outer_dim = this->colMajor ? this->src._cols : this->src._rows;
     size_t inner_dim = this->colMajor ? this->src._rows : this->src._cols;
 
-    const cudaStream_t current_stream = this->stream;
-
     for (size_t i = 0; i < outer_dim; ++i) {
         Vec<T> view = this->colMajor ? this->src.col(i) : this->src.row(i);
 
         std::vector<T> host_buffer(view.size());
 
-        view.get(host_buffer.data(), current_stream);
+        view.get(host_buffer.data(), this->stream);
         CHECK_CUDA_ERROR(cudaGetLastError());
-        cudaStreamSynchronize(current_stream);
+        cudaStreamSynchronize(this->stream);
 
         if (this->isText) {
             os << "[";

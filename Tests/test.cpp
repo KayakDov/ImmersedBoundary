@@ -40,7 +40,7 @@ SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vect
     B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
 
     poisson::laplacian<Real>(boundary, hand).getDense(lhsOperator, hand);
-    auto denseB = Mat<Real>::create(rowOffsetsB.size() - 1, n);
+    auto denseB = Mat<Real>::create(rowOffsetsB.size() - 1, n, hand);
     B.getDense(denseB, hand);
     denseB.mult(denseB, &lhsOperator, &hand, &GPUScalar<Real>::get(2), &GPUScalar<Real>::get(1), true, false);
 
@@ -53,9 +53,9 @@ TEST(CudaWrapper, tranpose) {
     size_t rows = 2, cols = 3;
     std::vector<Real> host = {1, 2, 3, 4, 5, 6};
     std::vector<Real> tranpose = {1, 3, 5, 2, 4, 6};
-    auto a = Mat<Real>::create(rows, cols);
-    auto aT = Mat<Real>::create(cols, rows);
-    auto aTFromHost = Mat<Real>::create(cols, rows);
+    auto a = Mat<Real>::create(rows, cols, hand);
+    auto aT = Mat<Real>::create(cols, rows, hand);
+    auto aTFromHost = Mat<Real>::create(cols, rows, hand);
 
     a.set(host.data(), hand);
     aTFromHost.set(tranpose.data(), hand);
@@ -98,13 +98,13 @@ TEST(FortranWrapper, MultipleEigenSolversSideBySide){
             d.x.data(), d.y.data(), d.z.data(),
             eigen::VariableDeltaLapl, eigen::VariableDeltaLapl, eigen::VariableDeltaLapl,
             false, false, false, false, false, false,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0); // Standard
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false, 0, 0); // Standard
 
     size_t h2 = eigen::initEigenDecomp_d(
             N, N, N, d.x.data(), d.y.data(), d.z.data(),
             eigen::VariableDeltaLapl, eigen::VariableDeltaLapl, eigen::VariableDeltaLapl,
             false, false, false, false, false, false,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, 0);  // Thomas (was passing thomas=false)
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, 0, 0);  // Thomas (was passing thomas=false)
 
         // 2. Verify the wrapper assigned unique handles to the vector
     ASSERT_NE(h1, h2);
@@ -177,7 +177,7 @@ TEST(FortranWrapper, SmokeTestAlex)
             false, false, false,
             false, false, false,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            false, 0
+            false, 0, 0
         );
 
     size_t handleThomas = eigen::initEigenDecomp_d(
@@ -187,7 +187,7 @@ TEST(FortranWrapper, SmokeTestAlex)
             false, false, false,
             false, false, false,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            true, 0
+            true, 0, 0
         );
 
     eigen::solveEigenDecomp_d(handleStandard, rhs.data());
@@ -319,7 +319,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     std::vector<Real> valuesB    = {1, 1};
     auto B = SparseCSR<Real, Int>::create(valuesB.size(), rowOffsetsB.size() - 1, dim.size(), hand);
     B.set(rowOffsetsB.data(), colIndsB.data(), valuesB.data(), hand);
-    auto BDense = Mat<Real>::create(B.rows, B.cols);
+    auto BDense = Mat<Real>::create(B.rows, B.cols, hand);
     B.getDense(BDense, hand);
 
     std::vector<Real> xHost(dim.size(), 0);
@@ -328,7 +328,7 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     x.set(xHost.data(), hand);
 
     BandedMat<Real> L = poisson::laplacian<double>(boundary.forDevice(), hand);
-    auto LDense = SquareMat<Real>::create(dim.size());
+    auto LDense = SquareMat<Real>::create(dim.size(), hand);
     L.getDense(LDense, hand);
 
     auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
@@ -377,26 +377,26 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
     // Nontrivial sizes
     GridDim dim(3, 2, 2);
 
-    auto X = SquareMat<T>::create(dim.cols);
+    auto X = SquareMat<T>::create(dim.cols, hand);
     std::vector<T> xCpu ={2, 1, 7, 2};
     X.set(xCpu.data(), hand);
 
-    auto Y = SquareMat<T>::create(dim.rows);
+    auto Y = SquareMat<T>::create(dim.rows, hand);
     std::vector<T> yCpu ={3, 1, 5, 1, 3, 1, 0, 1, 3};
     Y.set(yCpu.data(), hand);
 
-    auto Z = SquareMat<T>::create(dim.layers);
+    auto Z = SquareMat<T>::create(dim.layers, hand);
     std::vector<T> zCpu ={5, 2, 1, 5};
     Z.set(zCpu.data(), hand);
 
 
     KroneckerTriplet<T> kt(X, Y, Z, {false, false, false});
 
-    auto I = SquareMat<T>::create(dim.size()).setToIdentity(hand);
+    auto I = SquareMat<T>::create(dim.size(), hand).setToIdentity(hand);
 
     Mat<T> implicitResult = kt.product(hand);
 
-    Mat<T> explicitResult = Mat<T>::create(dim.size(), dim.size());
+    Mat<T> explicitResult = Mat<T>::create(dim.size(), dim.size(), hand);
 
     kt.mult(I, explicitResult, hand);
 
@@ -426,17 +426,17 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
     // ---------------------------------------------------------
     // UNIVERSAL CHECK: L * V = V * Lambda
     // ---------------------------------------------------------
-    auto LV = SquareMat<T>::create(V._rows);
+    auto LV = SquareMat<T>::create(V._rows, hand);
     L.mult(V, &LV, &hand, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), false, false);
 
-    auto VLambda = SquareMat<T>::create(V._rows);
-    auto Lambda = SquareMat<T>::create(V._cols);
+    auto VLambda = SquareMat<T>::create(V._rows, hand);
+    auto Lambda = SquareMat<T>::create(V._cols, hand);
     Lambda.fill(0, hand);
     Lambda.diag(0).set(lambda, hand);
     V.mult(Lambda, &VLambda, &hand, false, false);
 
     // Calculate Residual: LV - VLambda
-    auto diff = SquareMat<T>::create(V._rows);
+    auto diff = SquareMat<T>::create(V._rows, hand);
     diff.set(LV, hand);
     diff.add(VLambda, diff, GPUScalar<T>::get(1), GPUScalar<T>::get(-1), false, false, hand);
 
@@ -455,13 +455,13 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
     // UNIFORM-ONLY CHECK: Orthonormality (V^T * V = I)
     // ---------------------------------------------------------
     if (uniformDelta) {
-        auto VTV = SquareMat<T>::create(V._cols);
+        auto VTV = SquareMat<T>::create(V._cols, hand);
         // V^T * V
         V.mult(V, &VTV, &hand, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), true, false);
 
-        auto I = SquareMat<T>::create(V._cols).setToIdentity(hand);
+        auto I = SquareMat<T>::create(V._cols, hand).setToIdentity(hand);
 
-        auto orthoDiff = SquareMat<T>::create(V._cols);
+        auto orthoDiff = SquareMat<T>::create(V._cols, hand);
         orthoDiff.set(VTV, hand);
         orthoDiff.add(I, orthoDiff, GPUScalar<T>::get(1), GPUScalar<T>::get(-1), false, false, hand);
 
@@ -756,7 +756,7 @@ void laplacianBattery(int kindLo, int kindHi, bool fullValueMatrix) {
     size_t dimStepSize = 6;
 
     size_t n = maxDim * maxDim * maxDim;
-    auto buffer = Mat<Real>::create(n, n + 5);
+    auto buffer = Mat<Real>::create(n, n + 5, hand3[0]);
 
     size_t count = 0;
 
@@ -900,8 +900,6 @@ int main(int argc, char **argv) {
 
     std::cout << "--- DIAGNOSTIC: Test Binary Starting ---" << std::endl;
     testing::InitGoogleTest(&argc, argv);
-
-    auto mat = Mat<double>::create(2, 2);
 
     return RUN_ALL_TESTS();
 }

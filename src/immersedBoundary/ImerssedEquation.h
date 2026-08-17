@@ -70,8 +70,8 @@ class ImmersedEq {
     SimpleArray<Int> maxSparseOffsets; ///< Storage for maximum allowed sparse offsets.
     SimpleArray<Real> maxSparseVals = SimpleArray<Real>::create(maxSparseInds.size(), hand5[0]); ///< Storage for maximum allowed sparse values.
 
-    mutable Mat<Real> gridVecs = Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count) + 7);  ///< Storage for all vectors of length grid size.
-    mutable Mat<Real> lagrangeVecs = Mat<Real>::create(maxSparseOffsets.size() - 1, static_cast<size_t>(LagrangeInd::Count)) ; ///< Storage for all the lagrangian vectors.
+    mutable Mat<Real> gridVecs = Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count) + 7, hand5[0]);  ///< Storage for all vectors of length grid size.
+    mutable Mat<Real> lagrangeVecs = Mat<Real>::create(maxSparseOffsets.size() - 1, static_cast<size_t>(LagrangeInd::Count), hand5[0]) ; ///< Storage for all the lagrangian vectors.
 
     /**
      * @brief Vector field storage on the staggered grid.

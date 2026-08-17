@@ -265,11 +265,12 @@ namespace eigen {
         bool xStartIsNeumann, bool xEndIsNeumann, bool yStartIsNeumann, bool yEndIsNeumann, bool zStartIsNeumann, bool zEndIsNeumann,
         Real xStartVal, Real xEndVal, Real yStartVal, Real yEndVal, Real zStartVal, Real zEndVal,
         bool thomas,
-        Real helmholtzShift
+        Real helmholtzShift,
+        size_t gpuIndex
     ) {
 
-        // double startTime = currentTime();
-        auto xb = Mat<Real>::create(rows * cols * layers, 3);
+        Handle hand(gpuIndex);
+        auto xb = Mat<Real>::create(rows * cols * layers, 3, hand);
 
         XYZ<std::vector<Real>> delta(
             std::vector<Real>(xDelta, xDelta + (hasVariableDelta(xSegSpacing) ? cols + 1 : 1)),
@@ -277,7 +278,7 @@ namespace eigen {
             std::vector<Real>(zDelta, zDelta + (hasVariableDelta(zSegSpacing) ? layers + 1 : 1))
         );
 
-        size_t solverHandle = solvers<Real>.size();
+        size_t solverIndex = solvers<Real>.size();
 
         solvers<Real>.push_back(
             std::make_unique<EigenDecompForFortran<Real>>(
@@ -294,13 +295,14 @@ namespace eigen {
                 ),
                 thomas,
                 helmholtzShift,
-                xb.col(0), xb.col(1), xb.col(2)
+                xb.col(0), xb.col(1), xb.col(2),
+                gpuIndex
             )
         );
 
         // addSolverTime(currentTime() - startTime);
 
-        return solverHandle;
+        return solverIndex;
     }
 
     template<typename Real>
@@ -341,7 +343,8 @@ namespace eigen {
             bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann,
             double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal,
             bool thomas,
-            double helmholtzShift
+            double helmholtzShift,
+            size_t gpuIndex
         ) {
             return initEigenDecompSolver<double>(
                 dim1Length, dim3Length, dim2Length,
@@ -349,7 +352,7 @@ namespace eigen {
                 dim3SegType, dim1SegType, dim2SegType,
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartIsNeumann, dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
                 dim3StartVal, dim3EndVal, dim1StartVal, dim1EndVal, dim2StartVal, dim2EndVal,
-                thomas, helmholtzShift);
+                thomas, helmholtzShift, gpuIndex);
         }
 
         inline size_t initEigenDecomp_s(
@@ -358,7 +361,7 @@ namespace eigen {
             int dim1SegType, int dim2SegType, int dim3SegType,
             bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann,
             float dim1StartVal, float dim1EndVal, float dim2StartVal, float dim2EndVal, float dim3StartVal, float dim3EndVal,
-            bool thomas, float helmholtzShift
+            bool thomas, float helmholtzShift, size_t gpuIndex
         ) {
             return initEigenDecompSolver<float>(
                 dim1Length, dim3Length, dim2Length,
@@ -366,7 +369,7 @@ namespace eigen {
                 dim3SegType, dim1SegType, dim2SegType,
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartIsNeumann, dim1EndIsNeumann, dim2StartIsNeumann, dim2EndIsNeumann,
                 dim3StartVal, dim3EndVal, dim1StartVal, dim1EndVal, dim2StartVal, dim2EndVal,
-                thomas, helmholtzShift
+                thomas, helmholtzShift, gpuIndex
             );
         }
 

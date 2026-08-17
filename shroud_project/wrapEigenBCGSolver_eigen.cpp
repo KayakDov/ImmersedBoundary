@@ -20,7 +20,7 @@ size_t EIG_eigen_initEigenDecomp_d(size_t dim1Length, size_t dim2Length,
     bool dim3StartIsNeumann, bool dim3EndIsNeumann, double dim1StartVal,
     double dim1EndVal, double dim2StartVal, double dim2EndVal,
     double dim3StartVal, double dim3EndVal, bool thomas,
-    double helmholtzShift)
+    double helmholtzShift, size_t gpuInd)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_d
     size_t SHC_rv = eigen::initEigenDecomp_d(dim1Length, dim2Length,
@@ -28,7 +28,8 @@ size_t EIG_eigen_initEigenDecomp_d(size_t dim1Length, size_t dim2Length,
         dim2SegType, dim3SegType, dim1StartIsNeumann, dim1EndIsNeumann,
         dim2StartIsNeumann, dim2EndIsNeumann, dim3StartIsNeumann,
         dim3EndIsNeumann, dim1StartVal, dim1EndVal, dim2StartVal,
-        dim2EndVal, dim3StartVal, dim3EndVal, thomas, helmholtzShift);
+        dim2EndVal, dim3StartVal, dim3EndVal, thomas, helmholtzShift,
+        gpuInd);
     return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_d
 }
@@ -41,7 +42,7 @@ size_t EIG_eigen_initEigenDecomp_s(size_t dim1Length, size_t dim2Length,
     bool dim3StartIsNeumann, bool dim3EndIsNeumann, float dim1StartVal,
     float dim1EndVal, float dim2StartVal, float dim2EndVal,
     float dim3StartVal, float dim3EndVal, bool thomas,
-    float helmholtzShift)
+    float helmholtzShift, size_t gpuInd)
 {
     // splicer begin namespace.eigen.function.initEigenDecomp_s
     size_t SHC_rv = eigen::initEigenDecomp_s(dim1Length, dim2Length,
@@ -49,7 +50,8 @@ size_t EIG_eigen_initEigenDecomp_s(size_t dim1Length, size_t dim2Length,
         dim2SegType, dim3SegType, dim1StartIsNeumann, dim1EndIsNeumann,
         dim2StartIsNeumann, dim2EndIsNeumann, dim3StartIsNeumann,
         dim3EndIsNeumann, dim1StartVal, dim1EndVal, dim2StartVal,
-        dim2EndVal, dim3StartVal, dim3EndVal, thomas, helmholtzShift);
+        dim2EndVal, dim3StartVal, dim3EndVal, thomas, helmholtzShift,
+        gpuInd);
     return SHC_rv;
     // splicer end namespace.eigen.function.initEigenDecomp_s
 }

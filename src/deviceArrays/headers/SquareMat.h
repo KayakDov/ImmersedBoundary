@@ -51,7 +51,7 @@ public:
      * @param rowsCols The number of rows and columns (matrix is square).
      * @return A new SquareMat object.
      */
-    static SquareMat<T> create(size_t rowsCols);
+    static SquareMat<T> create(size_t rowsCols, Handle& hand);
 
     /**
      * @brief Factory method to create a SquareMat from memory managed elsewhere.  Use this overload only when the device allocation is managed externally.
@@ -106,7 +106,7 @@ public:
      * Sets this matrix to be the identity matrix.
      * @param stream
      */
-    SquareMat setToIdentity(cudaStream_t stream);
+    SquareMat setToIdentity(Handle& stream);
 
 
     /**

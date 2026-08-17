@@ -84,6 +84,16 @@ struct CusparseDeleter {
     void operator()(cusparseHandle_t handle) const;
 };
 
+inline void ensure_device_impl(int target_device) {
+
+    thread_local int32_t cached_device = -1;
+
+    if (cached_device != target_device) {
+        CHECK_CUDA_ERROR(cudaSetDevice(target_device));
+        cached_device = target_device;
+    }
+}
+
 /** Owning smart pointer for a cuBLAS handle. */
 using CublasHandlePtr = std::unique_ptr<std::remove_pointer<cublasHandle_t>::type, CublasDeleter>;
 /** Owning smart pointer for a cuSOLVER dense handle. */
@@ -110,14 +120,12 @@ private:
     CusolverHandlePtr solverHandlePtr;
     CusparseHandlePtr sparseHandlePtr;
     cudaStream_t stream;
+
+    size_t gpuIndex;
+
 public:
+    void ensureDevice() const { ensure_device_impl(gpuIndex); }
 
-
-
-    /**
-     * @brief Default constructor. Creates a new CUDA stream and initializes cuBLAS/cuSOLVER handles.
-     */
-    Handle();
 
     /**
      * @brief Constructs a Handle with a user-provided CUDA stream.
@@ -128,7 +136,14 @@ public:
      *
      * @throws std::runtime_error if handle creation or stream setup fails.
      */
-    explicit Handle(cudaStream_t user_stream);
+    explicit Handle(cudaStream_t user_stream, size_t gpuIndex = 0);
+
+    Handle();
+
+    Handle(size_t gpuIndex);
+
+
+    int device() const { return gpuIndex; }
 
     /**
      * @brief Get or create a Handle instance.

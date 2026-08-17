@@ -44,11 +44,12 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
     XYZ<bool> startIsNeumann, XYZ<bool> endIsNeumann, XYZ<Real> startVal, XYZ<Real> endVal,
     XYZ<eigen::LaplOperatorT> segType,
     bool thomas, Real helmholtzShift,
-    SimpleArray<Real> sizeOfBForX, SimpleArray<Real> sizeOfBForRHS, SimpleArray<Real> sizeOfBForBAdj
+    SimpleArray<Real> sizeOfBForX, SimpleArray<Real> sizeOfBForRHS, SimpleArray<Real> sizeOfBForBAdj,
+    size_t gpuIndex
     ) : x(sizeOfBForX), b(sizeOfBForRHS), adjToB(sizeOfBForBAdj),pinnedX(allocPinned(sizeOfBForX.size()), &cudaFreeHost),
-        pinnedB(allocPinned(sizeOfBForRHS.size()), &cudaFreeHost) {
+        pinnedB(allocPinned(sizeOfBForRHS.size()), &cudaFreeHost), hand(gpuIndex) {
     
-    Handle hands[3];
+    Handle hands[3] = {Handle(gpuIndex), Handle(gpuIndex), Handle(gpuIndex)};
     Event events[3];
 
     buildBoundaryConfigAndLaunch<Real>(

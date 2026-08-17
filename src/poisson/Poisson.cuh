@@ -33,7 +33,7 @@ namespace poisson {
      * @param stream CUDA stream used for asynchronous execution.
      */
     template<typename T, typename BoundaryConfigT>
-    void boundaryCorrection(const BoundaryConfigT& boundary, SimpleArray<T> rhsCorrectionGoesHere, cudaStream_t stream);
+    void boundaryCorrection(const BoundaryConfigT& boundary, SimpleArray<T> rhsCorrectionGoesHere, Handle& stream);
 
 
 
@@ -48,7 +48,7 @@ namespace poisson {
      * @return Device array containing the computed RHS vector.
      */
     template<typename T, typename BoundaryConfigT>
-    SimpleArray<T> boundaryCorrection(const BoundaryConfigT& boundary, cudaStream_t stream) ;
+    SimpleArray<T> boundaryCorrection(const BoundaryConfigT& boundary, Handle& stream) ;
 
 
     /**
@@ -60,11 +60,11 @@ namespace poisson {
      *
      * @tparam T Floating-point type.
      * @param boundary Boundary configuration defining Neumann/Dirichlet structure.
-     * @param stream CUDA stream used for asynchronous execution.
+     * @param hand CUDA stream used for asynchronous execution.
      * @return Fully constructed banded Laplacian operator.
      */
     template<typename T, typename BoundaryConfigT>
-    BandedMat<T> laplacian(const BoundaryConfigT& boundary, cudaStream_t stream);
+    BandedMat<T> laplacian(const BoundaryConfigT& boundary, Handle& hand);
 
     /**
      * @brief Constructs the sparse/banded Laplacian operator matrix.
@@ -76,11 +76,11 @@ namespace poisson {
      * @tparam T Floating-point type.
      * @param boundary Boundary configuration defining Neumann/Dirichlet structure.
      * @param gridSizeXnumDiags The laplacian will be put in this space.
-     * @param stream CUDA stream used for asynchronous execution.
+     * @param hand CUDA stream used for asynchronous execution.
      * @return Fully constructed banded Laplacian operator.
      */
     template<typename T, typename BoundaryConfigT>
-    BandedMat<T> laplacian(const BoundaryConfigT& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, cudaStream_t stream);
+    BandedMat<T> laplacian(const BoundaryConfigT& boundary, Mat<T>& gridSizeXnumDiags, Vec<int32_t>& numDiags, Handle& hand);
 
 
 }

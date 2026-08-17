@@ -147,7 +147,7 @@ public:
      * @param transpose
      * @return A KroneckerTriplet with the specified X operator and identities for Y and Z.
      */
-    static KroneckerTriplet<T> xOperator(const GridDim &gridDim, const SquareMat<T> &forRows, bool transpose);
+    static KroneckerTriplet<T> xOperator(const GridDim &gridDim, const SquareMat<T> &forRows, bool transpose, Handle& hand);
 
     /**
      * @brief Factory method for a triplet where only the Y dimension is active.
@@ -156,7 +156,7 @@ public:
      * @param transpose
      * @return A KroneckerTriplet with the specified Y operator and identities for X and Z.
      */
-    static KroneckerTriplet<T> yOperator(const GridDim &gridDim, const SquareMat<T> &forCols, bool transpose);
+    static KroneckerTriplet<T> yOperator(const GridDim &gridDim, const SquareMat<T> &forCols, bool transpose, Handle& hand);
 
     /**
      * @brief Factory method for a triplet where only the Z dimension is active.
@@ -165,7 +165,7 @@ public:
      * @param transpose
      * @return A KroneckerTriplet with the specified Z operator and identities for X and Y.
      */
-    static KroneckerTriplet<T> zOperator(const GridDim &gridDim, const SquareMat<T> &forLayers, bool transpose);
+    static KroneckerTriplet<T> zOperator(const GridDim &gridDim, const SquareMat<T> &forLayers, bool transpose, Handle& hand);
 
     /**
      * @brief Constructs a 2D Kronecker operator.
@@ -177,12 +177,12 @@ public:
     /**
      * @brief Factory method for a pair where only the X dimension is active.
      */
-    static KroneckerTriplet<T> xOperator2d(const GridDim &gridDim, const SquareMat<T> &forRows, bool transpose);
+    static KroneckerTriplet<T> xOperator2d(const GridDim &gridDim, const SquareMat<T> &forRows, bool transpose, Handle& hand);
 
     /**
      * @brief Factory method for a pair where only the Y dimension is active.
      */
-    static KroneckerTriplet<T> yOperator2d(const GridDim &gridDim, const SquareMat<T> &forCols, bool transpose);
+    static KroneckerTriplet<T> yOperator2d(const GridDim &gridDim, const SquareMat<T> &forCols, bool transpose, Handle& hand);
 
     /**
      * @brief Overrides the multiplication to optimize for 2D by skipping the Z dimension.

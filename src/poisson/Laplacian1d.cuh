@@ -41,11 +41,11 @@ public:
 
     /**
      * The square matrix of the given dimension.  This method allocated memory.
-     * @param dim 0 for x, 1 for y, 2 for z.
+     * @param dimIndex 0 for x, 1 for y, 2 for z.
      * @param hand
      * @return A square 1d laplacian matrix.
      */
-    SquareMat<T> dense(size_t dim, Handle &hand);
+    SquareMat<T> dense(size_t dimIndex, Handle &hand);
 
     /**
      * The square matrix of the given dimension.  This method allocated memory.

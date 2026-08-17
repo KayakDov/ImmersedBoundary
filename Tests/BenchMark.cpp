@@ -63,7 +63,7 @@ public:
         dy         .emplace(SimpleArray<Real>::create(maxN + 2, hand));
         dz         .emplace(SimpleArray<Real>::create(maxN + 2, hand));
         sizeOfB    .emplace(SimpleArray<Real>::create(total,    hand));
-        sizeOfBX3  .emplace(Mat<Real>::create(total, 3));
+        sizeOfBX3  .emplace(Mat<Real>::create(total, 3, hand));
         normResult .emplace(Singleton<Real>::create(hand));
 
         allocatedTotal = total;

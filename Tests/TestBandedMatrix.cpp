@@ -36,7 +36,7 @@ protected:
         diagsVec.set(h_diags.data(), this->handle);
 
         // 2. Create the BandedMat framework object
-        auto A = BandedMat<T>::create(N, diagsVec);
+        auto A = BandedMat<T>::create(N, diagsVec, handle);
 
         // 3. Upload the dense diagonal data to the device
         A.set(h_banded_data.data(), this->handle);
@@ -93,11 +93,11 @@ TYPED_TEST(BandedMatWrappersTest, BandedMatrixDenseMatrixProduct) {
 
     // Row 0: [1, 4], Row 1: [2, 5], Row 2: [3, 6] -> Column-Major: [1, 2, 3, 4, 5, 6]
     std::vector<T> h_X = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-    auto X = Mat<T>::create(this->N, K);
+    auto X = Mat<T>::create(this->N, K, this->handle);
     X.set(h_X.data(), this->handle);
 
     std::vector<T> h_Y = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    auto Y = Mat<T>::create(this->N, K);
+    auto Y = Mat<T>::create(this->N, K, this->handle);
     Y.set(h_Y.data(), this->handle);
 
     auto alpha = Singleton<T>::create(static_cast<T>(1.0), this->handle);
@@ -165,13 +165,13 @@ TYPED_TEST(BandedMatWrappersTest, DenseMatrixBandedMatrixProduct) {
 
     // Row 0: [1, 2, 3], Row 1: [4, 5, 6] -> Column-Major: [1, 4, 2, 5, 3, 6]
     std::vector<T> h_X = {1.0, 4.0, 2.0, 5.0, 3.0, 6.0};
-    auto X = Mat<T>::create(R, this->N);
+    auto X = Mat<T>::create(R, this->N, this->handle);
     X.set(h_X.data(), this->handle);
 
     // std::cout << "X =\n" << GpuOut<T>(X, this->handle) << std::endl;
 
     std::vector<T> h_Y = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    auto Y = Mat<T>::create(R, this->N);
+    auto Y = Mat<T>::create(R, this->N, this->handle);
     Y.set(h_Y.data(), this->handle);
 
     auto alpha = Singleton<T>::create(static_cast<T>(1.0), this->handle);
@@ -180,7 +180,7 @@ TYPED_TEST(BandedMatWrappersTest, DenseMatrixBandedMatrixProduct) {
     // Expected: Y = X * A (Column-Major stored layout)
     std::vector<T> expected = {8.0, 23.0, 27.0, 60.0, 31.0, 67.0};
 
-    auto dense = SquareMat<T>::create(this->N);
+    auto dense = SquareMat<T>::create(this->N, this->handle);
     A.getDense(dense, this->handle);
 
     // Invoke Mat framework overload (takes Handle as reference)

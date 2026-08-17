@@ -22708,6 +22708,16 @@
                                             "double"
                                         ],
                                         "typemap_name": "double"
+                                    },
+                                    {
+                                        "declarator": {
+                                            "name": "gpuInd",
+                                            "typemap_name": "size_t"
+                                        },
+                                        "specifier": [
+                                            "size_t"
+                                        ],
+                                        "typemap_name": "size_t"
                                     }
                                 ],
                                 "typemap_name": "size_t"
@@ -22717,8 +22727,8 @@
                             ],
                             "typemap_name": "size_t"
                         },
-                        "decl": "size_t initEigenDecomp_d(size_t dim1Length, size_t dim2Length, size_t dim3Length, const double* dim1Delta +intent(in) +rank(1), const double* dim2Delta +intent(in) +rank(1), const double* dim3Delta +intent(in) +rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal, bool thomas, double helmholtzShift)",
-                        "declgen": "size_t initEigenDecomp_d(size_t dim1Length, size_t dim2Length, size_t dim3Length, const double *dim1Delta +intent(in)+rank(1), const double *dim2Delta +intent(in)+rank(1), const double *dim3Delta +intent(in)+rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal, bool thomas, double helmholtzShift)",
+                        "decl": "size_t initEigenDecomp_d(size_t dim1Length, size_t dim2Length, size_t dim3Length, const double* dim1Delta +intent(in) +rank(1), const double* dim2Delta +intent(in) +rank(1), const double* dim3Delta +intent(in) +rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal, bool thomas, double helmholtzShift, size_t gpuInd)",
+                        "declgen": "size_t initEigenDecomp_d(size_t dim1Length, size_t dim2Length, size_t dim3Length, const double *dim1Delta +intent(in)+rank(1), const double *dim2Delta +intent(in)+rank(1), const double *dim3Delta +intent(in)+rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal, bool thomas, double helmholtzShift, size_t gpuInd)",
                         "linenumber": 29,
                         "name": "initEigenDecomp_d",
                         "options": {},
@@ -22730,10 +22740,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_d(\tdim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift)",
-                                        "C_call_list": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift",
+                                        "C_call_function": "eigen::initEigenDecomp_d(\tdim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd)",
+                                        "C_call_list": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd",
                                         "C_name": "EIG_eigen_initEigenDecomp_d",
-                                        "C_prototype": "size_t dim1Length,\t size_t dim2Length,\t size_t dim3Length,\t const double *dim1Delta,\t const double *dim2Delta,\t const double *dim3Delta,\t int dim1SegType,\t int dim2SegType,\t int dim3SegType,\t bool dim1StartIsNeumann,\t bool dim1EndIsNeumann,\t bool dim2StartIsNeumann,\t bool dim2EndIsNeumann,\t bool dim3StartIsNeumann,\t bool dim3EndIsNeumann,\t double dim1StartVal,\t double dim1EndVal,\t double dim2StartVal,\t double dim2EndVal,\t double dim3StartVal,\t double dim3EndVal,\t bool thomas,\t double helmholtzShift",
+                                        "C_prototype": "size_t dim1Length,\t size_t dim2Length,\t size_t dim3Length,\t const double *dim1Delta,\t const double *dim2Delta,\t const double *dim3Delta,\t int dim1SegType,\t int dim2SegType,\t int dim3SegType,\t bool dim1StartIsNeumann,\t bool dim1EndIsNeumann,\t bool dim2StartIsNeumann,\t bool dim2EndIsNeumann,\t bool dim3StartIsNeumann,\t bool dim3EndIsNeumann,\t double dim1StartVal,\t double dim1EndVal,\t double dim2StartVal,\t double dim2EndVal,\t double dim3StartVal,\t double dim3EndVal,\t bool thomas,\t double helmholtzShift,\t size_t gpuInd",
                                         "C_return_type": "size_t",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -23403,6 +23413,37 @@
                                     },
                                     "stmt": "c_in_native"
                                 },
+                                "gpuInd": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "gpuInd",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&gpuInd",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "gpuInd",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_value_attr": ", value",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "c_in_native"
+                                },
                                 "helmholtzShift": {
                                     "fmtdict": {
                                         "c_abstract_decl": "double",
@@ -23469,13 +23510,13 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_d(\tdim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift)",
-                                        "C_call_list": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift",
+                                        "C_call_function": "eigen::initEigenDecomp_d(\tdim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd)",
+                                        "C_call_list": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd",
                                         "C_name": "EIG_eigen_initEigenDecomp_d",
-                                        "C_prototype": "size_t dim1Length,\t size_t dim2Length,\t size_t dim3Length,\t const double *dim1Delta,\t const double *dim2Delta,\t const double *dim3Delta,\t int dim1SegType,\t int dim2SegType,\t int dim3SegType,\t bool dim1StartIsNeumann,\t bool dim1EndIsNeumann,\t bool dim2StartIsNeumann,\t bool dim2EndIsNeumann,\t bool dim3StartIsNeumann,\t bool dim3EndIsNeumann,\t double dim1StartVal,\t double dim1EndVal,\t double dim2StartVal,\t double dim2EndVal,\t double dim3StartVal,\t double dim3EndVal,\t bool thomas,\t double helmholtzShift",
+                                        "C_prototype": "size_t dim1Length,\t size_t dim2Length,\t size_t dim3Length,\t const double *dim1Delta,\t const double *dim2Delta,\t const double *dim3Delta,\t int dim1SegType,\t int dim2SegType,\t int dim3SegType,\t bool dim1StartIsNeumann,\t bool dim1EndIsNeumann,\t bool dim2StartIsNeumann,\t bool dim2EndIsNeumann,\t bool dim3StartIsNeumann,\t bool dim3EndIsNeumann,\t double dim1StartVal,\t double dim1EndVal,\t double dim2StartVal,\t double dim2EndVal,\t double dim3StartVal,\t double dim3EndVal,\t bool thomas,\t double helmholtzShift,\t size_t gpuInd",
                                         "C_return_type": "size_t",
-                                        "F_arg_c_call": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t SHT_dim1StartIsNeumann_cxx,\t SHT_dim1EndIsNeumann_cxx,\t SHT_dim2StartIsNeumann_cxx,\t SHT_dim2EndIsNeumann_cxx,\t SHT_dim3StartIsNeumann_cxx,\t SHT_dim3EndIsNeumann_cxx,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t SHT_thomas_cxx,\t helmholtzShift",
-                                        "F_arguments": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift",
+                                        "F_arg_c_call": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t SHT_dim1StartIsNeumann_cxx,\t SHT_dim1EndIsNeumann_cxx,\t SHT_dim2StartIsNeumann_cxx,\t SHT_dim2EndIsNeumann_cxx,\t SHT_dim3StartIsNeumann_cxx,\t SHT_dim3EndIsNeumann_cxx,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t SHT_thomas_cxx,\t helmholtzShift,\t gpuInd",
+                                        "F_arguments": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd",
                                         "F_subprogram": "function",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -23493,7 +23534,7 @@
                                         "f_type": "integer(C_SIZE_T)",
                                         "f_var": "SHT_rv",
                                         "fc_var": "SHT_rv",
-                                        "i_arguments": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift",
+                                        "i_arguments": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd",
                                         "i_kind": "C_SIZE_T",
                                         "i_module_name": "iso_c_binding",
                                         "i_name_function": "c_init_eigen_decomp_d",
@@ -24357,6 +24398,46 @@
                                     },
                                     "stmt": "f_in_native"
                                 },
+                                "gpuInd": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "gpuInd",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&gpuInd",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "gpuInd",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_kind": "C_SIZE_T",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_type": "integer(C_SIZE_T)",
+                                        "f_value_attr": ", value",
+                                        "f_var": "gpuInd",
+                                        "fc_var": "gpuInd",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "i_kind": "C_SIZE_T",
+                                        "i_module_name": "iso_c_binding",
+                                        "i_type": "integer(C_SIZE_T)",
+                                        "i_var": "gpuInd",
+                                        "idtor": "0",
+                                        "stmt_name": "f_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "f_in_native"
+                                },
                                 "helmholtzShift": {
                                     "fmtdict": {
                                         "c_abstract_decl": "double",
@@ -24591,6 +24672,13 @@
                                         "value": true
                                     }
                                 },
+                                "gpuInd": {
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    }
+                                },
                                 "helmholtzShift": {
                                     "meta": {
                                         "abstract": "native",
@@ -24637,7 +24725,8 @@
                                 "dim3StartVal",
                                 "dim3EndVal",
                                 "thomas",
-                                "helmholtzShift"
+                                "helmholtzShift",
+                                "gpuInd"
                             ],
                             "f_arglist": [
                                 "SHT_rv",
@@ -24663,7 +24752,8 @@
                                 "dim3StartVal",
                                 "dim3EndVal",
                                 "thomas",
-                                "helmholtzShift"
+                                "helmholtzShift",
+                                "gpuInd"
                             ],
                             "function_name": "initEigenDecomp_d"
                         }
@@ -24933,6 +25023,16 @@
                                             "float"
                                         ],
                                         "typemap_name": "float"
+                                    },
+                                    {
+                                        "declarator": {
+                                            "name": "gpuInd",
+                                            "typemap_name": "size_t"
+                                        },
+                                        "specifier": [
+                                            "size_t"
+                                        ],
+                                        "typemap_name": "size_t"
                                     }
                                 ],
                                 "typemap_name": "size_t"
@@ -24942,8 +25042,8 @@
                             ],
                             "typemap_name": "size_t"
                         },
-                        "decl": "size_t initEigenDecomp_s(size_t dim1Length, size_t dim2Length, size_t dim3Length, const float* dim1Delta +intent(in) +rank(1), const float* dim2Delta +intent(in) +rank(1), const float* dim3Delta +intent(in) +rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, float dim1StartVal, float dim1EndVal, float dim2StartVal, float dim2EndVal, float dim3StartVal, float dim3EndVal, bool thomas, float helmholtzShift)",
-                        "declgen": "size_t initEigenDecomp_s(size_t dim1Length, size_t dim2Length, size_t dim3Length, const float *dim1Delta +intent(in)+rank(1), const float *dim2Delta +intent(in)+rank(1), const float *dim3Delta +intent(in)+rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, float dim1StartVal, float dim1EndVal, float dim2StartVal, float dim2EndVal, float dim3StartVal, float dim3EndVal, bool thomas, float helmholtzShift)",
+                        "decl": "size_t initEigenDecomp_s(size_t dim1Length, size_t dim2Length, size_t dim3Length, const float* dim1Delta +intent(in) +rank(1), const float* dim2Delta +intent(in) +rank(1), const float* dim3Delta +intent(in) +rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, float dim1StartVal, float dim1EndVal, float dim2StartVal, float dim2EndVal, float dim3StartVal, float dim3EndVal, bool thomas, float helmholtzShift, size_t gpuInd)",
+                        "declgen": "size_t initEigenDecomp_s(size_t dim1Length, size_t dim2Length, size_t dim3Length, const float *dim1Delta +intent(in)+rank(1), const float *dim2Delta +intent(in)+rank(1), const float *dim3Delta +intent(in)+rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, float dim1StartVal, float dim1EndVal, float dim2StartVal, float dim2EndVal, float dim3StartVal, float dim3EndVal, bool thomas, float helmholtzShift, size_t gpuInd)",
                         "linenumber": 30,
                         "name": "initEigenDecomp_s",
                         "options": {},
@@ -24955,10 +25055,10 @@
                             "c": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_s(\tdim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift)",
-                                        "C_call_list": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift",
+                                        "C_call_function": "eigen::initEigenDecomp_s(\tdim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd)",
+                                        "C_call_list": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd",
                                         "C_name": "EIG_eigen_initEigenDecomp_s",
-                                        "C_prototype": "size_t dim1Length,\t size_t dim2Length,\t size_t dim3Length,\t const float *dim1Delta,\t const float *dim2Delta,\t const float *dim3Delta,\t int dim1SegType,\t int dim2SegType,\t int dim3SegType,\t bool dim1StartIsNeumann,\t bool dim1EndIsNeumann,\t bool dim2StartIsNeumann,\t bool dim2EndIsNeumann,\t bool dim3StartIsNeumann,\t bool dim3EndIsNeumann,\t float dim1StartVal,\t float dim1EndVal,\t float dim2StartVal,\t float dim2EndVal,\t float dim3StartVal,\t float dim3EndVal,\t bool thomas,\t float helmholtzShift",
+                                        "C_prototype": "size_t dim1Length,\t size_t dim2Length,\t size_t dim3Length,\t const float *dim1Delta,\t const float *dim2Delta,\t const float *dim3Delta,\t int dim1SegType,\t int dim2SegType,\t int dim3SegType,\t bool dim1StartIsNeumann,\t bool dim1EndIsNeumann,\t bool dim2StartIsNeumann,\t bool dim2EndIsNeumann,\t bool dim3StartIsNeumann,\t bool dim3EndIsNeumann,\t float dim1StartVal,\t float dim1EndVal,\t float dim2StartVal,\t float dim2EndVal,\t float dim3StartVal,\t float dim3EndVal,\t bool thomas,\t float helmholtzShift,\t size_t gpuInd",
                                         "C_return_type": "size_t",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -25628,6 +25728,37 @@
                                     },
                                     "stmt": "c_in_native"
                                 },
+                                "gpuInd": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "gpuInd",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&gpuInd",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "gpuInd",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_value_attr": ", value",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "idtor": "0",
+                                        "stmt_name": "c_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "c_in_native"
+                                },
                                 "helmholtzShift": {
                                     "fmtdict": {
                                         "c_abstract_decl": "float",
@@ -25694,13 +25825,13 @@
                             "f": {
                                 "+result": {
                                     "fmtdict": {
-                                        "C_call_function": "eigen::initEigenDecomp_s(\tdim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift)",
-                                        "C_call_list": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift",
+                                        "C_call_function": "eigen::initEigenDecomp_s(\tdim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd)",
+                                        "C_call_list": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd",
                                         "C_name": "EIG_eigen_initEigenDecomp_s",
-                                        "C_prototype": "size_t dim1Length,\t size_t dim2Length,\t size_t dim3Length,\t const float *dim1Delta,\t const float *dim2Delta,\t const float *dim3Delta,\t int dim1SegType,\t int dim2SegType,\t int dim3SegType,\t bool dim1StartIsNeumann,\t bool dim1EndIsNeumann,\t bool dim2StartIsNeumann,\t bool dim2EndIsNeumann,\t bool dim3StartIsNeumann,\t bool dim3EndIsNeumann,\t float dim1StartVal,\t float dim1EndVal,\t float dim2StartVal,\t float dim2EndVal,\t float dim3StartVal,\t float dim3EndVal,\t bool thomas,\t float helmholtzShift",
+                                        "C_prototype": "size_t dim1Length,\t size_t dim2Length,\t size_t dim3Length,\t const float *dim1Delta,\t const float *dim2Delta,\t const float *dim3Delta,\t int dim1SegType,\t int dim2SegType,\t int dim3SegType,\t bool dim1StartIsNeumann,\t bool dim1EndIsNeumann,\t bool dim2StartIsNeumann,\t bool dim2EndIsNeumann,\t bool dim3StartIsNeumann,\t bool dim3EndIsNeumann,\t float dim1StartVal,\t float dim1EndVal,\t float dim2StartVal,\t float dim2EndVal,\t float dim3StartVal,\t float dim3EndVal,\t bool thomas,\t float helmholtzShift,\t size_t gpuInd",
                                         "C_return_type": "size_t",
-                                        "F_arg_c_call": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t SHT_dim1StartIsNeumann_cxx,\t SHT_dim1EndIsNeumann_cxx,\t SHT_dim2StartIsNeumann_cxx,\t SHT_dim2EndIsNeumann_cxx,\t SHT_dim3StartIsNeumann_cxx,\t SHT_dim3EndIsNeumann_cxx,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t SHT_thomas_cxx,\t helmholtzShift",
-                                        "F_arguments": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift",
+                                        "F_arg_c_call": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t SHT_dim1StartIsNeumann_cxx,\t SHT_dim1EndIsNeumann_cxx,\t SHT_dim2StartIsNeumann_cxx,\t SHT_dim2EndIsNeumann_cxx,\t SHT_dim3StartIsNeumann_cxx,\t SHT_dim3EndIsNeumann_cxx,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t SHT_thomas_cxx,\t helmholtzShift,\t gpuInd",
+                                        "F_arguments": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd",
                                         "F_subprogram": "function",
                                         "c_const": "",
                                         "c_get_value": "",
@@ -25718,7 +25849,7 @@
                                         "f_type": "integer(C_SIZE_T)",
                                         "f_var": "SHT_rv",
                                         "fc_var": "SHT_rv",
-                                        "i_arguments": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift",
+                                        "i_arguments": "dim1Length,\t dim2Length,\t dim3Length,\t dim1Delta,\t dim2Delta,\t dim3Delta,\t dim1SegType,\t dim2SegType,\t dim3SegType,\t dim1StartIsNeumann,\t dim1EndIsNeumann,\t dim2StartIsNeumann,\t dim2EndIsNeumann,\t dim3StartIsNeumann,\t dim3EndIsNeumann,\t dim1StartVal,\t dim1EndVal,\t dim2StartVal,\t dim2EndVal,\t dim3StartVal,\t dim3EndVal,\t thomas,\t helmholtzShift,\t gpuInd",
                                         "i_kind": "C_SIZE_T",
                                         "i_module_name": "iso_c_binding",
                                         "i_name_function": "c_init_eigen_decomp_s",
@@ -26582,6 +26713,46 @@
                                     },
                                     "stmt": "f_in_native"
                                 },
+                                "gpuInd": {
+                                    "fmtdict": {
+                                        "c_abstract_decl": "size_t",
+                                        "c_addr": "&",
+                                        "c_const": "",
+                                        "c_deref": "",
+                                        "c_member": ".",
+                                        "c_type": "size_t",
+                                        "c_var": "gpuInd",
+                                        "cxx_abstract_decl": "size_t",
+                                        "cxx_addr": "&",
+                                        "cxx_member": ".",
+                                        "cxx_nonconst_ptr": "&gpuInd",
+                                        "cxx_type": "size_t",
+                                        "cxx_var": "gpuInd",
+                                        "f_intent": "IN",
+                                        "f_intent_attr": ", intent(IN)",
+                                        "f_kind": "C_SIZE_T",
+                                        "f_module_name": "iso_c_binding",
+                                        "f_type": "integer(C_SIZE_T)",
+                                        "f_value_attr": ", value",
+                                        "f_var": "gpuInd",
+                                        "fc_var": "gpuInd",
+                                        "i_intent": "IN",
+                                        "i_intent_attr": ", intent(IN)",
+                                        "i_kind": "C_SIZE_T",
+                                        "i_module_name": "iso_c_binding",
+                                        "i_type": "integer(C_SIZE_T)",
+                                        "i_var": "gpuInd",
+                                        "idtor": "0",
+                                        "stmt_name": "f_in_native",
+                                        "typemap_name": "size_t"
+                                    },
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    },
+                                    "stmt": "f_in_native"
+                                },
                                 "helmholtzShift": {
                                     "fmtdict": {
                                         "c_abstract_decl": "float",
@@ -26816,6 +26987,13 @@
                                         "value": true
                                     }
                                 },
+                                "gpuInd": {
+                                    "meta": {
+                                        "abstract": "native",
+                                        "intent": "in",
+                                        "value": true
+                                    }
+                                },
                                 "helmholtzShift": {
                                     "meta": {
                                         "abstract": "native",
@@ -26862,7 +27040,8 @@
                                 "dim3StartVal",
                                 "dim3EndVal",
                                 "thomas",
-                                "helmholtzShift"
+                                "helmholtzShift",
+                                "gpuInd"
                             ],
                             "f_arglist": [
                                 "SHT_rv",
@@ -26888,7 +27067,8 @@
                                 "dim3StartVal",
                                 "dim3EndVal",
                                 "thomas",
-                                "helmholtzShift"
+                                "helmholtzShift",
+                                "gpuInd"
                             ],
                             "function_name": "initEigenDecomp_s"
                         }

@@ -73,7 +73,7 @@ public:
                           XYZ<eigen::LaplOperatorT> segType,
                           bool thomas, Real helmholtzShift, SimpleArray<Real> sizeOfBForX,
                           SimpleArray<Real> sizeOfBForRHS,
-                          SimpleArray<Real> sizeOfBForBAdj);
+                          SimpleArray<Real> sizeOfBForBAdj, size_t gpuIndex);
     /**
      * Solves the equation L x = b.
      * @param bHost The rhs of the equation is input here.

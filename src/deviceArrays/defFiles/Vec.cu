@@ -84,13 +84,6 @@ Vec<T> Vec<T>::operator*(const Mat<T> &other) const {
 }
 
 template<typename T>
-T Vec<T>::operator*(const Vec<T> &other) const {
-    Singleton<T> result = Singleton<T>::create();
-    this->mult(other, result);
-    return result.get();
-}
-
-template<typename T>
 size_t Vec<T>::size() const {
     return this->_cols;
 }

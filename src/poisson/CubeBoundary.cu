@@ -32,17 +32,18 @@ void CubeBoundary<T>::freeMem() {
 }
 
 template<typename T>
-CubeBoundary<T> CubeBoundary<T>::ZeroTo1(const size_t dim, cudaStream_t stream) {
-    return CubeBoundary<T>::ZeroTo1(dim, dim, dim, stream);
+CubeBoundary<T> CubeBoundary<T>::ZeroTo1(const size_t dim, Handle& hand) {
+    return CubeBoundary<T>::ZeroTo1(dim, dim, dim, hand);
 }
 
 template<typename T>
-CubeBoundary<T> CubeBoundary<T>::ZeroTo1(const size_t height, const size_t width, const size_t depth, cudaStream_t stream) {
+CubeBoundary<T> CubeBoundary<T>::ZeroTo1(const size_t height, const size_t width, const size_t depth, Handle& hand) {
     constexpr T frontFaceVal = 1;
 
     auto boundaries = Mat<T>::create(
         height * 4 + depth * 2,
-        std::max(depth, width)
+        std::max(depth, width),
+        hand
     );
 
     auto frontBack = boundaries.subMat(0, 0, 2 * height, width),
@@ -54,14 +55,14 @@ CubeBoundary<T> CubeBoundary<T>::ZeroTo1(const size_t height, const size_t width
          top = topBottom.subMat(0, 0, depth, width),
          bottom = topBottom.subMat(depth, 0, depth, width);
 
-    front.fill(frontFaceVal, stream);
-    back.fill(0, stream);
+    front.fill(frontFaceVal, hand);
+    back.fill(0, hand);
 
     for (size_t layerInd = 0; layerInd < depth; ++layerInd) {
         T val = frontFaceVal * (static_cast<T>(layerInd) + static_cast<T>(1)) / (depth + static_cast<T>(1));
-        leftRight.col(layerInd).fill(val, stream);
-        top.row(layerInd).fill(val, stream);
-        bottom.row(layerInd).fill(val, stream);
+        leftRight.col(layerInd).fill(val, hand);
+        top.row(layerInd).fill(val, hand);
+        bottom.row(layerInd).fill(val, hand);
     }
 
     // std::cout << "CubeBoundary<T>::zeroTo1 front back\n" << GpuOut<T>(frontBack, stream) << std::endl;
@@ -71,11 +72,10 @@ CubeBoundary<T> CubeBoundary<T>::ZeroTo1(const size_t height, const size_t width
 }
 
 template<typename T>
-CubeBoundary<T> CubeBoundary<T>::create(T *frontBack, size_t fbLd, T *leftRight, size_t lrLd, T *topBottom, size_t tbLd, size_t height, size_t width,
-    size_t depth) {
-    auto frontBackMat = Mat<T>::create(2 * height, width, fbLd, frontBack);
-    auto leftRightMat = Mat<T>::create(2 * height, depth, lrLd, leftRight);
-    auto topBottomMat = Mat<T>::create(2 * depth, width, tbLd, topBottom);
+CubeBoundary<T> CubeBoundary<T>::create(T *frontBack, size_t fbLd, T *leftRight, size_t lrLd, T *topBottom, size_t tbLd, size_t height, size_t width, size_t depth, Handle& hand) {
+    auto frontBackMat = Mat<T>::create(2 * height, width, fbLd, hand, frontBack);
+    auto leftRightMat = Mat<T>::create(2 * height, depth, lrLd, hand, leftRight);
+    auto topBottomMat = Mat<T>::create(2 * depth, width, tbLd, hand, topBottom);
 
     return CubeBoundary<T>(frontBackMat, leftRightMat, topBottomMat);
 }

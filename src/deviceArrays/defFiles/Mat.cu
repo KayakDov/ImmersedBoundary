@@ -25,7 +25,7 @@ Mat<T> Mat<T>::mult(
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
     std::unique_ptr<Mat<T>> temp_res_ptrMat;
-    Mat<T>* resPtr = Mat<T>::_get_or_create_target(this->_rows, other._cols, result, temp_res_ptrMat);
+    Mat<T>* resPtr = Mat<T>::_get_or_create_target(this->_rows, other._cols, result, *h, temp_res_ptrMat);
     std::unique_ptr<Singleton<T>> temp_a_ptrSing;
     const Singleton<T>* a = Singleton<T>::_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptrSing);
     std::unique_ptr<Singleton<T>> temp_b_ptrSing2;
@@ -72,7 +72,8 @@ Mat<T> Mat<T>::operator*(const Mat<T>& other) const {
 
 template <typename T>
 Vec<T> Mat<T>::operator*(const Vec<T>& other) const {
-    Vec<T> result = Vec<T>::create(this->_rows, nullptr);
+    Handle hand;
+    Vec<T> result = Vec<T>::create(this->_rows, hand);
     this->mult(other, result, nullptr, nullptr, nullptr, false);
     return result;
 }
@@ -80,10 +81,10 @@ Vec<T> Mat<T>::operator*(const Vec<T>& other) const {
 
 
 template <typename T>
-Mat<T>* Mat<T>::_get_or_create_target(const size_t rows, const size_t cols, Mat<T>* result, std::unique_ptr<Mat<T>>& out_ptr_unique) {
+Mat<T>* Mat<T>::_get_or_create_target(const size_t rows, const size_t cols, Mat<T>* result, Handle& hand, std::unique_ptr<Mat<T>>& out_ptr_unique) {
     if (result) return result;
     else {
-        out_ptr_unique = std::make_unique<Mat<T>>(Mat<T>::create(rows, cols));
+        out_ptr_unique = std::make_unique<Mat<T>>(Mat<T>::create(rows, cols, hand));
 
         return out_ptr_unique.get();
     }
@@ -155,7 +156,7 @@ void Mat<T>::set(std::istream& input_stream, bool isText, bool isColMjr, Handle*
     Handle* h = Handle::_get_or_create_handle(hand, temp_hand_ptr);
 
     if(!isColMjr){
-        Mat<T> temp = Mat<T>::create(this->_cols, this->_rows);
+        Mat<T> temp = Mat<T>::create(this->_cols, this->_rows, *hand);
         temp.set(input_stream, isText, !isColMjr, h);
         temp.transpose(*this, *h);
         return;
@@ -190,7 +191,7 @@ std::ostream &Mat<T>::get(std::ostream &output_stream, bool isText, bool printCo
     StreamGet<T> helper(this->_rows, this->_cols, output_stream);
 
     if(!printColMajor) {
-        auto transposed = Mat<T>::create(this->_cols, this->_rows);
+        auto transposed = Mat<T>::create(this->_cols, this->_rows, hand);
         this -> transpose(transposed, hand);
         transposed.get(output_stream, isText, true, hand);
         return output_stream;
@@ -230,11 +231,11 @@ Mat<T> Mat<T>::plus(
 ) {
     if (this->_rows != x._rows || this->_cols != x._cols)
         throw std::invalid_argument("Matrix dimensions do not match for add.");
-    
-    std::unique_ptr<Mat<T>> temp_res_ptr;
-    Mat<T>* resPtr = Mat<T>::_get_or_create_target(this->_rows, x._cols, result, temp_res_ptr);
+
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
+    std::unique_ptr<Mat<T>> temp_res_ptr;
+    Mat<T>* resPtr = Mat<T>::_get_or_create_target(this->_rows, x._cols, result, *h, temp_res_ptr);
     std::unique_ptr<Singleton<T>> temp_a_ptr;
     const Singleton<T>* a = Singleton<T>::_get_or_create_target(1, *h , alpha, temp_a_ptr);
     std::unique_ptr<Singleton<T>> temp_b_ptr;
@@ -281,7 +282,12 @@ Mat<T> Mat<T>::minus(
     std::unique_ptr<Singleton<T>> temp_a_ptr;
     const Singleton<T>* a = Singleton<T>::_get_or_create_target(static_cast<T>(1), *h, alpha, temp_a_ptr);
     std::unique_ptr<Singleton<T>> temp_b_ptr;
-    const Singleton<T>* b = Singleton<T>::_get_or_create_target(beta ? -(beta->get()) : static_cast<T>(-1), *h, beta, temp_b_ptr);
+    const Singleton<T>* b = Singleton<T>::_get_or_create_target(
+        beta ? -(beta->get(*h)) : static_cast<T>(-1),
+        *h,
+        beta,
+        temp_b_ptr
+    );
 
     return this->plus(x, result, a, b, transposeA, transposeB, h);
 }
@@ -359,7 +365,7 @@ void Mat<T>::transpose(Handle* handle, Mat<T>* temp) {
         throw std::runtime_error("In-place transpose is only supported for square matrices. For non-square matrices, use the out-of-place version.");
     
     std::unique_ptr<Mat<T>> temp_res_ptr;
-    Mat<T>* temp_ptr = this->_get_or_create_target(this->_cols, this->_rows, temp, temp_res_ptr);
+    Mat<T>* temp_ptr = this->_get_or_create_target(this->_cols, this->_rows, temp, *handle, temp_res_ptr);
     
     if (temp_ptr->_rows != this->_cols || temp_ptr->_cols != this->_rows)
         throw std::invalid_argument("Provided temporary matrix has incorrect dimensions for transpose.");
@@ -370,7 +376,8 @@ void Mat<T>::transpose(Handle* handle, Mat<T>* temp) {
 }
 
 template <typename T>
-Mat<T> Mat<T>::create(size_t rows, size_t cols, bool initDescr){
+Mat<T> Mat<T>::create(size_t rows, size_t cols, Handle& hand, bool initDescr){
+    hand.ensureDevice();
     T* rawPtr = nullptr;
     size_t pitch = 0;
 
@@ -380,7 +387,7 @@ Mat<T> Mat<T>::create(size_t rows, size_t cols, bool initDescr){
 }
 
 template<typename T>
-Mat<T> Mat<T>::create(size_t rows, size_t cols, const size_t ld, T *devicePointer) {
+Mat<T> Mat<T>::create(size_t rows, size_t cols, const size_t ld, Handle& hand, T *devicePointer) {
     return Mat<T>(rows, cols, ld, nonOwningGpuPtr(devicePointer));
 }
 

@@ -89,10 +89,10 @@ public:
      * @param rows Number of rows.
      * @param cols Number of columns.
      * @param layers Number of layers (depth).
-     * @param stream Optional CUDA stream for GPU operations.
+     * @param hand Optional CUDA stream for GPU operations.
      * @return A new Tensor<T> object.
      */
-    static Tensor<T> create(size_t rows, size_t cols, size_t layers, cudaStream_t stream);
+    static Tensor<T> create(size_t rows, size_t cols, size_t layers, Handle& hand);
 
     /**
      * @brief Returns a specific layer of the tensor as a Mat<T>.

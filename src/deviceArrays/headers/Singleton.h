@@ -49,7 +49,7 @@ public:
      * @param stream Optional CUDA stream to associate with allocation.
      * @return Singleton<T> instance.
      */
-    static Singleton<T> create(cudaStream_t stream = 0);
+    static Singleton<T> create(Handle& stream);
 
     /**
      * @brief Create a Singleton initialized to a given value.
@@ -57,21 +57,21 @@ public:
      * @param stream Optional CUDA stream to associate with allocation.
      * @return Singleton<T> instance.
      */
-    static Singleton<T> create(T val, cudaStream_t stream = 0);
+    static Singleton<T> create(T val, Handle& stream);
 
     /**
      * @brief Get the value stored in this Singleton.
      * @param stream Optional CUDA stream for device synchronization.
      * @return Value of type T.
      */
-    T get(cudaStream_t stream = nullptr) const;
+    T get(Handle& stream) const;
 
     /**
      * @brief Set the value of this Singleton.
      * @param val Value to store.
      * @param stream Optional CUDA stream for device synchronization.
      */
-    void set(T val, cudaStream_t stream);
+    void set(T val, Handle& stream);
 
     /**
      * @brief Sets this scalar to the product of two quotients.
@@ -85,7 +85,7 @@ public:
      * @param denB Denominator of the second quotient.
      * @param stream CUDA stream used for the operation.
      */
-    void setProductOfQuotients(const Singleton<T>& numA, const Singleton<T>& denA, const Singleton<T>& numB, const Singleton<T>& denB, cudaStream_t stream);
+    void setProductOfQuotients(const Singleton<T>& numA, const Singleton<T>& denA, const Singleton<T>& numB, const Singleton<T>& denB, Handle& stream);
 
 
     /**
@@ -104,7 +104,7 @@ public:
      * when creating a new target.
      * @return Pointer to the existing or newly created `Singleton` instance.
      */
-    static Singleton<T>* _get_or_create_target(Singleton<T> *result, std::unique_ptr<Singleton<T>> &out_ptr_unique, cudaStream_t stream);
+    static Singleton<T>* _get_or_create_target(Singleton<T> *result, std::unique_ptr<Singleton<T>> &out_ptr_unique, Handle& stream);
 
     /**
      * @brief Retrieves an existing target or creates a new one with the specified default value.

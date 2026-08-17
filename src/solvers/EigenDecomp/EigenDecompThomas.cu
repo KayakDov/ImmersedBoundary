@@ -168,7 +168,7 @@ template<typename SegY, typename SegZ>
 template<typename T, typename SegmentT>
 template<typename SegY, typename SegZ>
     EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, T helmholtzShift):
-        EigenDecompThomas(boundary, hand3, event2, Mat<T>::create(boundary.forDevice().dim().size(), 3), helmholtzShift)
+        EigenDecompThomas(boundary, hand3, event2, Mat<T>::create(boundary.forDevice().dim().size(), 3, hand3[0]), helmholtzShift)
 {
 }
 // ==============================================================================

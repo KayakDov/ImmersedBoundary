@@ -95,8 +95,7 @@ public:
      * @return A pointer to the target `Mat<T>` matrix, either an existing instance
      *         (`result`) or a newly created one.
      */
-    static Mat<T> *_get_or_create_target(size_t rows, size_t cols, Mat<T> *result,
-                                  std::unique_ptr<Mat<T>> &out_ptr_unique);
+    static Mat<T> *_get_or_create_target(size_t rows, size_t cols, Mat<T> *result, Handle& hand, std::unique_ptr<Mat<T>> &out_ptr_unique);
 
     /**
      * @copydoc GpuArray::size
@@ -213,7 +212,7 @@ public:
      * @param cols Number of columns.
      * @return New Mat<T> instance with allocated GPU memory.
      */
-    static Mat<T> create(size_t rows, size_t cols, bool initDescr = false);
+    static Mat<T> create(size_t rows, size_t cols, Handle& hand, bool initDescr = false);
 
     /**
      * @brief Static factory method to create a new matrix.
@@ -223,7 +222,7 @@ public:
      * @param devicePointer The created matrix will not handle memory management if created with this pointer.
      * @return New Mat<T> instance with allocated GPU memory.
      */
-    static Mat<T> create(size_t rows, size_t cols, size_t ld, T* devicePointer);
+    static Mat<T> create(size_t rows, size_t cols, size_t ld, Handle& hand, T* devicePointer);
 
     /**
      * @brief Static factory method to create an empty matrix.

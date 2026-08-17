@@ -21,7 +21,7 @@ const Vec<int32_t>& TriDiagonal<T>::getSharedIndices(Handle &hand) {
 
 template<typename T>
 TriDiagonal<T>::TriDiagonal(size_t denseSqMatDim, Handle &hand)
-    : BandedMat<T>(Mat<T>::create(denseSqMatDim, 3), getSharedIndices(hand)) {
+    : BandedMat<T>(Mat<T>::create(denseSqMatDim, 3, hand), getSharedIndices(hand)) {
 }
 
 template<typename T>

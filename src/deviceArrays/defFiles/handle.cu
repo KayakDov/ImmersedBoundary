@@ -18,12 +18,13 @@ void CusparseDeleter::operator()(cusparseHandle_t handle) const {
 }
 
 
+Handle::Handle(): Handle(nullptr, 0) {}
+Handle::Handle(size_t gpuIndex): Handle(nullptr, gpuIndex) {}
 
-Handle::Handle() : Handle(nullptr) {}
 
-Handle::Handle(cudaStream_t user_stream) {
+Handle::Handle(cudaStream_t user_stream, size_t gpuIndex): gpuIndex(gpuIndex) {
 
-    CHECK_CUDA_ERROR(cudaFree(0));//TODO: see if things still work when I delete this.
+    ensureDevice();
 
     cublasHandle_t rawHandle;
     CHECK_CUBLAS_ERROR(cublasCreate(&rawHandle));
@@ -62,6 +63,7 @@ Handle* Handle::_get_or_create_handle(Handle* handle, std::unique_ptr<Handle>& o
 
 
 Handle::~Handle() {
+    ensureDevice();
     if (this->isOwner) {
         cudaStreamSynchronize(stream);
         cudaStreamDestroy(stream);
@@ -69,30 +71,36 @@ Handle::~Handle() {
 }
 
 void Handle::synch() const {
+    ensureDevice();
     CHECK_CUDA_ERROR(cudaStreamSynchronize(this->stream));
 }
 
 Handle::operator struct cusolverDnContext*() const {
+    ensureDevice();
     return solverHandlePtr.get();
 }
 
 
 // Add this to handle.cu
 Handle::operator cusparseHandle_t() const {
+    ensureDevice();
     return sparseHandlePtr.get();
 }
 
 // Clean up the stream operator to use the standard type
 Handle::operator cudaStream_t() const {
+    ensureDevice();
     return stream;
 }
 
 // Add these to handle.cu to satisfy GpuArray and Mat links
 Handle::operator cublasHandle_t() const {
+    ensureDevice();
     return handlePtr.get();
 }
 
 Handle::operator cublasHandle_t() {
+    ensureDevice();
     return handlePtr.get();
 }
 

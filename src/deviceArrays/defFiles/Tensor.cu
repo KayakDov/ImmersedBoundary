@@ -20,8 +20,8 @@ Mat<T> Tensor<T>::subMatrix(size_t startRow, size_t startCol, size_t startLayer,
 }
 
 template<typename T>
-Tensor<T> Tensor<T>::create(size_t rows, size_t cols, size_t layers, cudaStream_t stream) {
-    Mat<T> temp = Mat<T>::create(rows * layers, cols);
+Tensor<T> Tensor<T>::create(size_t rows, size_t cols, size_t layers, Handle& hand) {
+    Mat<T> temp = Mat<T>::create(rows * layers, cols, hand);
     return Tensor<T>(rows, cols, layers, temp._ld, temp._ptr);
 }
 

@@ -17,8 +17,8 @@ SquareMat<T>::SquareMat(const size_t rowsCols, const size_t ld, std::shared_ptr<
 }
 
 template<typename T>
-SquareMat<T> SquareMat<T>::create(size_t rowsCols) {
-    Mat<T> mat = Mat<T>::create(rowsCols, rowsCols);
+SquareMat<T> SquareMat<T>::create(size_t rowsCols, Handle& hand) {
+    Mat<T> mat = Mat<T>::create(rowsCols, rowsCols, hand);
     return SquareMat<T>(rowsCols, mat._ld, mat.ptr());
 }
 
@@ -36,7 +36,7 @@ SquareMat<T> SquareMat<T>::create(size_t rowsCols, size_t ld, T *ptr) {
  *
  * @throws std::runtime_error if info != 0.
  */
-inline void processInfo(const Singleton<int32_t>& info_dev, cudaStream_t stream, const std::string& context = "cusolverDnXgeev")
+inline void processInfo(const Singleton<int32_t>& info_dev, Handle& stream, const std::string& context = "cusolverDnXgeev")
 {
     const int info_host = info_dev.get(stream);
 
@@ -136,7 +136,7 @@ void SquareMat<T>::eigen(//TODO: This method may not be correctly handaling real
 }
 
 template<typename T>
-SquareMat<T> SquareMat<T>::setToIdentity(cudaStream_t stream) {
+SquareMat<T> SquareMat<T>::setToIdentity(Handle& stream) {
 
     this->fill(0, stream);
     this->diag(0).fill(1, stream);
@@ -363,7 +363,7 @@ bool SquareMat<T>::isSingular(double tolerance, Handle& hand) const {
     auto workSpace = SimpleArray<T>::create(std::max(lwork, static_cast<int>(KernelPrep(this->_rows).numBlocks.x)), hand);
 
     // DEEP COPY: factorLU modifies the data in-place, so we must operate on a copy
-    auto copyMat = SquareMat<T>::create(this->_rows);
+    auto copyMat = SquareMat<T>::create(this->_rows, hand);
     this->get(copyMat, hand);
 
     return copyMat.isSingular(tolerance, rowSwaps, info, workSpace, hand);
@@ -422,7 +422,7 @@ std::pair<size_t, size_t> SquareMat<T>::eigenSPDBufferSize(Handle& hand) const
  *
  * @throws std::runtime_error if info != 0.
  */
-inline void processInfoSyevd(const Singleton<int32_t>& info_dev, cudaStream_t stream, const std::string& context = "cusolverDnXsyevd")
+inline void processInfoSyevd(const Singleton<int32_t>& info_dev, Handle& stream, const std::string& context = "cusolverDnXsyevd")
 {
     const int info_host = info_dev.get(stream);
 

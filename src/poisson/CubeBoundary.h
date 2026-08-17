@@ -61,20 +61,20 @@ public:
     /**
      * @brief Generates a sample cube boundary with front=1, back=0, and linear transitions.
      * @param dim Cube side length
-     * @param stream CUDA stream for memory operations
+     * @param hand CUDA stream for memory operations
      * @return CubeBoundary instance
      */
-    static CubeBoundary<T> ZeroTo1(size_t dim, cudaStream_t stream);
+    static CubeBoundary<T> ZeroTo1(size_t dim, Handle &hand);
 
     /**
      * @brief Generates a sample cube boundary with front=1, back=0, and linear transitions.
      * @param height Cube height
      * @param width Cube width
      * @param depth Cube depth
-     * @param stream CUDA stream for memory operations
+     * @param hand
      * @return CubeBoundary instance
      */
-    static CubeBoundary<T> ZeroTo1(size_t height, size_t width, size_t depth, cudaStream_t stream);
+    static CubeBoundary<T> ZeroTo1(size_t height, size_t width, size_t depth, Handle &hand);
 
     /**
      * Creates a Cube boundary from pointers to the sides.
@@ -89,6 +89,5 @@ public:
      * @param depth
      * @return
      */
-    static CubeBoundary<T> create(T *frontBack, size_t fbLd, T *leftRight, size_t lrLd, T *topBottom, size_t tbLd, size_t height, size_t width, size_t
-                                  depth);
+    static CubeBoundary<T> create(T *frontBack, size_t fbLd, T *leftRight, size_t lrLd, T *topBottom, size_t tbLd, size_t height, size_t width, size_t depth, Handle& hand);
 };

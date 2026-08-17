@@ -62,9 +62,9 @@ EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfigT& boundary, Handle*
 
 template<typename T>
 SquareMat<T> EigenDecompSolver<T>::inverseL(Handle &hand) const {
-    auto id = SquareMat<T>::create(this->dim.size());
+    auto id = SquareMat<T>::create(this->dim.size(), hand);
     id.setToIdentity(hand);
-    auto result = SquareMat<T>::create(id._rows);
+    auto result = SquareMat<T>::create(id._rows, hand);
     for (size_t i = 0; i < result._rows; ++i) {
         auto src = id.col(i);
         auto dst = result.col(i);

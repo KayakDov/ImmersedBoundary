@@ -35,7 +35,7 @@ size_t EIG_eigen_initEigenDecomp_d(size_t dim1Length, size_t dim2Length,
     bool dim3StartIsNeumann, bool dim3EndIsNeumann, double dim1StartVal,
     double dim1EndVal, double dim2StartVal, double dim2EndVal,
     double dim3StartVal, double dim3EndVal, bool thomas,
-    double helmholtzShift);
+    double helmholtzShift, size_t gpuInd);
 
 size_t EIG_eigen_initEigenDecomp_s(size_t dim1Length, size_t dim2Length,
     size_t dim3Length, const float *dim1Delta, const float *dim2Delta,
@@ -45,7 +45,7 @@ size_t EIG_eigen_initEigenDecomp_s(size_t dim1Length, size_t dim2Length,
     bool dim3StartIsNeumann, bool dim3EndIsNeumann, float dim1StartVal,
     float dim1EndVal, float dim2StartVal, float dim2EndVal,
     float dim3StartVal, float dim3EndVal, bool thomas,
-    float helmholtzShift);
+    float helmholtzShift, size_t gpuInd);
 
 void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *b);
 

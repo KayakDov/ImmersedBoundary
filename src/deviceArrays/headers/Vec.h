@@ -188,14 +188,6 @@ public:
     Vec<T> operator*(const Mat<T>& other) const;
 
     /**
-     * @brief Operator overload for dot product with another vector.
-     * 
-     * @param other Vector to dot with.
-     * @return Dot product value.
-     */
-    T operator*(const Vec<T>& other) const;
-
-    /**
      * @brief Adds a scaled vector to this vector.
      * 
      * @param x Vector to add.

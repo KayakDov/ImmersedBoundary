@@ -23,7 +23,7 @@ module eigenbcgsolver_eigen_mod
                 dim2StartIsNeumann, dim2EndIsNeumann, &
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
                 dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
-                dim3EndVal, thomas, helmholtzShift) &
+                dim3EndVal, thomas, helmholtzShift, gpuInd) &
                 result(SHT_rv) &
                 bind(C, name="EIG_eigen_initEigenDecomp_d")
             use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT, C_SIZE_T
@@ -51,6 +51,7 @@ module eigenbcgsolver_eigen_mod
             real(C_DOUBLE), value, intent(IN) :: dim3EndVal
             logical(C_BOOL), value, intent(IN) :: thomas
             real(C_DOUBLE), value, intent(IN) :: helmholtzShift
+            integer(C_SIZE_T), value, intent(IN) :: gpuInd
             integer(C_SIZE_T) :: SHT_rv
         end function c_init_eigen_decomp_d
 
@@ -61,7 +62,7 @@ module eigenbcgsolver_eigen_mod
                 dim2StartIsNeumann, dim2EndIsNeumann, &
                 dim3StartIsNeumann, dim3EndIsNeumann, dim1StartVal, &
                 dim1EndVal, dim2StartVal, dim2EndVal, dim3StartVal, &
-                dim3EndVal, thomas, helmholtzShift) &
+                dim3EndVal, thomas, helmholtzShift, gpuInd) &
                 result(SHT_rv) &
                 bind(C, name="EIG_eigen_initEigenDecomp_s")
             use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT, C_SIZE_T
@@ -89,6 +90,7 @@ module eigenbcgsolver_eigen_mod
             real(C_FLOAT), value, intent(IN) :: dim3EndVal
             logical(C_BOOL), value, intent(IN) :: thomas
             real(C_FLOAT), value, intent(IN) :: helmholtzShift
+            integer(C_SIZE_T), value, intent(IN) :: gpuInd
             integer(C_SIZE_T) :: SHT_rv
         end function c_init_eigen_decomp_s
 
@@ -141,7 +143,7 @@ contains
             dim2StartIsNeumann, dim2EndIsNeumann, dim3StartIsNeumann, &
             dim3EndIsNeumann, dim1StartVal, dim1EndVal, dim2StartVal, &
             dim2EndVal, dim3StartVal, dim3EndVal, thomas, &
-            helmholtzShift) &
+            helmholtzShift, gpuInd) &
             result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_DOUBLE, C_INT, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: dim1Length
@@ -167,6 +169,7 @@ contains
         real(C_DOUBLE), value, intent(IN) :: dim3EndVal
         logical, value, intent(IN) :: thomas
         real(C_DOUBLE), value, intent(IN) :: helmholtzShift
+        integer(C_SIZE_T), value, intent(IN) :: gpuInd
         integer(C_SIZE_T) :: SHT_rv
         ! splicer begin namespace.eigen.function.init_eigen_decomp_d
         logical(C_BOOL) :: SHT_dim1StartIsNeumann_cxx
@@ -190,7 +193,7 @@ contains
             SHT_dim2EndIsNeumann_cxx, SHT_dim3StartIsNeumann_cxx, &
             SHT_dim3EndIsNeumann_cxx, dim1StartVal, dim1EndVal, &
             dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, &
-            SHT_thomas_cxx, helmholtzShift)
+            SHT_thomas_cxx, helmholtzShift, gpuInd)
         ! splicer end namespace.eigen.function.init_eigen_decomp_d
     end function init_eigen_decomp_d
 
@@ -200,7 +203,7 @@ contains
             dim2StartIsNeumann, dim2EndIsNeumann, dim3StartIsNeumann, &
             dim3EndIsNeumann, dim1StartVal, dim1EndVal, dim2StartVal, &
             dim2EndVal, dim3StartVal, dim3EndVal, thomas, &
-            helmholtzShift) &
+            helmholtzShift, gpuInd) &
             result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_FLOAT, C_INT, C_SIZE_T
         integer(C_SIZE_T), value, intent(IN) :: dim1Length
@@ -226,6 +229,7 @@ contains
         real(C_FLOAT), value, intent(IN) :: dim3EndVal
         logical, value, intent(IN) :: thomas
         real(C_FLOAT), value, intent(IN) :: helmholtzShift
+        integer(C_SIZE_T), value, intent(IN) :: gpuInd
         integer(C_SIZE_T) :: SHT_rv
         ! splicer begin namespace.eigen.function.init_eigen_decomp_s
         logical(C_BOOL) :: SHT_dim1StartIsNeumann_cxx
@@ -249,7 +253,7 @@ contains
             SHT_dim2EndIsNeumann_cxx, SHT_dim3StartIsNeumann_cxx, &
             SHT_dim3EndIsNeumann_cxx, dim1StartVal, dim1EndVal, &
             dim2StartVal, dim2EndVal, dim3StartVal, dim3EndVal, &
-            SHT_thomas_cxx, helmholtzShift)
+            SHT_thomas_cxx, helmholtzShift, gpuInd)
         ! splicer end namespace.eigen.function.init_eigen_decomp_s
     end function init_eigen_decomp_s
 

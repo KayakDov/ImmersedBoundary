@@ -109,7 +109,7 @@ void BandedMat<T>::getDense(SquareMat<T> dense, Handle& hand) const {
 
 template<typename T>
 SquareMat<T> BandedMat<T>::getDense(Handle& hand) const {
-    auto result = SquareMat<T>::create(this->_rows);
+    auto result = SquareMat<T>::create(this->_rows, hand);
     getDense(result, hand);
     return result;
 }
@@ -127,14 +127,14 @@ BandedMat<T>::BandedMat(const Mat<T> &windowTo, const Vec<int32_t> &indices) : B
 }
 
 template<typename T>
-BandedMat<T> BandedMat<T>::create(size_t denseSqMatDim, const Vec<int32_t> &indices) {
-    return BandedMat<T>(Mat<T>::create(denseSqMatDim, indices.size()), indices);
+BandedMat<T> BandedMat<T>::create(size_t denseSqMatDim, const Vec<int32_t> &indices, Handle& hand) {
+    return BandedMat<T>(Mat<T>::create(denseSqMatDim, indices.size(), hand), indices);
 }
 
 template<typename T>
-BandedMat<T> BandedMat<T>::create(size_t denseSqMatDim, size_t numDiagonals, const size_t ld, T *data, int32_t *indices, size_t indsStride) {
+BandedMat<T> BandedMat<T>::create(size_t denseSqMatDim, size_t numDiagonals, const size_t ld, T *data, int32_t *indices, size_t indsStride, Handle& hand) {
     return BandedMat<T>(
-        Mat<T>::create(denseSqMatDim, numDiagonals, ld, data),
+        Mat<T>::create(denseSqMatDim, numDiagonals, ld, hand, data),
         Vec<int32_t>::create(numDiagonals, indsStride, indices)
     );
 }

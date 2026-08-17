@@ -142,10 +142,10 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
 
 template<typename Real, typename Int>
 SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
-    auto id = SquareMat<Real>::create(dim.size());
+    auto id = SquareMat<Real>::create(dim.size(), hand5[0]);
     id.setToIdentity(hand5[0]);
 
-    auto result = SquareMat<Real>::create(dim.size());
+    auto result = SquareMat<Real>::create(dim.size(), hand5[0]);
     for (size_t i = 0; i < dim.size(); ++i) {
         auto col = result.col(i);
         LHSTimes(id.col(i), col, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0));
