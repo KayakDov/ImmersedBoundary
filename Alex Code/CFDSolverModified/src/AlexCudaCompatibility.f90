@@ -98,7 +98,9 @@ contains
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .true., &
-                helmholtzShift = shiftTemperature )
+                helmholtzShift = shiftTemperature , &
+                gpuInd = 0 &
+            )
 
         ! Vx: VMx(1:Nx,1:Ny1,1:Nz1); node-centred along its own (x) axis
         ! (EVDLapVx's HPx(i)*Hx12(...) form), cell-centred along y/z. Dirichlet.
@@ -119,7 +121,9 @@ contains
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .true., &
-                helmholtzShift = shiftVelocity )
+                helmholtzShift = shiftVelocity, &
+                gpuInd = 0 &
+            )
 
         ! Vy: VMy(1:Nx1,1:Ny,1:Nz1); node-centred along y, cell-centred along
         ! x/z. Dirichlet.
@@ -140,7 +144,9 @@ contains
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .true., &
-                helmholtzShift = shiftVelocity )
+                helmholtzShift = shiftVelocity, &
+                gpuInd = 1 &
+        )
 
         ! Vz: VMz(1:Nx1,1:Ny1,1:Nz); node-centred along z, cell-centred along
         ! x/y. Dirichlet.
@@ -161,7 +167,9 @@ contains
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .true., &
-                helmholtzShift = shiftVelocity )
+                helmholtzShift = shiftVelocity, &
+                gpuInd = 1 &
+            )
 
         ! Pressure: Dprs(1:Nx1,1:Ny1,1:Nz1), cell-centred on every axis. Pure
         ! Poisson, Neumann everywhere (matching EVDLapP, which applies Neumann
@@ -184,7 +192,9 @@ contains
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .false., &
-                helmholtzShift = 0.d0 )
+                helmholtzShift = 0.d0, &
+                gpuInd = 0 &
+            )
 
         ! Potential: Potential(1:Nx,1:Ny1,1:Nz); node-centred along x/z,
         ! cell-centred along y. Pure Poisson; Neumann per axis follows the
@@ -206,7 +216,9 @@ contains
                 dim2StartVal = 0.d0, dim2EndVal = 0.d0, &
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .false., &
-                helmholtzShift = 0.d0 )
+                helmholtzShift = 0.d0, &
+                gpuInd = 1 &
+            )
 
     End Subroutine Initialize_GPU_Solvers
 
