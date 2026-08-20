@@ -327,14 +327,6 @@ namespace eigen {
         // addSolverTime(currentTime() - startTime);
     }
 
-    void finalizeEigenDecomp() {
-        // double startTime = currentTime();
-        solvers<float>.clear();
-        solvers<double>.clear();
-        // addSolverTime(currentTime() - startTime);
-        // std::cout << "Total eigen decomp time: " << totalEigenSolverTime.load() << std::endl;
-    }
-
     // --- Initialization Functions ---
     extern "C" {
         inline size_t initEigenDecomp_d(
@@ -389,5 +381,13 @@ namespace eigen {
         inline void synch_s(size_t solverHandle, float* x) {
             synch<float>(solverHandle, x);
         }
+    }
+
+    void finalizeEigenDecomp() {
+        // double startTime = currentTime();
+        solvers<float>.clear();
+        solvers<double>.clear();
+        // addSolverTime(currentTime() - startTime);
+        // std::cout << "Total eigen decomp time: " << totalEigenSolverTime.load() << std::endl;
     }
 };
