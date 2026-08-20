@@ -167,12 +167,14 @@ public:
      */
     static KroneckerTriplet<T> zOperator(const GridDim &gridDim, const SquareMat<T> &forLayers, bool transpose, Handle& hand);
 
+
+
     /**
      * @brief Constructs a 2D Kronecker operator.
      * @param X Operator for the slowest-changing dimension (X).
      * @param Y Operator for the fastest-changing dimension (Y).
      */
-    KroneckerTriplet(const SquareMat<T> &X, const SquareMat<T> &Y, bool transpX, bool transpY);
+    KroneckerTriplet(const SquareMat<T> &X, const SquareMat<T> &Y, bool transpX, bool transpY, Handle& handle);
 
     /**
      * @brief Factory method for a pair where only the X dimension is active.

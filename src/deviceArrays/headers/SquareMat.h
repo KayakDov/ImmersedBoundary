@@ -39,7 +39,7 @@ private:
      * @param ld The leading dimension of the matrix storage.
      * @param _ptr Shared pointer to the underlying GPU memory.
      */
-    SquareMat(size_t rowsCols, size_t ld, std::shared_ptr<T> _ptr);
+    SquareMat(size_t rowsCols, size_t ld, GpuPointer<T> _ptr);
 
 public:
     using Mat<T>::factorLUBufferSize;
@@ -63,7 +63,7 @@ public:
      * @param ptr The raw pointer to the data.  Memory is neither allocated or freed if you pass a raw pointer.
      * @return A new SquareMat object.
      */
-    static SquareMat<T> create(size_t rowsCols, size_t ld, T* ptr);
+    static SquareMat<T> create(size_t rowsCols, size_t ld, GpuPointer<T> ptr);
     /**
      * @brief Factory method to create a SquareMat from memory managed elsewhere.  Use this overload only when the device allocation is managed externally.
      *

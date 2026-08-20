@@ -42,7 +42,7 @@ SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vect
     poisson::laplacian<Real>(boundary, hand).getDense(lhsOperator, hand);
     auto denseB = Mat<Real>::create(rowOffsetsB.size() - 1, n, hand);
     B.getDense(denseB, hand);
-    denseB.mult(denseB, &lhsOperator, &hand, &GPUScalar<Real>::get(2), &GPUScalar<Real>::get(1), true, false);
+    denseB.mult(denseB, &lhsOperator, &hand, &GPUScalar<Real>::get(2, hand), &GPUScalar<Real>::get(1, hand), true, false);
 
     return B;
 }
@@ -334,8 +334,8 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     auto LPlus2BTBx = SimpleArray<Real>::create(dim.size(), hand);
     LPlus2BTBx.fill(0, hand);
 
-    BDense.mult(BDense, &LDense, &hand,&GPUScalar<Real>::get(2), &GPUScalar<Real>::get(1),  true, false);
-    LDense.mult(x, LPlus2BTBx, &hand, &GPUScalar<Real>::get(1), &GPUScalar<Real>::get(0), false);
+    BDense.mult(BDense, &LDense, &hand,&GPUScalar<Real>::get(2, hand), &GPUScalar<Real>::get(1, hand),  true, false);
+    LDense.mult(x, LPlus2BTBx, &hand, &GPUScalar<Real>::get(1, hand), &GPUScalar<Real>::get(0, hand), false);
 
     std::vector<Real> fHost(rowOffsetsB.size() - 1, 0);
     fHost[0] = 1;
@@ -344,9 +344,9 @@ TEST(ImmersedEq, SolvesImmeresed_Generic) {
     f.set(fHost.data(), hand);
 
     auto TwoBTF = SimpleArray<Real>::create(dim.size(), hand);
-    BDense.mult(f, TwoBTF, &hand, &GPUScalar<Real>::get(2), &GPUScalar<Real>::get(0), true);
+    BDense.mult(f, TwoBTF, &hand, &GPUScalar<Real>::get(2, hand), &GPUScalar<Real>::get(0, hand), true);
 
-    LPlus2BTBx.add(TwoBTF, &GPUScalar<Real>::get(-1), &hand);
+    LPlus2BTBx.add(TwoBTF, &GPUScalar<Real>::get(-1, hand), &hand);
 
     std::vector<Real> p(dim.size(), 0);
     LPlus2BTBx.get(p.data(), hand);
@@ -427,7 +427,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
     // UNIVERSAL CHECK: L * V = V * Lambda
     // ---------------------------------------------------------
     auto LV = SquareMat<T>::create(V._rows, hand);
-    L.mult(V, &LV, &hand, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), false, false);
+    L.mult(V, &LV, &hand, &GPUScalar<T>::get(1, hand), &GPUScalar<T>::get(0, hand), false, false);
 
     auto VLambda = SquareMat<T>::create(V._rows, hand);
     auto Lambda = SquareMat<T>::create(V._cols, hand);
@@ -438,7 +438,7 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
     // Calculate Residual: LV - VLambda
     auto diff = SquareMat<T>::create(V._rows, hand);
     diff.set(LV, hand);
-    diff.add(VLambda, diff, GPUScalar<T>::get(1), GPUScalar<T>::get(-1), false, false, hand);
+    diff.add(VLambda, diff, GPUScalar<T>::get(1, hand), GPUScalar<T>::get(-1, hand), false, false, hand);
 
     std::vector<T> diffHost(diff.size(), 0);
     diff.get(diffHost.data(), hand);
@@ -457,13 +457,13 @@ static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<
     if (uniformDelta) {
         auto VTV = SquareMat<T>::create(V._cols, hand);
         // V^T * V
-        V.mult(V, &VTV, &hand, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), true, false);
+        V.mult(V, &VTV, &hand, &GPUScalar<T>::get(1, hand), &GPUScalar<T>::get(0, hand), true, false);
 
         auto I = SquareMat<T>::create(V._cols, hand).setToIdentity(hand);
 
         auto orthoDiff = SquareMat<T>::create(V._cols, hand);
         orthoDiff.set(VTV, hand);
-        orthoDiff.add(I, orthoDiff, GPUScalar<T>::get(1), GPUScalar<T>::get(-1), false, false, hand);
+        orthoDiff.add(I, orthoDiff, GPUScalar<T>::get(1, hand), GPUScalar<T>::get(-1, hand), false, false, hand);
 
         std::vector<T> orthoHost(orthoDiff.size(), 0);
         orthoDiff.get(orthoHost.data(), hand);
@@ -510,7 +510,7 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real
     x.set(xCpuOrig.data(), hands[0]);
 
     auto rhs = SimpleArray<Real>::create(dim.size(), hands[0]);
-    laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+    laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(0, hands[0]), false);
 
     // std::cout << "init x = " << GpuOut<Real>(x, hands[0]) << std::endl;
     // std::cout << "rhs = " << GpuOut<Real>(rhs, hands[0]) << std::endl;
@@ -527,7 +527,7 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real
     // std::cout << "verifyEigenSolverIdentity x_solution = \n" << GpuOut<Real>(x, hands[0]) << std::endl;
     cudaDeviceSynchronize();
 
-    laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(-1), false);
+    laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(-1, hands[0]), false);
 
     auto normDevice = x.get(0);
     Real normHost[1];
@@ -543,13 +543,13 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real
         EigenDecompThomas ed(boundary, hands, events);
 
         x.set(xCpuOrig.data(), hands[0]);
-        laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+        laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(0, hands[0]), false);
         x.fill(0, hands[0]);
 
         ed.solve(x, rhs, hands[0]);
         // std::cout << "verifyEigenSolverIdentity x_Thomas = \n" << GpuOut<Real>(x, hands[0]) << std::endl;
 
-        laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(-1), false);
+        laplacian.bandedMult(x, rhs, hands, GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(-1, hands[0]), false);
         auto normDevice = x.get(0);
         Real normHost[1];
         rhs.norm(normDevice, hands[0]);
@@ -589,24 +589,24 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real, segX, segY, segZ>& 
 
     // 3. Construct explicit manufactured system: p0 = L x0 + 2 B^T B x0 - 2 B^T f - bc
     auto p0 = bufferNXNPlus5.col(1);
-    poisson::laplacian<Real>(boundary, hand).bandedMult(x0, p0, &hand, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+    poisson::laplacian<Real>(boundary, hand).bandedMult(x0, p0, &hand, GPUScalar<Real>::get(1, hand), GPUScalar<Real>::get(0, hand), false);
 
     auto rhs = bufferNXNPlus5.col(2);
 
     auto tempB = SimpleArray<Real>::create(numB, hand);
-    auto sparseWorkSpace = SimpleArray<Real>::create(B.multWorkspaceSize(tempB, p0, GPUScalar<Real>::get(2), GPUScalar<Real>::get(1), true, hand), hand);
+    auto sparseWorkSpace = SimpleArray<Real>::create(B.multWorkspaceSize(tempB, p0, GPUScalar<Real>::get(2, hand), GPUScalar<Real>::get(1, hand), true, hand), hand);
 
-    lhsOperator.mult(x0, p0, &hand, &GPUScalar<Real>::get(1), &GPUScalar<Real>::get(0), false);
+    lhsOperator.mult(x0, p0, &hand, &GPUScalar<Real>::get(1, hand), &GPUScalar<Real>::get(0, hand), false);
 
-    B.mult(f, p0, GPUScalar<Real>::get(-2), GPUScalar<Real>::get(1), true, sparseWorkSpace, hand);           // p0 -= 2 B^T f
+    B.mult(f, p0, GPUScalar<Real>::get(-2, hand), GPUScalar<Real>::get(1, hand), true, sparseWorkSpace, hand);           // p0 -= 2 B^T f
 
-    B.mult(f, rhs, GPUScalar<Real>::get(2), GPUScalar<Real>::get(0), true, sparseWorkSpace, hand);           // p0 -= 2 B^T f
+    B.mult(f, rhs, GPUScalar<Real>::get(2, hand), GPUScalar<Real>::get(0, hand), true, sparseWorkSpace, hand);           // p0 -= 2 B^T f
 
     SimpleArray<Real> bc = poisson::boundaryCorrection<Real>(boundary, hand);
-    p0.add(bc, &GPUScalar<Real>::get(-1), &hand); // p0 -= bc
+    p0.add(bc, &GPUScalar<Real>::get(-1, hand), &hand); // p0 -= bc
 
-    rhs.add(bc, &GPUScalar<Real>::get(1), &hand);
-    rhs.add(p0, &GPUScalar<Real>::get(1), &hand);
+    rhs.add(bc, &GPUScalar<Real>::get(1, hand), &hand);
+    rhs.add(p0, &GPUScalar<Real>::get(1, hand), &hand);
 
 
     errorMsg << "x0 = " << GpuOut<Real>(x0, hand) << "\nf = " << GpuOut<Real>(f, hand) << "\np0 = " << GpuOut<Real>(p0, hand) << '\n';
@@ -627,7 +627,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real, segX, segY, segZ>& 
     resultDevice.set(resultX.data(), hand);
 
     SimpleArray<Real>& lhsMultX = p0;
-    lhsOperator.mult(resultDevice, lhsMultX, &hand, &GPUScalar<Real>::get(1), &GPUScalar<Real>::get(0), false);
+    lhsOperator.mult(resultDevice, lhsMultX, &hand, &GPUScalar<Real>::get(1, hand), &GPUScalar<Real>::get(0, hand), false);
 
     std::vector<Real> lhsHost(n, 0), rhsHost(n, 0);
     lhsMultX.get(lhsHost.data(), hand);
@@ -655,7 +655,7 @@ void boundaryBattery(
     std::string locMsg = ss.str();
 
     // Use the factory to deduce segment types at runtime and execute the tests
-    buildBoundaryConfigAndLaunch<Real>(dim, deltas, startIsN, endIsN, startVal, endVal, isStag, 0, [&](const auto& boundaryHost) {
+    buildBoundaryConfigAndLaunch<Real>(dim, deltas, startIsN, endIsN, startVal, endVal, isStag, hand3[0], [&](const auto& boundaryHost) {
 
         // Deduce uniformity at compile time
         using Config = std::decay_t<decltype(boundaryHost)>;
@@ -853,7 +853,7 @@ void verifyShiftedEigenSolverIdentity(
     x.set(x0Host.data(), hands[0]);
 
     auto b = SimpleArray<Real>::create(dim.size(), hands[0]);
-    laplacian.bandedMult(x, b, hands, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);
+    laplacian.bandedMult(x, b, hands, GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(0, hands[0]), false);
     auto shiftGpu = Singleton<Real>::create(-shift, hands[0]);
     b.add(x, &shiftGpu, hands);   // y0 += (-shift) * x0
 

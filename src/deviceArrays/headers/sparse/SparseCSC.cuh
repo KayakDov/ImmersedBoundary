@@ -32,7 +32,7 @@ public:
 
     SparseCSC(size_t rows, size_t cols, SimpleArray<Real> &values, SimpleArray<Int> &colOffsets, SimpleArray<Int> &rowInds);
 
-    static SparseCSC create(size_t nnz, size_t rows, size_t cols, cudaStream_t stream);
+    static SparseCSC create(size_t nnz, size_t rows, size_t cols, Handle& handle);
 
     static SparseCSC create(size_t rows, SimpleArray<Real> values, SimpleArray<Int> colOffsets, SimpleArray<Int> rowInds);
 

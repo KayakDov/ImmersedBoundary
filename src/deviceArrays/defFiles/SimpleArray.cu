@@ -7,25 +7,25 @@
 #include <string>
 
 template<typename T>
-SimpleArray<T>::SimpleArray(size_t size, std::shared_ptr<T> ptr, bool initDescr): Vec<T>(size, ptr, 1) {
+SimpleArray<T>::SimpleArray(size_t size, GpuPointer<T> ptr, bool initDescr): Vec<T>(size, ptr, 1) {
 }
 
 template<typename T>
-SimpleArray<T> SimpleArray<T>::create(size_t size, cudaStream_t stream, bool initDescr) {
+SimpleArray<T> SimpleArray<T>::create(size_t size, Handle& stream, bool initDescr) {
     auto preSimple = Vec<T>::create(size, stream);
     return SimpleArray(size, preSimple.ptr(), initDescr);
 }
 
 template<typename T>
-SimpleArray<T> SimpleArray<T>::create(std::vector<T> hostData, cudaStream_t stream, bool initDescr) {
-    auto deviceData = SimpleArray<T>::create(hostData.size(), stream, initDescr);
-    deviceData.set(hostData.data(), stream);
+SimpleArray<T> SimpleArray<T>::create(std::vector<T> hostData, Handle& handle, bool initDescr) {
+    auto deviceData = SimpleArray<T>::create(hostData.size(), handle, initDescr);
+    deviceData.set(hostData.data(), handle);
     return deviceData;
 }
 
 template<typename T>
 SimpleArray<T> SimpleArray<T>::empty() {
-    return SimpleArray<T>(0, nonOwningGpuPtr<T>(nullptr));
+    return SimpleArray<T>(0, GpuPointer<T>(nullptr, 0, false));
 }
 
 template<typename T>

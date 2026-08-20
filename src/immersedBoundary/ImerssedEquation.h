@@ -61,7 +61,7 @@ class ImmersedEq {
 
     const GridDim dim;
 
-    mutable Handle hand5[5]{}; ///< Array of 5 CUDA Handles for multi-streaming.
+    mutable Handle hand5[5]{Handle(), Handle(), Handle(), Handle(), Handle()}; ///< Array of 5 CUDA Handles for multi-streaming.
     mutable std::unique_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr; ///< A buffer space for sparse vector multiplication.  The space grows as needed.
     Event events12[12]{}; ///< CUDA events for fine-grained synchronization.
 

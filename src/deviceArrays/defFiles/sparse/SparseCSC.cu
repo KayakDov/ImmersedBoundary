@@ -36,10 +36,10 @@ SparseCSC<Real, Int>::SparseCSC(size_t rows, size_t cols, SimpleArray<Real>& val
 }
 
 template<typename Real, typename Int>
-SparseCSC<Real, Int> SparseCSC<Real, Int>::create(size_t nnz, size_t rows, size_t cols, cudaStream_t stream) {
-    auto vals = SimpleArray<Real>::create(nnz, stream);
-    auto colOffsets = SimpleArray<Int>::create(cols + 1, stream);//warning, aligning these arrays to be contiguouse in memory seems to cause problems.
-    auto rowInds = SimpleArray<Int>::create(nnz, stream);
+SparseCSC<Real, Int> SparseCSC<Real, Int>::create(size_t nnz, size_t rows, size_t cols, Handle& handle) {
+    auto vals = SimpleArray<Real>::create(nnz, handle);
+    auto colOffsets = SimpleArray<Int>::create(cols + 1, handle);//warning, aligning these arrays to be contiguouse in memory seems to cause problems.
+    auto rowInds = SimpleArray<Int>::create(nnz, handle);
     return {rows, cols, vals, colOffsets, rowInds};
 }
 

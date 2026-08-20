@@ -142,16 +142,13 @@ std::vector<Real> generateZeroMeanRhs(size_t total) {
 // ─── Residual Norm ───────────────────────────────────────────────────────────
 
 template <typename Real, typename segX, typename segY, typename segZ>
-double computeResidualNorm(const BoundaryConfig<Real, segX, segY, segZ>& boundary,
-                            const SimpleArray<Real>& x,
-                            const SimpleArray<Real>& rhs,
-                            Singleton<Real>& normResult,
-                            Handle* hands) {
+double computeResidualNorm(const BoundaryConfig<Real, segX, segY, segZ>& boundary, const SimpleArray<Real>& x, const SimpleArray<Real>& rhs, Singleton<Real>& normResult, Handle* hands) {
+
     auto L          = poisson::laplacian<Real>(boundary, hands[0]);
     auto lxMinusRhs = Vec<Real>::create(x.size(), hands[0]);
 
-    L.bandedMult(x, lxMinusRhs, hands);
-    lxMinusRhs.add(rhs, &GPUScalar<Real>::get(-1), hands);
+    L.bandedMult(x, lxMinusRhs, hands, GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(0, hands[0]), false);
+    lxMinusRhs.add(rhs, &GPUScalar<Real>::get(-1, hands[0]), hands);
     lxMinusRhs.norm(normResult, hands[0]);
     cudaDeviceSynchronize();
 

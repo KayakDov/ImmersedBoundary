@@ -109,7 +109,7 @@ protected:
      * @param multProduct
      * @param premultResult
      */
-    virtual void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct = GPUScalar<T>::get(1), Singleton<T> premultResult = GPUScalar<T>::get(0)) const = 0;
+    virtual void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct, Singleton<T> premultResult) const = 0;
 public:
     const Vec<T> b;
 

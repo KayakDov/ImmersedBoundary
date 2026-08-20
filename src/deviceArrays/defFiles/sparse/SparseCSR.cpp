@@ -35,7 +35,7 @@ SparseCSR<Real, Int>::SparseCSR(size_t rows, size_t cols, SimpleArray<Real>& val
 }
 
 template<typename Real, typename Int>
-SparseCSR<Real, Int> SparseCSR<Real, Int>::create(size_t nnz, size_t rows, size_t cols, cudaStream_t stream) {
+SparseCSR<Real, Int> SparseCSR<Real, Int>::create(size_t nnz, size_t rows, size_t cols, Handle& stream) {
     auto vals = SimpleArray<Real>::create(nnz, stream);
     auto rowOffsets = SimpleArray<Int>::create(rows + 1, stream);//warning, aligning these arrays to be contiguouse in memory seems to cause problems.
     auto colInds = SimpleArray<Int>::create(nnz, stream);

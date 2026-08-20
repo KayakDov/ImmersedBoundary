@@ -80,7 +80,7 @@ void EigenDecompForFortran<Real>::solve(const Real *bHost)  {
     std::memcpy(pinnedB.get(), bHost, b.size() * sizeof(Real));
     b.set(pinnedB.get(), hand);
 
-    b.add(adjToB, &GPUScalar<Real>::get(1), &hand);
+    b.add(adjToB, &GPUScalar<Real>::get(1, hand), &hand);
     eds->solve(x, b, hand);
 
     x.get(pinnedX.get(), hand);

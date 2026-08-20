@@ -11,6 +11,8 @@
 #define BICGSTAB_SINGLETON_H
 
 #include "deviceArrays/headers/SimpleArray.h"
+#include <unordered_map>
+#include <memory>
 
 template<typename T> class Mat;
 template<typename T> class Tensor;
@@ -31,7 +33,7 @@ private:
      * @brief Private constructor from shared pointer.
      * @param ptr Shared pointer to device memory holding the single value.
      */
-    explicit Singleton(std::shared_ptr<T> ptr);
+    explicit Singleton(GpuPointer<T> ptr);
 
     // Grant access to Vec/Mat/Tensor getters that return a Singleton<T>
     friend Vec<T>;
@@ -126,7 +128,10 @@ public:
 template <typename T>
 class GPUScalar {
 
-    static std::unique_ptr<GPUScalar<T>> universal;
+    /// One GPUScalar<T> instance per device -- created the first time this
+    /// type is requested on a given device, never before. Keyed by
+    /// Handle::device(), i.e. the same gpuIndex used everywhere else.
+    static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
 
 public:
     /**
@@ -135,17 +140,21 @@ public:
     SimpleArray<T> base;
 
     /**
-     * Sets up a set of GPU scalars integers from -2 to 2 inclusive.
-     * @param hand
+     * Sets up a set of GPU scalars integers from -2 to 2 inclusive, on
+     * whichever device hand is bound to.
+     * @param hand The device this instance's constants live on.
      */
-    GPUScalar(Handle hand = Handle());
+    explicit GPUScalar(Handle& hand);
 
     /**
-     * Gets a singleton that holds the desired value without allocating new memory, except for hte first time it's called.
+     * Gets a singleton that holds the desired value, on the same device as
+     * hand, without allocating new memory except the first time this type
+     * is requested on that particular device.
      * @param i An integer between -2 and 2 inclusive.
-     * @return A singleton containing the requested integer.
+     * @param hand Determines which device's cache to use (or create).
+     * @return A singleton containing the requested integer, resident on hand's device.
      */
-    static const Singleton<T>& get(int32_t i);
+    static const Singleton<T>& get(int32_t i, Handle& hand);
 
     const Singleton<T> ONE;       ///< Singleton containing 1
     const Singleton<T> ZERO;      ///< Singleton containing 0

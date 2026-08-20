@@ -342,7 +342,7 @@ void generateEigenVariableSpacing(Handle& hand, SquareMat<T>& eVecs, SquareMat<T
         axisSegment
     );
 
-    eVals.mult(GPUScalar<T>::get(-1), &hand);
+    eVals.mult(GPUScalar<T>::get(-1, hand), &hand);
 }
 
 template<typename T>

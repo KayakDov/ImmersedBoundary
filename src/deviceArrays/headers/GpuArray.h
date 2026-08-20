@@ -18,7 +18,7 @@
 #include "Support/KernelPrep.cuh"
 #include <cuda_runtime_api.h>
 
-
+#include "Support/GpuPointer.h"
 
 
 template <typename T> class Vec;
@@ -28,29 +28,6 @@ template <typename T> class Tensor;
 template <typename T> class SquareMat;
 template <typename T> class BandedMat;
 template <typename T> class SimpleArray;
-
-inline void cudaFreeDeleter(void* ptr) {
-    if (ptr) cudaFree(ptr);
-}
-
-/**
- * @brief Wrap a raw GPU pointer in a non-owning shared_ptr.
- *
- * The returned shared_ptr does **not take ownership** of the
- * underlying CUDA device memory. No deallocation occurs when the
- * shared_ptr goes out of scope.  Use this function when the allocation is owned by another object or API.
- * The caller remains responsible for ensuring that the pointer stays valid for
- * the lifetime of every view created from the returned shared pointer.
- *
- * @tparam T Element type
- * @param p Raw CUDA device pointer
- * @return std::shared_ptr<T> with no-op deleter
- */
-template<typename T>
-std::shared_ptr<T> nonOwningGpuPtr(T *p) {
-    return std::shared_ptr<T>(p, [](T *) {
-    });
-}
 
 /**
  * @brief A class representing a GPU-accelerated multidimensional array.
@@ -93,7 +70,6 @@ private:
     operator DeviceData2d<T>();
     operator DeviceData2d<T>() const;
 public:
-
 
     /**
      * @brief Extract a column vector from the matrix.
@@ -154,7 +130,7 @@ protected:
      * GpuArray instance and is shared to facilitate memory reuse and resource
      * management among related instances or derived classes.
      */
-    std::shared_ptr<T> _ptr;
+    GpuPointer<T> _ptr;
 
     /**
      * @brief Constructs a GpuArray instance with specified dimensions, leading dimension,
@@ -175,7 +151,7 @@ protected:
      * @param _ptr A shared pointer to the allocated memory containing the data
      *             for the GpuArray.
      */
-    GpuArray(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr);
+    GpuArray(size_t rows, size_t cols, size_t ld, GpuPointer<T> _ptr);
 
     /**
      * @brief Performs matrix multiplication with optional transposition, scaling factors, and result storage.
@@ -407,7 +383,7 @@ public:
      * The shared pointer to the gpu data.
      * @return The shared pointer to the data.
      */
-    std::shared_ptr<T> ptr() const;
+    GpuPointer<T> ptr() const;
 
 
     /**

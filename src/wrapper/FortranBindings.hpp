@@ -47,6 +47,7 @@ namespace ImEq {
             std::vector<Real>(dz, dz + (zUniformDelta ? 1 : depth + 1))
         );
 
+        Handle hand;
         buildBoundaryConfigAndLaunch(
             GridDim(height, width, depth),
             delta,
@@ -59,7 +60,7 @@ namespace ImEq {
                 static_cast<eigen::LaplOperatorT>(ySegSpacing),
                 static_cast<eigen::LaplOperatorT>(zSegSpacing)
             ),
-            0,
+            hand,
             [&](const auto& boundary) {
                     eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int>>(boundary, forceSize, nnzMax, p, f, dt, tol, maxIterations);
                 }

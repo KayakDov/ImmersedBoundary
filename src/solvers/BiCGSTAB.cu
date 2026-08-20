@@ -96,7 +96,7 @@ void BiCGSTAB<T>::preamble(Vec<T>& x) {
 
     set(r, b, 0);
 
-    mult(x, r, GPUScalar<T>::get(-1), GPUScalar<T>::get(1)); // r = b - A * x
+    mult(x, r, GPUScalar<T>::get(-1, hand4[0]), GPUScalar<T>::get(1, hand4[0])); // r = b - A * x
 
     set(r_tilde, r, 0); //r_tilde = r
 
@@ -115,11 +115,11 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
 
     size_t i = 0;
     for (; i < maxIterations; i++) {
-        mult(p, v); // v = A * p
+        mult(p, v, GPUScalar<T>::get(1, hand4[0]), GPUScalar<T>::get(0, hand4[0])); // v = A * p
 
         r_tilde.mult(v, alpha, hand4);
         hold(0, {rhoRAW});
-        alpha.EBEPow(rho, GPUScalar<T>::get(-1), hand4[0]); //alpha = rho / (r_tilde * v)
+        alpha.EBEPow(rho, GPUScalar<T>::get(-1, hand4[0]), hand4[0]); //alpha = rho / (r_tilde * v)
 
         record(0, {alphaRAW});
         hold(1, {alphaRAW});
@@ -129,7 +129,7 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
         record(1, {pWAR});
 
         hold(0, {xRAW, sWAR});
-        s.setDifference(r, v, GPUScalar<T>::get(1), alpha, hand4); // s = r - alpha * v
+        s.setDifference(r, v, GPUScalar<T>::get(1, hand4[0]), alpha, hand4); // s = r - alpha * v
         record(0, {sRAW});
 
         hold(2, {sRAW});
@@ -140,7 +140,7 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
         record(0, {sWAR});
 
 
-        mult(s, t); // t = A * s
+        mult(s, t, GPUScalar<T>::get(1, hand4[0]), GPUScalar<T>::get(0, hand4[0])); // t = A * s
         record(0, {tRAW});
 
         hold(3, {tRAW});
@@ -148,15 +148,15 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
         record(3, {tsRAW});
         t.mult(t, omega, hand4); //omega = t*t
         hold(0, {tsRAW});
-        omega.EBEPow(temp[3], GPUScalar<T>::get(-1), hand4[0]); //omega = t * s / t * t;
+        omega.EBEPow(temp[3], GPUScalar<T>::get(-1, hand4[0]), hand4[0]); //omega = t * s / t * t;
         record(0, {omegaRAW});
 
         hold(1, {omegaRAW});
-        x.setSum(h, s, GPUScalar<T>::get(1), omega, hand4 + 1); // x = h + omega * s
+        x.setSum(h, s, GPUScalar<T>::get(1, hand4[1]), omega, hand4 + 1); // x = h + omega * s
         record(1, {xRAW});
 
         hold(0, {rWAR});
-        r.setDifference(s, t, GPUScalar<T>::get(1), omega, hand4); // r = s - omega * t
+        r.setDifference(s, t, GPUScalar<T>::get(1, hand4[0]), omega, hand4); // r = s - omega * t
         record(0, {rRAW});
 
         hold(2, {rRAW});

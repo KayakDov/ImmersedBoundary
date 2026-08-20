@@ -8,7 +8,7 @@
 #include <string>
 
 template<typename T>
-GpuArray<T>::GpuArray(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr):_rows(rows), _cols(cols), _ld(ld), _ptr(_ptr) {
+GpuArray<T>::GpuArray(size_t rows, size_t cols, size_t ld, GpuPointer<T> _ptr):_rows(rows), _cols(cols), _ld(ld), _ptr(_ptr) {
 }
 
 template <typename T>
@@ -79,13 +79,13 @@ void GpuArray<T>::fill(T val, cudaStream_t stream) {
 }
 
 template<typename T>
-std::shared_ptr<T> GpuArray<T>::ptr() const{
+GpuPointer<T> GpuArray<T>::ptr() const{
     return this->_ptr;
 }
 
 template<typename T>
 void GpuArray<T>::freeMem() {
-    this->_ptr.reset();
+    this->_ptr.freeMem();
 }
 
 template <typename T>
@@ -219,7 +219,7 @@ GpuArray<T>::operator DeviceData2d<T>() const {
 template<typename T>
 void GpuArray<T>::add(GpuArray<T> &other, GpuArray<T> &dst, Handle &hand, bool transposeThis,
     bool transposeOther) const {
-    add(other, dst, GPUScalar<T>::get(1), GPUScalar<T>::get(1), transposeThis, transposeOther, hand);
+    add(other, dst, GPUScalar<T>::get(1, hand), GPUScalar<T>::get(1, hand), transposeThis, transposeOther, hand);
 }
 
 template <typename T>
@@ -236,7 +236,7 @@ SimpleArray<T> GpuArray<T>::col(const size_t index, bool initDescr){
             "GpuArray::col access out of bounds: requested index " + std::to_string(index) +
             " but the matrix, with " + std::to_string(this->_rows) + " rows has only has " + std::to_string(this->_cols) + " columns."
         );
-    return SimpleArray<T>(this->_rows, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + index * this->_ld), initDescr);
+    return SimpleArray<T>(this->_rows, _ptr.window(index * this->_ld), initDescr);
 }
 
 template <typename T>

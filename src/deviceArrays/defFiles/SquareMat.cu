@@ -12,7 +12,7 @@
 
 
 template<typename T>
-SquareMat<T>::SquareMat(const size_t rowsCols, const size_t ld, std::shared_ptr<T> _ptr) :
+SquareMat<T>::SquareMat(const size_t rowsCols, const size_t ld, GpuPointer<T> _ptr) :
     Mat<T>(rowsCols, rowsCols, ld, _ptr) {
 }
 
@@ -23,8 +23,8 @@ SquareMat<T> SquareMat<T>::create(size_t rowsCols, Handle& hand) {
 }
 
 template<typename T>
-SquareMat<T> SquareMat<T>::create(size_t rowsCols, size_t ld, T *ptr) {
-    return SquareMat<T>(rowsCols, ld, nonOwningGpuPtr(ptr));
+SquareMat<T> SquareMat<T>::create(size_t rowsCols, size_t ld, GpuPointer<T> ptr) {
+    return SquareMat<T>(rowsCols, ld, ptr);
 }
 
 
@@ -72,7 +72,7 @@ inline void processInfo(const Singleton<int32_t>& info_dev, Handle& stream, cons
 
 template<typename T>
 SquareMat<T> SquareMat<T>::empty() {
-    return SquareMat<T>(0, 0, nonOwningGpuPtr<T>(nullptr));
+    return SquareMat<T>(0, 0, GpuPointer<T>::null);
 }
 
 template <typename T>
@@ -150,7 +150,7 @@ SquareMat<T> Mat<T>::sqSubMat(size_t startRow, size_t startCol, size_t dim) cons
 }
 template<typename T>
 SquareMat<T> Mat<T>::sqSubMatFirstBiggest() const {
-    return SquareMat<T>(std::min(this->_rows, this->_cols), this->_ld, offset(0, 0));
+    return SquareMat<T>(std::min(this->_rows, this->_cols), this->_ld, this->_ptr);
 }
 
 template<typename T>

@@ -5,7 +5,7 @@
 
 
 template<typename T>
-Tensor<T>::Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::shared_ptr<T> _ptr) :
+Tensor<T>::Tensor(size_t rows, size_t cols, size_t layers, size_t ld, GpuPointer<T> _ptr) :
     GpuArray<T>(rows, cols, ld, _ptr), _layers(layers), utilityMatrix(subMatrix(0,0,0, rows * layers, cols, ld)) {}
 
 
@@ -15,8 +15,8 @@ Mat<T> Tensor<T>::subMatrix(size_t startRow, size_t startCol, size_t startLayer,
         height,
         width,
         ld,
-        std::shared_ptr<T>(this->_ptr, this->_ptr.get() +
-            startLayer * this->_rows + startCol * this->_ld + startRow));
+        this->_ptr.window(startLayer * this->_rows + startCol * this->_ld + startRow)
+    );
 }
 
 template<typename T>
@@ -40,7 +40,7 @@ template<typename T>
 Vec<T> Tensor<T>::depth(size_t row, size_t col) {
     return Vec<T>(
         this->_layers,
-        std::shared_ptr<T>(this->_ptr, this->_ptr.get() + col * this->_ld + row),
+        this->_ptr.window(col * this->_ld + row),
         this->_ld * this->_cols
         );
 }
@@ -52,9 +52,7 @@ Vec<T> Tensor<T>::row(size_t row, size_t layer) {
 
 template<typename T>
 Singleton<T> Tensor<T>::get(size_t row, size_t col, size_t layer) {
-    return Singleton<T>(
-        std::shared_ptr<T>(this->_ptr, this->_ptr.get() + layer * this->_ld * this->_cols + col * this->_ld + row)
-        );
+    return Singleton<T>(this->_ptr.window(layer * this->_ld * this->_cols + col * this->_ld + row));
 }
 
 template<typename T>

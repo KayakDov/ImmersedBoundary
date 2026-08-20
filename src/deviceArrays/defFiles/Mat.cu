@@ -38,7 +38,7 @@ Mat<T> Mat<T>::mult(
 
 template<typename T>
 Mat<T> Mat<T>::mult(const Mat<T> &other, Mat<T> *result, Handle *handle, bool transposeA, bool transposeB) const {
-    return mult(other, result, handle, &GPUScalar<T>::get(1), &GPUScalar<T>::get(0), transposeA, transposeB);
+    return mult(other, result, handle, &GPUScalar<T>::get(1, *handle), &GPUScalar<T>::get(0, *handle), transposeA, transposeB);
 }
 
 
@@ -92,7 +92,7 @@ Mat<T>* Mat<T>::_get_or_create_target(const size_t rows, const size_t cols, Mat<
 
 
 template<typename T>
-Mat<T>::Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr, bool initDescr): GpuArray<T>(rows, cols, ld, _ptr) {
+Mat<T>::Mat(size_t rows, size_t cols, size_t ld, GpuPointer<T> _ptr, bool initDescr): GpuArray<T>(rows, cols, ld, _ptr) {
     if (initDescr) this->initDescr();
 }
 
@@ -216,7 +216,7 @@ std::ostream &Mat<T>::get(std::ostream &output_stream, bool isText, bool printCo
 
 template<typename T>
 Singleton<T> Mat<T>::get(size_t row, size_t col) {
-    return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->_ptr.get() + col * this->_ld + row));
+    return Singleton<T>(this->_ptr.window(col * this->_ld + row));
 }
 
 template <typename T>
@@ -330,9 +330,9 @@ void Mat<T>::transpose(
             CUBLAS_OP_N, // Don't transpose B (it's not used)
             this->_cols, // Result rows
             this->_rows, // Result columns
-            GPUScalar<T>::get(1).toKernel1d(),
+            GPUScalar<T>::get(1, handle).toKernel1d(),
             this->toKernel2d(), this->_ld,
-            GPUScalar<T>::get(0).toKernel1d(), nullptr, this->_ld, // B is not referenced since beta=0
+            GPUScalar<T>::get(0, handle).toKernel1d(), nullptr, this->_ld, // B is not referenced since beta=0
             result.toKernel2d(), result._ld
         ));
     } else if constexpr (std::is_same_v<T, double>) {
@@ -342,9 +342,9 @@ void Mat<T>::transpose(
             CUBLAS_OP_N,
             this->_cols,
             this->_rows,
-            GPUScalar<T>::get(1).data(),
+            GPUScalar<T>::get(1, handle).data(),
             this->data(), this->_ld,
-            GPUScalar<T>::get(0).data(), nullptr, this->_ld,
+            GPUScalar<T>::get(0, handle).data(), nullptr, this->_ld,
             result.data(), result._ld
         ));
     }
@@ -383,27 +383,27 @@ Mat<T> Mat<T>::create(size_t rows, size_t cols, Handle& hand, bool initDescr){
 
     CHECK_CUDA_ERROR(cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols));//Note: there does not seem to be an asynchronos version of this method.
 
-    return {rows, cols, pitch / sizeof(T), std::shared_ptr<T>(rawPtr, cudaFreeDeleter), initDescr};
+    return {rows, cols, pitch / sizeof(T), GpuPointer<T>(rawPtr), initDescr};
 }
 
 template<typename T>
-Mat<T> Mat<T>::create(size_t rows, size_t cols, const size_t ld, Handle& hand, T *devicePointer) {
-    return Mat<T>(rows, cols, ld, nonOwningGpuPtr(devicePointer));
+Mat<T> Mat<T>::create(size_t rows, size_t cols, const size_t ld, Handle& hand, GpuPointer<T> devicePointer) {
+    return Mat<T>(rows, cols, ld, devicePointer);
 }
 
 template<typename T>
 Mat<T> Mat<T>::empty() {
-    return Mat<T>(0, 0, 0, nonOwningGpuPtr<T>(nullptr));
+    return Mat<T>(0, 0, 0, GpuPointer<T>::null);
 }
 
 template <typename T>
-std::shared_ptr<T> Mat<T>::offset(size_t row, size_t col) {
-    return std::shared_ptr<T>(this->_ptr, const_cast<T*>(this->_ptr.get() + col * this->_ld + row));
+GpuPointer<T> Mat<T>::offset(size_t row, size_t col) {
+    return this->_ptr.window(col * this->_ld + row);
 }
 
 template <typename T>
-std::shared_ptr<T> Mat<T>::offset(size_t row, size_t col) const{
-    return std::shared_ptr<T>(this->_ptr,this->_ptr.get() + col * this->_ld + row);
+GpuPointer<T> Mat<T>::offset(size_t row, size_t col) const{
+    return this->_ptr.window(col * this->_ld + row);
 }
 
 template <typename T>

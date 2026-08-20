@@ -18,11 +18,17 @@ void CusparseDeleter::operator()(cusparseHandle_t handle) const {
 }
 
 
-Handle::Handle(): Handle(nullptr, 0) {}
-Handle::Handle(size_t gpuIndex): Handle(nullptr, gpuIndex) {}
+Handle::Handle(GpuIndex gpuIndex, cudaStream_t user_stream): gpuIndex_(gpuIndex) {
 
-
-Handle::Handle(cudaStream_t user_stream, size_t gpuIndex): gpuIndex(gpuIndex) {
+    if (user_stream != nullptr) {
+        // An existing stream's device can't be reassigned -- take this
+        // Handle's device from the stream itself rather than trusting
+        // whatever gpuIndex the caller passed (which may not even have
+        // been specified, given the default above).
+        int actualDevice = 0;
+        CHECK_CUDA_ERROR(cudaStreamGetDevice(user_stream, &actualDevice));
+        this->gpuIndex_ = GpuIndex(actualDevice);
+    }
 
     ensureDevice();
 

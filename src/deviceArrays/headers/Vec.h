@@ -62,7 +62,7 @@ protected:
      * @param _ptr Shared pointer to underlying GPU memory.
      * @param stride Stride for elements (for views/subvectors).
      */
-    Vec(size_t size, std::shared_ptr<T> _ptr, size_t stride);
+    Vec(size_t size, GpuPointer<T> _ptr, size_t stride);
 
 public:
 
@@ -72,10 +72,10 @@ public:
      * @brief Factory method to create a new vector of given length.
      * 
      * @param length Number of elements.
-     * @param stream Optional CUDA stream.
+     * @param handle Optional CUDA stream.
      * @return Vec<T> instance.
      */
-    static Vec<T> create(size_t length, cudaStream_t stream = nullptr);
+    static Vec<T> create(size_t length, Handle& handle);
 
     /**
      * @brief Factory method to create a new vector of given length.
@@ -229,9 +229,9 @@ public:
      * 
      * @param t Singleton<T> exponent base.
      * @param n Singleton<T> power exponent.
-     * @param stream CUDA stream to use.
+     * @param hand CUDA stream to use.
      */
-    void EBEPow(const Singleton<T>& t, const Singleton<T>& n, cudaStream_t stream);
+    void EBEPow(const Singleton<T>& t, const Singleton<T>& n, Handle& hand);
 
 
     /**
@@ -245,10 +245,10 @@ public:
      * @param result A pointer to an existing GPU vector; if valid, it will be returned.
      * @param out_ptr_unique A unique pointer that will be initialized with a new GPU vector
      *                       if the result pointer is null.
-     * @param stream The CUDA stream used for creating the GPU vector.
+     * @param hand The CUDA stream used for creating the GPU vector.
      * @return A pointer to the existing or newly created GPU vector.
      */
-    static Vec<T>* _get_or_create_target(size_t length, Vec<T> *result, std::unique_ptr<Vec<T>> &out_ptr_unique, cudaStream_t stream);
+    static Vec<T>* _get_or_create_target(size_t length, Vec<T> *result, std::unique_ptr<Vec<T>> &out_ptr_unique, Handle& hand);
 
     /**
      * @brief Set this vector to a sum of two scaled vectors.

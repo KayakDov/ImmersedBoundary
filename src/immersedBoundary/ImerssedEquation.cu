@@ -58,7 +58,14 @@ std::shared_ptr<EigenDecompSolver<Real>> createEDS(const BoundaryConfigT &bounar
 }
 
 template<typename Real, typename Int>
-void ImmersedEq<Real, Int>::multSparse(const std::unique_ptr<SparseMat<Real, Int>>& mat, const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeB) const {
+void ImmersedEq<Real, Int>::multSparse(
+    const std::unique_ptr<SparseMat<Real, Int>>& mat,
+    const SimpleArray<Real> &vec,
+    SimpleArray<Real> &result,
+    const Singleton<Real> &multProduct,
+    const Singleton<Real> &preMultResult,
+    bool transposeB
+) const {
 
     const size_t multBufferSizeNeeded = mat->multWorkspaceSize(vec, result, multProduct, preMultResult, transposeB, hand5[0]);
     if (!sparseMultBuffer || multBufferSizeNeeded > sparseMultBuffer->size())
@@ -117,7 +124,7 @@ ImmersedEq<Real, Int>::ImmersedEq(
 template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
 void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) {
 
-    if (preMultResult.data() == GPUScalar<Real>::get(0).data()) result.fill(0, hand5[4]);
+    if (preMultResult.data() == GPUScalar<Real>::get(0, hand5[0]).data()) result.fill(0, hand5[4]);
     else {
         lhsTimes.record(hand5[0]);
         lhsTimes.hold(hand5[4]);
@@ -129,11 +136,11 @@ void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Rea
     auto BTBx = gridVec(GridInd::LHS_BTBx);
     auto invLBTBx = gridVec(GridInd::LHS_invLBTBx);
 
-    multSparse(B, x, Bx, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0), false);// f <- B * x
-    multSparse(B, Bx, BTBx, GPUScalar<Real>::get(2), GPUScalar<Real>::get(0), true);// p <- B^T * (B * x)
+    multSparse(B, x, Bx, GPUScalar<Real>::get(1, hand5[0]), GPUScalar<Real>::get(0, hand5[0]), false);// f <- B * x
+    multSparse(B, Bx, BTBx, GPUScalar<Real>::get(2, hand5[0]), GPUScalar<Real>::get(0, hand5[0]), true);// p <- B^T * (B * x)
     eds->solve(invLBTBx, BTBx, hand5[0]); // workspace2 <- L^-1 * B^T * (B * x)
 
-    invLBTBx.add(x, &GPUScalar<Real>::get(1), hand5);
+    invLBTBx.add(x, &GPUScalar<Real>::get(1, hand5[0]), hand5);
     auto& invLxBTBxPlusX = invLBTBx;
 
     lhsTimes.hold(hand5[0]);
@@ -148,7 +155,7 @@ SquareMat<Real> ImmersedEq<Real, Int>::LHSMat() {
     auto result = SquareMat<Real>::create(dim.size(), hand5[0]);
     for (size_t i = 0; i < dim.size(); ++i) {
         auto col = result.col(i);
-        LHSTimes(id.col(i), col, GPUScalar<Real>::get(1), GPUScalar<Real>::get(0));
+        LHSTimes(id.col(i), col, GPUScalar<Real>::get(1, hand5[0]), GPUScalar<Real>::get(0, hand5[0]));
     }
     return result;
 }
@@ -171,10 +178,10 @@ void ImmersedEq<Real, Int>::setRHS(bool prime) {
     auto f = lagrangeVec(prime? LagrangeInd::RHSFPrime : LagrangeInd::f);
     auto boundaryRhsAdj = gridVec(GridInd::boundRHSAdj);
 
-    multSparse(B, f, p, GPUScalar<Real>::get(2), GPUScalar<Real>::get(1), true);
+    multSparse(B, f, p, GPUScalar<Real>::get(2, hand5[0]), GPUScalar<Real>::get(1, hand5[0]), true);
     //p <- BT*f+p
 
-    p.add(boundaryRhsAdj, &GPUScalar<Real>::get(1), hand5);
+    p.add(boundaryRhsAdj, &GPUScalar<Real>::get(1, hand5[0]), hand5);
 
     auto RHS = gridVec(GridInd::RHS);
     eds->solve(RHS, p, hand5[0]);
@@ -276,7 +283,7 @@ void ImmersedEq<Real, Int>::setRHSFPrime(Handle &hand) {
 
     auto RHSF = lagrangeVec(LagrangeInd::RHSFPrime);
 
-    multSparse(R, velocities, RHSF, dT, GPUScalar<Real>::get(0), true);
+    multSparse(R, velocities, RHSF, dT, GPUScalar<Real>::get(0, hand), true);
 
     RHSF.subtract(lagrangeVec(LagrangeInd::UGamma), &dT, sparseMultBuffer->get(0), &hand);
 }
@@ -321,9 +328,9 @@ void ImmersedEq<Real, Int>::solve(
     resultDevice.get(resultP, hand5[0]);
 
     auto fResultDevice = lagrangeVec(LagrangeInd::fPrime);
-    multSparse(B, gridVec(GridInd::pPrime), fResultDevice, GPUScalar<Real>::get(2), GPUScalar<Real>::get(0), false);
+    multSparse(B, gridVec(GridInd::pPrime), fResultDevice, GPUScalar<Real>::get(2, hand5[0]), GPUScalar<Real>::get(0, hand5[0]), false);
 
-    fResultDevice.add(lagrangeVec(LagrangeInd::RHSFPrime), &GPUScalar<Real>::get(-2), &hand5[0]);
+    fResultDevice.add(lagrangeVec(LagrangeInd::RHSFPrime), &GPUScalar<Real>::get(-2, hand5[0]), &hand5[0]);
     fResultDevice.get(resultF, hand5[0]);
 }
 
@@ -374,8 +381,7 @@ void ImmersedEq<Real, Int>::solve(
 }
 
 template<typename Real, typename Int>
-void ImmersedEqSolver<Real, Int>::mult(Vec<Real> &vec, Vec<Real> &product, Singleton<Real> multProduct,
-                                       Singleton<Real> preMultResult) const {
+void ImmersedEqSolver<Real, Int>::mult(Vec<Real> &vec, Vec<Real> &product, Singleton<Real> multProduct, Singleton<Real> preMultResult) const {
     SimpleArray<Real> vecSA(vec), productSA(product);
 
     imEq.LHSTimes(vecSA, productSA, multProduct, preMultResult);

@@ -30,7 +30,7 @@ void KroneckerTriplet<T>::multDepths(const SimpleArray<T> &other, SimpleArray<T>
         this->z, 0,
         dst1, stride,
         false, !transpose.z, hand,
-        dim.cols, GPUScalar<T>::get(1), GPUScalar<T>::get(0)
+        dim.cols, GPUScalar<T>::get(1, hand), GPUScalar<T>::get(0, hand)
     );
 }
 
@@ -114,11 +114,11 @@ KroneckerTriplet<T> KroneckerTriplet<T>::zOperator(const GridDim& gridDim, const
 }
 
 template<typename T>
-KroneckerTriplet<T>::KroneckerTriplet(const SquareMat<T> &X, const SquareMat<T> &Y, bool transpX, bool transpY) :
+KroneckerTriplet<T>::KroneckerTriplet(const SquareMat<T> &X, const SquareMat<T> &Y, bool transpX, bool transpY, Handle& handle) :
     KroneckerTriplet<T>(
         X,
         Y,
-        GPUScalar<T>::get(1).matrix(1).sqSubMat(0,0,1),
+        GPUScalar<T>::get(1, handle).matrix(1).sqSubMat(0,0,1),
         {transpX, transpY, false}
     ) {
 }
@@ -126,13 +126,13 @@ KroneckerTriplet<T>::KroneckerTriplet(const SquareMat<T> &X, const SquareMat<T> 
 template<typename T>
 KroneckerTriplet<T> KroneckerTriplet<T>::xOperator2d(const GridDim &gridDim, const SquareMat<T> &forRows, bool transpose, Handle& hand) {
     auto Iy = SquareMat<T>::create(gridDim.rows, hand);
-    return {forRows, Iy, transpose, false};
+    return {forRows, Iy, transpose, false, hand};
 }
 
 template<typename T>
 KroneckerTriplet<T> KroneckerTriplet<T>::yOperator2d(const GridDim &gridDim, const SquareMat<T> &forCols, bool transpose, Handle& hand) {
     auto Ix = SquareMat<T>::create(gridDim.cols, hand);
-    return {Ix, forCols, false, transpose};
+    return {Ix, forCols, false, transpose, hand};
 }
 
 template<typename T>

@@ -56,7 +56,7 @@ public:
      * @param ld Leading dimension of the underlying storage.
      * @param _ptr Shared pointer to the underlying GPU memory.
      */
-    Tensor(size_t rows, size_t cols, size_t layers, size_t ld, std::shared_ptr<T> _ptr);
+    Tensor(size_t rows, size_t cols, size_t layers, size_t ld, GpuPointer<T> _ptr);
 
     /**
      * This matrix is the tensor laid out with one layer above another.
@@ -64,7 +64,6 @@ public:
     Mat<T> utilityMatrix;
 
     const size_t _layers;
-
     /**
      * @brief Returns a two-dimensional view into a tensor region.
      *

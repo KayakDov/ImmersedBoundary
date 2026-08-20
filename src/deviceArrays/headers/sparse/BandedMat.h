@@ -56,7 +56,7 @@ protected:
      * @param ptr  Be sure this is preallocated memory with a destruction plan.
      * @param indices Each values is the index of the corresponding row.
      */
-    BandedMat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> ptr, const Vec<int32_t> &indices);
+    BandedMat(size_t rows, size_t cols, size_t ld, GpuPointer<T> ptr, const Vec<int32_t> &indices);
 
 public:
 
@@ -123,8 +123,7 @@ public:
     *
     * @return Result vector on device memory.
     */
-    void bandedMult(const Vec<T> &other, Vec<T> &result, Handle *handle, const
-                    Singleton<T> alpha = GPUScalar<T>::get(1), const Singleton<T> beta = GPUScalar<T>::get(0), bool
+    void bandedMult(const Vec<T> &other, Vec<T> &result, Handle *handle, const Singleton<T> alpha, const Singleton<T> beta, bool
                     transpose = false) const;
 
     void bandedMult(const Mat<T> &other, Mat<T> &result, Handle *handle, Singleton<T> alpha, Singleton<T> beta,

@@ -59,9 +59,9 @@ protected:
      * @param col
      * @return a pointer to the desired element.
      */
-    std::shared_ptr<T> offset(size_t row, size_t col);
+    GpuPointer<T> offset(size_t row, size_t col);
 
-    std::shared_ptr<T> offset(size_t row, size_t col) const;
+    GpuPointer<T> offset(size_t row, size_t col) const;
 
 public:
     using GpuArray<T>::mult;
@@ -76,7 +76,7 @@ public:
      * @param ld Leading dimension of the matrix.
      * @param _ptr Shared pointer to device memory for the matrix.
      */
-    Mat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> _ptr, bool initDescr = false);
+    Mat(size_t rows, size_t cols, size_t ld, GpuPointer<T> _ptr, bool initDescr = false);
 
     /**
      * @brief Retrieves or creates a target matrix with the specified dimensions.
@@ -222,7 +222,7 @@ public:
      * @param devicePointer The created matrix will not handle memory management if created with this pointer.
      * @return New Mat<T> instance with allocated GPU memory.
      */
-    static Mat<T> create(size_t rows, size_t cols, size_t ld, Handle& hand, T* devicePointer);
+    static Mat<T> create(size_t rows, size_t cols, size_t ld, Handle &hand, GpuPointer<T> devicePointer);
 
     /**
      * @brief Static factory method to create an empty matrix.

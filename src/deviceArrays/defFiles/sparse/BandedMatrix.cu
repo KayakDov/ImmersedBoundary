@@ -33,7 +33,7 @@ void BandedMat<T>::bandedMult(
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
-    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
+    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1, *handle), h);
 
     auto kp = result.kernelPrep();
 
@@ -47,7 +47,7 @@ void BandedMat<T>::bandedMult(
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());
-    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
+    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1, *h), h);
 }
 
 template<typename T>
@@ -62,7 +62,7 @@ void BandedMat<T>::bandedMult(
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
-    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
+    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1, *h), h);
 
     auto kp = result.kernelPrep();
 
@@ -76,7 +76,7 @@ void BandedMat<T>::bandedMult(
     );
 
     CHECK_CUDA_ERROR(cudaGetLastError());
-    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1), h);
+    if (transpose) (const_cast<Vec<int32_t> &>(_indices)).mult(GPUScalar<int32_t>::get(-1, *h), h);
 }
 
 template<typename T>
@@ -115,9 +115,8 @@ SquareMat<T> BandedMat<T>::getDense(Handle& hand) const {
 }
 
 template<typename T>
-BandedMat<T>::BandedMat(size_t rows, size_t cols, size_t ld, std::shared_ptr<T> ptr,
-                        const Vec<int32_t> &indices) : Mat<T>(rows, cols, ld, ptr), _indices(indices) {
-}
+BandedMat<T>::BandedMat(size_t rows, size_t cols, size_t ld, GpuPointer<T> ptr, const Vec<int32_t> &indices) :
+    Mat<T>(rows, cols, ld, ptr), _indices(indices) {}
 
 template<typename T>
 BandedMat<T>::BandedMat(const Mat<T> &windowTo, const Vec<int32_t> &indices) : BandedMat(

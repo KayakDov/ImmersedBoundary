@@ -421,11 +421,11 @@ public:
      * its consistency checks) run exactly where the FluxLapl concept lives.
      */
     AxisSegmentHost(BoundaryConditionHost<Real> start, BoundaryConditionHost<Real> end,
-                    const std::vector<Real>& hostDelta, cudaStream_t stream)
+                    const std::vector<Real>& hostDelta, Handle& hand)
         : start(start), end(end),
           hostWidth(makeFvmWidths(hostDelta)),
-          varDelta(SimpleArray<Real>::create(hostDelta, stream)),
-          fvWidth(SimpleArray<Real>::create(hostWidth, stream)) {}
+          varDelta(SimpleArray<Real>::create(hostDelta, hand)),
+          fvWidth(SimpleArray<Real>::create(hostWidth, hand)) {}
 
     FluxLaplacian<Real> forDevice() const {
         return FluxLaplacian<Real>(start.isNeumann, end.isNeumann,

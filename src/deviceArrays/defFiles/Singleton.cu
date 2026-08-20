@@ -4,7 +4,7 @@
 
 
 template<typename T>
-Singleton<T>::Singleton(std::shared_ptr<T> ptr):SimpleArray<T>(1, ptr) {}
+Singleton<T>::Singleton(GpuPointer<T> ptr):SimpleArray<T>(1, ptr) {}
 
 template<typename T>
 Singleton<T> Singleton<T>::create(Handle& stream) {
@@ -76,20 +76,25 @@ const Singleton<T>* Singleton<T>::_get_or_create_target(T defaultVal, Handle& ha
 }
 
 template<typename T>
-const Singleton<T> & GPUScalar<T>::get(int32_t i) {
-    if (!universal) universal = std::make_unique<GPUScalar<T>>();
+const Singleton<T> & GPUScalar<T>::get(int32_t i, Handle& hand) {
+    size_t gpuIndex = hand.device();
+
+    auto it = instances.find(gpuIndex);
+    if (it == instances.end())
+        it = instances.emplace(gpuIndex, std::make_unique<GPUScalar<T>>(hand)).first;
+
     switch (i) {
-        case 0: return universal->ZERO;
-        case 1: return universal->ONE;
-        case 2: return universal->TWO;
-        case -1: return universal->MINUS_ONE;
-        case -2: return universal->MINUS_TWO;
-        default: throw std::out_of_range("");
+        case 0: return it->second->ZERO;
+        case 1: return it->second->ONE;
+        case 2: return it->second->TWO;
+        case -1: return it->second->MINUS_ONE;
+        case -2: return it->second->MINUS_TWO;
+        default: throw std::out_of_range("GPUScalar::get only supports integer values in [-2, 2].");
     }
 }
 
 template<typename T>
-GPUScalar<T>::GPUScalar(Handle hand):
+GPUScalar<T>::GPUScalar(Handle& hand):
     base(SimpleArray<T>::create(5, hand)),
     ZERO(base.get(0)),
     ONE(base.get(2)),
@@ -107,7 +112,7 @@ GPUScalar<T>::GPUScalar(Handle hand):
     base.set(hostConsts.data(), hand);
 }
 
-template <typename T> std::unique_ptr<GPUScalar<T>> GPUScalar<T>::universal = nullptr;
+template <typename T> std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> GPUScalar<T>::instances;
 
 template class Singleton<int32_t>;
 template class Singleton<size_t>;

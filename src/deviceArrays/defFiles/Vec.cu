@@ -12,36 +12,36 @@
 
 
 template<typename T>
-Vec<T>::Vec(const size_t size, const std::shared_ptr<T> ptr, const size_t stride) : GpuArray<T>(1, size, stride, ptr) {
+Vec<T>::Vec(const size_t size, const GpuPointer<T> ptr, const size_t stride) : GpuArray<T>(1, size, stride, ptr) {
 }
 
 template<typename T>
-Vec<T> Vec<T>::create(size_t length, cudaStream_t stream) {
+Vec<T> Vec<T>::create(size_t length, Handle& handle) {
     T *rawPtr = nullptr;
-    cudaMallocAsync(&rawPtr, length * sizeof(T), stream);
+    cudaMallocAsync(&rawPtr, length * sizeof(T), handle);
 
-    return {length, std::shared_ptr<T>(rawPtr, cudaFreeDeleter), 1};
+    return {length, GpuPointer<T>(rawPtr), 1};
 }
 
 template<typename T>
 Vec<T> Vec<T>::create(size_t length, size_t stride, T *pointer) {
-    return Vec<T>(length, nonOwningGpuPtr(pointer), stride);
+    return Vec<T>(length, GpuPointer<T>(pointer, false), stride);
 }
 
 template<typename T>
 Vec<T> Vec<T>::subVec(const size_t offset, const size_t length, const size_t stride) const {
     return Vec<T>(
         length,
-        std::shared_ptr<T>(this->_ptr, const_cast<T *>(this->toKernel1d() + offset * this->_ld * stride)),
+        this->_ptr.window(offset * this->_ld * stride),
         stride * this->_ld
     );
 }
 
 template <typename T>
-Vec<T>* Vec<T>::_get_or_create_target(size_t length, Vec<T>* result, std::unique_ptr<Vec<T>>& out_ptr_unique, cudaStream_t stream) {
+Vec<T>* Vec<T>::_get_or_create_target(size_t length, Vec<T>* result, std::unique_ptr<Vec<T>>& out_ptr_unique, Handle& hand) {
     if (result) return result;
     else {
-        out_ptr_unique = std::make_unique<Vec<T>>(Vec<T>::create(length, stream));
+        out_ptr_unique = std::make_unique<Vec<T>>(Vec<T>::create(length, hand));
         return out_ptr_unique.get();
     }
 }
@@ -78,7 +78,8 @@ void Vec<T>::norm(Singleton<T> result, Handle &hand) const {
 
 template<typename T>
 Vec<T> Vec<T>::operator*(const Mat<T> &other) const {
-    Vec<T> result = Vec<T>::create(this->_cols, nullptr);
+    Handle hand;
+    Vec<T> result = Vec<T>::create(this->_cols, hand);
     this->mult(other, result);
     return result;
 }
@@ -286,8 +287,7 @@ void Vec<T>::fillRandom(Handle *handle) {
     curandState *rawDevStates = nullptr;
     CHECK_CUDA_ERROR(cudaMalloc(&rawDevStates, this->_cols * sizeof(curandState)));
 
-    std::unique_ptr<curandState, decltype(&cudaFreeDeleter)>
-            devStates(rawDevStates, &cudaFreeDeleter);
+    std::unique_ptr<curandState, CudaFreeDeleter> devStates(rawDevStates);
 
     if constexpr (std::is_same_v<T, float>) {
         setup_kernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), 0, this->size());
@@ -314,14 +314,14 @@ __global__ void EBEInvertKernel(DeviceData1d<T> data, const T *t) {
 }
 
 template<typename T>
-void Vec<T>::EBEPow(const Singleton<T> &t, const Singleton<T> &n, cudaStream_t stream) {
+void Vec<T>::EBEPow(const Singleton<T> &t, const Singleton<T> &n, Handle& hand) {
     if (this->_cols == 0) return;
 
     KernelPrep kp = this->kernelPrep();
 
-    if (n.data() == GPUScalar<T>::get(-1).data())
-        EBEInvertKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel1d(), t.data());
-    else EBEPowKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(
+    if (n.data() == GPUScalar<T>::get(-1, hand).data())
+        EBEInvertKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(this->toKernel1d(), t.data());
+    else EBEPowKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(
             this->toKernel1d(),
             t.data(), n.data()
          );
@@ -419,7 +419,7 @@ void Vec<T>::absSum(Singleton<T> result, Handle *handle) {
 
 template<typename T>
 Vec<T> GpuArray<T>::vec(size_t offset, size_t ld, size_t size) {
-    return Vec<T>(size, std::shared_ptr<T>(this->_ptr, this->_ptr.get() + offset), ld);
+    return Vec<T>(size, this->_ptr.window(offset), ld);
 }
 
 template <typename T>
@@ -489,7 +489,7 @@ __host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, std::vector
 
 template<typename T>
 Singleton<T> Vec<T>::get(size_t i) const {
-    return Singleton<T>(std::shared_ptr<T>(this->_ptr, this->toKernel1d() + i * this->_ld));
+    return Singleton<T>(this->_ptr.window(i * this->_ld));
 }
 
 template<typename T>

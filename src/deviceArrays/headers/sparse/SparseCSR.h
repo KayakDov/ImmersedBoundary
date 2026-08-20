@@ -21,7 +21,7 @@ public:
 
     SparseCSR(size_t rows, size_t cols, SimpleArray<Real>& vals, SimpleArray<Int>& rowOffsets, SimpleArray<Int>& colInds);
 
-    static SparseCSR create(size_t nnz, size_t rows, size_t cols, cudaStream_t stream);
+    static SparseCSR create(size_t nnz, size_t rows, size_t cols, Handle &stream);
 
     static SparseCSR create(size_t cols, SimpleArray<Real> values, SimpleArray<Int> rowOffsets, SimpleArray<Int> colInds);
 

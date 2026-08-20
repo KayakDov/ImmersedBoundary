@@ -60,8 +60,11 @@ Example:
 integer(C_SIZE_T) :: pressureSolver
 integer(C_SIZE_T) :: temperatureSolver
 
-pressureSolver = init_eigen_decomp_d(...)
-temperatureSolver = init_eigen_decomp_d(...)
+! The final argument to init_eigen_decomp_d is gpuIndex (section 7) -- here
+! the two solvers are placed on separate physical GPUs and will run
+! concurrently rather than competing for the same device's resources.
+pressureSolver = init_eigen_decomp_d(..., gpuIndex=0)
+temperatureSolver = init_eigen_decomp_d(..., gpuIndex=1)
 
 ! Asynchronous GPU launches. b is copied into an internal pinned staging
 ! buffer immediately (so the caller's own bp/bt may be reused or
@@ -123,6 +126,8 @@ The solver uses a persistent state on the GPU. Failing to release this state bef
 ---
 
 ## 6. Argument Reference: Immersed Boundary Solver
+
+> **GPU selection:** unlike the Direct Eigendecomposition solver (section 7), `init_immersed_eq_*` has no `gpuIndex` argument. This solver always runs on GPU 0.
 
 ### Initialization Routine (`init_immersed_eq_*`)
 Allocates GPU memory and pre-computes the Laplacian Eigen Decomposition.
@@ -201,6 +206,15 @@ Creates a new eigendecomposition solver and returns a solver handle.
 | `dim3StartVal`, `dim3EndVal` | real | Boundary values associated with the third logical dimension.                                                                                                                                                                                                                             |
 | `thomas` | logical | `.true.` to use the optimized Thomas variant for the direct eigendecomposition solver.                                                                                                                                                                                                   |
 | `helmholtzShift` | real | Scalar shift $\sigma$. Set to `0.0` for the Poisson equation or a non-zero value to solve $(L - \sigma I)x = b$. If all boundary conditions are neumann, and \sigma > 0, be sure \sigma is not an eigenvalue of L.                                                                       |
+| `gpuIndex` | integer(C_SIZE_T) | Which GPU this solver's data and computation live on. See [GPU Selection](#gpu-selection) below. |
+
+### GPU Selection
+
+`gpuIndex` is a 0-based index into whichever GPUs are visible to the process -- the same numbering `nvidia-smi -L` and `CUDA_VISIBLE_DEVICES` use. Pass `0` for the first (and on a single-GPU machine, only) device.
+
+Each call to `init_eigen_decomp_*` is independent: different solver handles may be created with different `gpuIndex` values and run concurrently on separate physical GPUs. A given solver's `solve_eigen_decomp_*`/`synch_*` calls always operate on whichever GPU that solver was initialized with -- there is nothing further to pass at solve time.
+
+**This applies only to the Direct Eigendecomposition solver (`init_eigen_decomp_*`).** The Immersed Boundary solver (`init_immersed_eq_*`, section 6) does not currently accept a `gpuIndex` and always runs on GPU 0, regardless of what else is passed to it.
 
 ### Solve Routine (`solve_eigen_decomp_*`)
 Performs the spectral solve on the GPU.

@@ -97,7 +97,7 @@ public:
  * @param startVal XYZ struct of boundary values for the start boundaries.
  * @param endVal XYZ struct of boundary values for the end boundaries.
  * @param segType True if using a staggered grid discretization.
- * @param stream CUDA stream used for asynchronous GPU allocations.
+ * @param handle CUDA stream used for asynchronous GPU allocations.
  * @param launchParams The lambda callback to execute once types are deduced.  This is a lambda expression that takes in a single boundaryConfig, and does something with it.
  */
 template<typename Real, typename Callback>
@@ -109,7 +109,7 @@ void buildBoundaryConfigAndLaunch(
     const XYZ<Real>& startVal,
     const XYZ<Real>& endVal,
     const XYZ<eigen::LaplOperatorT>& segType,
-    cudaStream_t stream,
+    Handle& handle,
     Callback&& launchParams
 ) {
 
@@ -121,7 +121,7 @@ void buildBoundaryConfigAndLaunch(
                 AxisSegmentHost<FluxLaplacian<Real>> segHostZ(
                     {startVal.z, startIsNeumann.z},
                     {endVal.z, endIsNeumann.z},
-                    delta.z, stream
+                    delta.z, handle
                 );
                 launchParams(
                     BoundaryConfigHost<Real, SegX, SegY, FluxLaplacian<Real>>(segHostX, segHostY, segHostZ)
@@ -129,7 +129,7 @@ void buildBoundaryConfigAndLaunch(
                 break;
             }
             case eigen::VariableDeltaLapl: {
-                SimpleArray<Real> arrayZ = SimpleArray<Real>::create(delta.z, stream);
+                SimpleArray<Real> arrayZ = SimpleArray<Real>::create(delta.z, handle);
                 AxisSegmentHost<VariableSegment<Real>> segHostZ(
                     {startVal.z, startIsNeumann.z},
                     {endVal.z, endIsNeumann.z},
@@ -159,13 +159,13 @@ void buildBoundaryConfigAndLaunch(
                 AxisSegmentHost<FluxLaplacian<Real>> segHostY(
                     {startVal.y, startIsNeumann.y},
                     {endVal.y, endIsNeumann.y},
-                    delta.y, stream
+                    delta.y, handle
                 );
                 dispatchZ(segHostX, segHostY);
                 break;
             }
             case eigen::VariableDeltaLapl: {
-                SimpleArray<Real> arrayY = SimpleArray<Real>::create(delta.y, stream);
+                SimpleArray<Real> arrayY = SimpleArray<Real>::create(delta.y, handle);
                 AxisSegmentHost<VariableSegment<Real>> segHostY(
                     {startVal.y, startIsNeumann.y},
                     {endVal.y, endIsNeumann.y},
@@ -192,13 +192,13 @@ void buildBoundaryConfigAndLaunch(
             AxisSegmentHost<FluxLaplacian<Real>> segHostX(
                     {startVal.x, startIsNeumann.x},
                     {endVal.x, endIsNeumann.x},
-                    delta.x, stream
+                    delta.x, handle
                 );
             dispatchY(segHostX);
             break;
         }
         case eigen::VariableDeltaLapl: {
-            SimpleArray<Real> arrayX = SimpleArray<Real>::create(delta.x, stream);
+            SimpleArray<Real> arrayX = SimpleArray<Real>::create(delta.x, handle);
             AxisSegmentHost<VariableSegment<Real>> segHostX(
                     {startVal.x, startIsNeumann.x},
                     {endVal.x, endIsNeumann.x},

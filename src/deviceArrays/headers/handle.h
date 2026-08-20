@@ -13,6 +13,7 @@
 #include <cusolverDn.h>
 #include <memory>
 #include <cusparse.h>
+#include "Support/GpuIndex.cuh"
 
 /**
  * @brief Checks a CUDA runtime error and throws a std::runtime_error if an error occurred.
@@ -84,16 +85,6 @@ struct CusparseDeleter {
     void operator()(cusparseHandle_t handle) const;
 };
 
-inline void ensure_device_impl(int target_device) {
-
-    thread_local int32_t cached_device = -1;
-
-    if (cached_device != target_device) {
-        CHECK_CUDA_ERROR(cudaSetDevice(target_device));
-        cached_device = target_device;
-    }
-}
-
 /** Owning smart pointer for a cuBLAS handle. */
 using CublasHandlePtr = std::unique_ptr<std::remove_pointer<cublasHandle_t>::type, CublasDeleter>;
 /** Owning smart pointer for a cuSOLVER dense handle. */
@@ -110,6 +101,7 @@ using CusparseHandlePtr = std::unique_ptr<std::remove_pointer<cusparseHandle_t>:
  * - A cublasHandle_t for cuBLAS operations
  * - A cusolverDnHandle_t for cuSOLVER operations
  * - A cudaStream_t for asynchronous execution
+ * - A GpuIndex identifying which physical GPU all of the above live on
  *
  * The class handles proper initialization, stream association, and cleanup.
  * Ownership of the stream can either belong to the Handle instance or be external.
@@ -121,29 +113,43 @@ private:
     CusparseHandlePtr sparseHandlePtr;
     cudaStream_t stream;
 
-    size_t gpuIndex;
+    GpuIndex gpuIndex_;
 
 public:
-    void ensureDevice() const { ensure_device_impl(gpuIndex); }
-
+    /**
+     * @brief Makes this Handle's device the currently active one.
+     *
+     * Explicit action, not automatic -- called internally by every
+     * conversion operator below (and by synch()/the destructor), and can
+     * be called directly by callers that need the device current before
+     * an operation that doesn't go through one of those conversions (see
+     * Mat::create for an example).
+     */
+    void ensureDevice() const { gpuIndex_.switchDevice(); }
 
     /**
-     * @brief Constructs a Handle with a user-provided CUDA stream.
-     * @param user_stream Optional user-defined CUDA stream. If nullptr, a new stream is created.
+     * @brief Constructs a Handle.
      *
-     * The constructed Handle will either own the stream (and destroy it on destruction)
-     * or simply reference a user-provided stream.
+     * @param user_stream Optional user-provided CUDA stream. If null (the
+     *        default), a new stream is created and owned by this Handle.
+     *        If non-null, this Handle's device is taken from the stream
+     *        itself (via cudaStreamGetDevice) -- the gpuIndex argument
+     *        below is ignored in that case, since an existing stream's
+     *        device can't be reassigned.
+     * @param gpuIndex Which device to create a new stream/context on.
+     *        Only consulted when user_stream is null.
      *
      * @throws std::runtime_error if handle creation or stream setup fails.
      */
-    explicit Handle(cudaStream_t user_stream, size_t gpuIndex = 0);
+    explicit Handle(GpuIndex gpuIndex = GpuIndex(0), cudaStream_t user_stream = nullptr);
 
-    Handle();
+    /** Which device this Handle's resources live on, as a plain int. */
+    int device() const { return gpuIndex_.index(); }
 
-    Handle(size_t gpuIndex);
-
-
-    int device() const { return gpuIndex; }
+    /** Which device this Handle's resources live on, as a GpuIndex --
+     *  e.g. for comparing against another object's device without
+     *  switching anything (GpuIndex itself is a pure value; see GpuIndex.h). */
+    GpuIndex gpuIndex() const { return gpuIndex_; }
 
     /**
      * @brief Get or create a Handle instance.

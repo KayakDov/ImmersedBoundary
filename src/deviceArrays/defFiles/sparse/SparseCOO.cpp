@@ -42,10 +42,10 @@ std::unique_ptr<SparseMat<Real, Int>> SparseCOO<Real, Int>::createWithPointer(Si
 
 
 template<typename Real, typename Int>
-SparseCOO<Real, Int> SparseCOO<Real, Int>::create(size_t nnz, size_t rows, size_t cols, cudaStream_t stream) {
-    auto vals = SimpleArray<Real>::create(nnz, stream);
-    auto rowsP = SimpleArray<Int>::create(nnz, stream);
-    auto colsP = SimpleArray<Int>::create(nnz, stream);
+SparseCOO<Real, Int> SparseCOO<Real, Int>::create(size_t nnz, size_t rows, size_t cols, Handle& handle) {
+    auto vals = SimpleArray<Real>::create(nnz, handle);
+    auto rowsP = SimpleArray<Int>::create(nnz, handle);
+    auto colsP = SimpleArray<Int>::create(nnz, handle);
     return {rows, cols, vals, rowsP, colsP};
 }
 
