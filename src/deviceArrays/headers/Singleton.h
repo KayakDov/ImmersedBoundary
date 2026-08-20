@@ -161,6 +161,12 @@ public:
     const Singleton<T> TWO;
     const Singleton<T> MINUS_ONE; ///< Singleton containing -1
     const Singleton<T> MINUS_TWO;
+
+
+    static void finalize() {
+        instances.clear();
+    }
+
 };
 
 

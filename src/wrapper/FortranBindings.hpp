@@ -387,6 +387,9 @@ namespace eigen {
         // double startTime = currentTime();
         solvers<float>.clear();
         solvers<double>.clear();
+
+        GPUScalar<float>::finalize();
+        GPUScalar<double>::finalize();
         // addSolverTime(currentTime() - startTime);
         // std::cout << "Total eigen decomp time: " << totalEigenSolverTime.load() << std::endl;
     }
