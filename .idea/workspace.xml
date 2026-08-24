@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackendCodeEditorMiscSettings">
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="3" type="long" />
+    <option name="/Default/Environment/UserInterface/HierarchyView/ViewStyle/@EntryValue" value="SuperTypes" type="string" />
+    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/LiveTemplatesHousekeeping/HotspotSessionHintIsShown/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
+    <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated>
+      <config projectName="CudaBanded" targetName="gtest_main" />
+      <config projectName="CudaBanded" targetName="CudaBandedLib" />
+      <config projectName="CudaBanded" targetName="run_unit_tests" />
+      <config projectName="CudaBanded" targetName="gmock" />
+      <config projectName="CudaBanded" targetName="gmock_main" />
+      <config projectName="CudaBanded" targetName="run_benchmarks" />
+      <config projectName="CudaBanded" targetName="gtest" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_Fortran_COMPILER=/opt/intel/oneapi/compiler/2026.0/bin/ifx -DCMAKE_CUDA_COMPILER=/usr/local/cuda-13.1/bin/nvcc -DCMAKE_Fortran_FLAGS=-fPIE -DCMAKE_CUDA_ARCHITECTURES=89" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d4f83594-c6e7-46a7-b811-b954558a4582" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Yuri Fortran Code/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Yuri Fortran Code/.idea/editor.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Yuri Fortran Code/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Yuri Fortran Code/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Yuri Fortran Code/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Alex Code/CFDSolverModified/Conv.out" beforeDir="false" afterPath="$PROJECT_DIR$/Alex Code/CFDSolverModified/Conv.out" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Alex Code/CFDSolverModified/History.dat" beforeDir="false" afterPath="$PROJECT_DIR$/Alex Code/CFDSolverModified/History.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Alex Code/CFDSolverModified/Serie.dat" beforeDir="false" afterPath="$PROJECT_DIR$/Alex Code/CFDSolverModified/Serie.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Alex Code/CFDSolverOrig/Conv.out" beforeDir="false" afterPath="$PROJECT_DIR$/Alex Code/CFDSolverOrig/Conv.out" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Alex Code/CFDSolverOrig/History.dat" beforeDir="false" afterPath="$PROJECT_DIR$/Alex Code/CFDSolverOrig/History.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Alex Code/CFDSolverOrig/Serie.dat" beforeDir="false" afterPath="$PROJECT_DIR$/Alex Code/CFDSolverOrig/Serie.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Yuri Fortran Code/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Yuri Fortran Code/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/FortranTest/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/FortranTest/.idea/.name" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/FortranTest/.idea/Fortran.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/FortranTest/.idea/editor.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/FortranTest/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/FortranTest/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/FortranTest/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/FortranTest/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/FortranTest/main.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/Tests/BenchMark.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/Tests/TestBandedMatrix.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/Tests/test.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/solverToFortran.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/solverToFortran.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/typesEigenBCGSolver.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/utilEigenBCGSolver.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/wrapEigenBCGSolver_ImEq.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/wrapEigenBCGSolver_ImEq.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/wrapEigenBCGSolver_eigen.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/wrapEigenBCGSolver_eigen.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/wrapfEigenBCGSolver_ImEq.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/wrapfEigenBCGSolver_eigen.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/shroud_project/wrapfeigenbcgsolver.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/Doxyfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/FortranBindings.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/DeviceMemory.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/GpuArray.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/KernelPrep.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/Mat.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/SimpleArray.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/Singleton.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/SquareMat.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/Streamable.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/Tensor.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/Vec.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/handle.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/sparse/BandedMatrix.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/sparse/Diagonal.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/sparse/SparseCOO.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/sparse/SparseCSC.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/sparse/SparseCSR.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/sparse/SparseMat.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/sparse/TriDiagonal.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/defFiles/streamHelper.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/DeviceData.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/DeviceMemory.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/GpuArray.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/KernelSupport.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/Mat.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/SimpleArray.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/Singleton.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/SquareMat.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/Support/AdjacencyIndex.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/Support/GridDim.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/Support/KernelPrep.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/Support/Streamable.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/Tensor.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/Vec.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/deviceArraySupport.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/handle.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/sparse/BandedKernels.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/sparse/BandedMat.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/sparse/Diagonal.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/sparse/SparseCOO.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/sparse/SparseCSC.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/sparse/SparseCSR.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/sparse/SparseMat.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/deviceArrays/headers/sparse/TriDiagonal.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/immersedBoundary/ImerssedEquation.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/immersedBoundary/ImerssedEquation.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/kronecker/KroneckerTriplet.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/kronecker/KroneckerTriplet.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/main.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/math/Real3d.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/math/Real3d.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/math/XYZ.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/AxisSegment.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/BoundaryCondition.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/BoundaryConfig.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/CubeBoundary.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/CubeBoundary.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/Eigen.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/Eigen.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/Laplacian1d.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/Laplacian1d.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/LaplacianKernels.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/Poisson.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/poisson/Poisson.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/BiCGSTAB.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/BiCGSTAB.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecomp2d.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecomp2d.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecomp3d.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecomp3d.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecompForFortran.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecompForFortran.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecompSolver.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecompSolver.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecompThomas.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/EigenDecomp/EigenDecompThomas.cuh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/Event.cu" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/solvers/Event.h" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="CurrentDebugProfile">
+    <option name="debugProfileId" value="b42385c1-8f5a-47d1-8207-f389b7aa859c" />
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="1757" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Tests/test.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/deviceArrays/defFiles/GpuArray.cu" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/deviceArrays/defFiles/SimpleArray.cu" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/deviceArrays/defFiles/Vec.cu" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/deviceArrays/headers/GpuArray.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/deviceArrays/headers/SimpleArray.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/deviceArrays/headers/sparse/BandedMat.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/poisson/LaplacianKernels.cuh" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/solvers/EigenDecomp/EigenDecomp2d.cu" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/solvers/EigenDecomp/EigenDecomp3d.cu" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/solvers/EigenDecomp/EigenDecomp3d.cuh" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/solvers/EigenDecomp/EigenDecompSolver.cu" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/wrapper/EigenDecompForFortran.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/wrapper/EigenDecompForFortran.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/wrapper/FortranBindings.hpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///usr/include/c++/13/bits/unique_ptr.h" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="k6cN9WEr" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0000005919587571" />
+      <entry key="S2" value="1.0277378542896718" />
+      <entry key="S5" value="1.238357677422169" />
+      <entry key="S10" value="1.488218935223012" />
+      <entry key="S30" value="1.7911621775802156" />
+      <entry key="S60" value="1.948689174344889" />
+      <entry key="M2" value="2.2399227369756196" />
+      <entry key="M5" value="4.721450562834109" />
+      <entry key="M10" value="11.833227680920839" />
+      <entry key="M15" value="18.37622006222199" />
+      <entry key="M30" value="31.36445705222108" />
+      <entry key="H1" value="44.29415124817138" />
+      <entry key="H2" value="55.066990924095805" />
+      <entry key="H4" value="62.49763158558895" />
+      <entry key="D1" value="70.24108119594423" />
+      <entry key="W1" value="71.74394913691576" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="2.613404090474797E-147" />
+      <entry key="S5" value="2.332187675066626E-59" />
+      <entry key="S10" value="5.052608150392485E-30" />
+      <entry key="S30" value="2.5139972644088984E-10" />
+      <entry key="S60" value="2.547657935160747E-5" />
+      <entry key="M2" value="0.008579161506478887" />
+      <entry key="M5" value="0.31383108161216305" />
+      <entry key="M10" value="1.2604514502284223" />
+      <entry key="M15" value="2.1598061691104733" />
+      <entry key="M30" value="4.019121421378718" />
+      <entry key="H1" value="5.813059468401357" />
+      <entry key="H2" value="7.158857385429335" />
+      <entry key="H4" value="8.00419396137203" />
+      <entry key="D1" value="8.822177887467369" />
+      <entry key="W1" value="8.974285967693866" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="2.218585994446276E-5" />
+      <entry key="MS500" value="0.11727777609409051" />
+      <entry key="S2" value="0.6040596673484129" />
+      <entry key="S5" value="1.0113663670383832" />
+      <entry key="S10" value="1.3503518097587794" />
+      <entry key="S30" value="1.7359954977315395" />
+      <entry key="S60" value="1.918966781121964" />
+      <entry key="M2" value="2.231706617623911" />
+      <entry key="M5" value="5.021771487216319" />
+      <entry key="M10" value="13.078530739353186" />
+      <entry key="M15" value="20.521256499931663" />
+      <entry key="M30" value="35.37199111269488" />
+      <entry key="H1" value="50.09968976061641" />
+      <entry key="H2" value="62.22150753474149" />
+      <entry key="H4" value="70.49948372473052" />
+      <entry key="D1" value="79.06284217741207" />
+      <entry key="W1" value="80.71817485399535" />
+    </decayedShown>
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2025" />
+    <option name="minorVersion" value="3.3" />
+    <option name="productBranch" value="Classic" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="3Az30q6dN7qf8lSXx1379wdc5ns" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectStatusUIService">{
+  &quot;uiKindId&quot;: &quot;Widget&quot;
+}</component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "CTest Application.All CTest.executor": "Run",
+    "CidrDebugProfileConversion": "true",
+    "Google Test.BandedMatWrappersTest.BandedMatrixVectorProduct.executor": "Run",
+    "Google Test.BandedMatWrappersTest.VectorBandedMatrixProduct.executor": "Run",
+    "Google Test.Benchmark.SolverRuntimes.executor": "Run",
+    "Google Test.CudaWrapper.tranpose.executor": "Run",
+    "Google Test.FortranInterop.ReproduceFortranSetup.executor": "Run",
+    "Google Test.FortranWrapper.SmokeTestAlex.executor": "Run",
+    "Google Test.ImmersedEq.SolvesImmeresed_Generic.executor": "Run",
+    "Google Test.ImmersedEq.SolvesPrimes_3x2x1.executor": "Run",
+    "Google Test.KroneckerTripletTest.ProductMatchesMultOnIdentity.executor": "Run",
+    "Google Test.LaplacianMath.fluxLaplacian.executor": "Run",
+    "Google Test.LaplacianMath.fullBattery.executor": "Run",
+    "Google Test.LaplacianMath.laplacian (1).executor": "Run",
+    "Google Test.LaplacianMath.laplacian.executor": "Run",
+    "Google Test.ShiftedEigen.FluxLaplacian_SmallScale.executor": "Run",
+    "Google Test.run_unit_tests.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "ctest.advertisement.all.test.configuration.is.created": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/home/usr/Documents/TelAvivU/Yuri Fortran Code",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.first.attach.projects": "true",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/wrapper" />
+      <recent name="$PROJECT_DIR$/src/deviceArrays/defFiles/sparse" />
+      <recent name="$PROJECT_DIR$/src/deviceArrays/headers/sparse" />
+    </key>
+  </component>
+  <component name="RunManager" selected="CTest Application.All CTest">
+    <configuration name="CudaWrapper.tranpose" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="run_unit_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CudaBanded" RUN_TARGET_NAME="run_unit_tests" TEST_CLASS="CudaWrapper" TEST_METHOD="tranpose" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LaplacianMath.fluxLaplacian" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="run_unit_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CudaBanded" RUN_TARGET_NAME="run_unit_tests" TEST_CLASS="LaplacianMath" TEST_METHOD="fluxLaplacian" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LaplacianMath.fullBattery" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="run_unit_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CudaBanded" RUN_TARGET_NAME="run_unit_tests" TEST_CLASS="LaplacianMath" TEST_METHOD="fullBattery" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LaplacianMath.laplacian" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="run_unit_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CudaBanded" RUN_TARGET_NAME="run_unit_tests" TEST_CLASS="LaplacianMath" TEST_METHOD="laplacian" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ShiftedEigen.FluxLaplacian_SmallScale" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="run_unit_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CudaBanded" RUN_TARGET_NAME="run_unit_tests" TEST_CLASS="ShiftedEigen" TEST_METHOD="FluxLaplacian_SmallScale" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_benchmarks" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="run_benchmarks" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CudaBanded" RUN_TARGET_NAME="run_benchmarks" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CudaBandedLib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="CudaBandedLib" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gmock" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="gmock" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gmock_main" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="gmock_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gtest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="gtest" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gtest_main" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CudaBanded" TARGET_NAME="gtest_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="All CTest" type="CTestRunConfiguration" factoryName="CTestRun" PROGRAM_PARAMS="--extra-verbose" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$CMakeCurrentLocalGenerationDir$" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_PATH="$CTestCurrentExecutableName$" EXPLICIT_BUILD_TARGET_NAME="all" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="CMake Application.CudaBandedLib" />
+      <item itemvalue="CMake Application.gmock" />
+      <item itemvalue="CMake Application.gmock_main" />
+      <item itemvalue="CMake Application.gtest" />
+      <item itemvalue="CMake Application.gtest_main" />
+      <item itemvalue="CTest Application.All CTest" />
+      <item itemvalue="Google Test.run_benchmarks" />
+      <item itemvalue="Google Test.CudaWrapper.tranpose" />
+      <item itemvalue="Google Test.LaplacianMath.fluxLaplacian" />
+      <item itemvalue="Google Test.LaplacianMath.fullBattery" />
+      <item itemvalue="Google Test.LaplacianMath.laplacian" />
+      <item itemvalue="Google Test.ShiftedEigen.FluxLaplacian_SmallScale" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Google Test.ShiftedEigen.FluxLaplacian_SmallScale" />
+        <item itemvalue="Google Test.LaplacianMath.laplacian" />
+        <item itemvalue="Google Test.LaplacianMath.fullBattery" />
+        <item itemvalue="Google Test.LaplacianMath.fluxLaplacian" />
+        <item itemvalue="Google Test.CudaWrapper.tranpose" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SelectedDebugProfileService">{
+  &quot;profileIdByStamp&quot;: [
+    {
+      &quot;first&quot;: {
+        &quot;##RUN_CONFIGURATION##&quot;: &quot;CTest Application.All CTest&quot;,
+        &quot;cmake&quot;: &quot;CMakeBuildProfile:Debug&quot;
+      },
+      &quot;second&quot;: &quot;b42385c1-8f5a-47d1-8207-f389b7aa859c&quot;
+    }
+  ],
+  &quot;modificationCount&quot;: 2
+}</component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d4f83594-c6e7-46a7-b811-b954558a4582" name="Changes" comment="" />
+      <created>1773581352366</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773581352366</updated>
+      <workItem from="1773581354157" duration="18122000" />
+      <workItem from="1773682439731" duration="3695000" />
+      <workItem from="1773748676931" duration="2000" />
+      <workItem from="1773749278551" duration="7853000" />
+      <workItem from="1773816014780" duration="2000" />
+      <workItem from="1773819988211" duration="2000" />
+      <workItem from="1773828477001" duration="12323000" />
+      <workItem from="1774269397194" duration="3777000" />
+      <workItem from="1774436374818" duration="8000" />
+      <workItem from="1774441614493" duration="2000" />
+      <workItem from="1774443538722" duration="2758000" />
+      <workItem from="1774794196614" duration="403000" />
+      <workItem from="1774867985911" duration="9000" />
+      <workItem from="1775979439201" duration="1086000" />
+      <workItem from="1775986771486" duration="215161000" />
+      <workItem from="1777197518557" duration="30747000" />
+      <workItem from="1777343535396" duration="4000" />
+      <workItem from="1777344326912" duration="28700000" />
+      <workItem from="1777399502106" duration="64555000" />
+      <workItem from="1777641524290" duration="11346000" />
+      <workItem from="1777886365584" duration="127552000" />
+      <workItem from="1778819333208" duration="2258000" />
+      <workItem from="1778830992413" duration="1284000" />
+      <workItem from="1778832359994" duration="154059000" />
+      <workItem from="1779785703564" duration="3644000" />
+      <workItem from="1779791443333" duration="3837000" />
+      <workItem from="1779805218583" duration="2916000" />
+      <workItem from="1779816623019" duration="10633000" />
+      <workItem from="1779897035449" duration="13177000" />
+      <workItem from="1780218029587" duration="5977000" />
+      <workItem from="1780463864474" duration="1321000" />
+      <workItem from="1780478307112" duration="2000" />
+      <workItem from="1780480531769" duration="3000" />
+      <workItem from="1780485188780" duration="5712000" />
+      <workItem from="1780512844099" duration="7000" />
+      <workItem from="1780543283991" duration="1611000" />
+      <workItem from="1780547116972" duration="12914000" />
+      <workItem from="1780579599912" duration="3000" />
+      <workItem from="1780583563346" duration="1095000" />
+      <workItem from="1780803099727" duration="2469000" />
+      <workItem from="1780812765598" duration="3000" />
+      <workItem from="1780821219222" duration="41142000" />
+      <workItem from="1781083135420" duration="14930000" />
+      <workItem from="1781154388872" duration="26924000" />
+      <workItem from="1781245573955" duration="257879000" />
+      <workItem from="1782301689563" duration="2461000" />
+      <workItem from="1782305908199" duration="2000" />
+      <workItem from="1782309084377" duration="3000" />
+      <workItem from="1782320600329" duration="2000" />
+      <workItem from="1782366171413" duration="8787000" />
+      <workItem from="1782628230587" duration="20328000" />
+      <workItem from="1782810753085" duration="3191000" />
+      <workItem from="1782816191047" duration="52773000" />
+      <workItem from="1783077625581" duration="4594000" />
+      <workItem from="1783669461241" duration="2321000" />
+      <workItem from="1783701266076" duration="4485000" />
+      <workItem from="1783905316881" duration="32327000" />
+      <workItem from="1784155899166" duration="71308000" />
+      <workItem from="1784901772882" duration="129000" />
+      <workItem from="1784901920355" duration="7251000" />
+      <workItem from="1785150666206" duration="4936000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VCPKGProject">
+    <isAutomaticCheckingOnLaunch value="false" />
+    <isAutomaticFoundErrors value="true" />
+    <isAutomaticReloadCMake value="true" />
+    <isAutomaticBootstrapAfterUpdate value="false" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/poisson/Poisson.cu</url>
+          <line>69</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/poisson/Poisson.cuh</url>
+          <line>13</line>
+          <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/solvers/EigenDecomp/EigenDecompSolver.cu</url>
+          <line>73</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/deviceArrays/headers/SquareMat.h</url>
+          <line>267</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Tests/test.cpp</url>
+          <line>210</line>
+          <option name="timeStamp" value="42" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Tests/test.cpp</url>
+          <line>272</line>
+          <option name="timeStamp" value="45" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/immersedBoundary/ImerssedEquation.cu</url>
+          <line>300</line>
+          <option name="timeStamp" value="46" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Tests/test.cpp</url>
+          <option name="timeStamp" value="50" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Tests/test.cpp</url>
+          <line>193</line>
+          <option name="timeStamp" value="56" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Tests/test.cpp</url>
+          <line>846</line>
+          <option name="timeStamp" value="57" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/deviceArrays/defFiles/GpuArray.cu</url>
+          <line>258</line>
+          <option name="timeStamp" value="58" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="CTestRunConfiguration">
+        <watch expression="(int)cudaGetLastError()" language="C++" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

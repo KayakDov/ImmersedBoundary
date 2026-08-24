@@ -122,7 +122,7 @@ contains
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .true., &
                 helmholtzShift = shiftVelocity, &
-                gpuInd = 1 &
+                gpuInd = 0 &
             )
 
         ! Vy: VMy(1:Nx1,1:Ny,1:Nz1); node-centred along y, cell-centred along
@@ -217,7 +217,7 @@ contains
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .false., &
                 helmholtzShift = 0.d0, &
-                gpuInd = 0 &
+                gpuInd = 1 &
             )
 
     End Subroutine Initialize_GPU_Solvers

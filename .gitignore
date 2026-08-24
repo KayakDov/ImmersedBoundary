@@ -30,3 +30,5 @@ build.ninja
 *.log
 *.ddd
 *.run
+perf_singlegpu.data
+*.collapsed

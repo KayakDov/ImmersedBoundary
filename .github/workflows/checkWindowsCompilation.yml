@@ -36,7 +36,6 @@ jobs:
         run: |
           echo "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\bin" >> $env:GITHUB_PATH
           echo "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\bin" >> $env:GITHUB_PATH
-          echo "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler" >> $env:GITHUB_PATH
 
       - name: Configure CMake
         shell: cmd
@@ -45,3 +44,19 @@ jobs:
       - name: Build Project
         shell: cmd
         run: cmake --build build -j 4
+
+      - name: Run Unit Tests
+        working-directory: build
+        shell: cmd
+        run: |
+          :: 1. Load all dynamic Intel paths natively
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+          
+          :: 2. Guarantee CUDA is on the CMD path (Fallback)
+          set PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\bin;%PATH%
+          
+          :: 3. Diagnostic: Print required DLLs to the Actions log
+          dumpbin /dependents run_unit_tests.exe
+          
+          :: 4. Run the tests
+          ctest --output-on-failure
