@@ -110,7 +110,7 @@ public:
      *  default/sentinel value. Points to nullptr; nothing to free, so no
      *  device-switching or CUDA call happens on either construction or
      *  destruction of this. */
-    static const inline GpuPointer null;
+    static const GpuPointer null;
 
     /**
      * @brief Constructs a GpuPointer.
