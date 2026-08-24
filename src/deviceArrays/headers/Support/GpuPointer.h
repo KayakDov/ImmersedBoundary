@@ -110,7 +110,7 @@ public:
      *  default/sentinel value. Points to nullptr; nothing to free, so no
      *  device-switching or CUDA call happens on either construction or
      *  destruction of this. */
-    static const inline GpuPointer null = GpuPointer<T>(nullptr, GpuIndex(0), false);
+    static const inline GpuPointer null;
 
     /**
      * @brief Constructs a GpuPointer.
@@ -196,5 +196,8 @@ public:
      *  same correctness guarantee as ordinary destruction, just on demand. */
     void freeMem() { ptr_.reset(); }
 };
+
+template <typename T>
+inline const GpuPointer<T> GpuPointer<T>::null = GpuPointer<T>(nullptr, GpuIndex(0), false);
 
 #endif // GPU_POINTER_H
