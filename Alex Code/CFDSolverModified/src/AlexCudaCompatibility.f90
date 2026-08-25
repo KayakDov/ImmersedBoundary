@@ -122,7 +122,7 @@ contains
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .true., &
                 helmholtzShift = shiftVelocity, &
-                gpuInd = 0 &
+                gpuInd = 1 &
             )
 
         ! Vy: VMy(1:Nx1,1:Ny,1:Nz1); node-centred along y, cell-centred along
@@ -145,7 +145,7 @@ contains
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .true., &
                 helmholtzShift = shiftVelocity, &
-                gpuInd = 0 &
+                gpuInd = 1 &
         )
 
         ! Vz: VMz(1:Nx1,1:Ny1,1:Nz); node-centred along z, cell-centred along
@@ -168,7 +168,7 @@ contains
                 dim3StartVal = 0.d0, dim3EndVal = 0.d0, &
                 thomas = .true., &
                 helmholtzShift = shiftVelocity, &
-                gpuInd = 0 &
+                gpuInd = 1 &
             )
 
         ! Pressure: Dprs(1:Nx1,1:Ny1,1:Nz1), cell-centred on every axis. Pure
