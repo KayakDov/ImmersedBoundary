@@ -185,15 +185,17 @@ template class EigenDecompThomas<float, UniformSegment<float>>;
 template class EigenDecompThomas<float, VariableSegment<float>>;
 
 // 2. Macro for the Thomas constructor
-// Note the addition of <SegY, SegZ> in the template instantiation
+// Note: Removed the explicit <SegY, SegZ> from the constructor name,
+// as C++ deduces these from the BoundaryConfigHost parameter.
 #define INSTANTIATE_EIGEN_DECOMP_THOMAS_CONSTRUCTORS(Real, SegX, SegY, SegZ) \
-template EigenDecompThomas<Real, SegX>::EigenDecompThomas<SegY, SegZ>(   \
-const BoundaryConfigHost<Real, SegX, SegY, SegZ>& boundary,          \
-Handle* hands,                                                       \
-Event* event,                                                        \
-Real helmholtzShift                                                  \
+template EigenDecompThomas<Real, SegX>::EigenDecompThomas(               \
+    const BoundaryConfigHost<Real, SegX, SegY, SegZ>& boundary,          \
+    Handle* hands,                                                       \
+    Event* event,                                                        \
+    Real helmholtzShift                                                  \
 );
 
 // 3. Apply permutations
 APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_EIGEN_DECOMP_THOMAS_CONSTRUCTORS)
 APPLY_TO_ALL_SEGMENT_COMBOS(float, INSTANTIATE_EIGEN_DECOMP_THOMAS_CONSTRUCTORS)
+
