@@ -660,9 +660,17 @@ void Mat<T>::mult(
 // --- 32-bit Instantiations ---
 template size_t Mat<float>::factorLUBufferSize<int32_t>(Handle&);
 template size_t Mat<double>::factorLUBufferSize<int32_t>(Handle&);
+template size_t Mat<int>::factorLUBufferSize<int32_t>(Handle&);
+template size_t Mat<int64_t>::factorLUBufferSize<int32_t>(Handle&);
+template size_t Mat<uint64_t>::factorLUBufferSize<int32_t>(Handle&);
+template size_t Mat<unsigned char>::factorLUBufferSize<int32_t>(Handle&);
 
 template void Mat<float>::factorLU<int32_t>(Handle&, SimpleArray<int32_t>&, Singleton<int32_t>&, SimpleArray<float>&);
 template void Mat<double>::factorLU<int32_t>(Handle&, SimpleArray<int32_t>&, Singleton<int32_t>&, SimpleArray<double>&);
+template void Mat<int>::factorLU<int32_t>(Handle&, SimpleArray<int32_t>&, Singleton<int32_t>&, SimpleArray<int>&);
+template void Mat<int64_t>::factorLU<int32_t>(Handle&, SimpleArray<int32_t>&, Singleton<int32_t>&, SimpleArray<int64_t>&);
+template void Mat<uint64_t>::factorLU<int32_t>(Handle&, SimpleArray<int32_t>&, Singleton<int32_t>&, SimpleArray<uint64_t>&);
+template void Mat<unsigned char>::factorLU<int32_t>(Handle&, SimpleArray<int32_t>&, Singleton<int32_t>&, SimpleArray<unsigned char>&);
 
 // --- 64-bit Instantiations ---
 template size_t Mat<float>::factorLUBufferSize<int64_t>(Handle&);
