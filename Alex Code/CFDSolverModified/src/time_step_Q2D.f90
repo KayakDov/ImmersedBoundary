@@ -120,6 +120,31 @@
 
            Call Get_Potential_Launch
 
+! ======== Build the parts of RHSx/RHSz that don't need Potential or =======
+! ======== TmpNew yet -- moved up from after Temperature's sync so    =======
+! ======== this CPU-only work fills the wait instead of happening     =======
+! ======== after it: Temperature, Vy, and Potential all get strictly  =======
+! ======== more overlap time before anything below asks for their     =======
+! ======== result. No dependency changes -- VgrdVx/GradPx and         =======
+! ======== VgrdVz/GradPz only ever needed previous-timestep state     =======
+! ======== (VMx/VMxOld, VMz/VMzOld, Prs), same as they always have.   =======
+
+          FDRHP = 0.D0
+          Call   VgrdVx 
+          Call   GradPx( RHSx(1:Nx ,1:Ny1,1:Nz1), Prs )
+          RHSx(1:Nx,1:Ny1,1:Nz1) = RHSx(1:Nx,1:Ny1,1:Nz1) + FDRHP(1:Nx,1:Ny1,1:Nz1)
+
+          FDRHP = 0.D0
+          Call   VgrdVz 
+          Call   GradPz( RHSz(1:Nx1,1:Ny1,1:Nz ), Prs )
+          RHSz(1:Nx1,1:Ny1,1:Nz) = RHSz(1:Nx1,1:Ny1,1:Nz) + FDRHP(1:Nx1,1:Ny1,1:Nz)
+
+           RHSx(1:Nx,1:Ny1,1:Nz1) = RHSx(1:Nx,1:Ny1,1:Nz1) - &
+     &                  ( 4.D0 * VMx(1:Nx,1:Ny1,1:Nz1) - VMxOld(1:Nx,1:Ny1,1:Nz1) )/ Ht
+
+           RHSz(1:Nx1,1:Ny1,1:Nz) = RHSz(1:Nx1,1:Ny1,1:Nz) - &
+     &                  ( 4.D0 * VMz(1:Nx1,1:Ny1,1:Nz) - VMzOld(1:Nx1,1:Ny1,1:Nz) )/ Ht
+
 ! ########### Temperature is needed now: synch #############################
 
          Call synch_d(TemperatureHandle, GPU_SOL_T)
@@ -146,32 +171,16 @@
 !        Write (*,*) 'DT=', Maxval(abs(TmpNew - Tmpr) ), Maxloc(abs(TmpNew - Tmpr) ), Maxval(abs(TmpNew(:,:,102)))
 !stop
 
-! ======== Make the parts of RHSx/RHSz that don't need Potential yet ======
-
-          FDRHP = 0.D0
-          Call   VgrdVx 
-          Call   GradPx( RHSx(1:Nx ,1:Ny1,1:Nz1), Prs )
-          RHSx(1:Nx,1:Ny1,1:Nz1) = RHSx(1:Nx,1:Ny1,1:Nz1) + FDRHP(1:Nx,1:Ny1,1:Nz1)
-
-          FDRHP = 0.D0
-          Call   VgrdVz 
-          Call   GradPz( RHSz(1:Nx1,1:Ny1,1:Nz ), Prs )
-          RHSz(1:Nx1,1:Ny1,1:Nz) = RHSz(1:Nx1,1:Ny1,1:Nz) + FDRHP(1:Nx1,1:Ny1,1:Nz)
-
-! .............. Add bouyancy force (needs TmpNew, already synched above)
+! .............. Add bouyancy force -- moved up from after the RHSx/RHSz ===
+! .............. stencil block: this only needs TmpNew, which is already ==
+! .............. valid at this point, and not Potential -- so it happens ==
+! .............. before Potential's sync below instead of after it,      ==
+! .............. giving Potential's solve that much more overlap time.   ==
 
            RHSz(1:Nx1,1:Ny1,1:Nz) = RHSz(1:Nx1,1:Ny1,1:Nz)  &
      &     - 0.5d0 * Bu_Gr * ( TmpNew(1:Nx1,1:Ny1,1:Nz) + TmpNew(1:Nx1,1:Ny1,2:Nz1) ) &
      &     - 0.5d0 * Bu_Gr *  (   Teta(1:Nx1,1:Ny1,1:Nz) +   Teta(1:Nx1,1:Ny1,2:Nz1) ) 
     
-! +++++++++++ Straight-forward step +++++++++++++++++++++          
-
-           RHSx(1:Nx,1:Ny1,1:Nz1) = RHSx(1:Nx,1:Ny1,1:Nz1) - &
-     &                  ( 4.D0 * VMx(1:Nx,1:Ny1,1:Nz1) - VMxOld(1:Nx,1:Ny1,1:Nz1) )/ Ht
-
-           RHSz(1:Nx1,1:Ny1,1:Nz) = RHSz(1:Nx1,1:Ny1,1:Nz) - &
-     &                  ( 4.D0 * VMz(1:Nx1,1:Ny1,1:Nz) - VMzOld(1:Nx1,1:Ny1,1:Nz) )/ Ht
-           
 ! ########### Potential is needed now: synch (via Finish) ##################
 
            Call Get_Potential_Finish
@@ -378,4 +387,3 @@
 
         Return
         End
-        
