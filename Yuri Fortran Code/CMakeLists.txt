@@ -39,8 +39,8 @@ set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 # ----------------------------------------------------------
 # External libraries
 # ----------------------------------------------------------
-set(MUMPS_ROOT "$ENV{HOME}/fastspace/MUMPS_5.1.Jun2017_SA")
-set(DFFTPACK_ROOT "$ENV{HOME}/fastspace/dfftpack-master")
+set(MUMPS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/MUMPS_5.9.1")
+set(DFFTPACK_ROOT "$ENV{HOME}/fastspace/dfftpack")
 
 file(GLOB _INTEL_LIB_DIRS
     "/opt/intel/oneapi/compiler/*/lib"
@@ -155,9 +155,8 @@ target_link_libraries(SchurSR PRIVATE
     OpenMP::OpenMP_Fortran
     "${MUMPS_ROOT}/lib/libdmumps.a"
     "${MUMPS_ROOT}/lib/libmumps_common.a"
-    "${MUMPS_ROOT}/lib/libzmumps.a"
     "${DFFTPACK_ROOT}/libdfftpack.a"
-    "${MUMPS_ROOT}/PORD/lib/libpord.a"
+    "${MUMPS_ROOT}/lib/libpord.a"
     "${MUMPS_ROOT}/libseq/libmpiseq.a"
     ${MKL_INTEL_LP64}
     ${MKL_INTEL_THREAD}

@@ -21,6 +21,39 @@ MODULE  MatrixFormAndOperate
  INTEGER*8::counterEntriesBAndBtransposed_Prs
  CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Compatibility implementation for the legacy MKL mkl_dcsrgemv routine.
+! Current oneMKL versions no longer provide that entry point.  All active
+! calls in this solver request a non-transposed, one-based CSR product.
+SUBROUTINE mkl_dcsrgemv(transa, m, a, ia, ja, x, y)
+    IMPLICIT NONE
+
+    CHARACTER(LEN=1), INTENT(IN) :: transa
+    INTEGER, INTENT(IN) :: m
+    REAL(KIND=8), INTENT(IN) :: a(*), x(*)
+    INTEGER, INTENT(IN) :: ia(*), ja(*)
+    REAL(KIND=8), INTENT(OUT) :: y(*)
+
+    INTEGER :: row, entry
+    REAL(KIND=8) :: row_sum
+
+    IF (transa /= 'N' .AND. transa /= 'n') THEN
+        ERROR STOP 'mkl_dcsrgemv compatibility routine supports only transa=N'
+    END IF
+
+!$OMP PARALLEL DO DEFAULT(NONE) SHARED(m,a,ia,ja,x,y) PRIVATE(row,entry,row_sum)
+    DO row = 1, m
+        row_sum = 0.D0
+        DO entry = ia(row), ia(row + 1) - 1
+            row_sum = row_sum + a(entry) * x(ja(entry))
+        END DO
+        y(row) = row_sum
+    END DO
+!$OMP END PARALLEL DO
+
+END SUBROUTINE mkl_dcsrgemv
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

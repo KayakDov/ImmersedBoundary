@@ -29,6 +29,7 @@ SUBROUTINE setup_geometry
  
     LOGICAL :: readinput
     INTEGER :: i,i_bdy,i_act, next, stat, N_interp_points, i_interp_point
+    INTEGER*8 :: n_entries_x, n_entries_y, n_entries_z
     CHARACTER(3) :: file_num
 
     
@@ -221,7 +222,12 @@ SUBROUTINE setup_geometry
        
        IF (bdy(n_body)%moving==.FALSE.) THEN 
                     
-!$OMP PARALLEL DO DEFAULT(Shared) Private(m,i,j,k,counter,I_Index,J_Index,K_Index,RegValues) reduction(+:bdy(n_body)%Number_Of_Matrix_B_Entries_X,bdy(n_body)%Number_Of_Matrix_B_Entries_Y,bdy(n_body)%Number_Of_Matrix_B_Entries_Z)
+            n_entries_x = bdy(n_body)%Number_Of_Matrix_B_Entries_X
+            n_entries_y = bdy(n_body)%Number_Of_Matrix_B_Entries_Y
+            n_entries_z = bdy(n_body)%Number_Of_Matrix_B_Entries_Z
+
+!$OMP PARALLEL DO DEFAULT(Shared) Private(m,i,j,k,counter,I_Index,J_Index,K_Index,RegValues) &
+!$OMP& reduction(+:n_entries_x,n_entries_y,n_entries_z)
             DO m=1,bdy(n_body)%npts  
        
   
@@ -260,7 +266,7 @@ SUBROUTINE setup_geometry
                         bdy(n_body)%POINT_INFO(m)%Vx_Y_IND (1:counter) = J_Index(1:counter)
                         bdy(n_body)%POINT_INFO(m)%Vx_Z_IND (1:counter) = K_Index(1:counter)
                         bdy(n_body)%POINT_INFO(m)%Vx_Weight(1:counter)=RegValues(1:counter)
-                        bdy(n_body)%Number_Of_Matrix_B_Entries_X=  bdy(n_body)%Number_Of_Matrix_B_Entries_X+bdy(n_body)%POINT_INFO(m)%RegNumberVx
+                        n_entries_x = n_entries_x + bdy(n_body)%POINT_INFO(m)%RegNumberVx
     
               counter=0
               RegValues=0.d0
@@ -294,7 +300,7 @@ SUBROUTINE setup_geometry
                         bdy(n_body)%POINT_INFO(m)%Vy_Y_IND (1:counter) = J_Index(1:counter)
                         bdy(n_body)%POINT_INFO(m)%Vy_Z_IND (1:counter) = K_Index(1:counter)
                         bdy(n_body)%POINT_INFO(m)%Vy_Weight(1:counter)=RegValues(1:counter)
-                        bdy(n_body)%Number_Of_Matrix_B_Entries_Y=  bdy(n_body)%Number_Of_Matrix_B_Entries_Y+bdy(n_body)%POINT_INFO(m)%RegNumberVy
+                        n_entries_y = n_entries_y + bdy(n_body)%POINT_INFO(m)%RegNumberVy
                 
        
               counter=0
@@ -328,8 +334,12 @@ SUBROUTINE setup_geometry
                         bdy(n_body)%POINT_INFO(m)%Vz_Y_IND (1:counter) = J_Index(1:counter)
                         bdy(n_body)%POINT_INFO(m)%Vz_Z_IND (1:counter) = K_Index(1:counter)
                         bdy(n_body)%POINT_INFO(m)%Vz_Weight(1:counter)=RegValues(1:counter)
-                        bdy(n_body)%Number_Of_Matrix_B_Entries_Z=  bdy(n_body)%Number_Of_Matrix_B_Entries_Z+bdy(n_body)%POINT_INFO(m)%RegNumberVz
+                        n_entries_z = n_entries_z + bdy(n_body)%POINT_INFO(m)%RegNumberVz
             END DO 
+
+            bdy(n_body)%Number_Of_Matrix_B_Entries_X = n_entries_x
+            bdy(n_body)%Number_Of_Matrix_B_Entries_Y = n_entries_y
+            bdy(n_body)%Number_Of_Matrix_B_Entries_Z = n_entries_z
      
        END IF
        END IF        
