@@ -97,5 +97,7 @@ public:
         SimpleArray<Int> offsets,
         SimpleArray<Int> inds
     ) const = 0;
+
+    virtual ~SparseMat() = default;
 };
 #endif //CUDABANDED_SPARSEMAT_H

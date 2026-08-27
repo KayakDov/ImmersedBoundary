@@ -409,12 +409,14 @@ gtest_discover_tests(run_unit_tests DISCOVERY_MODE PRE_TEST)
 
 if(WIN32)
     add_custom_command(TARGET run_unit_tests POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            COMMAND ${CMAKE_COMMAND} -E
+            $<IF:$<BOOL:$<TARGET_RUNTIME_DLLS:run_unit_tests>>,copy_if_different,echo>
             $<TARGET_RUNTIME_DLLS:run_unit_tests>
             $<TARGET_FILE_DIR:run_unit_tests>
             COMMAND_EXPAND_LISTS
     )
 endif()
+
 # =========================
 # Benchmark Executable
 # =========================
@@ -435,12 +437,14 @@ target_link_libraries(run_benchmarks
 
 if(WIN32)
     add_custom_command(TARGET run_benchmarks POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            COMMAND ${CMAKE_COMMAND} -E
+            $<IF:$<BOOL:$<TARGET_RUNTIME_DLLS:run_benchmarks>>,copy_if_different,echo>
             $<TARGET_RUNTIME_DLLS:run_benchmarks>
             $<TARGET_FILE_DIR:run_benchmarks>
             COMMAND_EXPAND_LISTS
     )
-endif()# =========================
+endif()
+# =========================
 # Install the library and Fortran modules for external projects
 # =========================
 install(TARGETS CudaBandedLib
