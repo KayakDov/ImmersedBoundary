@@ -148,7 +148,7 @@
       CALL Precond_RHS_P (FDRHP,RHS_F_tag, RHS_Precond)
       CALL BICG5D (RHS_Precond,Nx1*Ny1*Nz1,ItMax, Eps, IGPrs, Dprs)
      
-      CALL mkl_dcsrgemv('N', 3*TotalUnknownsP, B_CSR_Prs,B_Row_CSR_Prs,B_Col_CSR_Prs,RHS_Precond, B_P_prime)  
+      CALL MKL_B_MatVec(RHS_Precond, B_P_prime)  
       F_tag=2.d0*(B_P_prime-RHS_F_tag)
      
            

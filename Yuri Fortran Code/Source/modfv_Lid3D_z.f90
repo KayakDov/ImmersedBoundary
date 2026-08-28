@@ -52,8 +52,10 @@
           Real(kind=8), POINTER:: B(:),BT(:),BT_expanded(:,:,:),lambdaTemp(:)
           Integer,      POINTER:: B_R_C(:,:), BT_R_C(:,:)
                                   
-         Real(kind=8), POINTER:: B_CSR_Prs(:), BT_CSR_Prs(:),RHS_F_tag(:),IGPrs(:)
-         Integer,      POINTER:: B_Row_CSR_Prs(:),B_Col_CSR_Prs(:), BT_Row_CSR_Prs(:),BT_Col_CSR_Prs(:)
+         Real(kind=8), CONTIGUOUS, POINTER:: B_CSR_Prs(:), BT_CSR_Prs(:),RHS_F_tag(:)
+         Real(kind=8), POINTER:: IGPrs(:)
+         Integer, CONTIGUOUS, POINTER:: B_Row_CSR_Prs(:),B_Col_CSR_Prs(:), &
+                                        BT_Row_CSR_Prs(:),BT_Col_CSR_Prs(:)
          
          Integer*8 Size_R_Ftag_Matrix
          

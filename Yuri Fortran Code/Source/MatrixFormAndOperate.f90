@@ -11,6 +11,13 @@ MODULE  MatrixFormAndOperate
  Use Thomas_coefficients
  Use EvdProcedures
  Use Matrices
+ Use, Intrinsic :: ISO_C_BINDING, Only: C_INT
+ Use MKL_SPBLAS, Only: SPARSE_MATRIX_T, MATRIX_DESCR, &
+                       SPARSE_STATUS_SUCCESS, SPARSE_INDEX_BASE_ONE, &
+                       SPARSE_MATRIX_TYPE_GENERAL, SPARSE_FILL_MODE_LOWER, &
+                       SPARSE_DIAG_NON_UNIT, SPARSE_OPERATION_NON_TRANSPOSE, &
+                       mkl_sparse_d_create_csr, mkl_sparse_set_mv_hint, &
+                       mkl_sparse_optimize, mkl_sparse_d_mv, mkl_sparse_destroy
  Use IBsetupInetrpRegular
  
  IMPLICIT NONE
@@ -19,39 +26,133 @@ MODULE  MatrixFormAndOperate
  Real factorT, factorQ
  INTEGER :: TotalUnknownsT, TotalUnknownsP,length_row_plus_one,kkk
  INTEGER*8::counterEntriesBAndBtransposed_Prs
+ TYPE(SPARSE_MATRIX_T) :: B_MKL_Prs, BT_MKL_Prs
+ TYPE(MATRIX_DESCR) :: MKL_General_Descr
+ LOGICAL :: MKL_Sparse_Handles_Initialized = .FALSE.
  CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-! Compatibility implementation for the legacy MKL mkl_dcsrgemv routine.
-! Current oneMKL versions no longer provide that entry point.  All active
-! calls in this solver request a non-transposed, one-based CSR product.
-SUBROUTINE mkl_dcsrgemv(transa, m, a, ia, ja, x, y)
+! oneMKL Inspector-Executor sparse-matrix handles.  The handles retain
+! references to the CSR arrays, so those arrays must remain allocated and
+! unchanged until Destroy_MKL_Sparse_Handles is called.
+SUBROUTINE Check_MKL_Sparse_Status(status, operation_name)
     IMPLICIT NONE
 
-    CHARACTER(LEN=1), INTENT(IN) :: transa
-    INTEGER, INTENT(IN) :: m
-    REAL(KIND=8), INTENT(IN) :: a(*), x(*)
-    INTEGER, INTENT(IN) :: ia(*), ja(*)
-    REAL(KIND=8), INTENT(OUT) :: y(*)
+    INTEGER(C_INT), INTENT(IN) :: status
+    CHARACTER(LEN=*), INTENT(IN) :: operation_name
 
-    INTEGER :: row, entry
-    REAL(KIND=8) :: row_sum
+    IF (status /= SPARSE_STATUS_SUCCESS) THEN
+        WRITE(*,*) 'oneMKL sparse operation failed: ', TRIM(operation_name), &
+                   ', status = ', status
+        ERROR STOP 1
+    END IF
+END SUBROUTINE Check_MKL_Sparse_Status
 
-    IF (transa /= 'N' .AND. transa /= 'n') THEN
-        ERROR STOP 'mkl_dcsrgemv compatibility routine supports only transa=N'
+
+SUBROUTINE Initialize_MKL_Sparse_Handles
+    IMPLICIT NONE
+
+    INTEGER(C_INT) :: status, expected_calls
+
+    IF (MKL_Sparse_Handles_Initialized) THEN
+        CALL Destroy_MKL_Sparse_Handles
     END IF
 
-!$OMP PARALLEL DO DEFAULT(NONE) SHARED(m,a,ia,ja,x,y) PRIVATE(row,entry,row_sum)
-    DO row = 1, m
-        row_sum = 0.D0
-        DO entry = ia(row), ia(row + 1) - 1
-            row_sum = row_sum + a(entry) * x(ja(entry))
-        END DO
-        y(row) = row_sum
-    END DO
-!$OMP END PARALLEL DO
+    MKL_General_Descr%type = SPARSE_MATRIX_TYPE_GENERAL
+    MKL_General_Descr%mode = SPARSE_FILL_MODE_LOWER
+    MKL_General_Descr%diag = SPARSE_DIAG_NON_UNIT
 
-END SUBROUTINE mkl_dcsrgemv
+    status = mkl_sparse_d_create_csr( &
+        B_MKL_Prs, SPARSE_INDEX_BASE_ONE, &
+        INT(3*TotalUnknownsP, C_INT), INT(Nx1*Ny1*Nz1, C_INT), &
+        B_Row_CSR_Prs(1:3*TotalUnknownsP), &
+        B_Row_CSR_Prs(2:3*TotalUnknownsP+1), &
+        B_Col_CSR_Prs, B_CSR_Prs)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_d_create_csr(B)')
+
+    status = mkl_sparse_d_create_csr( &
+        BT_MKL_Prs, SPARSE_INDEX_BASE_ONE, &
+        INT(Nx1*Ny1*Nz1, C_INT), INT(3*TotalUnknownsP, C_INT), &
+        BT_Row_CSR_Prs(1:Nx1*Ny1*Nz1), &
+        BT_Row_CSR_Prs(2:Nx1*Ny1*Nz1+1), &
+        BT_Col_CSR_Prs, BT_CSR_Prs)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_d_create_csr(BT)')
+
+    ! Each BiCG solve performs one initial product, four products per
+    ! iteration, and the surrounding time-step code performs one more.
+    expected_calls = INT(MAX(1, 4*(ItMax+1)+2), C_INT)
+
+    status = mkl_sparse_set_mv_hint( &
+        B_MKL_Prs, SPARSE_OPERATION_NON_TRANSPOSE, &
+        MKL_General_Descr, expected_calls)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_set_mv_hint(B)')
+
+    status = mkl_sparse_set_mv_hint( &
+        BT_MKL_Prs, SPARSE_OPERATION_NON_TRANSPOSE, &
+        MKL_General_Descr, expected_calls)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_set_mv_hint(BT)')
+
+    status = mkl_sparse_optimize(B_MKL_Prs)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_optimize(B)')
+
+    status = mkl_sparse_optimize(BT_MKL_Prs)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_optimize(BT)')
+
+    MKL_Sparse_Handles_Initialized = .TRUE.
+END SUBROUTINE Initialize_MKL_Sparse_Handles
+
+
+SUBROUTINE MKL_B_MatVec(x, y)
+    IMPLICIT NONE
+
+    REAL(KIND=8), CONTIGUOUS, INTENT(IN) :: x(:)
+    REAL(KIND=8), CONTIGUOUS, INTENT(INOUT) :: y(:)
+    INTEGER(C_INT) :: status
+
+    IF (.NOT. MKL_Sparse_Handles_Initialized) THEN
+        ERROR STOP 'oneMKL sparse handles have not been initialized'
+    END IF
+
+    status = mkl_sparse_d_mv( &
+        SPARSE_OPERATION_NON_TRANSPOSE, 1.D0, B_MKL_Prs, &
+        MKL_General_Descr, x, 0.D0, y)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_d_mv(B)')
+END SUBROUTINE MKL_B_MatVec
+
+
+SUBROUTINE MKL_BT_MatVec(x, y)
+    IMPLICIT NONE
+
+    REAL(KIND=8), CONTIGUOUS, INTENT(IN) :: x(:)
+    REAL(KIND=8), CONTIGUOUS, INTENT(INOUT) :: y(:)
+    INTEGER(C_INT) :: status
+
+    IF (.NOT. MKL_Sparse_Handles_Initialized) THEN
+        ERROR STOP 'oneMKL sparse handles have not been initialized'
+    END IF
+
+    status = mkl_sparse_d_mv( &
+        SPARSE_OPERATION_NON_TRANSPOSE, 1.D0, BT_MKL_Prs, &
+        MKL_General_Descr, x, 0.D0, y)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_d_mv(BT)')
+END SUBROUTINE MKL_BT_MatVec
+
+
+SUBROUTINE Destroy_MKL_Sparse_Handles
+    IMPLICIT NONE
+
+    INTEGER(C_INT) :: status
+
+    IF (.NOT. MKL_Sparse_Handles_Initialized) RETURN
+
+    status = mkl_sparse_destroy(B_MKL_Prs)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_destroy(B)')
+
+    status = mkl_sparse_destroy(BT_MKL_Prs)
+    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_destroy(BT)')
+
+    MKL_Sparse_Handles_Initialized = .FALSE.
+END SUBROUTINE Destroy_MKL_Sparse_Handles
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   
@@ -263,6 +364,7 @@ END DO
  
 Call  Sparse_To_CSR_Format (  B(:), B_R_C(:,1), B_R_C(:,2), counterEntriesBAndBtransposed_Prs, 3*TotalUnknownsP,B_CSR_Prs, B_Row_CSR_Prs, B_Col_CSR_Prs)  
 Call  Sparse_To_CSR_Format ( BT(:),BT_R_C(:,1),BT_R_C(:,2), counterEntriesBAndBtransposed_Prs, Nx1*Ny1*Nz1,    BT_CSR_Prs,BT_Row_CSR_Prs,BT_Col_CSR_Prs) 
+Call Initialize_MKL_Sparse_Handles
 DEALLOCATE( BT_expanded,lambdaTemp, B, BT,B_R_C, BT_R_C)!, R_Ftag_Matrix,R_Ftag_Matrix_Row,R_Ftag_Matrix_Col)
 
 END  SUBROUTINE Build_B_And_BTranspose
@@ -271,14 +373,15 @@ END  SUBROUTINE Build_B_And_BTranspose
 
 SUBROUTINE Precond_Matrix_Vector_Product_For_Krylov_Space (vector, reslt, sz)
 
-    Real(kind=8),POINTER::  res(:),  res1(:),  RHS(:,:,:),precond(:,:,:)
+    Real(kind=8),CONTIGUOUS,POINTER::  res(:),  res1(:)
+    Real(kind=8),POINTER::  RHS(:,:,:),precond(:,:,:)
     Integer sz, sz_B, sz_BT, i, j, k
     Real*8,Dimension (1:sz):: vector,reslt
    
     ALLOCATE(res(3*TotalUnknownsP), res1(sz))
     
-    CALL mkl_dcsrgemv('N', 3*TotalUnknownsP, B_CSR_Prs,B_Row_CSR_Prs,B_Col_CSR_Prs,vector, res)  
-    CALL mkl_dcsrgemv('N', Nx1*Ny1*Nz1, BT_CSR_Prs,BT_Row_CSR_Prs,BT_Col_CSR_Prs,res, res1)
+    CALL MKL_B_MatVec(vector, res)  
+    CALL MKL_BT_MatVec(res, res1)
      
     DEALLOCATE (res) 
    
@@ -323,16 +426,16 @@ END  SUBROUTINE Precond_Matrix_Vector_Product_For_Krylov_Space
 
 
 SUBROUTINE Precond_RHS_P (RHS_P_prime, RHS_F_prime, RHS_Precond)
-Real(kind=8),POINTER:: RHS_F_prime(:)
+Real(kind=8),CONTIGUOUS,POINTER:: RHS_F_prime(:)
 Real(kind=8),allocatable :: RHS_Precond(:)
-Real(kind=8),POINTER:: temp(:)
+Real(kind=8),CONTIGUOUS,POINTER:: temp(:)
 Real(kind=8),POINTER:: temp1(:,:,:), temp2(:,:,:)
 Real(kind=8),Dimension(0:Nxx2,0:Nyy2,0:Nzz2) :: RHS_P_prime
 
 Integer i, j, k
 ALLOCATE(temp(Nx1*Ny1*Nz1),temp1(Nx1,Ny1,Nz1))
 IF (.NOT. ALLOCATED (RHS_Precond))  ALLOCATE(RHS_Precond(Nx1*Ny1*Nz1)) !Do not forget to deallocate in the end of the program 
-CALL mkl_dcsrgemv('N', Nx1*Ny1*Nz1, BT_CSR_Prs,BT_Row_CSR_Prs,BT_Col_CSR_Prs,RHS_F_prime, temp)
+CALL MKL_BT_MatVec(RHS_F_prime, temp)
 
 !$OMP PARALLEL DO DEFAULT(Shared) Private(i,j,k)  
     DO i=1, Nx1

@@ -140,6 +140,7 @@
  
   !      Call Point_Write_Lid 
 
+        Call Destroy_MKL_Sparse_Handles
         Return
 100     Format(G15.8)
 110     Format(4G15.8)        

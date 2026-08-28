@@ -5,7 +5,7 @@
 
  Aspect Ratio                =  1.0000000    
  Width  Ratio                =  1.0000000    
- Reynolds number             =  1100.0000    
+ Reynolds number             =  100.00000    
  driving angle               =  0.0000000    
 
 
@@ -338,15 +338,15 @@
 
 
   Istp=  100   Time Step= 0.1000E-02 Time= 0.10000000       End Time=  5.0000000    
-  RNSx= 0.2092E-01  RNSy= 0.4469E-03  RNSz= 0.9197E-02  RDP= 0.9489E-02
+  RNSx= 0.1827E-01  RNSy= 0.4480E-03  RNSz= 0.1057E-01  RDP= 0.3665E-01
 
 
   Istp=  200   Time Step= 0.1000E-02 Time= 0.20000000       End Time=  5.0000000    
-  RNSx= 0.1239E-01  RNSy= 0.3118E-03  RNSz= 0.5225E-02  RDP= 0.3794E-02
+  RNSx= 0.8741E-02  RNSy= 0.2171E-03  RNSz= 0.2819E-02  RDP= 0.1476E-01
 
 
   Istp=  300   Time Step= 0.1000E-02 Time= 0.30000000       End Time=  5.0000000    
-  RNSx= 0.6774E-02  RNSy= 0.3213E-03  RNSz= 0.4231E-02  RDP= 0.2905E-02
+  RNSx= 0.5104E-02  RNSy= 0.1492E-03  RNSz= 0.2468E-02  RDP= 0.8250E-02
 
 
   Istp=  400   Time Step= 0.1000E-02 Time= 0.40000000       End Time=  5.0000000    

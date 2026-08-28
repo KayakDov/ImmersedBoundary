@@ -70,6 +70,16 @@ if(_MKL_LIB_DIR_COUNT EQUAL 0)
 endif()
 list(GET _MKL_LIB_DIRS 0 MKL_LIB_DIR)
 
+get_filename_component(MKL_ROOT_DIR "${MKL_LIB_DIR}" DIRECTORY)
+if(DEFINED ENV{MKLROOT} AND EXISTS "$ENV{MKLROOT}/include/mkl_spblas.f90")
+    set(MKL_ROOT_DIR "$ENV{MKLROOT}")
+endif()
+set(MKL_SPBLAS_SOURCE "${MKL_ROOT_DIR}/include/mkl_spblas.f90")
+if(NOT EXISTS "${MKL_SPBLAS_SOURCE}")
+    message(FATAL_ERROR
+        "Could not find the oneMKL Fortran Sparse BLAS interface: ${MKL_SPBLAS_SOURCE}")
+endif()
+
 find_library(MKL_INTEL_LP64 NAMES mkl_intel_lp64 HINTS "${MKL_LIB_DIR}")
 find_library(MKL_INTEL_THREAD NAMES mkl_intel_thread HINTS "${MKL_LIB_DIR}")
 find_library(MKL_CORE        NAMES mkl_core        HINTS "${MKL_LIB_DIR}")
@@ -117,7 +127,7 @@ foreach(_src ${SOLVER_SOURCES})
     endif()
 endforeach()
 
-add_executable(SchurSR ${SOLVER_SOURCES})
+add_executable(SchurSR "${MKL_SPBLAS_SOURCE}" ${SOLVER_SOURCES})
 
 set_target_properties(SchurSR PROPERTIES
     Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modules"
@@ -127,6 +137,7 @@ set_target_properties(SchurSR PROPERTIES
 target_include_directories(SchurSR PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/modules"
     "${MUMPS_ROOT}/include"
+    "${MKL_ROOT_DIR}/include"
 )
 
 # ----------------------------------------------------------
@@ -139,7 +150,6 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel"
         -mcmodel=large
         -assume buffered_io
         -qopenmp
-        -parallel
     )
 endif()
 
