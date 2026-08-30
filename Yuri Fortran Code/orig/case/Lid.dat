@@ -1,0 +1,18 @@
+1.0                   Aspect ratio                 
+1.0                   Width ratio                 
+100.0                Reynolds number 
+0.0                   angle
+100                    Nx
+100                    Ny
+100                    Ny
+1.e-10                Eps
+0.000001              EpsCnv 
+9000                  ItMax
+0.001                 Htime
+5.0                   Time  
+100                   Iprint (I5) (<0 - read initial data from file)
+10                   Iprint IBM
+0.01                  Delta Grid for Ib Method
+1                     Icheck (=0, if check)
+0                     SolverKind (0=Mumps, 1=BiCG)
+24                    NCPUs
