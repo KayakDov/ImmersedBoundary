@@ -100,7 +100,7 @@ if(NOT DEFINED CUDA_TOOLKIT_VERSION)
 
     if(_BEST_DIR)
         set(CUDA_TOOLKIT_VERSION "${_BEST_VERSION}")
-        set(CUDAToolkit_ROOT "${_BEST_DIR}" CACHE PATH "Auto-selected CUDA toolkit compatible with installed driver" FORCE)
+        set(CUDAToolkit_ROOT "${_BEST_DIR}" CACHE PATH "Auto-selected CUDA toolkit compatible with installed driver")
         if(EXISTS "${_BEST_DIR}/bin/nvcc")
             set(CMAKE_CUDA_COMPILER "${_BEST_DIR}/bin/nvcc" CACHE FILEPATH "Auto-selected nvcc matching CUDAToolkit_ROOT" FORCE)
         endif()
@@ -219,7 +219,7 @@ FortranCInterface_VERIFY(CXX)
 # =========================
 # FORCED DEBUG STRIP (ADD THIS ENTIRE BLOCK)
 # =========================
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build.")
 
 add_compile_options(
         #        $<$<COMPILE_LANGUAGE:CXX>:-G>
