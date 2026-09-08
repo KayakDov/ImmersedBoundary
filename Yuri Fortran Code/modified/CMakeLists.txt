@@ -86,6 +86,42 @@ find_library(MKL_CORE        NAMES mkl_core        HINTS "${MKL_LIB_DIR}")
 find_library(IOMP5_LIB       NAMES iomp5           HINTS ${_INTEL_LIB_DIRS})
 
 # ----------------------------------------------------------
+# CudaBandedLib (GPU pressure/force solve)
+# ----------------------------------------------------------
+# I don't know your CudaBandedLib checkout's actual layout, so this is a guess
+# at the usual "clone + mkdir build + cmake .." layout from its own README.
+# Override with -DCUDABANDEDLIB_ROOT=/path/to/CudaBandedLib if it's elsewhere,
+# or edit CUDABANDEDLIB_ROOT's default below.
+set(CUDABANDEDLIB_ROOT "$ENV{HOME}/CudaBandedLib" CACHE PATH
+    "Root of the CudaBandedLib checkout (contains build/libCudaBandedLib.a and the wrapf*.f90 Fortran wrappers)")
+
+find_library(CUDABANDEDLIB_LIB
+    NAMES CudaBandedLib
+    HINTS "${CUDABANDEDLIB_ROOT}/build" "${CUDABANDEDLIB_ROOT}/lib"
+)
+if(NOT CUDABANDEDLIB_LIB)
+    message(FATAL_ERROR
+        "Could not find libCudaBandedLib.a under ${CUDABANDEDLIB_ROOT}/build or "
+        "${CUDABANDEDLIB_ROOT}/lib. Set -DCUDABANDEDLIB_ROOT=/path/to/CudaBandedLib.")
+endif()
+
+# wrapfeigenbcgsolver.f90 / wrapfEigenBCGSolver_ImEq.f90 -- adjust this glob if
+# your checkout keeps the Shroud-generated wrappers somewhere else.
+file(GLOB CUDABANDEDLIB_FORTRAN_WRAPPERS
+    "${CUDABANDEDLIB_ROOT}/wrapf*.f90"
+    "${CUDABANDEDLIB_ROOT}/fortran/wrapf*.f90"
+)
+list(LENGTH CUDABANDEDLIB_FORTRAN_WRAPPERS _CUDABANDEDLIB_WRAPPER_COUNT)
+if(_CUDABANDEDLIB_WRAPPER_COUNT EQUAL 0)
+    message(FATAL_ERROR
+        "Could not find wrapf*.f90 under ${CUDABANDEDLIB_ROOT}. Point "
+        "CUDABANDEDLIB_ROOT at the checkout, or fix the glob above to match "
+        "where Shroud writes its Fortran wrappers in your layout.")
+endif()
+
+find_package(CUDAToolkit REQUIRED)
+
+# ----------------------------------------------------------
 # Sources
 # ----------------------------------------------------------
 # NOTE: Source/ contains a few extra .f90 files (EVD_Thomas_3D_OMP_z,
@@ -127,7 +163,11 @@ foreach(_src ${SOLVER_SOURCES})
     endif()
 endforeach()
 
-add_executable(SchurSR "${MKL_SPBLAS_SOURCE}" ${SOLVER_SOURCES})
+# wrapfeigenbcgsolver.f90 must come before wrapfEigenBCGSolver_ImEq.f90 -- the
+# latter's eigenbcgsolver_imeq_mod doesn't depend on the former's (currently
+# empty) eigenbcgsolver_mod, but keeping Shroud's own file order is the safest
+# bet for whichever future module-use edges get added between them.
+add_executable(SchurSR "${MKL_SPBLAS_SOURCE}" ${CUDABANDEDLIB_FORTRAN_WRAPPERS} ${SOLVER_SOURCES})
 
 set_target_properties(SchurSR PROPERTIES
     Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modules"
@@ -168,6 +208,9 @@ target_link_libraries(SchurSR PRIVATE
     "${DFFTPACK_ROOT}/libdfftpack.a"
     "${MUMPS_ROOT}/lib/libpord.a"
     "${MUMPS_ROOT}/libseq/libmpiseq.a"
+    ${CUDABANDEDLIB_LIB}
+    CUDA::cudart
+    stdc++
     ${MKL_INTEL_LP64}
     ${MKL_INTEL_THREAD}
     ${MKL_CORE}

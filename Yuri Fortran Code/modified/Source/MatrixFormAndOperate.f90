@@ -11,13 +11,8 @@ MODULE  MatrixFormAndOperate
  Use Thomas_coefficients
  Use EvdProcedures
  Use Matrices
- Use, Intrinsic :: ISO_C_BINDING, Only: C_INT
- Use MKL_SPBLAS, Only: SPARSE_MATRIX_T, MATRIX_DESCR, &
-                       SPARSE_STATUS_SUCCESS, SPARSE_INDEX_BASE_ONE, &
-                       SPARSE_MATRIX_TYPE_GENERAL, SPARSE_FILL_MODE_LOWER, &
-                       SPARSE_DIAG_NON_UNIT, SPARSE_OPERATION_NON_TRANSPOSE, &
-                       mkl_sparse_d_create_csr, mkl_sparse_set_mv_hint, &
-                       mkl_sparse_optimize, mkl_sparse_d_mv, mkl_sparse_destroy
+ Use, Intrinsic :: ISO_C_BINDING, Only: C_DOUBLE, C_SIZE_T, C_INT32_T
+ Use eigenbcgsolver_imeq_mod
  Use IBsetupInetrpRegular
  
  IMPLICIT NONE
@@ -26,133 +21,148 @@ MODULE  MatrixFormAndOperate
  Real factorT, factorQ
  INTEGER :: TotalUnknownsT, TotalUnknownsP,length_row_plus_one,kkk
  INTEGER*8::counterEntriesBAndBtransposed_Prs
- TYPE(SPARSE_MATRIX_T) :: B_MKL_Prs, BT_MKL_Prs
- TYPE(MATRIX_DESCR) :: MKL_General_Descr
- LOGICAL :: MKL_Sparse_Handles_Initialized = .FALSE.
  CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-! oneMKL Inspector-Executor sparse-matrix handles.  The handles retain
-! references to the CSR arrays, so those arrays must remain allocated and
-! unchanged until Destroy_MKL_Sparse_Handles is called.
-SUBROUTINE Check_MKL_Sparse_Status(status, operation_name)
+! GPU (CudaBandedLib) coupled pressure/force solve. init_immersed_eq_d_i32
+! pre-factorizes the pressure Laplacian on the GPU once; solve_immersed_eq_primes_d_i32
+! then runs the whole BiCGStab loop on the device every time step. This replaces
+! Build_B_And_BTranspose's old MKL handles, Precond_RHS_P, BICGf90.f90, and the
+! B_P_prime/F_tag block in time_step_Lid3D_z.f90 -- see Init_GPU_IBM_Solver below
+! and the call site in time_step_Lid3D_z.f90.
+!
+! Everything below is now grounded in ImerssedEquation.h/.cu and
+! FortranBindings.hpp, not guessed:
+!
+! (1) Axis permutation (FortranBindings.hpp's initImmersedEq_d_i32): the
+!     wrapper unconditionally calls the C++ constructor as
+!     initImmersedEq(dim1Length, dim3Length, dim2Length, ...) i.e.
+!     height=dim1Length, width=dim3Length, depth=dim2Length, and
+!     EigenDecompForFortran.cpp's Doxygen comment says explicitly "rows
+!     (Y-dimension) ... cols (X-dimension) ... layers (Z-dimension)". So:
+!       dim1Length/dim1Delta/dim1*IsNeumann/dim1*Val -> Y  -> Ny1, Hy12(1)
+!       dim2Length/dim2Delta/dim2*IsNeumann/dim2*Val -> Z  -> Nz1, Hz12(1)
+!       dim3Length/dim3Delta/dim3*IsNeumann/dim3*Val -> X  -> Nx1, Hx12(1)
+!     This is what the README calls "INPUT_FORMAT_YZX" -- it isn't a
+!     separate call to make, it's baked into which argument slot gets which
+!     value, so there is no missing set_global_input_format after all.
+! (2) dim*SegSpacing is eigen::LaplOperatorT (wrapper/LaplOperatorType.h),
+!     cast directly from the integer -- not an array length as I guessed
+!     last time. EVDLapP's boundary rows (a single P1 or P2 term, not the
+!     sum) match "UniformDeltaNodeCenteredLapl = 0" ("unknowns at nodes,
+!     walls ON the first/last node's neighbouring position"), not
+!     UniformDeltaStaggeredLapl -- so I've corrected this to 0 for all three
+!     axes. There's no Fortran-side named constant for it in the wrapper you
+!     gave me, hence the bare literal below.
+! (3) Flat-index convention: EigenDecompForFortran.h states the internal
+!     storage order is "dim1 (fastest varying), dim2, dim3 (slowest)" for
+!     the GridDim(rows, cols, layers) constructor -- i.e. Y fastest, X
+!     middle, Z slowest. That is NOT the same order OrdVarPres uses for
+!     NumGlP (X fastest, Y middle, Z slowest). B's column indices and R's
+!     row indices are grid-space indices that came from NumGlP (via
+!     Div_F_X_ROW / R_Ftag_Matrix_Fx_Row), so they have to be converted --
+!     see LibGridIdxFromNumGlP below. p0/f0 are all-zero so no conversion
+!     is needed there. uStar and resultPPrime are handled directly in
+!     time_step_Lid3D_z.f90 using the library's index order from the start
+!     (see the comment there for the velocity component sizes, which are
+!     NOT all Nx1*Ny1*Nz1 -- confirmed against bounds_Lid3D_z.f90's ghost
+!     assignments, e.g. VMxNew(0,:,:) and VMxNew(Nx1,:,:)).
+!
+! Still not verified: whether the library's divergence stencil in
+! ImerssedEquation.cu's setRHSPPrime matches Yuri's FdDiv/Ckor exactly (both
+! look like standard 2nd-order MAC divergence scaled by 3/(2*dt), but I
+! haven't proven the constants and boundary treatment agree). Compare
+! against orig/Source's CPU path for the same case before trusting a full
+! run.
+SUBROUTINE Init_GPU_IBM_Solver
     IMPLICIT NONE
+    INTEGER :: nnzB, nnzR, i
+    REAL(C_DOUBLE), ALLOCATABLE :: p0(:), f0(:)
+    REAL(C_DOUBLE) :: dim1Delta_(1), dim2Delta_(1), dim3Delta_(1)
 
-    INTEGER(C_INT), INTENT(IN) :: status
-    CHARACTER(LEN=*), INTENT(IN) :: operation_name
+    nnzB = SIZE(B_CSR_Prs)
+    nnzR = SIZE(R_CSC_Val)
 
-    IF (status /= SPARSE_STATUS_SUCCESS) THEN
-        WRITE(*,*) 'oneMKL sparse operation failed: ', TRIM(operation_name), &
-                   ', status = ', status
-        ERROR STOP 1
-    END IF
-END SUBROUTINE Check_MKL_Sparse_Status
+    IF (ALLOCATED(B_RowOffsets0)) DEALLOCATE(B_RowOffsets0)
+    IF (ALLOCATED(B_ColInds0))    DEALLOCATE(B_ColInds0)
+    ALLOCATE(B_RowOffsets0(3*TotalUnknownsP+1), B_ColInds0(nnzB))
+    B_RowOffsets0 = B_Row_CSR_Prs(1:3*TotalUnknownsP+1) - 1
+    DO i = 1, nnzB
+        B_ColInds0(i) = LibGridIdxFromNumGlP(B_Col_CSR_Prs(i)) - 1
+    END DO
+
+    IF (ALLOCATED(R_ColOffsets0)) DEALLOCATE(R_ColOffsets0)
+    IF (ALLOCATED(R_RowInds0))    DEALLOCATE(R_RowInds0)
+    ALLOCATE(R_ColOffsets0(3*TotalUnknownsP+1), R_RowInds0(nnzR))
+    R_ColOffsets0 = R_ColOffsets_CSC(1:3*TotalUnknownsP+1) - 1
+    DO i = 1, nnzR
+        R_RowInds0(i) = LibGridIdxFromNumGlP(R_RowInds_CSC(i)) - 1
+    END DO
+
+    ALLOCATE(p0(Nx1*Ny1*Nz1), f0(3*TotalUnknownsP))
+    p0 = 0.D0
+    f0 = 0.D0
+
+    ImEqSolverForceSize = INT(3*TotalUnknownsP, C_SIZE_T)
+
+    dim1Delta_(1) = Hy12(1)
+    dim2Delta_(1) = Hz12(1)
+    dim3Delta_(1) = Hx12(1)
+
+    CALL init_immersed_eq_d_i32( &
+        INT(Ny1, C_SIZE_T), INT(Nz1, C_SIZE_T), INT(Nx1, C_SIZE_T), &
+        .TRUE., .TRUE., &   ! dim1 (Y) Neumann both ends
+        .TRUE., .TRUE., &   ! dim2 (Z) Neumann both ends
+        .TRUE., .TRUE., &   ! dim3 (X) Neumann both ends
+        0.D0, 0.D0, 0.D0, 0.D0, 0.D0, 0.D0, &   ! homogeneous Neumann values
+        INT(0, C_SIZE_T), INT(0, C_SIZE_T), INT(0, C_SIZE_T), &  ! UniformDeltaNodeCenteredLapl, all 3 axes
+        ImEqSolverForceSize, INT(MAX(nnzB, nnzR), C_SIZE_T), &
+        p0, f0, dim1Delta_, dim2Delta_, dim3Delta_, &
+        Htime, &
+        .TRUE., .TRUE., .TRUE., &
+        Eps, INT(ItMax, C_SIZE_T))
+
+    ImEqSolverInitialized = .TRUE.
+    DEALLOCATE(p0, f0)
+END SUBROUTINE Init_GPU_IBM_Solver
 
 
-SUBROUTINE Initialize_MKL_Sparse_Handles
+! Converts a 1-based NumGlP-style flat grid index (X fastest, then Y, then Z
+! -- OrdVarPres's convention) to the 1-based flat index CudaBandedLib uses
+! internally for the SAME (X,Y,Z) grid point (Y fastest, then X, then Z --
+! see the note above Init_GPU_IBM_Solver). Both index the same Nx1*Ny1*Nz1
+! grid; only the flattening order differs.
+INTEGER FUNCTION LibGridIdxFromNumGlP(numGlPIdx) RESULT(libIdx)
     IMPLICIT NONE
-
-    INTEGER(C_INT) :: status, expected_calls
-
-    IF (MKL_Sparse_Handles_Initialized) THEN
-        CALL Destroy_MKL_Sparse_Handles
-    END IF
-
-    MKL_General_Descr%type = SPARSE_MATRIX_TYPE_GENERAL
-    MKL_General_Descr%mode = SPARSE_FILL_MODE_LOWER
-    MKL_General_Descr%diag = SPARSE_DIAG_NON_UNIT
-
-    status = mkl_sparse_d_create_csr( &
-        B_MKL_Prs, SPARSE_INDEX_BASE_ONE, &
-        INT(3*TotalUnknownsP, C_INT), INT(Nx1*Ny1*Nz1, C_INT), &
-        B_Row_CSR_Prs(1:3*TotalUnknownsP), &
-        B_Row_CSR_Prs(2:3*TotalUnknownsP+1), &
-        B_Col_CSR_Prs, B_CSR_Prs)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_d_create_csr(B)')
-
-    status = mkl_sparse_d_create_csr( &
-        BT_MKL_Prs, SPARSE_INDEX_BASE_ONE, &
-        INT(Nx1*Ny1*Nz1, C_INT), INT(3*TotalUnknownsP, C_INT), &
-        BT_Row_CSR_Prs(1:Nx1*Ny1*Nz1), &
-        BT_Row_CSR_Prs(2:Nx1*Ny1*Nz1+1), &
-        BT_Col_CSR_Prs, BT_CSR_Prs)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_d_create_csr(BT)')
-
-    ! Each BiCG solve performs one initial product, four products per
-    ! iteration, and the surrounding time-step code performs one more.
-    expected_calls = INT(MAX(1, 4*(ItMax+1)+2), C_INT)
-
-    status = mkl_sparse_set_mv_hint( &
-        B_MKL_Prs, SPARSE_OPERATION_NON_TRANSPOSE, &
-        MKL_General_Descr, expected_calls)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_set_mv_hint(B)')
-
-    status = mkl_sparse_set_mv_hint( &
-        BT_MKL_Prs, SPARSE_OPERATION_NON_TRANSPOSE, &
-        MKL_General_Descr, expected_calls)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_set_mv_hint(BT)')
-
-    status = mkl_sparse_optimize(B_MKL_Prs)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_optimize(B)')
-
-    status = mkl_sparse_optimize(BT_MKL_Prs)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_optimize(BT)')
-
-    MKL_Sparse_Handles_Initialized = .TRUE.
-END SUBROUTINE Initialize_MKL_Sparse_Handles
+    INTEGER, INTENT(IN) :: numGlPIdx
+    INTEGER :: rem, ii, jj, kk
+    rem = numGlPIdx - 1
+    ii  = MOD(rem, Nx1) + 1
+    rem = rem / Nx1
+    jj  = MOD(rem, Ny1) + 1
+    kk  = rem / Ny1 + 1
+    libIdx = LibGridIdx(ii, jj, kk)
+END FUNCTION LibGridIdxFromNumGlP
 
 
-SUBROUTINE MKL_B_MatVec(x, y)
+! The library's own 1-based flat index (Y fastest, X middle, Z slowest) for
+! pressure/scalar grid point (i,j,k), i,j,k each in 1..Nx1/Ny1/Nz1. Used
+! directly (not via LibGridIdxFromNumGlP) wherever the (i,j,k) triple is
+! already in hand, e.g. mapping resultPPrime back into Dprs in
+! time_step_Lid3D_z.f90.
+INTEGER FUNCTION LibGridIdx(i, j, k) RESULT(libIdx)
     IMPLICIT NONE
-
-    REAL(KIND=8), CONTIGUOUS, INTENT(IN) :: x(:)
-    REAL(KIND=8), CONTIGUOUS, INTENT(INOUT) :: y(:)
-    INTEGER(C_INT) :: status
-
-    IF (.NOT. MKL_Sparse_Handles_Initialized) THEN
-        ERROR STOP 'oneMKL sparse handles have not been initialized'
-    END IF
-
-    status = mkl_sparse_d_mv( &
-        SPARSE_OPERATION_NON_TRANSPOSE, 1.D0, B_MKL_Prs, &
-        MKL_General_Descr, x, 0.D0, y)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_d_mv(B)')
-END SUBROUTINE MKL_B_MatVec
+    INTEGER, INTENT(IN) :: i, j, k
+    libIdx = j + (i-1)*Ny1 + (k-1)*Ny1*Nx1
+END FUNCTION LibGridIdx
 
 
-SUBROUTINE MKL_BT_MatVec(x, y)
+SUBROUTINE Finalize_GPU_IBM_Solver
     IMPLICIT NONE
-
-    REAL(KIND=8), CONTIGUOUS, INTENT(IN) :: x(:)
-    REAL(KIND=8), CONTIGUOUS, INTENT(INOUT) :: y(:)
-    INTEGER(C_INT) :: status
-
-    IF (.NOT. MKL_Sparse_Handles_Initialized) THEN
-        ERROR STOP 'oneMKL sparse handles have not been initialized'
-    END IF
-
-    status = mkl_sparse_d_mv( &
-        SPARSE_OPERATION_NON_TRANSPOSE, 1.D0, BT_MKL_Prs, &
-        MKL_General_Descr, x, 0.D0, y)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_d_mv(BT)')
-END SUBROUTINE MKL_BT_MatVec
-
-
-SUBROUTINE Destroy_MKL_Sparse_Handles
-    IMPLICIT NONE
-
-    INTEGER(C_INT) :: status
-
-    IF (.NOT. MKL_Sparse_Handles_Initialized) RETURN
-
-    status = mkl_sparse_destroy(B_MKL_Prs)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_destroy(B)')
-
-    status = mkl_sparse_destroy(BT_MKL_Prs)
-    CALL Check_MKL_Sparse_Status(status, 'mkl_sparse_destroy(BT)')
-
-    MKL_Sparse_Handles_Initialized = .FALSE.
-END SUBROUTINE Destroy_MKL_Sparse_Handles
+    IF (.NOT. ImEqSolverInitialized) RETURN
+    CALL finalize_immersed_eq_d_i32()
+    ImEqSolverInitialized = .FALSE.
+END SUBROUTINE Finalize_GPU_IBM_Solver
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   
@@ -235,6 +245,11 @@ TotalUnknownsP=0
 Open  (123,   file='Div_Reg_Fx_Tag.ddd', form='unformatted',access='stream',status='unknown')
 Open  (1234,  file='Div_Reg_Fy_Tag.ddd', form='unformatted',access='stream',status='unknown')
 Open  (12345, file='Div_Reg_Fz_Tag.ddd', form='unformatted',access='stream',status='unknown')
+! New cache files for the raw (pre-fusion) R triplets -- needed for the GPU
+! solver's R argument, not read/written by the original (orig/) code at all.
+Open  (12346, file='R_Reg_Fx_Tag.ddd',   form='unformatted',access='stream',status='unknown')
+Open  (12347, file='R_Reg_Fy_Tag.ddd',   form='unformatted',access='stream',status='unknown')
+Open  (12348, file='R_Reg_Fz_Tag.ddd',   form='unformatted',access='stream',status='unknown')
 
 
 DO i=1,n_body
@@ -256,9 +271,12 @@ DO i=1,n_body
         elapsed_time = end_time - start_time
         PRINT *, "Elapsed time in seconds: ", elapsed_time 
         
-         DEALLOCATE( bdy(i)%R_Ftag_Matrix_Fx,bdy(i)%R_Ftag_Matrix_Fx_Row,bdy(i)%R_Ftag_Matrix_Fx_Col,&
-                     bdy(i)%R_Ftag_Matrix_Fy,bdy(i)%R_Ftag_Matrix_Fy_Row,bdy(i)%R_Ftag_Matrix_Fy_Col,&
-                     bdy(i)%R_Ftag_Matrix_Fz,bdy(i)%R_Ftag_Matrix_Fz_Row,bdy(i)%R_Ftag_Matrix_Fz_Col )      
+        ! NOTE: R_Ftag_Matrix_F{x,y,z} used to be deallocated right here, since
+        ! only the fused Div_F_*_Tag output (B/BT) was ever needed downstream.
+        ! We now also need the raw (pre-fusion) triplets to build R for the GPU
+        ! solver, so they're written to the .ddd cache below (new files) instead
+        ! of being thrown away, and are deallocated only after Assemble_R_Matrix_CSC
+        ! consumes them, further down.
         
         Write (123),  Szx
         Write (123)   bdy(i)%Div_F_X_Val
@@ -274,6 +292,21 @@ DO i=1,n_body
         Write (12345)   bdy(i)%Div_F_Z_Val
         Write (12345)   bdy(i)%Div_F_Z_ROW
         Write (12345)   bdy(i)%Div_F_Z_COL
+
+        Write (12346)   bdy(i)%Number_Of_Matrix_B_Entries_X
+        Write (12346)   bdy(i)%R_Ftag_Matrix_Fx
+        Write (12346)   bdy(i)%R_Ftag_Matrix_Fx_Row
+        Write (12346)   bdy(i)%R_Ftag_Matrix_Fx_Col
+
+        Write (12347)   bdy(i)%Number_Of_Matrix_B_Entries_Y
+        Write (12347)   bdy(i)%R_Ftag_Matrix_Fy
+        Write (12347)   bdy(i)%R_Ftag_Matrix_Fy_Row
+        Write (12347)   bdy(i)%R_Ftag_Matrix_Fy_Col
+
+        Write (12348)   bdy(i)%Number_Of_Matrix_B_Entries_Z
+        Write (12348)   bdy(i)%R_Ftag_Matrix_Fz
+        Write (12348)   bdy(i)%R_Ftag_Matrix_Fz_Row
+        Write (12348)   bdy(i)%R_Ftag_Matrix_Fz_Col
         
     ELSE
          Read (123)  Szx
@@ -295,12 +328,39 @@ DO i=1,n_body
         Read (12345)   bdy(i)%Div_F_Z_Val
         Read (12345)   bdy(i)%Div_F_Z_ROW
         Read (12345)   bdy(i)%Div_F_Z_COL
+
+        Read (12346)  bdy(i)%Number_Of_Matrix_B_Entries_X
+        ALLOCATE( bdy(i)%R_Ftag_Matrix_Fx(bdy(i)%Number_Of_Matrix_B_Entries_X), &
+                  bdy(i)%R_Ftag_Matrix_Fx_Row(bdy(i)%Number_Of_Matrix_B_Entries_X), &
+                  bdy(i)%R_Ftag_Matrix_Fx_Col(bdy(i)%Number_Of_Matrix_B_Entries_X))
+        Read (12346)  bdy(i)%R_Ftag_Matrix_Fx
+        Read (12346)  bdy(i)%R_Ftag_Matrix_Fx_Row
+        Read (12346)  bdy(i)%R_Ftag_Matrix_Fx_Col
+
+        Read (12347)  bdy(i)%Number_Of_Matrix_B_Entries_Y
+        ALLOCATE( bdy(i)%R_Ftag_Matrix_Fy(bdy(i)%Number_Of_Matrix_B_Entries_Y), &
+                  bdy(i)%R_Ftag_Matrix_Fy_Row(bdy(i)%Number_Of_Matrix_B_Entries_Y), &
+                  bdy(i)%R_Ftag_Matrix_Fy_Col(bdy(i)%Number_Of_Matrix_B_Entries_Y))
+        Read (12347)  bdy(i)%R_Ftag_Matrix_Fy
+        Read (12347)  bdy(i)%R_Ftag_Matrix_Fy_Row
+        Read (12347)  bdy(i)%R_Ftag_Matrix_Fy_Col
+
+        Read (12348)  bdy(i)%Number_Of_Matrix_B_Entries_Z
+        ALLOCATE( bdy(i)%R_Ftag_Matrix_Fz(bdy(i)%Number_Of_Matrix_B_Entries_Z), &
+                  bdy(i)%R_Ftag_Matrix_Fz_Row(bdy(i)%Number_Of_Matrix_B_Entries_Z), &
+                  bdy(i)%R_Ftag_Matrix_Fz_Col(bdy(i)%Number_Of_Matrix_B_Entries_Z))
+        Read (12348)  bdy(i)%R_Ftag_Matrix_Fz
+        Read (12348)  bdy(i)%R_Ftag_Matrix_Fz_Row
+        Read (12348)  bdy(i)%R_Ftag_Matrix_Fz_Col
     END IF
 END DO 
 
 close  (123)
 close  (1234)
 close  (12345)
+close  (12346)
+close  (12347)
+close  (12348)
 
   
 ALLOCATE( BT_expanded(1:Nx1,1:Ny1,1:Nz1),lambdaTemp(1:3*TotalUnknownsP))
@@ -364,114 +424,92 @@ END DO
  
 Call  Sparse_To_CSR_Format (  B(:), B_R_C(:,1), B_R_C(:,2), counterEntriesBAndBtransposed_Prs, 3*TotalUnknownsP,B_CSR_Prs, B_Row_CSR_Prs, B_Col_CSR_Prs)  
 Call  Sparse_To_CSR_Format ( BT(:),BT_R_C(:,1),BT_R_C(:,2), counterEntriesBAndBtransposed_Prs, Nx1*Ny1*Nz1,    BT_CSR_Prs,BT_Row_CSR_Prs,BT_Col_CSR_Prs) 
-Call Initialize_MKL_Sparse_Handles
-DEALLOCATE( BT_expanded,lambdaTemp, B, BT,B_R_C, BT_R_C)!, R_Ftag_Matrix,R_Ftag_Matrix_Row,R_Ftag_Matrix_Col)
+Call Assemble_R_Matrix_CSC
+Call Init_GPU_IBM_Solver
+DEALLOCATE( BT_expanded,lambdaTemp, B, BT,B_R_C, BT_R_C)
 
 END  SUBROUTINE Build_B_And_BTranspose
 
 
+SUBROUTINE Assemble_R_Matrix_CSC
+! Builds R in CSC form (Nx1*Ny1*Nz1 grid rows x 3*TotalUnknownsP force columns)
+! from the raw bdy(n)%R_Ftag_Matrix_F{x,y,z} triplets -- the same triplets
+! Div_Reg_F{x,y,z}_Tag fuses with the gradient to build B, but here used
+! unfused. Column (force-index) numbering mirrors exactly the running_index
+! bookkeeping Build_B_And_BTranspose uses for B's rows, so R and B agree on
+! what force index k means. Must be called after that bookkeeping is
+! consistent, i.e. after bdy(n)%R_Ftag_Matrix_F* are populated (fresh build or
+! cache read) for every body.
+INTEGER :: n, i, running_index, runningIndexR
+INTEGER*8 :: totalR
+REAL(kind=8),    ALLOCATABLE :: R_All_Val(:)
+INTEGER,         ALLOCATABLE :: R_All_ForceIdx(:), R_All_GridIdx(:)
 
-SUBROUTINE Precond_Matrix_Vector_Product_For_Krylov_Space (vector, reslt, sz)
+totalR = 0
+DO n=1, n_body
+    totalR = totalR + bdy(n)%Number_Of_Matrix_B_Entries_X &
+                     + bdy(n)%Number_Of_Matrix_B_Entries_Y &
+                     + bdy(n)%Number_Of_Matrix_B_Entries_Z
+END DO
 
-    Real(kind=8),CONTIGUOUS,POINTER::  res(:),  res1(:)
-    Real(kind=8),POINTER::  RHS(:,:,:),precond(:,:,:)
-    Integer sz, sz_B, sz_BT, i, j, k
-    Real*8,Dimension (1:sz):: vector,reslt
-   
-    ALLOCATE(res(3*TotalUnknownsP), res1(sz))
-    
-    CALL MKL_B_MatVec(vector, res)  
-    CALL MKL_BT_MatVec(res, res1)
-     
-    DEALLOCATE (res) 
-   
-    res1=2.d0*res1
-    
-    ALLOCATE(RHS(Nx1,Ny1,Nz1), precond(Nx1,Ny1,Nz1))
-   
-    !$OMP PARALLEL DO DEFAULT(Shared) Private(i,j,k)  
-    DO i=1, Nx1
-        DO j=1, Ny1
-             DO k=1, Nz1
-                         RHS(i,j,k)=res1(NumGlP(i,j,k))
-                  END DO
+ALLOCATE( R_All_Val(totalR), R_All_ForceIdx(totalR), R_All_GridIdx(totalR) )
+
+runningIndexR = 1
+running_index = 0
+
+DO n=1, n_body
+        DO i=1, SIZE(bdy(n)%R_Ftag_Matrix_Fx)
+            R_All_Val(runningIndexR)      = bdy(n)%R_Ftag_Matrix_Fx(i)
+            R_All_GridIdx(runningIndexR)  = bdy(n)%R_Ftag_Matrix_Fx_Row(i)
+            R_All_ForceIdx(runningIndexR) = bdy(n)%R_Ftag_Matrix_Fx_Col(i) + running_index
+            runningIndexR = runningIndexR + 1
         END DO
-    END DO
-    
-    DEALLOCATE (res1) 
-    Thomas_f_New=>precond
-    Thomas_f_rhs=>RHS
-    Call   EVD_Thomas_z (Thomas_f_New, Thomas_f_rhs,                         &
-     &                   ExxP(1:Nx1,1:Nx1), Ex_invP(1:Nx1,1:Nx1),            &
-     &                   EyP(1:Ny1,1:Ny1),  Ey_invP(1:Ny1,1:Ny1),            &
-     &                   LambxP(1:Nx1), LambyP(1:Ny1),                       &
-     &                   P_left(1:Nz1), P_center(1:Nz1), P_right(1:Nz1),     &
-     &                   Nx1, Ny1, Nz1, 0.D0)
+        running_index = running_index + bdy(n)%npts
 
-    
-   !$OMP PARALLEL DO DEFAULT(Shared) Private(i,j,k)  
-    DO i=1, Nx1
-        DO j=1, Ny1
-             DO k=1, Nz1
-                     reslt(NumGlP(i,j,k))=precond(i,j,k)
-              END DO
+        DO i=1, SIZE(bdy(n)%R_Ftag_Matrix_Fy)
+            R_All_Val(runningIndexR)      = bdy(n)%R_Ftag_Matrix_Fy(i)
+            R_All_GridIdx(runningIndexR)  = bdy(n)%R_Ftag_Matrix_Fy_Row(i)
+            R_All_ForceIdx(runningIndexR) = bdy(n)%R_Ftag_Matrix_Fy_Col(i) + running_index
+            runningIndexR = runningIndexR + 1
         END DO
-    END DO
-    
-    DEALLOCATE(RHS, precond)
-    reslt= reslt+vector
-      
-    
-END  SUBROUTINE Precond_Matrix_Vector_Product_For_Krylov_Space
+        running_index = running_index + bdy(n)%npts
 
-
-SUBROUTINE Precond_RHS_P (RHS_P_prime, RHS_F_prime, RHS_Precond)
-Real(kind=8),CONTIGUOUS,POINTER:: RHS_F_prime(:)
-Real(kind=8),allocatable :: RHS_Precond(:)
-Real(kind=8),CONTIGUOUS,POINTER:: temp(:)
-Real(kind=8),POINTER:: temp1(:,:,:), temp2(:,:,:)
-Real(kind=8),Dimension(0:Nxx2,0:Nyy2,0:Nzz2) :: RHS_P_prime
-
-Integer i, j, k
-ALLOCATE(temp(Nx1*Ny1*Nz1),temp1(Nx1,Ny1,Nz1))
-IF (.NOT. ALLOCATED (RHS_Precond))  ALLOCATE(RHS_Precond(Nx1*Ny1*Nz1)) !Do not forget to deallocate in the end of the program 
-CALL MKL_BT_MatVec(RHS_F_prime, temp)
-
-!$OMP PARALLEL DO DEFAULT(Shared) Private(i,j,k)  
-    DO i=1, Nx1
-        DO j=1, Ny1
-             DO k=1, Nz1
-                     temp1(i,j,k)=temp(NumGlP(i,j,k))
-              END DO
+        DO i=1, SIZE(bdy(n)%R_Ftag_Matrix_Fz)
+            R_All_Val(runningIndexR)      = bdy(n)%R_Ftag_Matrix_Fz(i)
+            R_All_GridIdx(runningIndexR)  = bdy(n)%R_Ftag_Matrix_Fz_Row(i)
+            R_All_ForceIdx(runningIndexR) = bdy(n)%R_Ftag_Matrix_Fz_Col(i) + running_index
+            runningIndexR = runningIndexR + 1
         END DO
-    END DO
-    
-   DEALLOCATE(temp)
-   ALLOCATE(temp2(Nx1,Ny1,Nz1))
+        running_index = running_index + bdy(n)%npts
 
-   temp2=RHS_P_prime(1:Nx1,1:Ny1,1:Nz1)+2.d0*temp1
-   
-    Thomas_f_New=> temp1
-    Thomas_f_rhs=>temp2
-    Call   EVD_Thomas_z (Thomas_f_New, Thomas_f_rhs,                         &
-     &                   ExxP(1:Nx1,1:Nx1), Ex_invP(1:Nx1,1:Nx1),            &
-     &                   EyP(1:Ny1,1:Ny1),  Ey_invP(1:Ny1,1:Ny1),            &
-     &                   LambxP(1:Nx1), LambyP(1:Ny1),                       &
-     &                   P_left(1:Nz1), P_center(1:Nz1), P_right(1:Nz1),     &
-     &                   Nx1, Ny1, Nz1, 0.D0)
+        DEALLOCATE( bdy(n)%R_Ftag_Matrix_Fx, bdy(n)%R_Ftag_Matrix_Fx_Row, bdy(n)%R_Ftag_Matrix_Fx_Col, &
+                    bdy(n)%R_Ftag_Matrix_Fy, bdy(n)%R_Ftag_Matrix_Fy_Row, bdy(n)%R_Ftag_Matrix_Fy_Col, &
+                    bdy(n)%R_Ftag_Matrix_Fz, bdy(n)%R_Ftag_Matrix_Fz_Row, bdy(n)%R_Ftag_Matrix_Fz_Col )
+END DO
 
-    
- !$OMP PARALLEL DO DEFAULT(Shared) Private(i,j,k)  
-    DO i=1, Nx1
-        DO j=1, Ny1
-             DO k=1, Nz1
-                    RHS_Precond(NumGlP(i,j,k))= temp1(i,j,k)
-              END DO
-        END DO
-    END DO
-    
-    DEALLOCATE(temp1,temp2)   
-END  SUBROUTINE Precond_RHS_P
+! Feeding (ForceIdx, GridIdx) instead of (GridIdx, ForceIdx) to
+! Sparse_To_CSR_Format -- i.e. compressing by the FORCE index -- produces CSR
+! of R^T, which is exactly CSC of R: R_ColOffsets_CSC(k) is where force-column
+! k's entries start, R_RowInds_CSC holds grid-row indices. Same row/col-swap
+! trick already used above to derive BT's arrays from B's triplets.
+Call Sparse_To_CSR_Format( R_All_Val, R_All_ForceIdx, R_All_GridIdx, totalR, &
+                            3*TotalUnknownsP, R_CSC_Val, R_ColOffsets_CSC, R_RowInds_CSC )
+
+DEALLOCATE( R_All_Val, R_All_ForceIdx, R_All_GridIdx )
+
+END SUBROUTINE Assemble_R_Matrix_CSC
+
+
+
+! Precond_Matrix_Vector_Product_For_Krylov_Space and Precond_RHS_P (the CPU
+! matvec/preconditioning routines BICG5D used) and BICG5D itself have been
+! removed from this (modified/) tree -- solve_immersed_eq_primes_d_i32 now
+! does this work on the GPU (see Init_GPU_IBM_Solver above and the call site
+! in time_step_Lid3D_z.f90). They both called MKL_B_MatVec/MKL_BT_MatVec,
+! which are also gone, so they could not be left in place unmodified as dead
+! code without breaking the build. Since orig/ already holds the CPU path,
+! there was no separate reference copy worth keeping here; diff against
+! orig/Source/MatrixFormAndOperate.f90 if you need to see them again.
 
 
 END MODULE MatrixFormAndOperate

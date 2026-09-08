@@ -140,7 +140,7 @@
  
   !      Call Point_Write_Lid 
 
-        Call Destroy_MKL_Sparse_Handles
+        Call Finalize_GPU_IBM_Solver
         Return
 100     Format(G15.8)
 110     Format(4G15.8)        

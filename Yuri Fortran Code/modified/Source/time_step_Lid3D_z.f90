@@ -20,13 +20,27 @@
          Use EvdProcedures
          Use MatrixFormAndOperate
          Use FVOperators
+         Use, Intrinsic :: ISO_C_BINDING, Only: C_SIZE_T
          Implicit None
-         Integer nbd, Istp, loc_start, loc_end, sz
+         Integer nbd, Istp, loc_start, loc_end, sz, i, j, k
+         Integer :: uSizeU, uSizeV, uSizeW, uOffset2, uOffset3
          Real(kind=8) :: Nusselt,Nusseltx,Nusselt1y,Nusselt2y,Nusselt1z,Nusselt2z, tempsum
 	     Real(kind=8):: Dist2D, Ht, RNSx, RNSy, RNSz, RTmpr, RDP, omp_get_wtime, t1,t2,t3,t4
          Real*8 Proba11(1:10)
-	     Real(kind=8) :: B_P_prime(3*TotalUnknownsP)
+	     Real(kind=8) :: UGammaVec(3*TotalUnknownsP), resultPPrime(Nx1*Ny1*Nz1)
+	     Real(kind=8), Allocatable :: uStar(:)
           Ht = 2.D0 * Htime
+
+         ! uStar layout: three segments, one per velocity component, each
+         ! sized per ImerssedEquation.cu's setRHSPPrime slicing (component
+         ! staggered +1 in its own direction) -- see the call site below.
+         uSizeU = Ny1*(Nx1+1)*Nz1
+         uSizeV = Nx1*(Ny1+1)*Nz1
+         uSizeW = Nx1*Ny1*(Nz1+1)
+         uOffset2 = uSizeU
+         uOffset3 = uSizeU + uSizeV
+         IF (ALLOCATED(uStar)) DEALLOCATE(uStar)
+         ALLOCATE(uStar(uSizeU + uSizeV + uSizeW))
         
 ! ########### Inversing the Stokes operator #################
 
@@ -115,41 +129,82 @@
    
 ! ++++++++++++ Calculate velocities ++++++++++++++++++++++++++++++
 
-         
-      Vel_X_Field=>VMxNew
-      Vel_Y_Field=>VMyNew
-      Vel_Z_Field=>VMzNew
-      
-      loc_start=1 
-      DO nbd=1,  n_body
-        Call interpolation(Vel_X_Field,Vel_Y_Field,Vel_Z_Field,bdy(nbd)%Vx_interp_New,bdy(nbd)%Vy_interp_New,bdy(nbd)%Vz_interp_New,nbd)
-            
-        loc_end=bdy(nbd)%Npts+loc_start-1
-        
-        RHS_F_tag(loc_start:loc_end)=bdy(nbd)%Vx_interp_New
-        
-        loc_start=loc_end+1
-        loc_end= bdy(nbd)%Npts+loc_start-1
-        
-        RHS_F_tag(loc_start:loc_end)=bdy(nbd)%Vy_interp_New
-        
-        loc_start=loc_end+1
-        loc_end=bdy(nbd)%Npts+loc_start-1
-        
-        RHS_F_tag(loc_start:loc_end)=bdy(nbd)%Vz_interp_New
-        loc_start=loc_end+1
-        
+      ! ---- GPU (CudaBandedLib) coupled pressure/force solve ----
+      ! Replaces the old interpolation()+RHS_F_tag block, Precond_RHS_P,
+      ! BICG5D, and MKL_B_MatVec/F_tag block above. solve_immersed_eq_primes_d_i32
+      ! computes R^T*uStar itself from the raw velocity field and R (so
+      ! interpolation() is no longer called here), and also reconstructs the
+      ! -3/(2*Htime)*div(u*) term itself from uStar internally.
+      !
+      ! uStar's THREE segments are NOT all Nx1*Ny1*Nz1 -- ImerssedEquation.cu's
+      ! setRHSPPrime slices velocities into u=Ny1*(Nx1+1)*Nz1, v=Nx1*(Ny1+1)*Nz1,
+      ! w=Nx1*Ny1*(Nz1+1) (each component staggered +1 in its own direction,
+      ! matching Yuri's own VMxNew(0,:,:)/VMxNew(Nx1,:,:) etc. wall assignments
+      ! in bounds_Lid3D_z.f90 -- confirmed, not guessed). Within each segment,
+      ! the library's Y-fastest/X-middle/Z-slowest order applies (see
+      ! MatrixFormAndOperate.f90's Init_GPU_IBM_Solver header) using that
+      ! segment's OWN (possibly +1) extent.
+      !
+      ! Still not verified:
+      ! (a) UGamma = bdy(:)%V{x,y,z}_b concatenated in the same x-then-y-then-z,
+      !     body-by-body order as F_tag/R's columns -- Vx_b/Vy_b/Vz_b are
+      !     zero-initialized and used elsewhere as a "target" boundary
+      !     velocity (fb_x=(Vx_b-Vx_interp_New)/Htime), which is why I've
+      !     mapped them to U^Gamma, but I have not confirmed this against
+      !     Yuri or the paper.
+      ! (b) Whether setRHSPPrime's divergence stencil (2nd-order central,
+      !     scaled by 3/(2*Htime)) matches Yuri's FdDiv/Ckor exactly.
+
+      DO k=1,Nz1
+       DO j=1,Ny1
+        DO i=0,Nx1
+          uStar(j + i*Ny1 + (k-1)*Ny1*(Nx1+1)) = VMxNew(i,j,k)
+        END DO
+       END DO
       END DO
-    
-      RHS_F_tag=RHS_F_tag*Ckor / Htime !This is RHS_F_prime
-      
-     
-     
-      CALL Precond_RHS_P (FDRHP,RHS_F_tag, RHS_Precond)
-      CALL BICG5D (RHS_Precond,Nx1*Ny1*Nz1,ItMax, Eps, IGPrs, Dprs)
-     
-      CALL MKL_B_MatVec(RHS_Precond, B_P_prime)  
-      F_tag=2.d0*(B_P_prime-RHS_F_tag)
+
+      DO k=1,Nz1
+       DO j=0,Ny1
+        DO i=1,Nx1
+          uStar(uOffset2 + (j+1) + (i-1)*(Ny1+1) + (k-1)*(Ny1+1)*Nx1) = VMyNew(i,j,k)
+        END DO
+       END DO
+      END DO
+
+      DO k=0,Nz1
+       DO j=1,Ny1
+        DO i=1,Nx1
+          uStar(uOffset3 + j + (i-1)*Ny1 + k*Ny1*Nx1) = VMzNew(i,j,k)
+        END DO
+       END DO
+      END DO
+
+      loc_start=1
+      DO nbd=1, n_body
+        loc_end=bdy(nbd)%Npts+loc_start-1
+        UGammaVec(loc_start:loc_end)=bdy(nbd)%Vx_b
+        loc_start=loc_end+1
+        loc_end=bdy(nbd)%Npts+loc_start-1
+        UGammaVec(loc_start:loc_end)=bdy(nbd)%Vy_b
+        loc_start=loc_end+1
+        loc_end=bdy(nbd)%Npts+loc_start-1
+        UGammaVec(loc_start:loc_end)=bdy(nbd)%Vz_b
+        loc_start=loc_end+1
+      END DO
+
+      CALL solve_immersed_eq_primes_d_i32( &
+          resultPPrime, F_tag, &
+          INT(SIZE(B_CSR_Prs), C_SIZE_T), B_RowOffsets0, B_ColInds0, B_CSR_Prs, &
+          INT(SIZE(R_CSC_Val), C_SIZE_T), R_ColOffsets0, R_RowInds0, R_CSC_Val, &
+          UGammaVec, uStar)
+
+      DO k=1,Nz1
+       DO j=1,Ny1
+        DO i=1,Nx1
+          Dprs(i,j,k) = resultPPrime(LibGridIdx(i,j,k))
+        END DO
+       END DO
+      END DO
      
            
           RHSx=0.d0

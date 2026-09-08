@@ -29,8 +29,12 @@
     <list default="true" id="c7bd897e-8f35-48e6-8b9f-bf91435b5d55" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../.github/workflows/checkWindowsCompilation.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../.github/workflows/checkWindowsCompilation.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modified/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/modified/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modified/Source/BICGf90.f90" beforeDir="false" afterPath="$PROJECT_DIR$/modified/Source/BICGf90.f90" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modified/Source/MatrixFormAndOperate.f90" beforeDir="false" afterPath="$PROJECT_DIR$/modified/Source/MatrixFormAndOperate.f90" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modified/Source/Solution_time_Lid3D.f90" beforeDir="false" afterPath="$PROJECT_DIR$/modified/Source/Solution_time_Lid3D.f90" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modified/Source/modfv_Lid3D_z.f90" beforeDir="false" afterPath="$PROJECT_DIR$/modified/Source/modfv_Lid3D_z.f90" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modified/Source/time_step_Lid3D_z.f90" beforeDir="false" afterPath="$PROJECT_DIR$/modified/Source/time_step_Lid3D_z.f90" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

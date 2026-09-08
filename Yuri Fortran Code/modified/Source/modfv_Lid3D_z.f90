@@ -48,7 +48,7 @@
     End Module Variables
     
      Module Matrices
-          
+          Use, Intrinsic :: ISO_C_BINDING, Only: C_INT32_T, C_SIZE_T
           Real(kind=8), POINTER:: B(:),BT(:),BT_expanded(:,:,:),lambdaTemp(:)
           Integer,      POINTER:: B_R_C(:,:), BT_R_C(:,:)
                                   
@@ -58,7 +58,27 @@
                                         BT_Row_CSR_Prs(:),BT_Col_CSR_Prs(:)
          
          Integer*8 Size_R_Ftag_Matrix
-         
+
+! ---- GPU (CudaBandedLib) coupled pressure-force solve ----
+! R in CSC form: (Nx1*Ny1*Nz1) grid rows x (3*TotalUnknownsP) force columns.
+! Built once in Build_B_And_BTranspose from the same bdy(n)%R_Ftag_Matrix_F{x,y,z}
+! triplets that used to be discarded after being fused into B/BT.
+         Real(kind=8), CONTIGUOUS, POINTER:: R_CSC_Val(:)
+         Integer,      CONTIGUOUS, POINTER:: R_ColOffsets_CSC(:), R_RowInds_CSC(:)
+
+! 0-based copies of B (CSR) and R (CSC) for the GPU library. Sparse_To_CSR_Format
+! (and hence B_Row/Col_CSR_Prs) is 1-based Fortran convention; CudaBandedLib wants
+! 0-based per the README's "Zero-Base Trap". Same nnz/layout as the 1-based
+! arrays, just shifted -1, so they're kept separate rather than mutating the
+! originals in place. Declared as C_INT32_T (not plain Integer) since that is
+! the exact interoperable type solve_immersed_eq_primes_d_i32's bind(C)
+! interface requires for rowOffsetsB/colIndsB/colOffsetsR/rowIndsR.
+         Integer(C_INT32_T), ALLOCATABLE :: B_RowOffsets0(:), B_ColInds0(:)
+         Integer(C_INT32_T), ALLOCATABLE :: R_ColOffsets0(:), R_RowInds0(:)
+
+         Integer(C_SIZE_T) :: ImEqSolverForceSize
+         Logical :: ImEqSolverInitialized = .FALSE.
+
         End Module Matrices
     
 

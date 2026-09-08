@@ -51,22 +51,31 @@ if(NOT DEFINED CUDA_TOOLKIT_VERSION)
         endif()
     endforeach()
 
-    # Layout 2: standard NVIDIA .deb/.run install, e.g. /usr/local/cuda-12.4
-    file(GLOB _STANDARD_TOOLKIT_DIRS "/usr/local/cuda-*")
+    # Layout 2: Standard NVIDIA installs (Linux and Windows)
+    file(GLOB _STANDARD_TOOLKIT_DIRS 
+        "/usr/local/cuda-*"
+        "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v*"
+    )
     foreach(_dir ${_STANDARD_TOOLKIT_DIRS})
         if(IS_DIRECTORY "${_dir}")
             get_filename_component(_name "${_dir}" NAME)
-            string(REGEX MATCH "^cuda-([0-9]+\\.[0-9]+)$" _ "${_name}")
-            if(CMAKE_MATCH_1)
+            if(_name MATCHES "^cuda-([0-9]+\\.[0-9]+)$" OR _name MATCHES "^v([0-9]+\\.[0-9]+)$")
                 list(APPEND _CANDIDATE_VERSIONS "${CMAKE_MATCH_1}")
                 list(APPEND _CANDIDATE_DIRS "${_dir}")
             endif()
         endif()
     endforeach()
 
-    # Layout 3: user-local install with no root access, e.g. runfile installer
-    # run as `./cuda_*.run --toolkit --toolkitpath=$HOME/cuda-12.6`. Useful on
-    # shared machines where you can't write to /opt or /usr/local.
+    # Layout 3: User-local or environment-defined toolkit (including GitHub Actions CUDA_PATH)
+    if(DEFINED ENV{CUDA_PATH} AND IS_DIRECTORY "$ENV{CUDA_PATH}")
+        list(APPEND _CANDIDATE_DIRS "$ENV{CUDA_PATH}")
+        if("$ENV{CUDA_PATH}" MATCHES "v([0-9]+\\.[0-9]+)")
+            list(APPEND _CANDIDATE_VERSIONS "${CMAKE_MATCH_1}")
+        else()
+            list(APPEND _CANDIDATE_VERSIONS "12.6")
+        endif()
+    endif()
+
     file(GLOB _USER_LOCAL_TOOLKIT_DIRS "$ENV{HOME}/cuda-*")
     foreach(_dir ${_USER_LOCAL_TOOLKIT_DIRS})
         if(IS_DIRECTORY "${_dir}")
