@@ -19,6 +19,16 @@ size_t GpuArray<T>::bytes() const {
     return sizeof(T) * size();
 }
 
+template<typename T>
+void GpuArray<T>::set(const T *hostData, Handle &stream) {
+    set(hostData, this->_rows, stream);
+}
+
+template<typename T>
+void GpuArray<T>::get(T *hostData, Handle &hand) const{
+    get(hostData, _rows, hand);
+}
+
 template <typename T>
 __global__ void fill2dKernel(DeviceData2d<T> a, const T val){
     if (const GridInd2d ind; ind < a) a[ind] = val;
@@ -65,7 +75,7 @@ void GpuArray<T>::add(GpuArray<T> &other, GpuArray<T> &dst, const Singleton<T> &
 }
 
 template<typename T>
-void GpuArray<T>::fill(T val, cudaStream_t stream) {
+void GpuArray<T>::fill(T val, Handle& stream) {
 
     if (val == static_cast<T>(0) || sizeof(T) == 1)
         cudaMemset2DAsync(data(), _ld * sizeof(T), val, this->_rows * sizeof(T), this->_cols, stream);

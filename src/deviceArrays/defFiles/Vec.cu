@@ -95,54 +95,54 @@ size_t Vec<T>::bytes() const {
 }
 
 template<typename T>
-void Vec<T>::set(const T *hostData, cudaStream_t stream) {
-    if (this->_ld == 1) cudaMemcpyAsync(this->_ptr.get(), hostData, bytes(), cudaMemcpyHostToDevice, stream);
+void Vec<T>::set(const T *hostData, size_t stride, Handle &hand) {
+    if (this->_ld == 1) cudaMemcpyAsync(this->_ptr.get(), hostData, bytes(), cudaMemcpyHostToDevice, hand);
     else
         cudaMemcpy2DAsync(
             this->_ptr.get(), this->_ld * sizeof(T),
-            hostData, sizeof(T),
+            hostData, stride * sizeof(T),
             sizeof(T), this->_cols,
-            cudaMemcpyHostToDevice, stream
+            cudaMemcpyHostToDevice, hand
         );
 }
 
 template<typename T>
-void Vec<T>::get(T *hostData, cudaStream_t stream) const {
+void Vec<T>::get(T *hostData, size_t stride, Handle &hand) const {
     if (this->_ld == 1)
-        cudaMemcpyAsync(hostData, this->_ptr.get(), bytes(), cudaMemcpyDeviceToHost, stream);
+        cudaMemcpyAsync(hostData, this->_ptr.get(), bytes(), cudaMemcpyDeviceToHost, hand);
     else
         cudaMemcpy2DAsync(
-            hostData, sizeof(T),
+            hostData, stride * sizeof(T),
             this->_ptr.get(), this->_ld * sizeof(T),
             sizeof(T), this->_cols,
-            cudaMemcpyDeviceToHost, stream
+            cudaMemcpyDeviceToHost, hand
         );
 }
 
 template<typename T>
-void Vec<T>::set(const GpuArray<T> &src, cudaStream_t stream) {
+void Vec<T>::set(const GpuArray<T> &src, Handle& hand) {
     if (this->_ld == 1 && src._ld == 1) {
-        cudaMemcpyAsync(this->data(), src.data(), bytes(), cudaMemcpyDeviceToDevice, stream);
+        cudaMemcpyAsync(this->data(), src.data(), bytes(), cudaMemcpyDeviceToDevice, hand);
     } else {
         cudaMemcpy2DAsync(
             this->data(), this->_ld * sizeof(T),
             src.data(), src._ld * sizeof(T),
             sizeof(T), this->_cols,
-            cudaMemcpyDeviceToDevice, stream
+            cudaMemcpyDeviceToDevice, hand
         );
     }
 }
 
 template<typename T>
-void Vec<T>::get(GpuArray<T> &dst, cudaStream_t stream) const {
+void Vec<T>::get(GpuArray<T> &dst, Handle& hand) const {
     if (this->_ld == 1 && dst._ld == 1) {
-        cudaMemcpyAsync(dst.data(), this->data(), bytes(), cudaMemcpyDeviceToDevice, stream);
+        cudaMemcpyAsync(dst.data(), this->data(), bytes(), cudaMemcpyDeviceToDevice, hand);
     } else {
         cudaMemcpy2DAsync(
             dst.data(), dst._ld * sizeof(T),
             this->data(), this->_ld * sizeof(T),
             sizeof(T), this->_cols,
-            cudaMemcpyDeviceToDevice, stream
+            cudaMemcpyDeviceToDevice, hand
         );
     }
 }
@@ -194,7 +194,7 @@ __global__ void fill1dKernel(DeviceData1d<T> a, const T* val) {
 
 
 template<typename T>
-void Vec<T>::fill(T val, cudaStream_t stream) {
+void Vec<T>::fill(T val, Handle& stream) {
     if (this->_ld == 1 && (val == static_cast<T>(0) || sizeof(T) == 1))
         cudaMemsetAsync(this->toKernel1d(), val, size() * sizeof(T), stream);
     else {
@@ -205,7 +205,7 @@ void Vec<T>::fill(T val, cudaStream_t stream) {
 }
 
 template<typename T>
-void Vec<T>::fill(Singleton<T> val, cudaStream_t stream) {
+void Vec<T>::fill(Singleton<T> val, Handle& stream) {
 
         KernelPrep kp = kernelPrep();
         fill1dKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, stream>>>(this->toKernel1d(), val.data());
@@ -470,20 +470,20 @@ void Vec<T>::permute(Vec<Int> permutation, Vec<T> dst, Handle& hand) {
     permuteKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand>>>(permutation.toKernel1d(), this->toKernel1d(), dst.toKernel1d());
 }
 
-__host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, cudaStream_t stream) const{
+__host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, Handle& handle) const{
     std::vector<AdjacencyInd> adjacencies = {here, y.left, y.right, x.left, x.right};
     if (is3d) {
         adjacencies.push_back(z.left);
         adjacencies.push_back(z.right);
     }
-    loadMapRowToDiag(diags, adjacencies, stream);
+    loadMapRowToDiag(diags, adjacencies, handle);
 }
 
-__host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, cudaStream_t stream){
+__host__ void AdjacencyPatern::loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, Handle& hand){
     std::vector<int32_t> diagsCpu(diags.size(), 0);
     for (AdjacencyInd ind : indices) diagsCpu[ind.colInBanded] = ind.diag;
-    diags.set(diagsCpu.data(), stream);
-    cudaStreamSynchronize(stream);//Don't want diagsCpu to be destroyed before the memory is passed.
+    diags.set(diagsCpu.data(), hand);
+    cudaStreamSynchronize(hand);//Don't want diagsCpu to be destroyed before the memory is passed.
 }
 
 

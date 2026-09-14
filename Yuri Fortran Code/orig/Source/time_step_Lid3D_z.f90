@@ -150,6 +150,19 @@
      
       CALL MKL_B_MatVec(RHS_Precond, B_P_prime)  
       F_tag=2.d0*(B_P_prime-RHS_F_tag)
+
+! ---- STAGE 1 TEST HARNESS: dump the first solve's output and stop ----
+! Temporary instrumentation, not part of the GPU migration -- remove once
+! the orig/modified comparison is done.
+      IF (Istp == 1) THEN
+          OPEN(919, FILE='dprs_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
+          WRITE(919) Dprs(1:Nx1,1:Ny1,1:Nz1)
+          CLOSE(919)
+          OPEN(920, FILE='ftag_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
+          WRITE(920) F_tag
+          CLOSE(920)
+          STOP 'Stage 1 dump complete (orig)'
+      END IF
      
            
           RHSx=0.d0

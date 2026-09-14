@@ -92,12 +92,12 @@ find_library(IOMP5_LIB       NAMES iomp5           HINTS ${_INTEL_LIB_DIRS})
 # at the usual "clone + mkdir build + cmake .." layout from its own README.
 # Override with -DCUDABANDEDLIB_ROOT=/path/to/CudaBandedLib if it's elsewhere,
 # or edit CUDABANDEDLIB_ROOT's default below.
-set(CUDABANDEDLIB_ROOT "$ENV{HOME}/CudaBandedLib" CACHE PATH
-    "Root of the CudaBandedLib checkout (contains build/libCudaBandedLib.a and the wrapf*.f90 Fortran wrappers)")
+set(CUDABANDEDLIB_ROOT "$ENV{HOME}/Documents/TelAvivU" CACHE PATH
+    "Root of the CudaBandedLib checkout (contains cmake-build-debug/libCudaBandedLib.a and shroud_project/wrapf*.f90)")
 
 find_library(CUDABANDEDLIB_LIB
     NAMES CudaBandedLib
-    HINTS "${CUDABANDEDLIB_ROOT}/build" "${CUDABANDEDLIB_ROOT}/lib"
+    HINTS "${CUDABANDEDLIB_ROOT}/cmake-build-debug" "${CUDABANDEDLIB_ROOT}/build" "${CUDABANDEDLIB_ROOT}/lib"
 )
 if(NOT CUDABANDEDLIB_LIB)
     message(FATAL_ERROR
@@ -110,6 +110,7 @@ endif()
 file(GLOB CUDABANDEDLIB_FORTRAN_WRAPPERS
     "${CUDABANDEDLIB_ROOT}/wrapf*.f90"
     "${CUDABANDEDLIB_ROOT}/fortran/wrapf*.f90"
+    "${CUDABANDEDLIB_ROOT}/shroud_project/wrapf*.f90"
 )
 list(LENGTH CUDABANDEDLIB_FORTRAN_WRAPPERS _CUDABANDEDLIB_WRAPPER_COUNT)
 if(_CUDABANDEDLIB_WRAPPER_COUNT EQUAL 0)

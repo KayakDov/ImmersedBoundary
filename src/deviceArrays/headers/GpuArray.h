@@ -228,7 +228,8 @@ public:
      * The source buffer must contain at least size() elements in the expected layout.
      *
      * @param hostData Pointer to the data in host memory.
-     * @param stream The CUDA stream used to execute the memory transfer operation.
+     * @param srcLd
+     * @param hand The CUDA stream used to execute the memory transfer operation.
      *
      * @note Proper synchronization of the CUDA stream is essential to avoid undefined
      * behavior during concurrent operations.
@@ -236,7 +237,8 @@ public:
      * @warning Ensure that the memory referenced by `hostData` is valid and accessible
      * during the function call to prevent runtime errors.
      */
-    virtual void set(const T* hostData, cudaStream_t stream) = 0;
+    virtual void set(const T *hostData, size_t srcLd, Handle &hand) = 0;
+    virtual void set(const T *hostData, Handle &stream);
 
     /**
      * @brief Transfers the contents of the device array to host memory.
@@ -248,11 +250,13 @@ public:
      * @param hostData Pointer to the host memory buffer where the device data will be stored.
      *                 The user must ensure that the buffer is allocated with sufficient size
      *                 to hold the data being transferred.
-     * @param stream CUDA stream to be used for the data transfer operation. This allows for
+     * @param hand CUDA stream to be used for the data transfer operation. This allows for
      *               pipelined and asynchronous memory operations with other processing
      *               on the device.
      */
-    virtual void get(T* hostData, cudaStream_t stream) const = 0;
+    void get(T * hostData, Handle &hand) const;
+
+    virtual void get(T * hostData, size_t ld, Handle &hand) const = 0;
 
     /**
      * @brief Virtual function to set the content of the GPU-accelerated array.
@@ -272,7 +276,7 @@ public:
      * @warning Attempting to use an invalid or uninitialized GpuArray as the source
      * or providing an invalid CUDA stream may lead to undefined behavior.
      */
-    virtual void set(const GpuArray<T>& src, cudaStream_t stream ) = 0;
+    virtual void set(const GpuArray<T>& src, Handle& stream ) = 0;
 
     /**
      * @brief Retrieves the content of the GPU array and transfers it to the specified destination.
@@ -289,7 +293,7 @@ public:
      * @param dst A reference to the destination GpuArray where the content will be transferred.
      * @param stream The CUDA stream used to perform the transfer operation asynchronously.
      */
-    virtual void get(GpuArray<T>& dst, cudaStream_t stream) const = 0;
+    virtual void get(GpuArray<T>& dst, Handle& stream) const = 0;
 
     /**
      * @brief Sets the data of the object using the provided input stream.
@@ -376,7 +380,7 @@ public:
      * calling this method. Any errors during kernel execution, such as access
      * violations or invalid configurations, will need to be addressed separately.
      */
-    virtual void fill(T val, cudaStream_t stream);
+    virtual void fill(T val, Handle& stream);
 
 
     /**

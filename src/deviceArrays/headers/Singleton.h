@@ -48,18 +48,18 @@ public:
 
     /**
      * @brief Create an empty Singleton on the device.
-     * @param stream Optional CUDA stream to associate with allocation.
+     * @param handle Optional CUDA stream to associate with allocation.
      * @return Singleton<T> instance.
      */
-    static Singleton<T> create(Handle& stream);
+    static Singleton<T> create(Handle& handle);
 
     /**
      * @brief Create a Singleton initialized to a given value.
      * @param val Value to store in the Singleton.
-     * @param stream Optional CUDA stream to associate with allocation.
+     * @param handle Optional CUDA stream to associate with allocation.
      * @return Singleton<T> instance.
      */
-    static Singleton<T> create(T val, Handle& stream);
+    static Singleton<T> create(T val, Handle& handle);
 
     /**
      * @brief Get the value stored in this Singleton.
@@ -71,9 +71,10 @@ public:
     /**
      * @brief Set the value of this Singleton.
      * @param val Value to store.
+     * @param srcLD
      * @param stream Optional CUDA stream for device synchronization.
      */
-    void set(T val, Handle& stream);
+    void set(T val, Handle &stream);
 
     /**
      * @brief Sets this scalar to the product of two quotients.

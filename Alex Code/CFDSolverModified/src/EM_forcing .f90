@@ -2,33 +2,17 @@
 !
 !   This potential is defined in the points X, Yp, Z
 
-! Shared between Get_Potential_Launch and Get_Potential_Finish: a plain local
-! Save variable in each subroutine would NOT be the same storage (Fortran
-! locals are private per-subroutine even with Save), so these have to live
-! in a module both subroutines Use.
-Module GPU_Potential_Scratch
-    Real(kind=8), Allocatable, Save :: GPU_RHS_Pot(:,:,:), GPU_SOL_Pot(:,:,:)
-    Logical, Save :: GPU_Pot_Allocated = .false.
-End Module GPU_Potential_Scratch
-
 Subroutine Get_Potential_Launch
     Use Grid
     Use Numbers
     Use Numerica
     Use Operators
     Use Variables
-    Use AlexCudaCompatibility, only : PotentialHandle
+    Use AlexCudaCompatibility, only : PotentialHandle, Potential_pinned
     Use eigenbcgsolver_eigen_mod, only : solve_eigen_decomp_d
-    Use GPU_Potential_Scratch
 
     Implicit Real(kind=8) (A-H,O-Z)
 ! ___________________________________________________
-
-    If (.not. GPU_Pot_Allocated) Then
-        Allocate( GPU_RHS_Pot(1:Nx,1:Ny1,1:Nz) )
-        Allocate( GPU_SOL_Pot(1:Nx,1:Ny1,1:Nz) )
-        GPU_Pot_Allocated = .true.
-    End If
 
 !$OMP Parallel Do Private(i,j,k,DVx_dz,Dvz_dx)
    Do i=1,Nx
@@ -45,17 +29,23 @@ Subroutine Get_Potential_Launch
         ! GPU: pure Poisson (shift = 0, alpha = 1 on all axes -- no RHS
         ! scaling needed, no reindexing needed), was
         ! Call EVDmethod(..., 1,1,1, beta=0).
-        ! Launch only -- does NOT synch. GPU_SOL_Pot is not valid until
+        ! Launch only -- does NOT synch. Potential_pinned is not valid until
         ! Get_Potential_Finish (called right before EM_force, which is
         ! the first place Potential is actually read) calls synch_d.
-        ! solve_eigen_decomp_d no longer takes x -- the result is retrieved by
-        ! synch_d instead (see Get_Potential_Finish). GPU_RHS_Pot is still
-        ! required here even though this is a pure copy (no scaling): FDRHP's
-        ! true shape is ghost-padded (0:Nx2,0:Ny2,0:Nz2), so the slice
-        ! FDRHP(1:Nx,1:Ny1,1:Nz) is not contiguous, and this exact-shape
-        ! buffer keeps the call safe for the C interop layer.
-        GPU_RHS_Pot = FDRHP(1:Nx,1:Ny1,1:Nz)
-        Call solve_eigen_decomp_d(PotentialHandle, GPU_RHS_Pot)
+        !
+        ! No GPU_RHS_Pot/GPU_SOL_Pot scratch arrays anymore (nor the module
+        ! that held them, Use'd above -- see AlexCudaCompatibility.f90):
+        ! Potential_pinned is the solver's own pinned host buffer, aliased
+        ! once at init time, used directly for both this RHS and the
+        ! solution Get_Potential_Finish reads below. FDRHP's true shape is
+        ! still ghost-padded (0:Nx2,0:Ny2,0:Nz2), so the slice
+        ! FDRHP(1:Nx,1:Ny1,1:Nz) is still not contiguous -- writing it
+        ! directly into Potential_pinned (an exact-shape buffer) keeps the
+        ! call safe for the C interop layer, exactly as GPU_RHS_Pot did,
+        ! just without the extra copy that used to sit between this array
+        ! and the library's own pinned buffer.
+        Potential_pinned = FDRHP(1:Nx,1:Ny1,1:Nz)
+        Call solve_eigen_decomp_d(PotentialHandle)
 
   Return
 End Subroutine Get_Potential_Launch
@@ -67,9 +57,8 @@ Subroutine Get_Potential_Finish
     Use Numerica
     Use Operators
     Use Variables
-    Use AlexCudaCompatibility, only : PotentialHandle
+    Use AlexCudaCompatibility, only : PotentialHandle, Potential_pinned
     Use eigenbcgsolver_eigen_mod, only : synch_d
-    Use GPU_Potential_Scratch
 
     Implicit Real(kind=8) (A-H,O-Z)
 
@@ -83,28 +72,23 @@ Subroutine Get_Potential_Finish
     Real(kind=8) :: Pot000
 ! ___________________________________________________
 
-        ! synch_d now retrieves the result directly (was: bare wait, then a
-        ! separate Fortran array copy from GPU_SOL_Pot). GPU_SOL_Pot is kept
-        ! here (not eliminated) because Potential's true declared shape
-        ! (0:Nxx1,0:Nyy2,0:Nzz1) does not match this solve's region
-        ! (1:Nx,1:Ny1,1:Nz) -- passing Potential's slice directly would be
-        ! non-contiguous and force a hidden, non-pinned compiler temporary.
-        Call synch_d(PotentialHandle, GPU_SOL_Pot)
+        ! synch_d no longer takes an output argument: it just waits for the
+        ! GPU work to finish. The solution is then read directly from
+        ! Potential_pinned below -- same reasoning as Get_Potential_Launch,
+        ! no separate GPU_SOL_Pot needed anymore.
+        Call synch_d(PotentialHandle)
 
-        ! Was: Potential(1:Nx,1:Ny1,1:Nz) = GPU_SOL_Pot
-        ! An explicit-shape whole-array assignment like that is exactly the
-        ! kind of statement ifx tends to route through a compiler-generated
-        ! temporary when the LHS is a module variable (it can't fully rule
-        ! out aliasing across the procedure boundary), which shows up at
-        ! runtime as a fresh Allocate/Deallocate (and the page faults that
-        ! come with touching brand-new pages) on every single timestep. An
-        ! explicit Do loop assigns element-by-element with no array
-        ! temporary possible, and doubles as free OpenMP parallelism.
+        ! Padded<->unpadded remap -- still needed, same as before (Potential's
+        ! true declared shape (0:Nxx1,0:Nyy2,0:Nzz1) doesn't match this
+        ! solve's region (1:Nx,1:Ny1,1:Nz), so this can't be a bare
+        ! whole-array assignment without either being wrong or forcing a
+        ! hidden compiler temporary). Just reads from Potential_pinned now
+        ! instead of GPU_SOL_Pot.
 !$OMP Parallel Do Private(i,j,k)
     Do i = 1, Nx
       Do j = 1, Ny1
         Do k = 1, Nz
-          Potential(i,j,k) = GPU_SOL_Pot(i,j,k)
+          Potential(i,j,k) = Potential_pinned(i,j,k)
         End Do
       End Do
     End Do

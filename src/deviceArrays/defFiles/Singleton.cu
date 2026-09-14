@@ -7,27 +7,27 @@ template<typename T>
 Singleton<T>::Singleton(GpuPointer<T> ptr):SimpleArray<T>(1, ptr) {}
 
 template<typename T>
-Singleton<T> Singleton<T>::create(Handle& stream) {
-    Vec<T> preSing = Vec<T>::create(static_cast<size_t>(1), stream);
+Singleton<T> Singleton<T>::create(Handle& handle) {
+    Vec<T> preSing = Vec<T>::create(static_cast<size_t>(1), handle);
     return preSing.get(0);
 }
 
 template<typename T>
-Singleton<T> Singleton<T>::create(T val, Handle& stream) {
-    Singleton<T> temp = create(stream);
-    temp.set(val, stream);
+Singleton<T> Singleton<T>::create(T val, Handle& handle) {
+    Singleton<T> temp = create(handle);
+    temp.set(val, handle);
     return temp;
 }
 
 template <typename T>
 T Singleton<T>::get(Handle& stream) const{
     T cpuPointer[1];
-    this->Vec<T>::get(cpuPointer, stream);
+    this->Vec<T>::get(cpuPointer, 1, stream);
     cudaStreamSynchronize(stream);
     return cpuPointer[0];
 }
 template <typename T>
-void Singleton<T>::set(const T val, Handle& stream){
+void Singleton<T>::set(T val, Handle &stream){
     T cpuPointer[1];
     cpuPointer[0] = val;
     this->Vec<T>::set(cpuPointer, stream);    

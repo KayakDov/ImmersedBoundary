@@ -70,6 +70,10 @@ void EigenDecomp3d<T>::solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle 
     this->lapEigen.vecs.mult(this->sizeOfB, x, this->sizeOfB, hand);
 }
 
+template<typename T>
+void EigenDecomp3d<T>::solve(Tensor<T> &x, const Tensor<T> &b, Handle &hand) const {
+}
+
 
 template class EigenDecomp3d<double>;
 template class EigenDecomp3d<float>;

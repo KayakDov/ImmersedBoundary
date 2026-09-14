@@ -16,15 +16,15 @@
 // ----------------------------------------------------------------------
 
 template<typename T>
-StreamContext<T>::StreamContext(const Handle &s, bool text, bool colMjr): stream(s), isText(text), colMajor(colMjr) {
+StreamContext<T>::StreamContext(Handle &s, bool text, bool colMjr): hand(s), isText(text), colMajor(colMjr) {
 }
 
 template<typename T>
-GpuIn<T>::GpuIn(GpuArray<T> &dst, const Handle &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(dst){
+GpuIn<T>::GpuIn(GpuArray<T> &dst,Handle &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(dst){
 }
 
 template<typename T>
-GpuIn<T>::GpuIn(Tensor<T>& dst, const Handle &stream, bool isText, bool columnMjr)
+GpuIn<T>::GpuIn(Tensor<T>& dst, Handle &stream, bool isText, bool columnMjr)
     : GpuIn<T>(dst.utilityMatrix, stream, isText, columnMjr) {}
 
 
@@ -32,8 +32,6 @@ template <typename T>
 std::istream& GpuIn<T>::read(std::istream& is) {
     size_t outer_dim = this->colMajor ? this->src._cols : this->src._rows;
     size_t inner_dim = this->colMajor ? this->src._rows : this->src._cols;
-
-    const cudaStream_t current_stream = this->stream;
 
     for (size_t i = 0; i < outer_dim; ++i) {
         Vec<T> view = this->colMajor ? this->src.col(i) : this->src.row(i);
@@ -52,8 +50,8 @@ std::istream& GpuIn<T>::read(std::istream& is) {
         }
 
         try {
-            view.set(host_buffer.data(), current_stream);
-            cudaStreamSynchronize(current_stream);
+            view.set(host_buffer.data(), this->hand);
+            cudaStreamSynchronize(this->hand);
         } catch (const std::exception& e) {
             std::cerr << "Error during Host to GPU transfer for streaming: " << e.what() << std::endl;
             throw;
@@ -67,11 +65,11 @@ std::istream& GpuIn<T>::read(std::istream& is) {
 // ----------------------------------------------------------------------
 
 template<typename T>
-GpuOut<T>::GpuOut(const GpuArray<T>& src, const Handle &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(src) {
+GpuOut<T>::GpuOut(const GpuArray<T>& src, Handle &stream, bool isText, bool columnMjr): StreamContext<T>(stream, isText, columnMjr), src(src) {
 }
 
 template<typename T>
-GpuOut<T>::GpuOut(const Tensor<T>& src, const Handle &stream, bool isText, bool columnMjr)
+GpuOut<T>::GpuOut(const Tensor<T>& src, Handle &stream, bool isText, bool columnMjr)
     : GpuOut<T>(src.utilityMatrix, stream, isText, columnMjr) {}
 
 
@@ -85,9 +83,9 @@ std::ostream& GpuOut<T>::write(std::ostream& os) const {
 
         std::vector<T> host_buffer(view.size());
 
-        view.get(host_buffer.data(), this->stream);
+        view.get(host_buffer.data(), this->hand);
         CHECK_CUDA_ERROR(cudaGetLastError());
-        cudaStreamSynchronize(this->stream);
+        cudaStreamSynchronize(this->hand);
 
         if (this->isText) {
             os << "[";

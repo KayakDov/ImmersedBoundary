@@ -68,6 +68,8 @@ public:
     using GpuArray<T>::row;
     using GpuArray<T>::col;
     using GpuArray<T>::add;
+    using GpuArray<T>::set;
+    using GpuArray<T>::get;
 
     /**
      * @brief Protected constructor. Use static create() method or derived classes.
@@ -108,19 +110,19 @@ public:
     /**
      * @copydoc GpuArray::set
      */
-    void set(const T* src, cudaStream_t stream) override;
+    void set(const T *src, size_t srcLd, Handle &handle) override;
     /**
      * @copydoc GpuArray::get
      */
-    void get(T* dst, cudaStream_t stream) const override;
+    void get(T * dst, size_t ld, Handle &handle) const override;
     /**
      * @copydoc GpuArray::set
      */
-    void set(const GpuArray<T>& src, cudaStream_t stream) override;
+    void set(const GpuArray<T>& src, Handle& hand) override;
     /**
      * @copydoc GpuArray::get
      */
-    void get(GpuArray<T>& dst, cudaStream_t stream) const override;
+    void get(GpuArray<T>& dst, Handle& hand) const override;
     /**
      * @copydoc GpuArray::set
      */

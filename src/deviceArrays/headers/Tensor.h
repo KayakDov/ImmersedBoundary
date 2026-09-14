@@ -43,6 +43,8 @@ private:
 
 
 public:
+    using GpuArray<T>::set;
+    using GpuArray<T>::get;
 
     /**
      * @brief Private constructor for internal use.
@@ -140,6 +142,24 @@ public:
     SimpleArray<T> col(size_t col, size_t layer);
 
     /**
+     * sets the values of this tensor from a padded grid.  The buffer should be padded in the height and depth dimesnion,
+     * but need not be padded in the width dimension.
+     * @param hostData
+     * @param paddedBuffer
+     * @param hand
+     */
+    void set(const T *hostData, Tensor<T> paddedBuffer, Handle &hand);
+
+    /**
+    * * sets the values of this tensor from a padded grid.  The buffer should be padded in the height and depth dimesnion,
+     * but need not be padded in the width dimension.
+     * @param hostData
+     * @param paddedBuffer
+     * @param hand
+     */
+    void get(T *hostData, Tensor<T> paddedBuffer, Handle &hand);
+
+    /**
      * Sets this tensor from an array flatened in row major order, with the z index changing slowest.
      * @param host The array that represents a flatened tensor.
      * @param buffer Should be the same size as this tensor.
@@ -189,13 +209,13 @@ public:
      */
     [[nodiscard]] size_t size() const override;
 
-    void set(const T *hostData, cudaStream_t stream) override;
+    void set(const T *hostData, size_t srcLD, Handle &stream) override;
 
-    void get(T *hostData, cudaStream_t stream) const override;
+    void get(T * hostData, size_t colLd, Handle &stream) const override;
 
-    void set(const GpuArray<T> &src, cudaStream_t stream) override;
+    void set(const GpuArray<T> &src, Handle& hand) override;
 
-    void get(GpuArray<T> &dst, cudaStream_t stream) const override;
+    void get(GpuArray<T> &dst, Handle& hand) const override;
 
     void set(std::istream &input_stream, bool isText, bool isColMjr, Handle *hand) override;
 

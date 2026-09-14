@@ -94,37 +94,51 @@ module eigenbcgsolver_eigen_mod
             integer(C_SIZE_T) :: SHT_rv
         end function c_init_eigen_decomp_s
 
-        subroutine solve_eigen_decomp_d(solverHandle, b) &
+        subroutine solve_eigen_decomp_d(solverHandle) &
                 bind(C, name="EIG_eigen_solveEigenDecomp_d")
-            use iso_c_binding, only : C_DOUBLE, C_SIZE_T
+            use iso_c_binding, only : C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: solverHandle
-            real(C_DOUBLE), intent(IN) :: b(*)
         end subroutine solve_eigen_decomp_d
 
-        subroutine solve_eigen_decomp_s(solverHandle, b) &
+        subroutine solve_eigen_decomp_s(solverHandle) &
                 bind(C, name="EIG_eigen_solveEigenDecomp_s")
-            use iso_c_binding, only : C_FLOAT, C_SIZE_T
+            use iso_c_binding, only : C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: solverHandle
-            real(C_FLOAT), intent(IN) :: b(*)
         end subroutine solve_eigen_decomp_s
 
-        subroutine synch_d(solverHandle, x) &
+        subroutine synch_d(solverHandle) &
                 bind(C, name="EIG_eigen_synch_d")
-            use iso_c_binding, only : C_DOUBLE, C_SIZE_T
+            use iso_c_binding, only : C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: solverHandle
-            real(C_DOUBLE), intent(OUT) :: x(*)
         end subroutine synch_d
 
-        subroutine synch_s(solverHandle, x) &
+        subroutine synch_s(solverHandle) &
                 bind(C, name="EIG_eigen_synch_s")
-            use iso_c_binding, only : C_FLOAT, C_SIZE_T
+            use iso_c_binding, only : C_SIZE_T
             implicit none
             integer(C_SIZE_T), value, intent(IN) :: solverHandle
-            real(C_FLOAT), intent(OUT) :: x(*)
         end subroutine synch_s
+
+        function get_pinned_ptr_d(solverHandle) &
+                result(SHT_rv) &
+                bind(C, name="EIG_eigen_get_pinned_ptr_d")
+            use iso_c_binding, only : C_PTR, C_SIZE_T
+            implicit none
+            integer(C_SIZE_T), value, intent(IN) :: solverHandle
+            type(C_PTR) :: SHT_rv
+        end function get_pinned_ptr_d
+
+        function get_pinned_ptr_s(solverHandle) &
+                result(SHT_rv) &
+                bind(C, name="EIG_eigen_get_pinned_ptr_s")
+            use iso_c_binding, only : C_PTR, C_SIZE_T
+            implicit none
+            integer(C_SIZE_T), value, intent(IN) :: solverHandle
+            type(C_PTR) :: SHT_rv
+        end function get_pinned_ptr_s
 
         subroutine finalize_eigen_decomp() &
                 bind(C, name="EIG_eigen_finalizeEigenDecomp")

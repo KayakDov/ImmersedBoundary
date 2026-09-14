@@ -11,6 +11,8 @@
 
 #include <vector>
 
+#include "deviceArrays/headers/handle.h"
+
 /**
  * @brief Represents a single diagonal's metadata within a banded matrix storage format.
  * * Maps a specific data column in the banded buffer to its mathematical diagonal offset
@@ -176,7 +178,7 @@ public:
 
     };
 
-    __host__ void loadMapRowToDiag(Vec<int32_t> &diags, cudaStream_t stream) const;
+    __host__ void loadMapRowToDiag(Vec<int32_t> &diags, Handle& stream) const;
 
-    __host__ static void loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, cudaStream_t stream);
+    __host__ static void loadMapRowToDiag(Vec<int32_t> &diags, std::vector<AdjacencyInd> &indices, Handle& stream);
 };

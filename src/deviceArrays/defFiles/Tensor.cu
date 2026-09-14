@@ -91,24 +91,24 @@ size_t Tensor<T>::size() const {
 }
 
 template<typename T>
-void Tensor<T>::set(const T *hostData, cudaStream_t stream) {
-    utilityMatrix.set(hostData, stream);
+void Tensor<T>::set(const T *hostData, size_t srcLD, Handle &stream) {
+    utilityMatrix.set(hostData, srcLD,  stream);
 
 }
 
 template<typename T>
-void Tensor<T>::get(T *hostData, cudaStream_t stream) const {
-    utilityMatrix.get(hostData, stream);
+void Tensor<T>::get(T * hostData, size_t dstLD, Handle &stream) const {
+    utilityMatrix.get(hostData, dstLD, stream);
 }
 
 template<typename T>
-void Tensor<T>::set(const GpuArray<T> &src, cudaStream_t stream) {
-    utilityMatrix.set(src, stream);
+void Tensor<T>::set(const GpuArray<T> &src, Handle& handle) {
+    utilityMatrix.set(src, handle);
 }
 
 template<typename T>
-void Tensor<T>::get(GpuArray<T> &dst, cudaStream_t stream) const {
-    utilityMatrix.get(dst, stream);
+void Tensor<T>::get(GpuArray<T> &dst, Handle& handle) const {
+    utilityMatrix.get(dst, handle);
 }
 
 template<typename T>
@@ -125,6 +125,30 @@ template<typename T>
 SimpleArray<T> Tensor<T>::col(size_t col, size_t layer) {
     return layerRowCol(layer).col(col);
 }
+
+template<typename T>
+__global__ void copyPaddingKernel(DeviceData3d<T> src, DeviceData3d<T> dst) {
+    if (GridInd3d srcInd; srcInd < src) dst[srcInd] = src[srcInd];
+}
+
+template<typename T>
+void Tensor<T>::set(const T *hostData, Tensor<T> paddedBuffer, Handle &hand) {
+    paddedBuffer.set(hostData, hand);
+    KernelPrep kernelPrep = this->kernelPrep();
+    copyPaddingKernel<T><<<kernelPrep.numBlocks, kernelPrep.threadsPerBlock, 0, hand>>>(paddedBuffer, toKernel3d());
+
+}
+
+template<typename T>
+void Tensor<T>::get(T *hostData, Tensor<T> paddedBuffer, Handle &hand) {
+    KernelPrep kernelPrep = this->kernelPrep();
+    copyPaddingKernel<T><<<kernelPrep.numBlocks, kernelPrep.threadsPerBlock, 0, hand>>>(toKernel3d(), paddedBuffer);
+    paddedBuffer.get(hostData, hand);
+}
+
+
+
+
 
 template class Tensor<float>;
 template class Tensor<double>;

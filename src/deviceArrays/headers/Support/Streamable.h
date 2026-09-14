@@ -23,7 +23,7 @@ class StreamContext {
 public:
     const bool colMajor;
     const bool isText;
-    const Handle& stream;
+    Handle& hand;
 
     /**
      * @brief Constructs the base streaming context parameters.
@@ -31,7 +31,7 @@ public:
      * @param text True if streaming should be human-readable text, false for binary.
      * @param colMjr True if streaming should be column-major order, false for row-major.
      */
-    StreamContext(const Handle& s, bool text, bool colMjr);
+    StreamContext(Handle& s, bool text, bool colMjr);
 };
 
 /**
@@ -45,10 +45,10 @@ class GpuIn : public StreamContext<T> {
 public:
     GpuArray<T>& src;
 
-    GpuIn(GpuArray<T>& dst, const Handle &stream, bool isText = true, bool columnMjr = false);
+    GpuIn(GpuArray<T>& dst, Handle &stream, bool isText = true, bool columnMjr = false);
 
 
-    GpuIn(Tensor<T>& dst, const Handle &stream, bool isText = true, bool columnMjr = false);
+    GpuIn(Tensor<T>& dst, Handle &stream, bool isText = true, bool columnMjr = false);
 
     /**
      * @brief The core reading logic implemented in the .cu file.
@@ -68,9 +68,9 @@ class GpuOut : public StreamContext<T> {
 
 public:
     const GpuArray<T>& src;
-    GpuOut(const GpuArray<T>& src, const Handle &stream, bool isText = true, bool columnMjr = false);
+    GpuOut(const GpuArray<T>& src, Handle &stream, bool isText = true, bool columnMjr = false);
 
-    GpuOut(const Tensor<T>& src, const Handle &stream, bool isText = true, bool columnMjr = false);
+    GpuOut(const Tensor<T>& src, Handle &stream, bool isText = true, bool columnMjr = false);
 
     /**
      * @brief The core writing logic implemented in the .cu file.

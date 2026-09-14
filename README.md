@@ -42,23 +42,30 @@ From the project root directory:
 
 The Eigendecomposition solver supports multiple independent solver instances.
 
-Each call to `init_eigen_decomp_*` creates a new solver and returns a solver handle. This handle uniquely identifies the precomputed eigendecomposition and must be supplied to subsequent calls to `solve_eigen_decomp_*` and `synch_*`.
+Each call to `init_eigen_decomp_*` creates a new solver and returns a solver handle. This handle uniquely identifies the precomputed eigendecomposition and must be supplied to subsequent calls to `solve_eigen_decomp_*`, `synch_*`, and `get_pinned_ptr_*`.
 
-Because solver calls launch work asynchronously on the GPU, you must call `synch_*` before accessing the solution array $x$ on the CPU to ensure kernel completion.
+The RHS and the solution share a single pinned host buffer per solver, exposed by `get_pinned_ptr_*`. Fetch this pointer **once**, right after initializing each solver, and alias it via `ISO_C_BINDING`'s `C_F_POINTER` -- the address is stable for the solver's entire lifetime, so there is no need to re-fetch it on every timestep. Write your RHS directly into the aliased array before calling `solve_eigen_decomp_*`; after `synch_*` returns, read the solution back out of that same array. Neither `solve_eigen_decomp_*` nor `synch_*` takes a data argument -- both operate implicitly on whatever is currently sitting in the solver's pinned buffer.
+
+Because solver calls launch work asynchronously on the GPU, you must call `synch_*` before reading the solution out of the pinned buffer, to ensure kernel completion.
 
 Typical usage is:
 
 1. Initialize one solver for each grid or boundary configuration.
 2. Save the returned solver handle.
-3. Launch `solve_eigen_decomp_*` asynchronously.
-4. Call `synch_*` to wait for solver completion before using output fields on the host.
+3. Call `get_pinned_ptr_*` once for that handle and alias the result with `C_F_POINTER`.
+4. Each timestep: write the RHS into the aliased array, call `solve_eigen_decomp_*` to launch asynchronously, call `synch_*` to wait for completion, then read the solution from the same aliased array.
 5. Call `finalize_eigen_decomp_*()` once before program termination to release all eigendecomposition resources.
 
 Example:
 
 ```fortran
+use, intrinsic :: iso_c_binding
+
 integer(C_SIZE_T) :: pressureSolver
 integer(C_SIZE_T) :: temperatureSolver
+
+type(C_PTR) :: pressurePtrRaw, temperaturePtrRaw
+real(C_DOUBLE), pointer :: pressureBuf(:), temperatureBuf(:)
 
 ! The final argument to init_eigen_decomp_d is gpuIndex (section 7) -- here
 ! the two solvers are placed on separate physical GPUs and will run
@@ -66,21 +73,35 @@ integer(C_SIZE_T) :: temperatureSolver
 pressureSolver = init_eigen_decomp_d(..., gpuIndex=0)
 temperatureSolver = init_eigen_decomp_d(..., gpuIndex=1)
 
-! Asynchronous GPU launches. b is copied into an internal pinned staging
-! buffer immediately (so the caller's own bp/bt may be reused or
-! overwritten right after this call returns); the actual host-to-device
-! transfer and solve then proceed on the GPU without blocking the caller.
-call solve_eigen_decomp_d(pressureSolver, bp)
-call solve_eigen_decomp_d(temperatureSolver, bt)
+! Fetch and alias each solver's pinned buffer ONCE -- not once per
+! timestep. dim1*dim2*dim3 is the same size passed to the corresponding
+! init_eigen_decomp_d call.
+pressurePtrRaw = get_pinned_ptr_d(pressureSolver)
+call C_F_POINTER(pressurePtrRaw, pressureBuf, [dim1*dim2*dim3])
 
-! Wait for each handle's GPU work to finish and copy its result into x.
-! x must be a CONTIGUOUS array matching the solver's dim1*dim2*dim3 size
-! exactly (a whole array, or a slice that is the array's full declared
-! extent) -- a non-contiguous actual argument here forces the Fortran
-! compiler to insert its own hidden, non-pinned temporary around the call,
-! silently losing the benefit of the internal pinned staging buffer.
-call synch_d(pressureSolver, xp)
-call synch_d(temperatureSolver, xt)
+temperaturePtrRaw = get_pinned_ptr_d(temperatureSolver)
+call C_F_POINTER(temperaturePtrRaw, temperatureBuf, [dim1*dim2*dim3])
+
+! --- inside the timestep loop ---
+
+! Write the RHS directly into the aliased pinned array, then launch.
+! No separate RHS argument is passed -- solve_eigen_decomp_d operates on
+! whatever is currently in the solver's pinned buffer.
+pressureBuf = bp
+temperatureBuf = bt
+
+call solve_eigen_decomp_d(pressureSolver)
+call solve_eigen_decomp_d(temperatureSolver)
+
+! Wait for each handle's GPU work to finish, then read the solution back
+! out of the same pinned array the RHS was written into.
+call synch_d(pressureSolver)
+call synch_d(temperatureSolver)
+
+xp = pressureBuf
+xt = temperatureBuf
+
+! --- end timestep loop ---
 
 call finalize_eigen_decomp_d()
 ```
@@ -216,15 +237,25 @@ Each call to `init_eigen_decomp_*` is independent: different solver handles may 
 
 **This applies only to the Direct Eigendecomposition solver (`init_eigen_decomp_*`).** The Immersed Boundary solver (`init_immersed_eq_*`, section 6) does not currently accept a `gpuIndex` and always runs on GPU 0, regardless of what else is passed to it.
 
+### Pinned Buffer Accessor (`get_pinned_ptr_*`)
+Returns the raw pinned host pointer a solver uses for both its RHS and its solution -- see section 2 for the intended call-once-and-alias usage pattern.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| solverHandle | integer(C_SIZE_T) | Handle returned by `init_eigen_decomp_*`. |
+
+| Return Value | Type | Description |
+| :--- | :--- | :--- |
+| (unnamed) | `type(C_PTR)` | Pointer to `dim1*dim2*dim3` elements of pinned host memory. Alias it once via `C_F_POINTER`; the address does not change for the solver's lifetime. Write the RHS into it before `solve_eigen_decomp_*`; read the solution from it after `synch_*`. |
+
 ### Solve Routine (`solve_eigen_decomp_*`)
-Performs the spectral solve on the GPU.
+Launches the spectral solve on the GPU, using whatever is currently in the solver's pinned buffer as the RHS.
 
 | Argument | Type | Description                                                                          |
 | :--- | :--- |:-------------------------------------------------------------------------------------|
 | solverHandle | integer(C_SIZE_T) | Handle returned by `init_eigen_decomp_*`. |
-| x | real array | Output: The solved field.                                                            |
-| b | real array | Input: The source term (RHS).  Be sure this is in the column space of the laplacian. |
 
+Takes no data argument: write the RHS into the pointer from `get_pinned_ptr_*` before calling this. Be sure it is in the column space of the laplacian. Returns immediately once the GPU work is enqueued, without waiting for it to finish.
 
 ### Synchronization Routine (`synch_*`)
 Blocks host execution until GPU operations for the given solver handle are complete.
@@ -232,6 +263,8 @@ Blocks host execution until GPU operations for the given solver handle are compl
 | Argument | Type | Description |
 | :--- | :--- | :---|
 | solverHandle | integer(C_SIZE_T) | Handle returned by `init_eigen_decomp_*`. |
+
+Takes no data argument: after this returns, read the solution directly from the same pointer `get_pinned_ptr_*` returned.
 ---
 
 ## 8. Compiling & Linking
@@ -289,10 +322,12 @@ This module provides standalone direct Eigendecomposition solvers for the Poisso
 |:--------------------------| :--- | :--- |
 | `init_eigen_decomp_d`     | Double | Create a new eigendecomposition solver and return its solver handle. |
 | `init_eigen_decomp_s`     | Single | Create a new eigendecomposition solver and return its solver handle. |
-| `solve_eigen_decomp_d`    | Double | Launch a solve on an existing handle ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$). Copies `b` into an internal pinned buffer and returns without waiting for the GPU -- does **not** take or write `x`. |
+| `get_pinned_ptr_d`        | Double | Return the solver's pinned host buffer as a `type(C_PTR)`. Call once per handle and alias with `C_F_POINTER`; do not re-fetch every timestep. |
+| `get_pinned_ptr_s`        | Single | Return the solver's pinned host buffer as a `type(C_PTR)`. Same usage as `get_pinned_ptr_d`. |
+| `solve_eigen_decomp_d`    | Double | Launch a solve on an existing handle ($\nabla^2 x = b$ or $\nabla^2 x - \sigma x = b$), using whatever is currently in the solver's pinned buffer as `b`. Takes no data argument. Returns without waiting for the GPU. |
 | `solve_eigen_decomp_s`    | Single | Launch a solve on an existing handle. Same behavior as `solve_eigen_decomp_d`. |
-| `synch_d`                 | Double | Wait for a handle's launched solve to finish and copy the result into `x`. `x` must be contiguous and exactly `dim1*dim2*dim3` elements (see the usage example above). |
-| `synch_s`                 | Single | Wait for a handle's launched solve to finish and copy the result into `x`. Same requirement as `synch_d`. |
+| `synch_d`                 | Double | Wait for a handle's launched solve to finish. Takes no data argument -- the solution is available afterward by reading the pointer `get_pinned_ptr_d` returned for this handle. |
+| `synch_s`                 | Single | Wait for a handle's launched solve to finish. Same behavior as `synch_d`. |
 | `finalize_eigen_decomp`   | N/A | Free Eigendecomposition GPU resources. |
 
 ### Segment Types (`dim*SegType`)

@@ -107,42 +107,42 @@ size_t Mat<T>::bytes() const {
 }
 
 template <typename T>
-void Mat<T>::set(const T* src, cudaStream_t stream) {
+void Mat<T>::set(const T* src, size_t srcLd, Handle& handle) {
     cudaMemcpy2DAsync(
         this->_ptr.get(), this->_ld * sizeof(T),
-        src, this->_rows * sizeof(T),
+        src, srcLd * sizeof(T),
         this->_rows * sizeof(T), this->_cols,
-        cudaMemcpyHostToDevice, stream
+        cudaMemcpyHostToDevice, handle
     );
 }
 
 template <typename T>
-void Mat<T>::get(T* dst, const cudaStream_t stream) const {
+void Mat<T>::get(T * dst, size_t ld, Handle &handle) const {
     cudaMemcpy2DAsync(
-        dst, this->_rows * sizeof(T),
+        dst, ld * sizeof(T),
         this->_ptr.get(), this->_ld * sizeof(T),
         this->_rows * sizeof(T), this->_cols,
-        cudaMemcpyDeviceToHost, stream
+        cudaMemcpyDeviceToHost, handle
     );
 }
 
 template <typename T>
-void Mat<T>::set(const GpuArray<T>& src, cudaStream_t stream) {
+void Mat<T>::set(const GpuArray<T>& src, Handle& hand) {
     cudaMemcpy2DAsync(
         this->data(), this->_ld * sizeof(T),
         src.data(), src._ld * sizeof(T),
         this->_rows * sizeof(T), this->_cols,
-        cudaMemcpyDeviceToDevice, stream
+        cudaMemcpyDeviceToDevice, hand
     );
 }
 
 template <typename T>
-void Mat<T>::get(GpuArray<T>& dst, cudaStream_t cuStream) const {
+void Mat<T>::get(GpuArray<T>& dst, Handle& hand) const {
     cudaMemcpy2DAsync(
         dst.data(), dst._ld * sizeof(T),
         this->data(), this->_ld * sizeof(T),
         this->_rows * sizeof(T), this->_cols,
-        cudaMemcpyDeviceToDevice, cuStream
+        cudaMemcpyDeviceToDevice, hand
     );
 }
 

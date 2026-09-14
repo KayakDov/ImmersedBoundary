@@ -46,8 +46,11 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
     bool thomas, Real helmholtzShift,
     SimpleArray<Real> sizeOfBForX, SimpleArray<Real> sizeOfBForRHS, SimpleArray<Real> sizeOfBForBAdj,
     size_t gpuIndex
-    ) : x(sizeOfBForX), b(sizeOfBForRHS), adjToB(sizeOfBForBAdj),pinnedX(allocPinned(sizeOfBForX.size()), &cudaFreeHost),
-        pinnedB(allocPinned(sizeOfBForRHS.size()), &cudaFreeHost), hand(gpuIndex) {
+    ) : x(sizeOfBForX), b(sizeOfBForRHS), adjToB(sizeOfBForBAdj),
+        // Sized off x.size() alone -- guaranteed equal to b.size() (see the
+        // class-level comment in the header for why), so one buffer covers
+        // both directions.
+        pinnedBuf(allocPinned(sizeOfBForX.size()), &cudaFreeHost), hand(gpuIndex) {
     
     Handle hands[3] = {Handle(gpuIndex), Handle(gpuIndex), Handle(gpuIndex)};
     Event events[3];
@@ -75,21 +78,27 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
 
 
 template<typename Real>
-void EigenDecompForFortran<Real>::solve(const Real *bHost)  {
-
-    std::memcpy(pinnedB.get(), bHost, b.size() * sizeof(Real));
-    b.set(pinnedB.get(), hand);
+void EigenDecompForFortran<Real>::solve() {
+    // No memcpy here: pinnedBuf already holds the RHS the caller wrote
+    // directly into it (via the pointer from pinnedPtr()). This H2D read
+    // is enqueued on hand before the D2H write-back below, so the two can
+    // never race -- see the class-level comment in the header.
+    b.set(pinnedBuf.get(), hand);
 
     b.add(adjToB, &GPUScalar<Real>::get(1, hand), &hand);
     eds->solve(x, b, hand);
 
-    x.get(pinnedX.get(), hand);
+    // Writes the solution back into the same buffer the RHS was just read
+    // from. Safe for the same same-stream-ordering reason as above.
+    x.get(pinnedBuf.get(), hand);
 }
 
 template<typename Real>
-void EigenDecompForFortran<Real>::retrieveSoltion(Real *xHost) {
+void EigenDecompForFortran<Real>::synch() {
+    // No memcpy here either: the solution is already sitting in pinnedBuf
+    // once the device work this waits for has completed. The caller reads
+    // it directly from the same pointer pinnedPtr() gave them.
     hand.synch();
-    std::memcpy(xHost, pinnedX.get(), x.size() * sizeof(Real));
 }
 
 template class EigenDecompForFortran<double>;

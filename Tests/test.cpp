@@ -109,12 +109,24 @@ TEST(FortranWrapper, MultipleEigenSolversSideBySide){
         // 2. Verify the wrapper assigned unique handles to the vector
     ASSERT_NE(h1, h2);
 
-    // 3. Solve them sequentially
-    eigen::solveEigenDecomp_d(h1, rhs.data());
-    eigen::solveEigenDecomp_d(h2, rhs.data());
+    // 3. Solve them sequentially. solve_eigen_decomp_d/synch no longer take
+    // a data argument -- write the RHS directly into each solver's own
+    // pinned buffer first (h1 and h2 each have their own, from their own
+    // separate init call, so no aliasing between them), then launch/wait,
+    // then read the solution back out of that same buffer.
+    Real* pinned1 = eigen::pinnedPtr<Real>(h1);
+    Real* pinned2 = eigen::pinnedPtr<Real>(h2);
+    std::copy(rhs.begin(), rhs.end(), pinned1);
+    std::copy(rhs.begin(), rhs.end(), pinned2);
 
-    eigen::synch(h1, resStandard.data());
-    eigen::synch(h2, resThomas.data());
+    eigen::solveEigenDecomp_d(h1);
+    eigen::solveEigenDecomp_d(h2);
+
+    eigen::synch_d(h1);
+    eigen::synch_d(h2);
+
+    std::copy(pinned1, pinned1 + size, resStandard.begin());
+    std::copy(pinned2, pinned2 + size, resThomas.begin());
 
     // 4. Diagnostics: If memory bled across solvers, the results would diverge
     for(size_t i=0; i<size; i++)
@@ -190,11 +202,21 @@ TEST(FortranWrapper, SmokeTestAlex)
             true, 0, 0
         );
 
-    eigen::solveEigenDecomp_d(handleStandard, rhs.data());
-    eigen::solveEigenDecomp_d(handleThomas, rhs.data());
+    // solve_eigen_decomp_d/synch no longer take a data argument -- same
+    // pinned-buffer pattern as MultipleEigenSolversSideBySide above.
+    Real* pinnedStandard = eigen::pinnedPtr<Real>(handleStandard);
+    Real* pinnedThomas   = eigen::pinnedPtr<Real>(handleThomas);
+    std::copy(rhs.begin(), rhs.end(), pinnedStandard);
+    std::copy(rhs.begin(), rhs.end(), pinnedThomas);
 
-    eigen::synch(handleStandard, xStandard.data());
-    eigen::synch(handleThomas, xThomas.data());
+    eigen::solveEigenDecomp_d(handleStandard);
+    eigen::solveEigenDecomp_d(handleThomas);
+
+    eigen::synch_d(handleStandard);
+    eigen::synch_d(handleThomas);
+
+    std::copy(pinnedStandard, pinnedStandard + size, xStandard.begin());
+    std::copy(pinnedThomas, pinnedThomas + size, xThomas.begin());
 
 
     //------------------------------------------------------------------
@@ -702,7 +724,6 @@ void boundaryBattery(
             );
         }
 
-        //TODO:Uncomment below!
         // 4. Always run shared verification tests
         verifyEigenSolverIdentity(dim, boundaryHost, hand3, event2, tolerance, locMsg);
         verifyImmersedEqWithBoundary<Real, int32_t>(boundaryHost.forDevice(), hand3[0], tolerance, locMsg, bufferNXNPlus5);

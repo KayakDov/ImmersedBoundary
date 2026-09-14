@@ -1,0 +1,22 @@
+--- a/Source/time_step_Lid3D_z.f90
++++ b/Source/time_step_Lid3D_z.f90
+@@ -190,6 +190,19 @@
+       ! assignment (X fastest, Y middle, Z slowest matches OrdVarPres exactly),
+       ! so Dprs can be filled with a direct RESHAPE -- no LibGridIdx needed.
+       Dprs(1:Nx1,1:Ny1,1:Nz1) = RESHAPE(resultPPrime, (/Nx1,Ny1,Nz1/))
++
++! ---- STAGE 1 TEST HARNESS: dump the first solve's output and stop ----
++! Temporary instrumentation, not part of the GPU migration -- remove once
++! the orig/modified comparison is done.
++      IF (Istp == 1) THEN
++          OPEN(919, FILE='dprs_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
++          WRITE(919) Dprs(1:Nx1,1:Ny1,1:Nz1)
++          CLOSE(919)
++          OPEN(920, FILE='ftag_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
++          WRITE(920) F_tag
++          CLOSE(920)
++          STOP 'Stage 1 dump complete (modified)'
++      END IF
+      
+            
+           RHSx=0.d0

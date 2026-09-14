@@ -22,7 +22,7 @@
          Use FVOperators
          Use, Intrinsic :: ISO_C_BINDING, Only: C_SIZE_T
          Implicit None
-         Integer nbd, Istp, loc_start, loc_end, sz
+         Integer nbd, Istp, loc_start, loc_end, sz, i, j, k
          Integer :: uSizeU, uSizeV, uSizeW, uOffset2, uOffset3
          Real(kind=8) :: Nusselt,Nusseltx,Nusselt1y,Nusselt2y,Nusselt1z,Nusselt2z, tempsum
 	     Real(kind=8):: Dist2D, Ht, RNSx, RNSy, RNSz, RTmpr, RDP, omp_get_wtime, t1,t2,t3,t4
@@ -190,19 +190,6 @@
       ! assignment (X fastest, Y middle, Z slowest matches OrdVarPres exactly),
       ! so Dprs can be filled with a direct RESHAPE -- no LibGridIdx needed.
       Dprs(1:Nx1,1:Ny1,1:Nz1) = RESHAPE(resultPPrime, (/Nx1,Ny1,Nz1/))
-
-! ---- STAGE 1 TEST HARNESS: dump the first solve's output and stop ----
-! Temporary instrumentation, not part of the GPU migration -- remove once
-! the orig/modified comparison is done.
-      IF (Istp == 1) THEN
-          OPEN(919, FILE='dprs_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
-          WRITE(919) Dprs(1:Nx1,1:Ny1,1:Nz1)
-          CLOSE(919)
-          OPEN(920, FILE='ftag_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
-          WRITE(920) F_tag
-          CLOSE(920)
-          STOP 'Stage 1 dump complete (modified)'
-      END IF
      
            
           RHSx=0.d0

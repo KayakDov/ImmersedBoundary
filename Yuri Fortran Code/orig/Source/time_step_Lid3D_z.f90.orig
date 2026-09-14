@@ -20,34 +20,13 @@
          Use EvdProcedures
          Use MatrixFormAndOperate
          Use FVOperators
-         Use, Intrinsic :: ISO_C_BINDING, Only: C_SIZE_T
          Implicit None
          Integer nbd, Istp, loc_start, loc_end, sz
-         Integer :: uSizeU, uSizeV, uSizeW, uOffset2, uOffset3
          Real(kind=8) :: Nusselt,Nusseltx,Nusselt1y,Nusselt2y,Nusselt1z,Nusselt2z, tempsum
 	     Real(kind=8):: Dist2D, Ht, RNSx, RNSy, RNSz, RTmpr, RDP, omp_get_wtime, t1,t2,t3,t4
          Real*8 Proba11(1:10)
-	     Real(kind=8) :: UGammaVec(3*TotalUnknownsP), resultPPrime(Nx1*Ny1*Nz1)
-	     Real(kind=8), Allocatable :: uStar(:)
+	     Real(kind=8) :: B_P_prime(3*TotalUnknownsP)
           Ht = 2.D0 * Htime
-
-         ! uStar layout: three segments -- u,v,w in ImerssedEquation.cu's
-         ! setRHSPPrime slicing, staggered +1 in the axis assigned to
-         ! dim1(rows)/dim3(cols)/dim2(layers) respectively. With dim1=X,
-         ! dim2=Y, dim3=Z (see Init_GPU_IBM_Solver's header comment in
-         ! MatrixFormAndOperate.f90): u is staggered in cols=dim3=Z (so u=Vz),
-         ! v is staggered in rows=dim1=X (so v=Vx), w is staggered in
-         ! layers=dim2=Y (so w=Vy). Each segment is a direct RESHAPE of
-         ! Yuri's own (X,Y,Z)-declared array -- Fortran's column-major
-         ! flattening (X fastest) already matches what the library expects
-         ! there, so no per-element index computation is needed anywhere.
-         uSizeU = Nx1*Ny1*(Nz1+1)
-         uSizeV = (Nx1+1)*Ny1*Nz1
-         uSizeW = Nx1*(Ny1+1)*Nz1
-         uOffset2 = uSizeU
-         uOffset3 = uSizeU + uSizeV
-         IF (ALLOCATED(uStar)) DEALLOCATE(uStar)
-         ALLOCATE(uStar(uSizeU + uSizeV + uSizeW))
         
 ! ########### Inversing the Stokes operator #################
 
@@ -136,73 +115,41 @@
    
 ! ++++++++++++ Calculate velocities ++++++++++++++++++++++++++++++
 
-      ! ---- GPU (CudaBandedLib) coupled pressure/force solve ----
-      ! Replaces the old interpolation()+RHS_F_tag block, Precond_RHS_P,
-      ! BICG5D, and MKL_B_MatVec/F_tag block above. solve_immersed_eq_primes_d_i32
-      ! computes R^T*uStar itself from the raw velocity field and R (so
-      ! interpolation() is no longer called here), and also reconstructs the
-      ! -3/(2*Htime)*div(u*) term itself from uStar internally.
-      !
-      ! Segment order/identity (u=Vz, v=Vx, w=Vy) and sizes follow from the
-      ! dim1=X/dim2=Y/dim3=Z assignment in MatrixFormAndOperate.f90's
-      ! Init_GPU_IBM_Solver -- see that header comment for the derivation.
-      ! Each RESHAPE is a straight flatten of Yuri's own (X,Y,Z)-declared
-      ! array; no index permutation, because Fortran's column-major order
-      ! (X fastest) already matches what the library wants under that
-      ! assignment. VMxNew(0,:,:)/VMxNew(Nx1,:,:) etc. (the +1 staggered
-      ! bound in each component's own direction) are real, deliberately-set
-      ! boundary values -- confirmed against bounds_Lid3D_z.f90, not assumed.
-      !
-      ! Still not verified:
-      ! (a) UGamma = bdy(:)%V{x,y,z}_b concatenated in the same x-then-y-then-z,
-      !     body-by-body order as F_tag/R's columns -- Vx_b/Vy_b/Vz_b are
-      !     zero-initialized and used elsewhere as a "target" boundary
-      !     velocity (fb_x=(Vx_b-Vx_interp_New)/Htime), which is why I've
-      !     mapped them to U^Gamma, but I have not confirmed this against
-      !     Yuri or the paper.
-      ! (b) Whether setRHSPPrime's divergence stencil (2nd-order central,
-      !     scaled by 3/(2*Htime)) matches Yuri's FdDiv/Ckor exactly.
-
-      uStar(1:uSizeU) = RESHAPE(VMzNew(1:Nx1, 1:Ny1, 0:Nz1), (/uSizeU/))
-      uStar(uOffset2+1 : uOffset2+uSizeV) = RESHAPE(VMxNew(0:Nx1, 1:Ny1, 1:Nz1), (/uSizeV/))
-      uStar(uOffset3+1 : uOffset3+uSizeW) = RESHAPE(VMyNew(1:Nx1, 0:Ny1, 1:Nz1), (/uSizeW/))
-
-      loc_start=1
-      DO nbd=1, n_body
+         
+      Vel_X_Field=>VMxNew
+      Vel_Y_Field=>VMyNew
+      Vel_Z_Field=>VMzNew
+      
+      loc_start=1 
+      DO nbd=1,  n_body
+        Call interpolation(Vel_X_Field,Vel_Y_Field,Vel_Z_Field,bdy(nbd)%Vx_interp_New,bdy(nbd)%Vy_interp_New,bdy(nbd)%Vz_interp_New,nbd)
+            
         loc_end=bdy(nbd)%Npts+loc_start-1
-        UGammaVec(loc_start:loc_end)=bdy(nbd)%Vx_b
+        
+        RHS_F_tag(loc_start:loc_end)=bdy(nbd)%Vx_interp_New
+        
+        loc_start=loc_end+1
+        loc_end= bdy(nbd)%Npts+loc_start-1
+        
+        RHS_F_tag(loc_start:loc_end)=bdy(nbd)%Vy_interp_New
+        
         loc_start=loc_end+1
         loc_end=bdy(nbd)%Npts+loc_start-1
-        UGammaVec(loc_start:loc_end)=bdy(nbd)%Vy_b
+        
+        RHS_F_tag(loc_start:loc_end)=bdy(nbd)%Vz_interp_New
         loc_start=loc_end+1
-        loc_end=bdy(nbd)%Npts+loc_start-1
-        UGammaVec(loc_start:loc_end)=bdy(nbd)%Vz_b
-        loc_start=loc_end+1
+        
       END DO
-
-      CALL solve_immersed_eq_primes_d_i32( &
-          resultPPrime, F_tag, &
-          INT(SIZE(B_CSR_Prs), C_SIZE_T), B_RowOffsets0, B_ColInds0, B_CSR_Prs, &
-          INT(SIZE(R_CSC_Val), C_SIZE_T), R_ColOffsets0, R_RowInds0, R_CSC_Val, &
-          UGammaVec, uStar)
-
-      ! resultPPrime is already in NumGlP order under the dim1=X/dim2=Y/dim3=Z
-      ! assignment (X fastest, Y middle, Z slowest matches OrdVarPres exactly),
-      ! so Dprs can be filled with a direct RESHAPE -- no LibGridIdx needed.
-      Dprs(1:Nx1,1:Ny1,1:Nz1) = RESHAPE(resultPPrime, (/Nx1,Ny1,Nz1/))
-
-! ---- STAGE 1 TEST HARNESS: dump the first solve's output and stop ----
-! Temporary instrumentation, not part of the GPU migration -- remove once
-! the orig/modified comparison is done.
-      IF (Istp == 1) THEN
-          OPEN(919, FILE='dprs_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
-          WRITE(919) Dprs(1:Nx1,1:Ny1,1:Nz1)
-          CLOSE(919)
-          OPEN(920, FILE='ftag_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
-          WRITE(920) F_tag
-          CLOSE(920)
-          STOP 'Stage 1 dump complete (modified)'
-      END IF
+    
+      RHS_F_tag=RHS_F_tag*Ckor / Htime !This is RHS_F_prime
+      
+     
+     
+      CALL Precond_RHS_P (FDRHP,RHS_F_tag, RHS_Precond)
+      CALL BICG5D (RHS_Precond,Nx1*Ny1*Nz1,ItMax, Eps, IGPrs, Dprs)
+     
+      CALL MKL_B_MatVec(RHS_Precond, B_P_prime)  
+      F_tag=2.d0*(B_P_prime-RHS_F_tag)
      
            
           RHSx=0.d0

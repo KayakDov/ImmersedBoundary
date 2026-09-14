@@ -306,25 +306,39 @@ namespace eigen {
         return solverIndex;
     }
 
+    /// Throws if solverHandle doesn't name a live solver; otherwise returns
+    /// a reference to it. Centralizes the bounds/null check that
+    /// runDecompSolver, synch, and pinnedPtr each used to repeat inline.
     template<typename Real>
-    void runDecompSolver(size_t solverHandle, Real* bHost) {
-        // double startTime = currentTime();
-
+    EigenDecompForFortran<Real>& getSolverOrThrow(size_t solverHandle) {
         if (solverHandle >= solvers<Real>.size() || !solvers<Real>[solverHandle])
             throw std::runtime_error("Invalid eigen solver handle.");
+        return *solvers<Real>[solverHandle];
+    }
 
-        solvers<Real>[solverHandle]->solve(bHost);
-
+    template<typename Real>
+    void runDecompSolver(size_t solverHandle) {
+        // double startTime = currentTime();
+        getSolverOrThrow<Real>(solverHandle).solve();
         // addSolverTime(currentTime() - startTime);
     }
 
     template<typename Real>
-    void synch(size_t solverHandle, Real* x) {
+    void synch(size_t solverHandle) {
         // double startTime = currentTime();
-        if (solverHandle >= solvers<Real>.size() || !solvers<Real>[solverHandle])
-            throw std::runtime_error("Invalid eigen solver handle.");
-        solvers<Real>[solverHandle]->retrieveSoltion(x);
+        getSolverOrThrow<Real>(solverHandle).synch();
         // addSolverTime(currentTime() - startTime);
+    }
+
+    /// Returns the raw pinned host pointer a given solver uses for both its
+    /// RHS (before solve()) and its solution (after synch()) -- see
+    /// EigenDecompForFortran::pinnedPtr(). Intended to be called once, right
+    /// after the corresponding init call, and the returned pointer aliased
+    /// (not re-fetched every timestep): the address is stable for the
+    /// solver's lifetime.
+    template<typename Real>
+    Real* pinnedPtr(size_t solverHandle) {
+        return getSolverOrThrow<Real>(solverHandle).pinnedPtr();
     }
 
     // --- Initialization Functions ---
@@ -366,20 +380,38 @@ namespace eigen {
             );
         }
 
-        inline void solveEigenDecomp_d(size_t solverHandle, double* b) {
-            runDecompSolver(solverHandle, b);
+        /// No longer takes an RHS argument: write the RHS directly into the
+        /// pointer returned by get_pinned_ptr_d(solverHandle) before calling
+        /// this. See EigenDecompForFortran::solve() / README section 2.
+        inline void solveEigenDecomp_d(size_t solverHandle) {
+            runDecompSolver<double>(solverHandle);
         }
 
-        inline void solveEigenDecomp_s(size_t solverHandle, float* b) {
-            runDecompSolver(solverHandle, b);
+        inline void solveEigenDecomp_s(size_t solverHandle) {
+            runDecompSolver<float>(solverHandle);
         }
 
-        inline void synch_d(size_t solverHandle, double* x) {
-            synch<double>(solverHandle, x);
+        /// No longer takes an output argument: after this returns, read the
+        /// solution directly from the same pointer get_pinned_ptr_d(solverHandle)
+        /// returned. See EigenDecompForFortran::synch() / README section 2.
+        inline void synch_d(size_t solverHandle) {
+            synch<double>(solverHandle);
         }
 
-        inline void synch_s(size_t solverHandle, float* x) {
-            synch<float>(solverHandle, x);
+        inline void synch_s(size_t solverHandle) {
+            synch<float>(solverHandle);
+        }
+
+        /// Returns the pinned host pointer this solver uses for both RHS and
+        /// solution. Call once (typically right after init_eigen_decomp_*)
+        /// and alias the result -- see README section 2 for the Fortran-side
+        /// C_F_POINTER pattern.
+        inline double* get_pinned_ptr_d(size_t solverHandle) {
+            return pinnedPtr<double>(solverHandle);
+        }
+
+        inline float* get_pinned_ptr_s(size_t solverHandle) {
+            return pinnedPtr<float>(solverHandle);
         }
     }
 

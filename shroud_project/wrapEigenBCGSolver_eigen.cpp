@@ -56,32 +56,48 @@ size_t EIG_eigen_initEigenDecomp_s(size_t dim1Length, size_t dim2Length,
     // splicer end namespace.eigen.function.initEigenDecomp_s
 }
 
-void EIG_eigen_solveEigenDecomp_d(size_t solverHandle, double *b)
+void EIG_eigen_solveEigenDecomp_d(size_t solverHandle)
 {
     // splicer begin namespace.eigen.function.solveEigenDecomp_d
-    eigen::solveEigenDecomp_d(solverHandle, b);
+    eigen::solveEigenDecomp_d(solverHandle);
     // splicer end namespace.eigen.function.solveEigenDecomp_d
 }
 
-void EIG_eigen_solveEigenDecomp_s(size_t solverHandle, float *b)
+void EIG_eigen_solveEigenDecomp_s(size_t solverHandle)
 {
     // splicer begin namespace.eigen.function.solveEigenDecomp_s
-    eigen::solveEigenDecomp_s(solverHandle, b);
+    eigen::solveEigenDecomp_s(solverHandle);
     // splicer end namespace.eigen.function.solveEigenDecomp_s
 }
 
-void EIG_eigen_synch_d(size_t solverHandle, double *x)
+void EIG_eigen_synch_d(size_t solverHandle)
 {
     // splicer begin namespace.eigen.function.synch_d
-    eigen::synch_d(solverHandle, x);
+    eigen::synch_d(solverHandle);
     // splicer end namespace.eigen.function.synch_d
 }
 
-void EIG_eigen_synch_s(size_t solverHandle, float *x)
+void EIG_eigen_synch_s(size_t solverHandle)
 {
     // splicer begin namespace.eigen.function.synch_s
-    eigen::synch_s(solverHandle, x);
+    eigen::synch_s(solverHandle);
     // splicer end namespace.eigen.function.synch_s
+}
+
+double * EIG_eigen_get_pinned_ptr_d(size_t solverHandle)
+{
+    // splicer begin namespace.eigen.function.get_pinned_ptr_d
+    double *SHC_rv = eigen::get_pinned_ptr_d(solverHandle);
+    return SHC_rv;
+    // splicer end namespace.eigen.function.get_pinned_ptr_d
+}
+
+float * EIG_eigen_get_pinned_ptr_s(size_t solverHandle)
+{
+    // splicer begin namespace.eigen.function.get_pinned_ptr_s
+    float *SHC_rv = eigen::get_pinned_ptr_s(solverHandle);
+    return SHC_rv;
+    // splicer end namespace.eigen.function.get_pinned_ptr_s
 }
 
 void EIG_eigen_finalizeEigenDecomp(void)

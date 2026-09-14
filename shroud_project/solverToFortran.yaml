@@ -28,8 +28,31 @@ declarations:
     declarations:
       - decl: size_t initEigenDecomp_d(size_t dim1Length, size_t dim2Length, size_t dim3Length, const double* dim1Delta +intent(in) +rank(1), const double* dim2Delta +intent(in) +rank(1), const double* dim3Delta +intent(in) +rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, double dim1StartVal, double dim1EndVal, double dim2StartVal, double dim2EndVal, double dim3StartVal, double dim3EndVal, bool thomas, double helmholtzShift, size_t gpuInd)
       - decl: size_t initEigenDecomp_s(size_t dim1Length, size_t dim2Length, size_t dim3Length, const float* dim1Delta +intent(in) +rank(1), const float* dim2Delta +intent(in) +rank(1), const float* dim3Delta +intent(in) +rank(1), int dim1SegType, int dim2SegType, int dim3SegType, bool dim1StartIsNeumann, bool dim1EndIsNeumann, bool dim2StartIsNeumann, bool dim2EndIsNeumann, bool dim3StartIsNeumann, bool dim3EndIsNeumann, float dim1StartVal, float dim1EndVal, float dim2StartVal, float dim2EndVal, float dim3StartVal, float dim3EndVal, bool thomas, float helmholtzShift, size_t gpuInd)
-      - decl: void solveEigenDecomp_d(size_t solverHandle, double* b +intent(in) +rank(1))
-      - decl: void solveEigenDecomp_s(size_t solverHandle, float* b +intent(in) +rank(1))
-      - decl: void synch_d(size_t solverHandle, double* x +intent(out) +rank(1))
-      - decl: void synch_s(size_t solverHandle, float* x +intent(out) +rank(1))
+
+      # solveEigenDecomp_d/s and synch_d/s no longer take an RHS/solution
+      # array: the RHS is written directly into the pinned buffer returned
+      # by get_pinned_ptr_d/s below (once, aliased, not re-passed per call),
+      # and the solution is read back out of that same buffer after synch.
+      - decl: void solveEigenDecomp_d(size_t solverHandle)
+      - decl: void solveEigenDecomp_s(size_t solverHandle)
+      - decl: void synch_d(size_t solverHandle)
+      - decl: void synch_s(size_t solverHandle)
+
+      # NEW. Returns the raw pinned host pointer a solver uses for both its
+      # RHS and its solution -- see EigenDecompForFortran::pinnedPtr() and
+      # README section 2 for the intended call-once-and-alias usage via
+      # ISO_C_BINDING's C_F_POINTER.
+      #
+      # +deref(raw) is required: without it, Shroud's default (deref(pointer))
+      # wraps the return in its own c_f_pointer call and hands back a
+      # Fortran POINTER TO A SCALAR (since no +dimension is given here --
+      # the real shape differs per solver and isn't known to Shroud), not
+      # type(C_PTR). +deref(raw) is documented specifically for this case
+      # ("if the dimension is unknown when the function returns, a
+      # type(C_PTR) can be returned with +deref(raw); this will allow the
+      # user to call c_f_pointer once the shape is known") --
+      # https://shroud.readthedocs.io/en/latest/pointers.html
+      - decl: double* get_pinned_ptr_d(size_t solverHandle) +deref(raw)
+      - decl: float* get_pinned_ptr_s(size_t solverHandle) +deref(raw)
+
       - decl: void finalizeEigenDecomp()

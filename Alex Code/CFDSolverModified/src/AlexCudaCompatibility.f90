@@ -7,13 +7,22 @@
 ! No array in the codebase is reindexed; dim1/dim2/dim3 below match Alex's
 ! native X/Y/Z declaration order exactly. See CHANGES.md for the full
 ! rationale, the axis-discretization table, and validation numbers.
+!
+! Each solver's pinned host buffer (used for both its RHS and its solution
+! -- see EigenDecompForFortran::pinnedPtr() on the C++ side) is fetched
+! ONCE here, right after that solver's init call, and aliased as a 3D
+! Fortran pointer shaped to match that field's own dimensions. time_step_
+! Q2D.f90 writes RHS values directly into these pointers and reads
+! solutions back out of them, instead of going through separate GPU_RHS_*/
+! GPU_SOL_* scratch arrays -- see its comments for the before/after.
 ! ============================================================================
 
 module AlexCudaCompatibility
-    use iso_c_binding, only : C_SIZE_T, C_INT
+    use iso_c_binding, only : C_SIZE_T, C_INT, C_PTR, C_F_POINTER
     implicit none
 
     public :: TemperatureHandle, VxHandle, VyHandle, VzHandle, PressureHandle, PotentialHandle
+    public :: Temperature_pinned, Vx_pinned, Vy_pinned, Vz_pinned, Pressure_pinned, Potential_pinned
     public :: Initialize_GPU_Solvers, GrPr
 
     integer(C_SIZE_T) :: TemperatureHandle = 0_C_SIZE_T
@@ -22,6 +31,20 @@ module AlexCudaCompatibility
     integer(C_SIZE_T) :: VzHandle          = 0_C_SIZE_T
     integer(C_SIZE_T) :: PressureHandle    = 0_C_SIZE_T
     integer(C_SIZE_T) :: PotentialHandle   = 0_C_SIZE_T
+
+    ! Each solver's pinned RHS/solution buffer, aliased once in
+    ! Initialize_GPU_Solvers and shaped to that field's own (dim1,dim2,dim3)
+    ! -- the same shapes GPU_RHS_T/GPU_SOL_T etc. used to have. Write into
+    ! one of these before solve_eigen_decomp_d; read from it after synch_d.
+    ! Potential_pinned is exposed here for EM_forcing.f90 (Get_Potential_
+    ! Launch/Finish) to use the same way -- not consumed directly in this
+    ! module.
+    real(kind=8), pointer :: Temperature_pinned(:,:,:) => null()
+    real(kind=8), pointer :: Vx_pinned(:,:,:)          => null()
+    real(kind=8), pointer :: Vy_pinned(:,:,:)          => null()
+    real(kind=8), pointer :: Vz_pinned(:,:,:)          => null()
+    real(kind=8), pointer :: Pressure_pinned(:,:,:)    => null()
+    real(kind=8), pointer :: Potential_pinned(:,:,:)   => null()
 
     ! Temperature diffusivity scale of the CPU operator (Prandtl/DGr, or 1 when
     ! Prandtl == 0). Set here; time_step_Q2D.f90 uses it to scale the
@@ -42,8 +65,8 @@ module AlexCudaCompatibility
 contains
 
     Subroutine Initialize_GPU_Solvers()
-        Use eigenbcgsolver_eigen_mod, only : init_eigen_decomp_d
-        Use iso_c_binding, only : C_SIZE_T
+        Use eigenbcgsolver_eigen_mod, only : init_eigen_decomp_d, get_pinned_ptr_d
+        Use iso_c_binding, only : C_SIZE_T, C_PTR, C_F_POINTER
         Use Numbers      ! Nx, Nx1, Ny, Ny1, Nz, Nz1
         Use Parameters   ! Prandtl, DGr
         Use Grid         ! Hx12, Hy12, Hz12, HPx, HPy, HPz
@@ -53,6 +76,7 @@ contains
         real(kind=8) :: shiftTemperature, shiftVelocity
         logical :: tX, tY, tZ    ! temperature: Neumann on both ends of axis?
         logical :: pX, pY, pZ    ! potential:   Neumann on both ends of axis?
+        type(C_PTR) :: rawPtr    ! scratch for each get_pinned_ptr_d call below
 
         ! Matches EVD_Thomas's pdum = -(Ckor/Htime)*Dtm + lambda_y + lambda_z,
         ! i.e. it solves (alpha*L - (Ckor/Htime)*Dtm) x = rhs, with
@@ -101,6 +125,8 @@ contains
                 helmholtzShift = shiftTemperature , &
                 gpuInd = 0 &
             )
+        rawPtr = get_pinned_ptr_d(TemperatureHandle)
+        Call C_F_POINTER(rawPtr, Temperature_pinned, [Nx1, Ny1, Nz1])
 
         ! Vx: VMx(1:Nx,1:Ny1,1:Nz1); node-centred along its own (x) axis
         ! (EVDLapVx's HPx(i)*Hx12(...) form), cell-centred along y/z. Dirichlet.
@@ -124,6 +150,8 @@ contains
                 helmholtzShift = shiftVelocity, &
                 gpuInd = 0 &
             )
+        rawPtr = get_pinned_ptr_d(VxHandle)
+        Call C_F_POINTER(rawPtr, Vx_pinned, [Nx, Ny1, Nz1])
 
         ! Vy: VMy(1:Nx1,1:Ny,1:Nz1); node-centred along y, cell-centred along
         ! x/z. Dirichlet.
@@ -147,6 +175,8 @@ contains
                 helmholtzShift = shiftVelocity, &
                 gpuInd = 0 &
         )
+        rawPtr = get_pinned_ptr_d(VyHandle)
+        Call C_F_POINTER(rawPtr, Vy_pinned, [Nx1, Ny, Nz1])
 
         ! Vz: VMz(1:Nx1,1:Ny1,1:Nz); node-centred along z, cell-centred along
         ! x/y. Dirichlet.
@@ -170,6 +200,8 @@ contains
                 helmholtzShift = shiftVelocity, &
                 gpuInd = 0 &
             )
+        rawPtr = get_pinned_ptr_d(VzHandle)
+        Call C_F_POINTER(rawPtr, Vz_pinned, [Nx1, Ny1, Nz])
 
         ! Pressure: Dprs(1:Nx1,1:Ny1,1:Nz1), cell-centred on every axis. Pure
         ! Poisson, Neumann everywhere (matching EVDLapP, which applies Neumann
@@ -195,6 +227,8 @@ contains
                 helmholtzShift = 0.d0, &
                 gpuInd = 0 &
             )
+        rawPtr = get_pinned_ptr_d(PressureHandle)
+        Call C_F_POINTER(rawPtr, Pressure_pinned, [Nx1, Ny1, Nz1])
 
         ! Potential: Potential(1:Nx,1:Ny1,1:Nz); node-centred along x/z,
         ! cell-centred along y. Pure Poisson; Neumann per axis follows the
@@ -219,6 +253,15 @@ contains
                 helmholtzShift = 0.d0, &
                 gpuInd = 0 &
             )
+        rawPtr = get_pinned_ptr_d(PotentialHandle)
+        ! NOTE: shape here matches Potential(1:Nx,1:Ny1,1:Nz)'s own extent --
+        ! consumed by Get_Potential_Launch/Finish in EM_forcing.f90, not in
+        ! this module. Those two subroutines still need the same
+        ! memcpy-elimination treatment applied to their own
+        ! solve_eigen_decomp_d(PotentialHandle, ...)/synch_d(PotentialHandle, ...)
+        ! call sites -- not done here, since EM_forcing.f90 wasn't available
+        ! to edit directly.
+        Call C_F_POINTER(rawPtr, Potential_pinned, [Nx, Ny1, Nz])
 
     End Subroutine Initialize_GPU_Solvers
 

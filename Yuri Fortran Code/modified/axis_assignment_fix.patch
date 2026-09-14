@@ -1,0 +1,249 @@
+--- a/Source/MatrixFormAndOperate.f90
++++ b/Source/MatrixFormAndOperate.f90
+@@ -31,42 +31,28 @@
+ ! B_P_prime/F_tag block in time_step_Lid3D_z.f90 -- see Init_GPU_IBM_Solver below
+ ! and the call site in time_step_Lid3D_z.f90.
+ !
+-! Everything below is now grounded in ImerssedEquation.h/.cu and
+-! FortranBindings.hpp, not guessed:
++! Axis assignment: per the current README ("The solver is isotropic and does
++! not assign any physical meaning (such as X, Y, or Z) to these dimensions")
++! and FortranBindings.hpp, dim1/dim2/dim3 are just "fastest / middle / slowest
++! flattened index" slots -- the caller picks which physical axis goes in each.
++! Fortran arrays are column-major (first declared index fastest), and Yuri's
++! arrays are always declared (X,Y,Z), so assigning dim1=X, dim2=Y, dim3=Z
++! makes every array here -- the pressure grid AND all three velocity
++! components -- a direct match to the library's expected layout with no
++! index permutation anywhere: NumGlP (X fastest, Y middle, Z slowest, per
++! OrdVarPres) IS the library's own flat index under this assignment, so it's
++! used as-is for B's column indices, R's row indices, and the resultPPrime
++! readback in time_step_Lid3D_z.f90 -- no conversion function needed (an
++! earlier version of this patch had a LibGridIdx/LibGridIdxFromNumGlP pair
++! built on a Y-fastest assumption; that's gone).
+ !
+-! (1) Axis permutation (FortranBindings.hpp's initImmersedEq_d_i32): the
+-!     wrapper unconditionally calls the C++ constructor as
+-!     initImmersedEq(dim1Length, dim3Length, dim2Length, ...) i.e.
+-!     height=dim1Length, width=dim3Length, depth=dim2Length, and
+-!     EigenDecompForFortran.cpp's Doxygen comment says explicitly "rows
+-!     (Y-dimension) ... cols (X-dimension) ... layers (Z-dimension)". So:
+-!       dim1Length/dim1Delta/dim1*IsNeumann/dim1*Val -> Y  -> Ny1, Hy12(1)
+-!       dim2Length/dim2Delta/dim2*IsNeumann/dim2*Val -> Z  -> Nz1, Hz12(1)
+-!       dim3Length/dim3Delta/dim3*IsNeumann/dim3*Val -> X  -> Nx1, Hx12(1)
+-!     This is what the README calls "INPUT_FORMAT_YZX" -- it isn't a
+-!     separate call to make, it's baked into which argument slot gets which
+-!     value, so there is no missing set_global_input_format after all.
+-! (2) dim*SegSpacing is eigen::LaplOperatorT (wrapper/LaplOperatorType.h),
+-!     cast directly from the integer -- not an array length as I guessed
+-!     last time. EVDLapP's boundary rows (a single P1 or P2 term, not the
+-!     sum) match "UniformDeltaNodeCenteredLapl = 0" ("unknowns at nodes,
+-!     walls ON the first/last node's neighbouring position"), not
+-!     UniformDeltaStaggeredLapl -- so I've corrected this to 0 for all three
+-!     axes. There's no Fortran-side named constant for it in the wrapper you
+-!     gave me, hence the bare literal below.
+-! (3) Flat-index convention: EigenDecompForFortran.h states the internal
+-!     storage order is "dim1 (fastest varying), dim2, dim3 (slowest)" for
+-!     the GridDim(rows, cols, layers) constructor -- i.e. Y fastest, X
+-!     middle, Z slowest. That is NOT the same order OrdVarPres uses for
+-!     NumGlP (X fastest, Y middle, Z slowest). B's column indices and R's
+-!     row indices are grid-space indices that came from NumGlP (via
+-!     Div_F_X_ROW / R_Ftag_Matrix_Fx_Row), so they have to be converted --
+-!     see LibGridIdxFromNumGlP below. p0/f0 are all-zero so no conversion
+-!     is needed there. uStar and resultPPrime are handled directly in
+-!     time_step_Lid3D_z.f90 using the library's index order from the start
+-!     (see the comment there for the velocity component sizes, which are
+-!     NOT all Nx1*Ny1*Nz1 -- confirmed against bounds_Lid3D_z.f90's ghost
+-!     assignments, e.g. VMxNew(0,:,:) and VMxNew(Nx1,:,:)).
++! dim*SegSpacing is eigen::LaplOperatorT (wrapper/LaplOperatorType.h), cast
++! directly from the integer. EVDLapP's boundary rows (a single P1 or P2 term,
++! not the sum) match "UniformDeltaNodeCenteredLapl = 0" ("unknowns at nodes,
++! walls ON the first/last node's neighbouring position"), not
++! UniformDeltaStaggeredLapl -- used for all three axes below. There's no
++! Fortran-side named constant for it in the wrapper you gave me, hence the
++! bare literal.
+ !
+ ! Still not verified: whether the library's divergence stencil in
+ ! ImerssedEquation.cu's setRHSPPrime matches Yuri's FdDiv/Ckor exactly (both
+@@ -87,17 +73,13 @@
+     IF (ALLOCATED(B_ColInds0))    DEALLOCATE(B_ColInds0)
+     ALLOCATE(B_RowOffsets0(3*TotalUnknownsP+1), B_ColInds0(nnzB))
+     B_RowOffsets0 = B_Row_CSR_Prs(1:3*TotalUnknownsP+1) - 1
+-    DO i = 1, nnzB
+-        B_ColInds0(i) = LibGridIdxFromNumGlP(B_Col_CSR_Prs(i)) - 1
+-    END DO
++    B_ColInds0    = B_Col_CSR_Prs(1:nnzB) - 1      ! B_Col_CSR_Prs is already NumGlP -- no conversion
+ 
+     IF (ALLOCATED(R_ColOffsets0)) DEALLOCATE(R_ColOffsets0)
+     IF (ALLOCATED(R_RowInds0))    DEALLOCATE(R_RowInds0)
+     ALLOCATE(R_ColOffsets0(3*TotalUnknownsP+1), R_RowInds0(nnzR))
+     R_ColOffsets0 = R_ColOffsets_CSC(1:3*TotalUnknownsP+1) - 1
+-    DO i = 1, nnzR
+-        R_RowInds0(i) = LibGridIdxFromNumGlP(R_RowInds_CSC(i)) - 1
+-    END DO
++    R_RowInds0    = R_RowInds_CSC(1:nnzR) - 1      ! likewise already NumGlP
+ 
+     ALLOCATE(p0(Nx1*Ny1*Nz1), f0(3*TotalUnknownsP))
+     p0 = 0.D0
+@@ -105,15 +87,15 @@
+ 
+     ImEqSolverForceSize = INT(3*TotalUnknownsP, C_SIZE_T)
+ 
+-    dim1Delta_(1) = Hy12(1)
+-    dim2Delta_(1) = Hz12(1)
+-    dim3Delta_(1) = Hx12(1)
++    dim1Delta_(1) = Hx12(1)
++    dim2Delta_(1) = Hy12(1)
++    dim3Delta_(1) = Hz12(1)
+ 
+     CALL init_immersed_eq_d_i32( &
+-        INT(Ny1, C_SIZE_T), INT(Nz1, C_SIZE_T), INT(Nx1, C_SIZE_T), &
+-        .TRUE., .TRUE., &   ! dim1 (Y) Neumann both ends
+-        .TRUE., .TRUE., &   ! dim2 (Z) Neumann both ends
+-        .TRUE., .TRUE., &   ! dim3 (X) Neumann both ends
++        INT(Nx1, C_SIZE_T), INT(Ny1, C_SIZE_T), INT(Nz1, C_SIZE_T), &
++        .TRUE., .TRUE., &   ! dim1 (X) Neumann both ends
++        .TRUE., .TRUE., &   ! dim2 (Y) Neumann both ends
++        .TRUE., .TRUE., &   ! dim3 (Z) Neumann both ends
+         0.D0, 0.D0, 0.D0, 0.D0, 0.D0, 0.D0, &   ! homogeneous Neumann values
+         INT(0, C_SIZE_T), INT(0, C_SIZE_T), INT(0, C_SIZE_T), &  ! UniformDeltaNodeCenteredLapl, all 3 axes
+         ImEqSolverForceSize, INT(MAX(nnzB, nnzR), C_SIZE_T), &
+@@ -127,36 +109,6 @@
+ END SUBROUTINE Init_GPU_IBM_Solver
+ 
+ 
+-! Converts a 1-based NumGlP-style flat grid index (X fastest, then Y, then Z
+-! -- OrdVarPres's convention) to the 1-based flat index CudaBandedLib uses
+-! internally for the SAME (X,Y,Z) grid point (Y fastest, then X, then Z --
+-! see the note above Init_GPU_IBM_Solver). Both index the same Nx1*Ny1*Nz1
+-! grid; only the flattening order differs.
+-INTEGER FUNCTION LibGridIdxFromNumGlP(numGlPIdx) RESULT(libIdx)
+-    IMPLICIT NONE
+-    INTEGER, INTENT(IN) :: numGlPIdx
+-    INTEGER :: rem, ii, jj, kk
+-    rem = numGlPIdx - 1
+-    ii  = MOD(rem, Nx1) + 1
+-    rem = rem / Nx1
+-    jj  = MOD(rem, Ny1) + 1
+-    kk  = rem / Ny1 + 1
+-    libIdx = LibGridIdx(ii, jj, kk)
+-END FUNCTION LibGridIdxFromNumGlP
+-
+-
+-! The library's own 1-based flat index (Y fastest, X middle, Z slowest) for
+-! pressure/scalar grid point (i,j,k), i,j,k each in 1..Nx1/Ny1/Nz1. Used
+-! directly (not via LibGridIdxFromNumGlP) wherever the (i,j,k) triple is
+-! already in hand, e.g. mapping resultPPrime back into Dprs in
+-! time_step_Lid3D_z.f90.
+-INTEGER FUNCTION LibGridIdx(i, j, k) RESULT(libIdx)
+-    IMPLICIT NONE
+-    INTEGER, INTENT(IN) :: i, j, k
+-    libIdx = j + (i-1)*Ny1 + (k-1)*Ny1*Nx1
+-END FUNCTION LibGridIdx
+-
+-
+ SUBROUTINE Finalize_GPU_IBM_Solver
+     IMPLICIT NONE
+     IF (.NOT. ImEqSolverInitialized) RETURN
+--- a/Source/time_step_Lid3D_z.f90
++++ b/Source/time_step_Lid3D_z.f90
+@@ -31,12 +31,19 @@
+ 	     Real(kind=8), Allocatable :: uStar(:)
+           Ht = 2.D0 * Htime
+ 
+-         ! uStar layout: three segments, one per velocity component, each
+-         ! sized per ImerssedEquation.cu's setRHSPPrime slicing (component
+-         ! staggered +1 in its own direction) -- see the call site below.
+-         uSizeU = Ny1*(Nx1+1)*Nz1
+-         uSizeV = Nx1*(Ny1+1)*Nz1
+-         uSizeW = Nx1*Ny1*(Nz1+1)
++         ! uStar layout: three segments -- u,v,w in ImerssedEquation.cu's
++         ! setRHSPPrime slicing, staggered +1 in the axis assigned to
++         ! dim1(rows)/dim3(cols)/dim2(layers) respectively. With dim1=X,
++         ! dim2=Y, dim3=Z (see Init_GPU_IBM_Solver's header comment in
++         ! MatrixFormAndOperate.f90): u is staggered in cols=dim3=Z (so u=Vz),
++         ! v is staggered in rows=dim1=X (so v=Vx), w is staggered in
++         ! layers=dim2=Y (so w=Vy). Each segment is a direct RESHAPE of
++         ! Yuri's own (X,Y,Z)-declared array -- Fortran's column-major
++         ! flattening (X fastest) already matches what the library expects
++         ! there, so no per-element index computation is needed anywhere.
++         uSizeU = Nx1*Ny1*(Nz1+1)
++         uSizeV = (Nx1+1)*Ny1*Nz1
++         uSizeW = Nx1*(Ny1+1)*Nz1
+          uOffset2 = uSizeU
+          uOffset3 = uSizeU + uSizeV
+          IF (ALLOCATED(uStar)) DEALLOCATE(uStar)
+@@ -136,14 +143,15 @@
+       ! interpolation() is no longer called here), and also reconstructs the
+       ! -3/(2*Htime)*div(u*) term itself from uStar internally.
+       !
+-      ! uStar's THREE segments are NOT all Nx1*Ny1*Nz1 -- ImerssedEquation.cu's
+-      ! setRHSPPrime slices velocities into u=Ny1*(Nx1+1)*Nz1, v=Nx1*(Ny1+1)*Nz1,
+-      ! w=Nx1*Ny1*(Nz1+1) (each component staggered +1 in its own direction,
+-      ! matching Yuri's own VMxNew(0,:,:)/VMxNew(Nx1,:,:) etc. wall assignments
+-      ! in bounds_Lid3D_z.f90 -- confirmed, not guessed). Within each segment,
+-      ! the library's Y-fastest/X-middle/Z-slowest order applies (see
+-      ! MatrixFormAndOperate.f90's Init_GPU_IBM_Solver header) using that
+-      ! segment's OWN (possibly +1) extent.
++      ! Segment order/identity (u=Vz, v=Vx, w=Vy) and sizes follow from the
++      ! dim1=X/dim2=Y/dim3=Z assignment in MatrixFormAndOperate.f90's
++      ! Init_GPU_IBM_Solver -- see that header comment for the derivation.
++      ! Each RESHAPE is a straight flatten of Yuri's own (X,Y,Z)-declared
++      ! array; no index permutation, because Fortran's column-major order
++      ! (X fastest) already matches what the library wants under that
++      ! assignment. VMxNew(0,:,:)/VMxNew(Nx1,:,:) etc. (the +1 staggered
++      ! bound in each component's own direction) are real, deliberately-set
++      ! boundary values -- confirmed against bounds_Lid3D_z.f90, not assumed.
+       !
+       ! Still not verified:
+       ! (a) UGamma = bdy(:)%V{x,y,z}_b concatenated in the same x-then-y-then-z,
+@@ -155,29 +163,9 @@
+       ! (b) Whether setRHSPPrime's divergence stencil (2nd-order central,
+       !     scaled by 3/(2*Htime)) matches Yuri's FdDiv/Ckor exactly.
+ 
+-      DO k=1,Nz1
+-       DO j=1,Ny1
+-        DO i=0,Nx1
+-          uStar(j + i*Ny1 + (k-1)*Ny1*(Nx1+1)) = VMxNew(i,j,k)
+-        END DO
+-       END DO
+-      END DO
+-
+-      DO k=1,Nz1
+-       DO j=0,Ny1
+-        DO i=1,Nx1
+-          uStar(uOffset2 + (j+1) + (i-1)*(Ny1+1) + (k-1)*(Ny1+1)*Nx1) = VMyNew(i,j,k)
+-        END DO
+-       END DO
+-      END DO
+-
+-      DO k=0,Nz1
+-       DO j=1,Ny1
+-        DO i=1,Nx1
+-          uStar(uOffset3 + j + (i-1)*Ny1 + k*Ny1*Nx1) = VMzNew(i,j,k)
+-        END DO
+-       END DO
+-      END DO
++      uStar(1:uSizeU) = RESHAPE(VMzNew(1:Nx1, 1:Ny1, 0:Nz1), (/uSizeU/))
++      uStar(uOffset2+1 : uOffset2+uSizeV) = RESHAPE(VMxNew(0:Nx1, 1:Ny1, 1:Nz1), (/uSizeV/))
++      uStar(uOffset3+1 : uOffset3+uSizeW) = RESHAPE(VMyNew(1:Nx1, 0:Ny1, 1:Nz1), (/uSizeW/))
+ 
+       loc_start=1
+       DO nbd=1, n_body
+@@ -198,13 +186,10 @@
+           INT(SIZE(R_CSC_Val), C_SIZE_T), R_ColOffsets0, R_RowInds0, R_CSC_Val, &
+           UGammaVec, uStar)
+ 
+-      DO k=1,Nz1
+-       DO j=1,Ny1
+-        DO i=1,Nx1
+-          Dprs(i,j,k) = resultPPrime(LibGridIdx(i,j,k))
+-        END DO
+-       END DO
+-      END DO
++      ! resultPPrime is already in NumGlP order under the dim1=X/dim2=Y/dim3=Z
++      ! assignment (X fastest, Y middle, Z slowest matches OrdVarPres exactly),
++      ! so Dprs can be filled with a direct RESHAPE -- no LibGridIdx needed.
++      Dprs(1:Nx1,1:Ny1,1:Nz1) = RESHAPE(resultPPrime, (/Nx1,Ny1,Nz1/))
+      
+            
+           RHSx=0.d0

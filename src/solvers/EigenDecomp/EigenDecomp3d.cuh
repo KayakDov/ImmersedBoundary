@@ -67,6 +67,15 @@ public:
      */
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
 
+    /**
+     * Be sure that b is in the column space of L.  Otheriwise you will receive a projection onto the column space
+     * that will not actually solve Lx = b.
+     * @param x The solution will be put here.
+     * @param b The rhs of the equation Lx = b.
+     * @param hand
+     */
+    void solve(Tensor<T> &x, const Tensor<T> &b, Handle &hand) const;
+
 };
 
 

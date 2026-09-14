@@ -41,7 +41,6 @@ class Vec : public GpuArray<T> {
     using GpuArray<T>::mult;
     using GpuArray<T>::kernelPrep;
 
-private:
     friend Mat<T>;
     friend Tensor<T>;
     friend GpuArray<T>;
@@ -68,6 +67,8 @@ public:
 
     using GpuArray<T>::col;
     using GpuArray<T>::add;
+    using GpuArray<T>::set;
+    using GpuArray<T>::get;
     /**
      * @brief Factory method to create a new vector of given length.
      * 
@@ -109,16 +110,16 @@ public:
     [[nodiscard]] size_t bytes() const override;
 
     /// @copydoc GpuArray::set(const T*, cudaStream_t)
-    void set(const T* hostData, cudaStream_t stream) override;
+    void set(const T *hostData, size_t stride, Handle &hand) override;
 
     /// @copydoc GpuArray::get(T*, cudaStream_t) const
-    void get(T* hostData, cudaStream_t stream) const override;
+    void get(T * hostData, size_t  stride, Handle &hand) const override;
 
     /// @copydoc GpuArray::set(const GpuArray<T>&, cudaStream_t)
-    void set(const GpuArray<T>& src, cudaStream_t stream) override;
+    void set(const GpuArray<T>& src, Handle& hand) override;
 
     /// @copydoc GpuArray::get(GpuArray<T>&, cudaStream_t) const
-    void get(GpuArray<T>& dst, cudaStream_t stream) const override;
+    void get(GpuArray<T>& dst, Handle& hand) const override;
 
     /// @copydoc GpuArray::set(std::istream&, bool, bool, cudaStream_t)
     void set(std::istream &input_stream, bool isText, bool isColMjr, Handle *hand) override;
@@ -127,14 +128,14 @@ public:
     std::ostream &get(std::ostream &output_stream, bool isText, bool printColMajor, Handle &hand) const override;
 
     /// @copydoc GpuArray::fill
-    void fill(T val, cudaStream_t stream) override;
+    void fill(T val, Handle& stream) override;
 
     /**
      * @brief Fills this vector with a scalar stored on the device.
      * @param val Device scalar whose value is assigned to each entry.
      * @param stream CUDA stream used for the fill operation.
      */
-    void fill(Singleton<T> val, cudaStream_t stream);
+    void fill(Singleton<T> val, Handle& stream);
 
     /**
      * @brief Returns a single element as Singleton<T>.
