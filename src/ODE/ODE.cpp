@@ -53,5 +53,25 @@ void ODE<Real>::rungeKutta4(Real t, Vec<Real> &x, Handle &handle) const {
     x.add(kSum, &GPUScalar<Real>::get(1, handle), &handle);
 }
 
+template<typename Real>
+Mat<Real> ODE<Real>::trajectory(
+    Real startTime,
+    Mat<Real>& points,
+    Real timeIncrement,
+    Handle& handle
+
+) const {
+    const size_t numberOfPoints = points.toKernel2d().cols;
+
+    for (size_t col = 1; col < numberOfPoints; ++col) {
+        auto previous = points.col(col - 1);
+        auto current = points.col(col);
+        current.set(previous, handle);
+        rungeKutta4(startTime + col * timeIncrement, current, handle);
+    }
+
+    return points;
+}
+
 template class ODE<float>;
 template class ODE<double>;

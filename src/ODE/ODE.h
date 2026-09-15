@@ -94,33 +94,13 @@ public:
     void rungeKutta4(Real t, Vec<Real>& x, Handle& handle) const;
 
     /**
-     * @brief Advances a starting state by a specified number of timesteps.
+     * @brief Fills a trajectory, starting from the state in column zero.
      *
-     * On return, @p result contains the state at
-     *
-     * @f[
-     *     \mathtt{startTime} + \mathtt{numberOfSteps}\,\mathtt{timeStep}.
-     * @f]
-     *
-     * State buffers are ping-ponged internally by reference; no storage is
-     * allocated.  Depending on the parity of @p numberOfSteps, one final
-     * device-to-device copy may be enqueued to ensure that the answer is in
-     * @p result.
-     *
-     * @param startTime            Time associated with @p startingLocation.
-     * @param timeStep             Size of each timestep.
-     * @param numberOfSteps        Number of timesteps to take.
-     * @param x0     Initial state; not modified.
-     * @param result               Caller-owned vector receiving the final state.
-     * @param alternateStateBuffer Caller-owned state-sized ping-pong buffer.
-     * @param stageBuffer          Caller-owned state-sized RK stage buffer.
-     * @param derivativeBuffer     Caller-owned state-sized derivative buffer.
-     * @param handle               Handle whose CUDA stream is used.
-     *
-     * @pre Every vector has the same logical length.
-     * @pre All state and workspace vectors are mutually non-overlapping.
+     * Each subsequent column stores the state one RK4 timestep later.
+     * Returns a shallow copy sharing points' GPU storage. Allocates no
+     * trajectory storage and does not synchronize the supplied stream.
      */
-    void stepsOut(size_t numberOfSteps, const Vec<Real>& x0, Handle& handle) const;
+    Mat<Real> trajectory(Real startTime, Mat<Real> &points, Real timeIncrement, Handle &handle) const;
 
 protected:
     ODE() = default;

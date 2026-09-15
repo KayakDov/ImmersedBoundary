@@ -418,7 +418,19 @@ target_link_libraries(run_unit_tests
 )
 
 include(GoogleTest)
-gtest_discover_tests(run_unit_tests DISCOVERY_MODE PRE_TEST)
+option(SHOW_LORENZ_PORTRAIT "Show the Lorenz window during tests" ON)
+
+if(SHOW_LORENZ_PORTRAIT)
+    set(LORENZ_WINDOW_ENABLED 1)
+else()
+    set(LORENZ_WINDOW_ENABLED 0)
+endif()
+
+gtest_discover_tests(run_unit_tests
+        DISCOVERY_MODE PRE_TEST
+        PROPERTIES
+        ENVIRONMENT "SHOW_LORENZ_PORTRAIT=${LORENZ_WINDOW_ENABLED}"
+)
 
 if(WIN32)
     add_custom_command(TARGET run_unit_tests POST_BUILD
@@ -513,3 +525,49 @@ install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/CudaBandedLibConfigVersion.cmake"
         DESTINATION ${INSTALL_CONFIG_DIR}
 )
+
+# =========================
+# VTK phase-portrait example
+# =========================
+option(BUILD_LORENZ_VIEWER "Build the Lorenz phase-portrait viewer" ON)
+
+# =========================
+# VTK phase-portrait example
+# =========================
+option(BUILD_LORENZ_VIEWER "Build the Lorenz phase-portrait viewer" ON)
+
+if(BUILD_LORENZ_VIEWER)
+    find_package(VTK REQUIRED COMPONENTS
+            CommonCore
+            CommonDataModel
+            InteractionStyle
+            RenderingCore
+            RenderingOpenGL2
+    )
+
+    message(STATUS "Phase-portrait support: found VTK ${VTK_VERSION}")
+
+    set(PHASE_PORTRAIT_VTK_MODULES
+            VTK::CommonCore
+            VTK::CommonDataModel
+            VTK::InteractionStyle
+            VTK::RenderingCore
+            VTK::RenderingOpenGL2
+    )
+
+    # PUBLIC supplies VTK headers and libraries to CudaBandedLib
+    # and to targets using its header-defined visualization wrapper.
+    target_link_libraries(CudaBandedLib PUBLIC
+            ${PHASE_PORTRAIT_VTK_MODULES}
+    )
+
+    # Initialize rendering modules in the library and existing executables.
+    vtk_module_autoinit(
+            TARGETS
+            CudaBandedLib
+            run_unit_tests
+            run_benchmarks
+            MODULES
+            ${PHASE_PORTRAIT_VTK_MODULES}
+    )
+endif()
