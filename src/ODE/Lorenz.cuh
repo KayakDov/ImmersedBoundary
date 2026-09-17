@@ -30,7 +30,7 @@ __global__ void lorenzDerivative(
 template <typename Real>
 class Lorenz final : public ODE<Real> {
 public:
-    explicit Lorenz(double stepSize, Handle& handle)
+    explicit Lorenz(Real stepSize, Handle& handle)
         : ODE<Real>(3, stepSize, handle) {}
 
     /**
@@ -41,11 +41,11 @@ public:
      * dst must not overlap either input.
      */
     void dxdt(
-        double t,
-        const Vec<double>& x,
-        Vec<double> dst,
-        Vec<double> addToX,
-        const Singleton<double> scalarForAddToX,
+        Real t,
+        const Vec<Real>& x,
+        Vec<Real> dst,
+        Vec<Real> addToX,
+        const Singleton<Real> scalarForAddToX,
         Handle& handle
         ) const override {
 

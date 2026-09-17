@@ -88,18 +88,52 @@ public:
     void draw(
         const Mat<Real>& points,
         Handle& handle,
-        double red = 0.15,
-        double green = 0.8,
-        double blue = 1.0
+        XYZ<double> RGB = {0.15, 0.8, 1}
     ) {
 
         auto vertices = copyPoints(points, handle);
         auto geometry = createCurve(vertices);
-        auto actor = createActor(geometry, red, green, blue);
+        auto actor = createActor(geometry, RGB[0], RGB[1], RGB[2]);
 
         renderer_->AddActor(actor);
         renderer_->ResetCamera();
         window_->Render();
+    }
+
+    /**
+ * @brief Generates and displays a trajectory from the supplied initial state.
+ *
+ * @param buffer GPU workspace with three rows and at least two columns.
+ * @param ode Equation and RK4 integrator.
+ * @param startTime Initial physical time.
+ * @param timeInc Physical time between columns; must match the RK4 timestep.
+ * @param start Initial xyz state.
+ * @param handle GPU execution handle.
+ * @param RGB Curve color.
+ *
+ * The buffer may be reused after return; VTK retains its own CPU snapshot.
+ */
+    void draw(
+        Mat<Real> buffer,
+        ODE<Real>* ode,
+        Real startTime,
+        Real timeInc,
+        XYZ<Real> start,
+        Handle& handle,
+        XYZ<double> RGB
+    ) {
+        if (!ode || buffer._rows != 3 || buffer._cols < 2) {
+            throw std::invalid_argument(
+                "draw requires an ODE and a three-row trajectory buffer."
+            );
+        }
+
+        Real startArray[3];
+        start.toArray(startArray);
+
+        buffer.col(0).set(startArray, size_t{1}, handle);
+        ode->trajectory(startTime, buffer, timeInc, handle);
+        draw(buffer, handle, RGB);
     }
 
     /**

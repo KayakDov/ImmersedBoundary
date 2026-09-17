@@ -67,7 +67,7 @@ Mat<Real> ODE<Real>::trajectory(
         auto previous = points.col(col - 1);
         auto current = points.col(col);
         current.set(previous, handle);
-        rungeKutta4(startTime + col * timeIncrement, current, handle);
+        rungeKutta4(startTime + (col - 1) * timeIncrement, current, handle);
     }
 
     return points;

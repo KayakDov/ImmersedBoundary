@@ -62,6 +62,20 @@ struct XYZ {
         os << "(" << obj.x << ", " << obj.y << ", " << obj.z << ")";
         return os;
     }
+
+    /**
+ * @brief Copies x, y, z into the first three array elements.
+ * @tparam N Array length; must be at least three.
+ * @param result Destination array. Remaining elements are unchanged.
+ */
+    template<size_t N>
+    __host__ __device__ void toArray(T (&result)[N]) const {
+        static_assert(N >= 3, "Destination array needs at least three elements.");
+
+        result[0] = x;
+        result[1] = y;
+        result[2] = z;
+    }
 };
 
 
