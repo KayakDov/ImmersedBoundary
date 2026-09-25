@@ -32,7 +32,6 @@ void ODE<Real>::rungeKutta4(
     const Vec<Real>& x,
     Vec<Real> dst
 ) const {
-    Handle& hand = hand;
 
     buffers.fill(0, hand);
     auto kSum = buffers.col(0);
