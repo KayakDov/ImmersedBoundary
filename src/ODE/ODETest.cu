@@ -10,6 +10,8 @@
 #include "ODE/PhasePortrait3d.h"
 #include <gtest/gtest.h>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include "ODE/Lorenz.cuh"
 
 /**
@@ -32,6 +34,16 @@
  *
  * Verifies the initial point, finite coordinates, and nonstationary motion.
  * This is a smoke test, not a numerical convergence test.
+ *
+ * The interactive window is only opened when SHOW_LORENZ_PORTRAIT=1 is set
+ * in the environment (set by CMake's SHOW_LORENZ_PORTRAIT option when run
+ * via ctest -- see CMakeLists.txt). It defaults to skipped, not shown, when
+ * the variable is absent entirely, since that's what happens for a plain
+ * run_unit_tests invocation outside ctest (e.g. a raw binary run or most
+ * IDE "Run" configurations) -- portrait.show() blocks the whole process
+ * until a human closes the window, which would otherwise hang every other
+ * test in the suite behind it, and hang indefinitely with no human present
+ * at all under CI.
  */
 TEST(ODETrajectory, CreatesLorenzCurve) {
     constexpr double h = 0.005;
@@ -47,7 +59,10 @@ TEST(ODETrajectory, CreatesLorenzCurve) {
     portrait.draw(points, &equation, {1, 1, 1}, handle, {1, 0, 0});
     portrait.draw(points, &equation, {1, 1.1, 1}, handle, {0, 1, 0});
 
-    portrait.show();
+    const char* showPortrait = std::getenv("SHOW_LORENZ_PORTRAIT");
+    if (showPortrait && std::strcmp(showPortrait, "1") == 0) {
+        portrait.show();
+    }
 }
 
 

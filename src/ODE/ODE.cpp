@@ -1,6 +1,6 @@
 /**
- * @file ODE.cu
- * @brief Allocation-free SSPRK(3,3) implementation for ODE.
+ * @file ODE.cpp
+ * @brief Allocation-free classical (4-stage) RK4 implementation for ODE.
  */
 
 #include "ODE.h"
@@ -17,7 +17,8 @@ ODE<Real>::ODE(size_t numDims, Real stepSizeScalar, Handle& hand):
     stepSizeOver3(scalars.get(1)),
     stepSizeOver6(scalars.get(2)),
     stepSize(scalars.get(3)),
-    stepSizeScalar(stepSizeScalar)
+    stepSizeScalar(stepSizeScalar),
+    hand(hand)
 {
     stepSizeOver2.set(stepSizeScalar/2, hand);
     stepSizeOver3.set(stepSizeScalar/3, hand);
@@ -26,52 +27,38 @@ ODE<Real>::ODE(size_t numDims, Real stepSizeScalar, Handle& hand):
 }
 
 template<typename Real>
-void ODE<Real>::rungeKutta4(Real t, Vec<Real> &x, Handle &handle) const {
+void ODE<Real>::rungeKutta4(
+    Real t,
+    const Vec<Real>& x,
+    Vec<Real> dst
+) const {
+    Handle& hand = hand;
 
-    buffers.fill(0, handle);
+    buffers.fill(0, hand);
     auto kSum = buffers.col(0);
     auto col1 = buffers.col(1);
     auto col2 = buffers.col(2);
 
-    dxdt(t, x, col1, col2, scalars.get(0), handle);//col1 <- k1
-    kSum.add(col1, &stepSizeOver6, &handle);
+    dxdt(t, x, col1, col2, scalars.get(0));//col1 <- k1
+    kSum.add(col1, &stepSizeOver6, &hand);
 
-    dxdt(t + this->stepSizeScalar/2, x, col2, col1, stepSizeOver2, handle);
+    dxdt(t + this->stepSizeScalar/2, x, col2, col1, stepSizeOver2);
 
-    kSum.add(col2, &stepSizeOver3, &handle);
+    kSum.add(col2, &stepSizeOver3, &hand);
 
-    col1.fill(0, handle);
-    dxdt(t + this->stepSizeScalar/2, x, col1, col2, stepSizeOver2, handle);
+    dxdt(t + this->stepSizeScalar/2, x, col1, col2, stepSizeOver2);
 
-    kSum.add(col1, &stepSizeOver3, &handle);
+    kSum.add(col1, &stepSizeOver3, &hand);
 
-    col2.fill(0, handle);
-    dxdt(t + this->stepSizeScalar, x, col2, col1, stepSize, handle);
+    dxdt(t + this->stepSizeScalar, x, col2, col1, stepSize);
 
-    kSum.add(col2, &stepSizeOver6, &handle);
+    kSum.add(col2, &stepSizeOver6, &hand);
 
-    x.add(kSum, &GPUScalar<Real>::get(1, handle), &handle);
+    auto one = GPUScalar<Real>::get(1, hand);
+
+    dst.setSum(kSum, x, one, one, &hand);
 }
 
-template<typename Real>
-Mat<Real> ODE<Real>::trajectory(
-    Real startTime,
-    Mat<Real>& points,
-    Real timeIncrement,
-    Handle& handle
-
-) const {
-    const size_t numberOfPoints = points.toKernel2d().cols;
-
-    for (size_t col = 1; col < numberOfPoints; ++col) {
-        auto previous = points.col(col - 1);
-        auto current = points.col(col);
-        current.set(previous, handle);
-        rungeKutta4(startTime + (col - 1) * timeIncrement, current, handle);
-    }
-
-    return points;
-}
 
 template class ODE<float>;
 template class ODE<double>;

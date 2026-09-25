@@ -185,6 +185,23 @@ public:
      *  a raw T* (kernel launches, DeviceData2d, etc.) keeps working unchanged. */
     T* get() const { return ptr_.get(); }
 
+    /**
+     * @brief Reference equality: true iff @p other's data lives at the
+     * exact same address as this one's -- the same sense as Java's
+     * default `==` for objects (identity), not a value/contents
+     * comparison. Two windows into the same allocation at different
+     * offsets (e.g. one column of a matrix versus another) compare
+     * unequal, exactly as they should: they don't alias, so writing to
+     * one cannot race with reading the other.
+     *
+     * gpuIndex() is deliberately not part of this comparison: two
+     * pointers with the same address are necessarily on the same device
+     * already, since a raw address alone is only ever meaningful on one
+     * device.
+     */
+    bool operator==(const GpuPointer& other) const { return get() == other.get() && gpuIndex_ == other.gpuIndex_; }
+    bool operator!=(const GpuPointer& other) const { return !(*this == other); }
+
     /** Which device this pointer's memory lives on. */
     GpuIndex gpuIndex() const { return gpuIndex_; }
 

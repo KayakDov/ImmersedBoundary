@@ -362,8 +362,7 @@ __global__ void setDifferenceKernel(DeviceData1d<T> d_result, const DeviceData1d
 }
 
 template<typename T>
-void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> &alpha, const Singleton<T> &beta,
-                           Handle *handle) {
+void Vec<T>::setDifference(const Vec<T> &a, const Vec<T> &b, const Singleton<T> &alpha, const Singleton<T> &beta, Handle *handle) {
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 

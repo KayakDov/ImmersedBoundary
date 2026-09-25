@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.24)
 cmake_policy(SET CMP0135 NEW)
 
 # =========================
@@ -47,9 +47,9 @@ else()
         endforeach()
 
         # Layout 2: Standard NVIDIA installs (Linux and Windows)
-        file(GLOB _STANDARD_TOOLKIT_DIRS 
-            "/usr/local/cuda-*"
-            "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v*"
+        file(GLOB _STANDARD_TOOLKIT_DIRS
+                "/usr/local/cuda-*"
+                "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v*"
         )
         foreach(_dir ${_STANDARD_TOOLKIT_DIRS})
             if(IS_DIRECTORY "${_dir}")
@@ -145,14 +145,10 @@ else()
 endif()
 
 # ARCHITECTURE: Set this BEFORE project() to ensure it applies globally
-# Restricted to 89 (Ada Lovelace, RTX 4080/4070 — this project's actual hardware).
-# 'all-major' previously generated code for architectures as old as ~sm_50,
-# which lack native double-precision atomicAdd (requires compute capability
-# >= 6.0) and caused spurious compile errors even though the real target (8.9)
-# supports it fine. Override with -DCMAKE_CUDA_ARCHITECTURES=<...> if building
-# for different hardware.
+# Using "native" avoids hardcoding to architecture 89, preventing compilation
+# failures if this is run on different hardware (e.g., cluster nodes).
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES 89)
+    set(CMAKE_CUDA_ARCHITECTURES "native")
 endif()
 
 # =========================
@@ -230,25 +226,6 @@ include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 
 # =========================
-# FORCED DEBUG STRIP (ADD THIS ENTIRE BLOCK)
-# =========================
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build.")
-
-add_compile_options(
-        #        $<$<COMPILE_LANGUAGE:CXX>:-G>
-        #        $<$<COMPILE_LANGUAGE:CXX>:-O0>
-        $<$<COMPILE_LANGUAGE:C>:-g>
-        $<$<COMPILE_LANGUAGE:C>:-O0>
-        # CUDA requires -G for device code debugging and -g for host code
-        $<$<COMPILE_LANGUAGE:CUDA>:-g>
-        #        $<$<COMPILE_LANGUAGE:CUDA>:-G>
-        #        $<$<COMPILE_LANGUAGE:CUDA>:-O0>
-)
-# =========================
-# END OF DEBUG STRIP
-# =========================
-
-# =========================
 # Standards
 # =========================
 set(CMAKE_CXX_STANDARD 17)
@@ -262,14 +239,6 @@ set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 # Find CUDA toolkit (uses whichever CUDAToolkit_ROOT was auto-selected above)
 find_package(CUDAToolkit REQUIRED)
 # Discover NVIDIA HPC SDK CUDA math library include dirs dynamically.
-# Only used as a FALLBACK for lean HPC SDK installs that ship nvcc but omit
-# cusolver/cublas headers. If the selected CUDAToolkit_ROOT is a full
-# standalone toolkit (e.g. a local runfile install), it already has its own
-# complete cusolverDn.h/cublas headers, and injecting a *different* HPC SDK
-# math_libs version here globally (via include_directories, affecting every
-# target in this file) can mix incompatible header versions -- e.g. pulling
-# in CUDA 13.x-only types while compiling against a 12.x toolkit -- causing
-# spurious "unknown type name" errors in code that never asked for 13.x.
 set(_HAVE_CUSOLVER_ALREADY FALSE)
 foreach(_inc_dir ${CUDAToolkit_INCLUDE_DIRS})
     if(EXISTS "${_inc_dir}/cusolverDn.h")
@@ -349,7 +318,6 @@ list(FILTER LIB_SOURCES EXCLUDE REGEX "[/\\\\]main\\.cu$")
 # =========================
 # Library Target
 # =========================
-# Defined early so they're available to target_include_directories' INSTALL_INTERFACE below.
 set(INSTALL_LIB_DIR lib)
 set(INSTALL_MOD_DIR include/fortran_modules)
 
@@ -388,7 +356,6 @@ target_link_libraries(CudaBandedLib
 # =========================
 # RPATH configuration
 # =========================
-# Force CMake to embed the library paths used during linking into the final executable
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -426,10 +393,15 @@ else()
     set(LORENZ_WINDOW_ENABLED 0)
 endif()
 
+set(TEST_ENV "SHOW_LORENZ_PORTRAIT=${LORENZ_WINDOW_ENABLED}")
+if(INTLC_LIB_DIR)
+    list(APPEND TEST_ENV "LD_LIBRARY_PATH=${INTLC_LIB_DIR}:$ENV{LD_LIBRARY_PATH}")
+endif()
+
 gtest_discover_tests(run_unit_tests
         DISCOVERY_MODE PRE_TEST
         PROPERTIES
-        ENVIRONMENT "SHOW_LORENZ_PORTRAIT=${LORENZ_WINDOW_ENABLED}"
+        ENVIRONMENT "${TEST_ENV}"
 )
 
 if(WIN32)
@@ -458,6 +430,12 @@ target_link_libraries(run_benchmarks
         CudaBandedLib
         GTest::gtest
         GTest::gtest_main
+)
+
+gtest_discover_tests(run_benchmarks
+        DISCOVERY_MODE PRE_TEST
+        PROPERTIES
+        ENVIRONMENT "${TEST_ENV}"
 )
 
 if(WIN32)
@@ -531,11 +509,6 @@ install(FILES
 # =========================
 option(BUILD_LORENZ_VIEWER "Build the Lorenz phase-portrait viewer" ON)
 
-# =========================
-# VTK phase-portrait example
-# =========================
-option(BUILD_LORENZ_VIEWER "Build the Lorenz phase-portrait viewer" ON)
-
 if(BUILD_LORENZ_VIEWER)
     find_package(VTK REQUIRED COMPONENTS
             CommonCore
@@ -555,13 +528,10 @@ if(BUILD_LORENZ_VIEWER)
             VTK::RenderingOpenGL2
     )
 
-    # PUBLIC supplies VTK headers and libraries to CudaBandedLib
-    # and to targets using its header-defined visualization wrapper.
     target_link_libraries(CudaBandedLib PUBLIC
             ${PHASE_PORTRAIT_VTK_MODULES}
     )
 
-    # Initialize rendering modules in the library and existing executables.
     vtk_module_autoinit(
             TARGETS
             CudaBandedLib

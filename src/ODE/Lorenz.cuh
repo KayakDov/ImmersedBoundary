@@ -4,17 +4,17 @@
 #include "deviceArrays/headers/Mat.h"
 #include "ODE/ODE.h"
 
-
+template <typename Real>
 __global__ void lorenzDerivative(
-    DeviceData1d<double> state,
-    DeviceData1d<double> offset,
-    DeviceData1d<double> dst,
-    const double* a
+    DeviceData1d<Real> state,
+    DeviceData1d<Real> offset,
+    DeviceData1d<Real> dst,
+    const Real* a
 ) {
 
-    const double x = state[0] + *a * offset[0];
-    const double y = state[1] + *a * offset[1];
-    const double z = state[2] + *a * offset[2];
+    const Real x = state[0] + *a * offset[0];
+    const Real y = state[1] + *a * offset[1];
+    const Real z = state[2] + *a * offset[2];
 
     dst[0] = 10.0 * (y - x);
     dst[1] = x * (28.0 - z) - y;
@@ -45,11 +45,10 @@ public:
         const Vec<Real>& x,
         Vec<Real> dst,
         Vec<Real> addToX,
-        const Singleton<Real> scalarForAddToX,
-        Handle& handle
+        const Singleton<Real> scalarForAddToX
         ) const override {
 
-        lorenzDerivative<<<1, 1, 0, handle>>>(
+        lorenzDerivative<<<1, 1, 0, this->handle()>>>(
             x.toKernel1d(),
             addToX.toKernel1d(),
             dst.toKernel1d(),

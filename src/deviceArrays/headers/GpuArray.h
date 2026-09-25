@@ -389,6 +389,23 @@ public:
      */
     GpuPointer<T> ptr() const;
 
+    /**
+     * @brief Reference equality: true iff this and @p other's data are
+     * stored at the exact same address -- Java-`==` identity, not a
+     * value/contents comparison. Delegates to GpuPointer<T>::operator==
+     * (see GpuPointer.h), so the same "same window == same address, no
+     * further than that" semantics apply here: buffer.col(0) and
+     * buffer.col(1), for instance, compare unequal even though they share
+     * one underlying allocation, because they don't start at the same
+     * address and so can't alias each other.
+     *
+     * Useful, in particular, for code deciding whether a self-step
+     * (nextPoint(x, x)) is actually aliased before assuming that's safe --
+     * see TimeSequence::nextPoint().
+     */
+    bool operator==(const GpuArray<T>& other) const { return _ptr == other._ptr && _rows == other._rows && _cols == other._cols && _ld == other._ld; }
+    bool operator!=(const GpuArray<T>& other) const { return !(*this == other); }
+
 
     /**
      * Severs the connection to the gou memory.  If this is the last array using that block of memory, then the memory

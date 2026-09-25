@@ -29,6 +29,8 @@
 #include <stdexcept>
 #include <type_traits>
 
+#include "TimeSequence.h"
+
 /**
  * @brief Owns an interactive VTK window containing multiple trajectories.
  *
@@ -115,9 +117,7 @@ public:
  */
     void draw(
         Mat<Real> buffer,
-        ODE<Real>* ode,
-        Real startTime,
-        Real timeInc,
+        TimeSequence<Real>* ode,
         XYZ<Real> start,
         Handle& handle,
         XYZ<double> RGB
@@ -132,7 +132,7 @@ public:
         start.toArray(startArray);
 
         buffer.col(0).set(startArray, size_t{1}, handle);
-        ode->trajectory(startTime, buffer, timeInc, handle);
+        ode->trajectory(buffer);
         draw(buffer, handle, RGB);
     }
 
