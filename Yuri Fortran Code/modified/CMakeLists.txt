@@ -211,6 +211,9 @@ target_link_libraries(SchurSR PRIVATE
     "${MUMPS_ROOT}/libseq/libmpiseq.a"
     ${CUDABANDEDLIB_LIB}
     CUDA::cudart
+    CUDA::cublas
+    CUDA::cusolver
+    CUDA::cusparse
     stdc++
     ${MKL_INTEL_LP64}
     ${MKL_INTEL_THREAD}

@@ -421,16 +421,22 @@ template class ImmersedEq<double, int64_t>;
 
 // 2. Define the macro to ONLY instantiate for Device configs
 #define INSTANTIATE_IMMERSED_EQ_CTORS_DEVICE(Real, SegX, SegY, SegZ) \
-/* Constructor 1 (Passed by value) */ \
+/* Constructor 1 (Passed by value) -- int */ \
 template ImmersedEq<Real, int>::ImmersedEq( \
 BoundaryConfig<Real, SegX, SegY, SegZ>, \
 SimpleArray<int>, SimpleArray<int>, Singleton<Real>, Real, size_t); \
-/* ... repeat for int64_t ... */ \
-/* Constructor 2 (Passed by reference) */ \
+/* Constructor 1 (Passed by value) -- int64_t */ \
+template ImmersedEq<Real, int64_t>::ImmersedEq( \
+BoundaryConfig<Real, SegX, SegY, SegZ>, \
+SimpleArray<int64_t>, SimpleArray<int64_t>, Singleton<Real>, Real, size_t); \
+/* Constructor 2 (Passed by reference) -- int */ \
 template ImmersedEq<Real, int>::ImmersedEq( \
 const BoundaryConfig<Real, SegX, SegY, SegZ>&, \
 size_t, size_t, Real*, Real*, double, Real, size_t); \
-/* ... repeat for int64_t ... */
+/* Constructor 2 (Passed by reference) -- int64_t */ \
+template ImmersedEq<Real, int64_t>::ImmersedEq( \
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, \
+size_t, size_t, Real*, Real*, double, Real, size_t);
 
 // 3. Trigger the macro ONLY for Device
 APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_IMMERSED_EQ_CTORS_DEVICE)

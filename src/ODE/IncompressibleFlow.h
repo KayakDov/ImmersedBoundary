@@ -130,7 +130,6 @@ private:
      * @param v Field to project, modified in place.
      */
     void project(Vec<Real>& v) const {
-        Handle& hand = this->handle();
 
         divergence(v, rhs_, hand);              // rhs_ <- div(v)
         poissonSolver_.solve(phi_, rhs_, hand);  // grad^2 phi = div(v)

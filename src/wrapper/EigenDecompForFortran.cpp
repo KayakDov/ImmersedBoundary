@@ -79,25 +79,17 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
 
 template<typename Real>
 void EigenDecompForFortran<Real>::solve() {
-    // No memcpy here: pinnedBuf already holds the RHS the caller wrote
-    // directly into it (via the pointer from pinnedPtr()). This H2D read
-    // is enqueued on hand before the D2H write-back below, so the two can
-    // never race -- see the class-level comment in the header.
+
     b.set(pinnedBuf.get(), hand);
 
     b.add(adjToB, &GPUScalar<Real>::get(1, hand), &hand);
     eds->solve(x, b, hand);
 
-    // Writes the solution back into the same buffer the RHS was just read
-    // from. Safe for the same same-stream-ordering reason as above.
     x.get(pinnedBuf.get(), hand);
 }
 
 template<typename Real>
 void EigenDecompForFortran<Real>::synch() {
-    // No memcpy here either: the solution is already sitting in pinnedBuf
-    // once the device work this waits for has completed. The caller reads
-    // it directly from the same pointer pinnedPtr() gave them.
     hand.synch();
 }
 

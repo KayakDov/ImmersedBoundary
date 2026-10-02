@@ -415,7 +415,7 @@ namespace eigen {
         }
     }
 
-    void finalizeEigenDecomp() {
+    inline void finalizeEigenDecomp() {
         // double startTime = currentTime();
         solvers<float>.clear();
         solvers<double>.clear();

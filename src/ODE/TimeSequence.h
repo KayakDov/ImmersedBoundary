@@ -14,12 +14,21 @@
 
 #include "deviceArrays/headers/Singleton.h"
 
+template<typename Real> class LargestLyapunovExponent;
+
 /**
  * @brief Generates successive states using a derived stepping method.
  *
  * A derived class implements nextPoint(), for example using RK4, and
  * supplies the single GPU execution handle used for every operation via
  * handle() (see below). All state storage is supplied externally.
+ *
+ * This class is deliberately just the stepping interface: a single state,
+ * one step at a time, nothing more. It carries no notion of Lyapunov
+ * exponents or any workspace for them -- that's one specific thing you
+ * might want to do with a TimeSequence, not a property every TimeSequence
+ * needs to carry around. See LargestLyapunovExponent (a separate class
+ * that wraps a TimeSequence rather than extending it) for that.
  *
  * Operations use handle()'s stream without synchronizing. Returned
  * Vec/Mat objects are shallow wrappers sharing the supplied GPU storage.
@@ -90,6 +99,14 @@ public:
 
 protected:
 
+    // The one external collaborator allowed to reach handle()/norm()/
+    // projection() below: it needs the exact same handle/stream this
+    // sequence steps on (never a separate one), and a constrained
+    // subclass's norm()/projection() overrides, to do its job correctly.
+    // Nothing else gets this access -- these stay non-public for everyone
+    // else, same as before this class existed.
+    friend class LargestLyapunovExponent<Real>;
+
     /**
      * @brief The GPU execution handle used for every operation this
      *        sequence performs.
@@ -136,120 +153,6 @@ protected:
      * @param v Deviation vector to project, modified in place.
      */
     virtual void projection(Vec<Real>& v) const {}
-
-public:
-
-    /**
-     * @brief Evolves states x and y over one interval tau, measures divergence,
-     *        and pulls y back to distance epsilon from x along their vector difference.
-     *
-     * The raw difference y - x is passed through projection() (a no-op
-     * unless overridden) before its size is measured with norm() (the
-     * plain Euclidean norm unless overridden), so a constrained system's
-     * spurious directions never contribute to the measured divergence.
-     *
-     * @param bufferNX3 Pre-allocated workspace matrix (col 0 = x, col 1 = y, col 2 = v).
-     * @param singletons2 Pre-allocated vector for scalar workspace (indices 0 and 1).
-     * @param stepsPerInterval Number of integration steps per interval tau.
-     * @param epsilon Target perturbation distance.
-     * @return Logarithmic expansion/divergence ln(d / epsilon) for this interval.
-     */
-    Real lyapunovInterval(
-        Vec<Real>& x,
-        Vec<Real>& y,
-        Vec<Real>& v,
-        Vec<Real>& singletons2,
-        size_t stepsPerInterval,
-        Real epsilon
-    ) const {
-        Handle& hand = handle();
-
-        Singleton<Real> normVal = singletons2.get(0);
-        Singleton<Real> scaleScalar = singletons2.get(1);
-        const Singleton<Real>& one = GPUScalar<Real>::get(1, hand);
-
-        for (size_t step = 0; step < stepsPerInterval; ++step) {
-            nextPoint(x, x);
-            nextPoint(y, y);
-        }
-
-        v.setDifference(y, x, one, one, &hand);
-        projection(v);
-
-        norm(v, normVal);
-        Real d = normVal.get(hand);
-
-        scaleScalar.set(epsilon / d, hand);
-        v.mult(scaleScalar, &hand);
-
-        y.set(x, hand);
-        y.add(v, &one, &hand);
-
-        return std::log(d / epsilon);
-    }
-
-    /**
-     * @brief Estimates the maximal Lyapunov exponent across multiple tau intervals.
-     *
-     * The initial random deviation is passed through projection() before
-     * being measured with norm() and normalized to size epsilon.
-     *
-     * @param initialPoint Initial baseline state vector.
-     * @param buffer Pre-allocated workspace matrix (needs at least 3 columns).
-     * @param singletons Pre-allocated vector workspace (needs at least 2 singletons).
-     * @param numIntervals Number of tau intervals to run.
-     * @param stepsPerInterval Number of stepping steps per interval tau.
-     * @param epsilon Initial perturbation magnitude.
-     * @param dt Integration step size (defaults to 1 for discrete maps).
-     * @return Calculated largest Lyapunov exponent.
-     */
-    Real largestLyapunovExponent(
-        const Vec<Real>& initialPoint,
-        Mat<Real>& buffer,
-        Vec<Real>& singletons,
-        size_t numIntervals,
-        size_t stepsPerInterval,
-        Real epsilon,
-        Real dt = static_cast<Real>(1)
-    ) const {
-        Handle& hand = handle();
-
-        auto x = buffer.col(0);
-        auto y = buffer.col(1);
-        auto v = buffer.col(2);
-
-        Singleton<Real> normVal = singletons.get(0);
-        Singleton<Real> scaleScalar = singletons.get(1);
-        const Singleton<Real>& one = GPUScalar<Real>::get(1, hand);
-
-        x.set(initialPoint, hand);
-
-        v.fillRandom(&hand);
-        projection(v);
-
-        norm(v, normVal);
-        Real vNorm = normVal.get(hand);
-
-        scaleScalar.set(epsilon / vNorm, hand);
-        v.mult(scaleScalar, &hand);
-
-        y.set(x, hand);
-        y.add(v, &one, &hand);
-
-        Real totalLogDivergence = static_cast<Real>(0);
-
-        for (size_t interval = 0; interval < numIntervals; ++interval) {
-            totalLogDivergence += lyapunovInterval(
-                x, y, v,
-                singletons,
-                stepsPerInterval,
-                epsilon
-            );
-        }
-
-        Real totalTime = static_cast<Real>(numIntervals * stepsPerInterval) * dt;
-        return totalLogDivergence / totalTime;
-    }
 
 };
 
