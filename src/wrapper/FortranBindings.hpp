@@ -62,7 +62,12 @@ namespace ImEq {
             ),
             hand,
             [&](const auto& boundary) {
-                    eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int>>(boundary, forceSize, nnzMax, p, f, dt, tol, maxIterations);
+                    // buildBoundaryConfigAndLaunch hands us a BoundaryConfigHost, but
+                    // ImmersedEq's constructor (explicitly instantiated in
+                    // ImerssedEquation.cu for BoundaryConfig only) needs the
+                    // device-side type -- BoundaryConfigHost has no dim()/delta(),
+                    // only forDevice().
+                    eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int>>(boundary.forDevice(), forceSize, nnzMax, p, f, dt, tol, maxIterations);
                 }
         );
     }

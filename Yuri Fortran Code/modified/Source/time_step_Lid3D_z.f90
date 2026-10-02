@@ -20,6 +20,8 @@
          Use EvdProcedures
          Use MatrixFormAndOperate
          Use FVOperators
+         Use eigenbcgsolver_imeq_mod
+         Use eigenbcgsolver_eigen_mod
          Use, Intrinsic :: ISO_C_BINDING, Only: C_SIZE_T
          Implicit None
          Integer nbd, Istp, loc_start, loc_end, sz
@@ -201,6 +203,8 @@
           OPEN(920, FILE='ftag_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
           WRITE(920) F_tag
           CLOSE(920)
+          CALL finalize_immersed_eq_d_i32()
+          CALL finalize_eigen_decomp()
           STOP 'Stage 1 dump complete (modified)'
       END IF
      

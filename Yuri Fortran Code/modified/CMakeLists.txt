@@ -33,6 +33,17 @@ endif()
 
 project(YuriLid3D LANGUAGES Fortran)
 
+# =========================
+# RPATH configuration
+# =========================
+# See the matching block near the bottom of CudaBandedLib's own CMakeLists.txt
+# for the reasoning -- CMAKE_INSTALL_RPATH_USE_LINK_PATH auto-captures the
+# directory of every directly-linked library so SchurSR runs standalone
+# without depending on LD_LIBRARY_PATH being set by whatever launches it.
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 set(CMAKE_Fortran_STANDARD 2008)
 set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 
@@ -191,6 +202,7 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel"
         -mcmodel=large
         -assume buffered_io
         -qopenmp
+        -heap-arrays
     )
 endif()
 
@@ -222,8 +234,15 @@ target_link_libraries(SchurSR PRIVATE
     pthread
 )
 
-if(INTLC_LIB)
-    set_target_properties(SchurSR PROPERTIES
-        BUILD_RPATH "${_INTEL_LIB_DIRS};${MKL_LIB_DIR}"
-    )
+if(NOT MSVC)
+    target_link_options(SchurSR PRIVATE "-Wl,--disable-new-dtags")
 endif()
+
+# Explicit, unconditional rpath naming both directories directly -- belt and
+# suspenders alongside CMAKE_INSTALL_RPATH_USE_LINK_PATH above, since that
+# alone resolved libintlc.so.5 but not libmkl_intel_lp64.so.
+set_target_properties(SchurSR PROPERTIES
+    BUILD_RPATH "${_INTEL_LIB_DIRS};${MKL_LIB_DIR}"
+    INSTALL_RPATH "${_INTEL_LIB_DIRS};${MKL_LIB_DIR}"
+)
+
