@@ -16,6 +16,8 @@
 #include <cuda_runtime.h>
 #include <cusparse.h>
 
+class Event;
+
 template<typename T>
 void eigenDecompSolver(const T* frontBack, size_t fbLd,
                        const T* leftRight, size_t lrLd,
@@ -272,14 +274,6 @@ public:
      */
     virtual void normalizeCols(size_t setRowTo1, Handle* handle);
 
-
-    /**
-     * Creates a tensor that is a window into this data.
-     * @param layers The number of layers in the tensor.  Be sure that layers is divisible by _rows.
-     * @return a tensor that is a window into this data.
-     */
-    Tensor<T> tensor(size_t layers);
-
     /**
      * @brief Performs a strided batched matrix–matrix multiplication on the GPU using cuBLAS.
      *
@@ -354,7 +348,11 @@ public:
     DeviceData2d<T> toKernel2d();
     DeviceData2d<T> toKernel2d() const;
 
-
+    /**
+     * @brief Orthonormalizes the columns of this matrix into @p dst, one handle per column.
+     *        See Mat.cu for the contract.
+     */
+    void gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, Handle* hands, Event* events) const;
 
 
     /**

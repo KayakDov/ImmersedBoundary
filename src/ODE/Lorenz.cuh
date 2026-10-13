@@ -30,8 +30,12 @@ __global__ void lorenzDerivative(
 template <typename Real>
 class Lorenz final : public ODE<Real> {
 public:
+    /**
+     * @param stepSize RK4 timestep.
+     * @param handle   Used only during construction; see ODE::ODE().
+     */
     explicit Lorenz(Real stepSize, Handle& handle)
-        : ODE<Real>(3, stepSize, handle) {}
+        : ODE<Real>(stepSize, handle) {}
 
     /**
      * @brief Overwrites dst with f(x + scalarForAddToX * addToX).
@@ -39,16 +43,19 @@ public:
      * The Lorenz equations have no explicit time dependence.
      * Input vectors and dst must each contain three entries.
      * dst must not overlap either input.
+     *
+     * @param hand Handle whose stream the kernel is launched on.
      */
     void dxdt(
         Real t,
         const Vec<Real>& x,
         Vec<Real> dst,
         Vec<Real> addToX,
-        const Singleton<Real> scalarForAddToX
+        const Singleton<Real> scalarForAddToX,
+        Handle& hand
         ) const override {
 
-        lorenzDerivative<<<1, 1, 0, this->handle()>>>(
+        lorenzDerivative<<<1, 1, 0, hand>>>(
             x.toKernel1d(),
             addToX.toKernel1d(),
             dst.toKernel1d(),

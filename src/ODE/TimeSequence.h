@@ -1,6 +1,6 @@
 /**
- * @file timeSequence.h
- * @brief Abstract GPU state sequence with trajectory and repeated-step methods.
+ * @file TimeSequence.h
+ * @brief Abstract GPU state sequence: a stepping rule, plus iterators that walk paths through it.
  */
 
 #ifndef CUDABANDED_TIME_SEQUENCE_H
@@ -9,29 +9,21 @@
 #include "deviceArrays/headers/Mat.h"
 #include "deviceArrays/headers/Vec.h"
 
-#include <cstddef>
-#include <stdexcept>
-
-#include "deviceArrays/headers/Singleton.h"
-
-template<typename Real> class LargestLyapunovExponent;
+template<typename Real> class LyapunovExponent;
 
 /**
- * @brief Generates successive states using a derived stepping method.
+ * @brief A stepping rule for a system whose state lives on the GPU.
  *
- * A derived class implements nextPoint(), for example using RK4, and
- * supplies the single GPU execution handle used for every operation via
- * handle() (see below). All state storage is supplied externally.
+ * A derived class implements nextPoint(), for example with RK4. The
+ * sequence itself holds no path, no stream and no scratch memory, so any
+ * number of paths can walk the same system at once, each on its own
+ * Handle, through iterator().
  *
- * This class is deliberately just the stepping interface: a single state,
- * one step at a time, nothing more. It carries no notion of Lyapunov
- * exponents or any workspace for them -- that's one specific thing you
- * might want to do with a TimeSequence, not a property every TimeSequence
- * needs to carry around. See LargestLyapunovExponent (a separate class
- * that wraps a TimeSequence rather than extending it) for that.
- *
- * Operations use handle()'s stream without synchronizing. Returned
- * Vec/Mat objects are shallow wrappers sharing the supplied GPU storage.
+ * Anything a step needs besides the state -- stage vectors for RK4, for
+ * instance -- is supplied by the caller as scratch, because scratch
+ * shared between paths on different streams would be written
+ * concurrently. scratchColumns() says how many state-length columns a
+ * path needs.
  *
  * @tparam Real State element type.
  */
@@ -39,106 +31,142 @@ template<typename Real>
 class TimeSequence {
 public:
 
+    /**
+     * @brief One path through a TimeSequence, advanced on one Handle.
+     *
+     * Holds the current point, the handle every step is enqueued on, and
+     * the scratch those steps use. Stepping is in place: point() always
+     * refers to the same storage, holding the latest state.
+     *
+     * Copying an Iterator copies the references, not the path: the copy
+     * steps the same point on the same stream.
+     */
+    class Iterator {
+    public:
+        /**
+         * @param sequence The system being walked; must outlive this.
+         * @param point    The path's current state, advanced in place.
+         * @param hand     Handle whose stream every step runs on; must
+         *                 outlive this.
+         * @param scratch  sequence.scratchColumns() columns, each as long
+         *                 as the state, used by every step of this path
+         *                 and by no other path.
+         */
+        Iterator(const TimeSequence& sequence, Vec<Real> point, Handle& hand, Mat<Real> scratch)
+            : sequence_(sequence), point_(point), hand_(hand), scratch_(scratch) {}
+
+        /** Advances the path by one step. Enqueued, not synchronized. */
+        void next() {
+            sequence_.nextPoint(point_, point_, hand_, scratch_);
+        }
+
+        /** Advances the path by @p steps steps. Enqueued, not synchronized. */
+        void advance(size_t steps) {
+            for (size_t stepIndex = 0; stepIndex < steps; ++stepIndex)
+                next();
+        }
+
+        /** The path's current state, as a shallow view of its storage. */
+        Vec<Real> point() const { return point_; }
+
+        /** The handle this path runs on. */
+        Handle& handle() const { return hand_; }
+
+    private:
+        const TimeSequence& sequence_;
+        Vec<Real> point_;
+        Handle& hand_;
+        Mat<Real> scratch_;
+    };
+
     virtual ~TimeSequence() = default;
+
+    /**
+     * @brief How many state-length scratch columns one path needs.
+     *
+     * Zero by default. ODE needs three for its RK4 stages.
+     */
+    virtual size_t scratchColumns() const { return 0; }
 
     /**
      * @brief Computes one successor state.
      * @param currentPoint Input state; must not be modified.
-     * @param nextPoint Destination, completely overwritten.
+     * @param nextPoint    Destination, completely overwritten.
+     * @param hand         Handle whose stream all work is enqueued on.
+     * @param scratch      scratchColumns() columns of workspace, used by
+     *                     this call alone for its duration.
      *
-     * @pre Input and destination have equal lengths and disjoint storage.
-     * @note The implementation must enqueue its work on handle()'s stream.
+     * @pre currentPoint and nextPoint have equal lengths, and may be the
+     *      same storage: Iterator steps in place, so every
+     *      implementation must support that.
+     * @note No synchronization is performed.
      */
     virtual void nextPoint(
         const Vec<Real>& currentPoint,
-        Vec<Real> nextPoint
+        Vec<Real> nextPoint,
+        Handle& hand,
+        Mat<Real> scratch
     ) const = 0;
 
     /**
-     * @brief Fills a trajectory beginning with the state in column zero.
-     * @param points Matrix containing one state per column.
-     *
-     * Column zero is preserved. Each subsequent column contains the successor
-     * of the previous column. Zero or one column requires no stepping.
-     *
-     * Each successive column depends on the one before it, so every step
-     * is issued on handle()'s single stream in sequence regardless -- there
-     * is never a reason for a different handle per call.
+     * @brief Starts a path at @p startingPoint, to be advanced on @p hand.
+     * @param startingPoint The path's state; advanced in place, so the
+     *                      caller loses its original contents.
+     * @param hand          Handle the path runs on.
+     * @param scratch       See Iterator.
      */
-    void trajectory(Mat<Real>& points) const {
+    Iterator iterator(Vec<Real> startingPoint, Handle& hand, Mat<Real> scratch) const {
+        return Iterator(*this, startingPoint, hand, scratch);
+    }
+
+    /**
+     * @brief Fills a trajectory beginning with the state in column zero.
+     * @param points  Matrix containing one state per column.
+     * @param hand    Handle the steps run on.
+     * @param scratch See Iterator.
+     *
+     * Column zero is preserved. Each subsequent column contains the
+     * successor of the previous column. Zero or one column requires no
+     * stepping.
+     */
+    void trajectory(Mat<Real>& points, Handle& hand, Mat<Real> scratch) const {
         for (size_t col = 1; col < points._cols; ++col) {
             auto current = points.col(col - 1);
             auto destination = points.col(col);
-            nextPoint(current, destination);
+            nextPoint(current, destination, hand, scratch);
         }
     }
 
     /**
      * @brief Computes the state after t steps without retaining a trajectory.
-     * @param t Integer number of steps; zero copies the initial state.
+     * @param t            Number of steps; zero copies the initial state.
      * @param initialPoint Starting state, preserved.
-     * @param result Caller-owned destination for the final state.
-     * @return Shallow copy of result.
+     * @param result       Caller-owned destination for the final state.
+     * @param hand         Handle the steps run on.
+     * @param scratch      See Iterator.
      *
-     * @pre initialPoint, result, and workspace have equal lengths.
-     * @pre Their storage is mutually non-overlapping.
-     * @pre Neither result nor workspace overlaps the derived stepper's scratch.
+     * @pre initialPoint and result have equal lengths and disjoint storage.
      */
     void pointAt(
         size_t t,
         const Vec<Real>& initialPoint,
-        Vec<Real> result
+        Vec<Real> result,
+        Handle& hand,
+        Mat<Real> scratch
     ) const {
-        Handle& hand = handle();
-
         result.set(initialPoint, hand);
-
-        for (size_t step = 0; step < t; ++step)
-            nextPoint(result, result);
+        iterator(result, hand, scratch).advance(t);
     }
 
 protected:
 
-    // The one external collaborator allowed to reach handle()/norm()/
-    // projection() below: it needs the exact same handle/stream this
-    // sequence steps on (never a separate one), and a constrained
-    // subclass's norm()/projection() overrides, to do its job correctly.
-    // Nothing else gets this access -- these stay non-public for everyone
-    // else, same as before this class existed.
-    friend class LargestLyapunovExponent<Real>;
-
     /**
-     * @brief The GPU execution handle used for every operation this
-     *        sequence performs.
+     * @brief The one external collaborator allowed to reach projection().
      *
-     * Pure virtual: TimeSequence itself owns no Handle. Every point in a
-     * sequence depends on the one before it, so there is never a reason
-     * to use a different handle/stream across calls on the same object --
-     * a derived class is expected to store exactly one Handle (by
-     * reference) and return it here, rather than every method threading
-     * its own handle argument through the whole class.
-     *
-     * @return Reference to the handle this sequence's derived class owns.
+     * Nothing else gets this access; projection() stays non-public for
+     * everyone else.
      */
-    virtual Handle& handle() const = 0;
-
-    /**
-     * @brief Measures the size of a deviation vector.
-     *
-     * Default: the underlying Vec's own Euclidean norm over all n
-     * components -- correct for an unconstrained system, where every
-     * coordinate is a true degree of freedom. A derived class representing
-     * a constrained system may override this with a restricted norm that
-     * only measures the d true degrees of freedom, so that a redundant
-     * (constraint-dependent) coordinate carried in the state never
-     * inflates the measured divergence.
-     *
-     * @param v          Deviation vector to measure.
-     * @param normResult Destination for the scalar result.
-     */
-    virtual void norm(Vec<Real>& v, Singleton<Real>& normResult) const {
-        v.norm(normResult, handle());
-    }
+    friend class LyapunovExponent<Real>;
 
     /**
      * @brief Projects a deviation vector onto the constraint-satisfying
@@ -150,9 +178,10 @@ protected:
      * @p v would violate the constraint (e.g. a divergence-free
      * projection for an incompressible velocity field).
      *
-     * @param v Deviation vector to project, modified in place.
+     * @param v    Deviation vector to project, modified in place.
+     * @param hand Handle whose stream the work is enqueued on.
      */
-    virtual void projection(Vec<Real>& v) const {}
+    virtual void projection(Vec<Real>& v, Handle& hand) const {}
 
 };
 

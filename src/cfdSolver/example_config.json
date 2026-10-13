@@ -1,0 +1,31 @@
+{
+  "grid": { "Nx": 100, "Ny": 100, "Nz": 100 },
+  "physics": {
+    "aspect_ratio": 1.0, "width_ratio": 1.0, "grashof": 1.85185185e7,
+    "biot": 0.0, "prandtl": 0.054, "hartmann": 1000.0
+  },
+  "numerics": {
+    "eps": 0.0000001, "eps_convergence": 0.000001, "max_iterations": 9000,
+    "time_step": 0.0001, "time_interval": 0.1, "print_every": 1000
+  },
+  "diagnostics": { "run_conservation_checks": false, "mode": "full" },
+  "temperature": {
+    "stationary": false,
+    "boundary_x": "dirichlet", "boundary_y": "neumann", "boundary_z": "neumann"
+  },
+  "potential": {
+    "boundary_x": "neumann", "boundary_y": "neumann", "boundary_z": "neumann"
+  },
+  "time_averaging": { "enabled": false, "fourier_frequencies": [1.17114, 3.32] },
+  "gpu": {
+    "temperature": { "device": 0, "use_thomas_algorithm": true },
+    "vx":          { "device": 0, "use_thomas_algorithm": true },
+    "vy":          { "device": 1, "use_thomas_algorithm": true },
+    "vz":          { "device": 1, "use_thomas_algorithm": true },
+    "pressure":    { "device": 0, "use_thomas_algorithm": false },
+    "potential":   { "device": 1, "use_thomas_algorithm": false }
+  },
+  "mesh": { "stretching_factor": 10.0 },
+  "restart": { "read_from_file": null, "write_checkpoint_every": 1000 },
+  "output": { "directory": "." }
+}

@@ -502,6 +502,14 @@ public:
      * @return The new vector created that is a window into this matrix.
      */
     Vec<T> vec(size_t offset, size_t ld, size_t size) const;
+
+    /**
+     * A matirx that is every nth column of this matrix.  For example, if n is 2 then the new matrxi will be all the even
+     * columns of this matrix.
+     * @param n The new matrix will incldue all columns with indicis divisible by n.
+     * @return A new matrix made up of columns from this matrix with indices divisible by n.
+     */
+    Mat<T> everyNthCol(size_t n, bool initDescr = false);
 };
 
 #endif // GPUARRAY_H

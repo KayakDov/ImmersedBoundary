@@ -119,8 +119,15 @@ void Vec<T>::get(T *hostData, size_t stride, Handle &hand) const {
         );
 }
 
+/**
+ * Copying a vector onto itself, the same view of the same memory, does
+ * nothing: a device-to-device copy may not overlap, and there is nothing to
+ * copy. Views that overlap only partly are not supported.
+ */
 template<typename T>
 void Vec<T>::set(const GpuArray<T> &src, Handle& hand) {
+    if (src == *this) return;
+
     if (this->_ld == 1 && src._ld == 1) {
         cudaMemcpyAsync(this->data(), src.data(), bytes(), cudaMemcpyDeviceToDevice, hand);
     } else {

@@ -28,12 +28,13 @@ class Handle;
  * @f]
  *
  * by overriding dxdt().  ODE supplies an explicit classical 4-stage
- * Runge-Kutta (RK4) time step and satisfies TimeSequence::handle() using
- * the single Handle supplied at construction.
+ * Runge-Kutta (RK4) time step as the TimeSequence stepping rule.
  *
- * All state and workspace vectors reside on the GPU.  This class never
- * allocates device or host workspace.  The caller owns every Vec supplied to
- * nextStep() and stepsOut().
+ * An ODE holds nothing that a step writes to: the only device memory it
+ * owns is the four read-only step-size constants created at
+ * construction. The RK4 stage vectors are caller-supplied scratch
+ * (scratchColumns() is 3), so any number of paths can step the same ODE
+ * at once, each on its own Handle, through TimeSequence::iterator().
  *
  * @tparam Real Floating-point type.  The implementation is explicitly
  *              instantiated for float and double.
@@ -41,24 +42,20 @@ class Handle;
 template<typename Real>
 class ODE: public  TimeSequence<Real> {
 
-    mutable Mat<Real> buffers;
     SimpleArray<Real> scalars;
     Singleton<Real> stepSizeOver6, stepSizeOver3, stepSizeOver2, stepSize;
     Real stepSizeScalar;
-    Handle& hand;
 
 public:
 
     /**
-     * @param numDims        Logical length of the state vector.
      * @param stepSizeScalar Fixed RK4 timestep.
-     * @param hand           GPU execution handle. Stored by reference for
-     *                        the lifetime of this object and returned by
-     *                        handle() -- see TimeSequence::handle(). The
-     *                        caller must keep it alive at least as long
-     *                        as this ODE.
+     * @param hand           Handle used only to create and upload the
+     *                       step-size constants; not stored. It is
+     *                       synchronized before the constructor returns,
+     *                       so the constants are ready for every stream.
      */
-    ODE(size_t numDims, Real stepSizeScalar, Handle& hand);
+    ODE(Real stepSizeScalar, Handle& hand);
 
     virtual ~ODE() = default;
 
@@ -72,13 +69,21 @@ public:
      * @f]
      *
      * with dst = f(x + scalar * addToX)
-     * It may launch CUDA kernels on handle()'s stream (see
-     * TimeSequence::handle()).  The input and output vectors must have the
-     * same logical length and must not overlap.
+     * It may launch CUDA kernels on @p hand's stream.  The input and
+     * output vectors must have the same logical length and must not
+     * overlap.
      *
      * @param x   State vector at that time; not modified.
+     * @param hand Handle whose stream all work is enqueued on.
      */
-    virtual void dxdt(Real t, const Vec<Real>& x, Vec<Real> dst, Vec<Real> addToX, const Singleton<Real> scalarForAddToX) const = 0;
+    virtual void dxdt(
+        Real t,
+        const Vec<Real>& x,
+        Vec<Real> dst,
+        Vec<Real> addToX,
+        const Singleton<Real> scalarForAddToX,
+        Handle& hand
+    ) const = 0;
 
     /**
      * @brief Advances one timestep using the classical 4-stage Runge-Kutta method (RK4).
@@ -88,48 +93,44 @@ public:
      * The algorithm is fourth-order accurate for sufficiently smooth
      * problems and requires four evaluations of dxdt().
      *
-     * No synchronization is performed. All work is enqueued on handle()'s
+     * No synchronization is performed. All work is enqueued on @p hand's
      * stream.
      *
-     * @param t   Time associated with @p x.
-     * @param x   Input state at @p t; read throughout the step and not
-     *            modified until the final write to @p dst.
-     * @param dst Output state at @p t + stepSizeScalar.
+     * @param t       Time associated with @p x.
+     * @param x       Input state at @p t; read throughout the step and not
+     *                modified until the final write to @p dst.
+     * @param dst     Output state at @p t + stepSizeScalar.
+     * @param scratch Exactly three columns, each as long as the state;
+     *                overwritten, and not to be used by any other path
+     *                while this call is in flight.
+     * @param hand    Handle whose stream all work is enqueued on.
      *
      * @pre @p x and @p dst have the same logical length.
      * @note @p dst may safely alias @p x (in-place stepping is supported):
      *       every dxdt() evaluation and the final combination read @p x by
      *       index before writing the corresponding index of @p dst, so
      *       there is no read-after-write hazard even when they share
-     *       storage. TimeSequence::pointAt() and
-     *       TimeSequence::lyapunovInterval() rely on this.
+     *       storage. TimeSequence::Iterator relies on this.
      */
-    void rungeKutta4(Real t, const Vec<Real> &x, Vec<Real> dst) const;
+    void rungeKutta4(
+        Real t,
+        const Vec<Real>& x,
+        Vec<Real> dst,
+        Mat<Real> scratch,
+        Handle& hand
+    ) const;
+
+    /** RK4 needs three stage vectors: the running sum and two slopes. */
+    size_t scratchColumns() const override { return 3; }
 
     void nextPoint(
         const Vec<Real>& currentPoint,
-        Vec<Real> nextPoint
+        Vec<Real> nextPoint,
+        Handle& hand,
+        Mat<Real> scratch
     ) const override {
-        rungeKutta4(Real{0}, currentPoint, nextPoint);
+        rungeKutta4(Real{0}, currentPoint, nextPoint, scratch, hand);
     }
-
-protected:
-    /**
-     * @brief Returns the Handle supplied at construction.
-     *
-     * Satisfies TimeSequence::handle(). Shared by every ODE subclass --
-     * e.g. Lorenz does not need to provide its own.
-     */
-    Handle& handle() const override { return hand; }
-
-    ODE(const ODE&) = default;
-    ODE(ODE&&) = default;
-    // Default construction and copy/move assignment are intentionally
-    // unavailable: hand_ is a reference, so it must be bound to a real
-    // Handle at construction and can never be rebound afterward. (This
-    // is a change from before hand_ existed, when ODE() and both
-    // assignment operators were defaulted; check whether anything relied
-    // on default-constructing or assigning an ODE.)
 };
 
 

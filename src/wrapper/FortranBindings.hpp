@@ -76,14 +76,14 @@ namespace ImEq {
     void solveImmersedEq(Real *result, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valB) {
         if (!eq<Real, Int>) throw std::runtime_error("The solver is not initialized.  Be sure you're using consistent types.");
         eq<Real, Int>->solve(result, nnzB, rowOffsetsB, colIndsB, valB);
-        cudaDeviceSynchronize();
+        CHECK_CUDA_ERROR(cudaDeviceSynchronize()); // surface kernel faults here, at the solve call, not in some later unrelated CUDA call
     }
 
     template<typename Real, typename Int>
     void solveImmersedEq(Real* resultPPrime, Real* resultFPrime, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR, Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real* uStar) {
         if (!eq<Real, Int>) throw std::runtime_error("The solver is not initialized.  Be sure you're using consistent types.");
         eq<Real, Int>->solve(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB,nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
-        cudaDeviceSynchronize();
+        CHECK_CUDA_ERROR(cudaDeviceSynchronize()); // surface kernel faults here, at the solve call, not in some later unrelated CUDA call
     }
 
     template<typename Real, typename Int>

@@ -6,6 +6,7 @@
 #include "deviceArrays/headers/handle.h"
 #include "deviceArrays/headers/Singleton.h"
 #include <string>
+#include "deviceArrays/headers/Mat.h"
 
 template<typename T>
 GpuArray<T>::GpuArray(size_t rows, size_t cols, size_t ld, GpuPointer<T> _ptr):_rows(rows), _cols(cols), _ld(ld), _ptr(_ptr) {
@@ -198,6 +199,11 @@ const T* GpuArray<T>::data() const {
 template<typename T>
 KernelPrep GpuArray<T>::kernelPrepTransposed() const {
     return {this->_cols, this->_rows, true};
+}
+
+template<typename T>
+Mat<T> GpuArray<T>::everyNthCol(size_t n, bool initDescr) {
+    return Mat(_rows, (_cols + n - 1)/n, n * _ld, _ptr, initDescr);
 }
 
 template<typename T>

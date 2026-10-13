@@ -16,7 +16,7 @@
 
 /**
  * @file LyapunovTest.cu
- * @brief Numerical validation test for largest Lyapunov exponent calculations using GTest.
+ * @brief Numerical validation test for Lyapunov exponent calculations using GTest.
  */
 
 #include "deviceArrays/headers/Mat.h"
@@ -24,7 +24,8 @@
 #include "deviceArrays/headers/handle.h"
 #include "ODE/Lorenz.cuh"
 #include "ODE/TimeSequence.h"
-#include "ODE/LargestLyapunovExponent.h"
+#include "ODE/LyapunovExponent.h"
+#include "ODE/AttractorDim.h"
 #include "math/Real3d.h"
 
 #include <gtest/gtest.h>
@@ -33,6 +34,8 @@
 #include <iomanip>
 #include <string>
 #include <random>
+#include <iterator>
+#include <vector>
 
 
 /**
@@ -40,6 +43,10 @@
  *
  * Verifies the initial point, finite coordinates, and nonstationary motion.
  * This is a smoke test, not a numerical convergence test.
+ *
+ * Each curve is generated with TimeSequence::trajectory() into one shared
+ * matrix, then drawn; PhasePortrait keeps its own snapshot of every
+ * curve, so the matrix is reused for the second one.
  *
  * The interactive window is only opened when SHOW_LORENZ_PORTRAIT=1 is set
  * in the environment (set by CMake's SHOW_LORENZ_PORTRAIT option when run
@@ -59,11 +66,21 @@ TEST(ODETrajectory, CreatesLorenzCurve) {
     Lorenz<double> equation(stepSize, handle);
 
     auto points = Mat<double>::create(3, pointCount, handle);
+    auto scratch = Mat<double>::create(3, equation.scratchColumns(), handle);
 
     PhasePortrait<double> portrait("Lorenz trajectory test");
 
-    portrait.draw(points, &equation, {1, 1, 1}, handle, {1, 0, 0});
-    portrait.draw(points, &equation, {1, 1.1, 1}, handle, {0, 1, 0});
+    const Real3d starts[] = {{1.0, 1.0, 1.0}, {1.0, 1.1, 1.0}};
+    const XYZ<double> colors[] = {{1, 0, 0}, {0, 1, 0}};
+
+    for (size_t curveIndex = 0; curveIndex < std::size(starts); ++curveIndex) {
+        double hostStart[3];
+        starts[curveIndex].toArray(hostStart);
+        points.col(0).set(hostStart, size_t{1}, handle);
+
+        equation.trajectory(points, handle, scratch);
+        portrait.draw(points, handle, colors[curveIndex]);
+    }
 
     const char* showPortrait = std::getenv("SHOW_LORENZ_PORTRAIT");
     if (showPortrait && std::strcmp(showPortrait, "1") == 0) {
@@ -73,21 +90,28 @@ TEST(ODETrajectory, CreatesLorenzCurve) {
 
 
 /**
- * @brief Verifies that LargestLyapunovExponent computes the maximal exponent for the Lorenz system.
+ * @brief Verifies that LyapunovExponent computes the maximal exponent for
+ *        the Lorenz system, on a single handle, under two norms.
  *
- * Runs trajectory integration across multiple renormalization intervals and compares the resulting
- * rate against the known chaotic attractor value of approximately 0.9056.
+ * Runs trajectory integration across multiple renormalization intervals
+ * and compares the resulting rate against the known chaotic attractor
+ * value of approximately 0.9056, once with the Euclidean norm and once
+ * measuring growth by the x component of each deviation alone, with
+ * Gram-Schmidt and the reset still Euclidean. Both are held to the same
+ * tolerance: the single-component norm is expected to converge just as
+ * well, and this is where that gets checked.
  */
 TEST(ODELyapunov, ComputesLorenzLargestExponent) {
     constexpr double stepSize = 0.005;
     constexpr size_t N = 3;
+    constexpr size_t numExponents = 1;
 
     Handle handle;
     Lorenz<double> equation(stepSize, handle);
 
-    auto lyapunovBuffer = Mat<double>::create(N, 3, handle);
-    auto lyapunovSingletons = Vec<double>::create(2, handle);
-    LargestLyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons);
+    auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), handle);
+    auto lyapunovSingletons = Vec<double>::create(LyapunovExponent<double>::numSingletons(numExponents), handle);
+    LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, &handle);
 
     auto initialPoint = Vec<double>::create(N, handle);
     double hostInitial[3];
@@ -100,7 +124,75 @@ TEST(ODELyapunov, ComputesLorenzLargestExponent) {
     constexpr double expectedLambda = 0.9056;
     constexpr double tolerance = 0.08;
 
-    double estimatedLambda = lyapunov.compute(
+    const Norm1d<double> xComponent(0);
+    const Norm<double>* norms[] = {&euclideanNorm<double>(), &xComponent};
+
+    for (size_t normIndex = 0; normIndex < std::size(norms); ++normIndex) {
+        SCOPED_TRACE(normIndex == 0 ? "Euclidean norm" : "x component only");
+
+        std::vector<double> exponents = lyapunov.compute(
+            initialPoint,
+            numIntervals,
+            stepsPerInterval,
+            epsilon,
+            stepSize,
+            0,
+            *norms[normIndex]
+        );
+
+        EXPECT_NEAR(exponents[0], expectedLambda, tolerance);
+    }
+}
+
+
+/**
+ * @brief Verifies the top three Lyapunov exponents of the Lorenz system,
+ *        one handle per exponent.
+ *
+ * Checks that the largest is near 0.9056 and the middle one near zero
+ * (the direction along the flow), that the three come back in descending
+ * order, and that they sum to the trace of the Jacobian. Lorenz's
+ * divergence is the constant -(sigma + 1 + beta) = -41/3, so volume
+ * contraction is deterministic: the sum converges far faster than any
+ * single exponent does, which makes it the tightest check on the
+ * orthonormalization -- the third exponent, near -14.57, is covered by
+ * it rather than by a tolerance of its own. Expected values from
+ * Hartl's "Lyapunov exponents in constrained and unconstrained ordinary
+ * differential equations," Eq. 2.35 and 2.40.
+ *
+ * The deviations share columns with the scratch of handles that are
+ * still stepping, so a missing join between streams would show up here
+ * as garbage in the sum.
+ *
+ * The tolerances are the existing 0.08 for the individual exponents and
+ * 0.01 for the sum; neither has been checked against a run.
+ */
+TEST(ODELyapunov, ComputesLorenzTopThreeExponents) {
+    constexpr double stepSize = 0.005;
+    constexpr size_t N = 3;
+    constexpr size_t numExponents = 3;
+
+    Handle hands[numExponents];
+    Lorenz<double> equation(stepSize, hands[0]);
+
+    auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), hands[0]);
+    auto lyapunovSingletons = Vec<double>::create(LyapunovExponent<double>::numSingletons(numExponents), hands[0]);
+    LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, hands);
+
+    auto initialPoint = Vec<double>::create(N, hands[0]);
+    double hostInitial[3];
+    Real3d(1.0, 1.0, 1.0).toArray(hostInitial);
+    initialPoint.set(hostInitial, hands[0]);
+
+    constexpr size_t numIntervals = 2500;
+    constexpr size_t stepsPerInterval = 20;
+    constexpr double epsilon = 1e-8;
+    constexpr double expectedLargest = 0.9056;
+    constexpr double expectedTrace = -(10.0 + 1.0 + 8.0 / 3.0);
+    constexpr double tolerance = 0.08;
+    constexpr double traceTolerance = 0.01;
+
+    std::vector<double> exponents = lyapunov.compute(
         initialPoint,
         numIntervals,
         stepsPerInterval,
@@ -108,40 +200,161 @@ TEST(ODELyapunov, ComputesLorenzLargestExponent) {
         stepSize
     );
 
-    handle.synch();
-
-    EXPECT_NEAR(estimatedLambda, expectedLambda, tolerance);
+    EXPECT_NEAR(exponents[0], expectedLargest, tolerance);
+    EXPECT_NEAR(exponents[1], 0.0, tolerance);
+    EXPECT_NEAR(exponents[0] + exponents[1] + exponents[2], expectedTrace, traceTolerance);
+    EXPECT_GT(exponents[0], exponents[1]);
+    EXPECT_GT(exponents[1], exponents[2]);
 }
 
+
+/**
+ * @brief Verifies the top three Lorenz exponents when growth is measured
+ *        under a pseudo-norm, on three handles.
+ *
+ * Runs with the x component alone and with the x and y rows together.
+ * Gram-Schmidt and the reset stay Euclidean; only the measurement of
+ * growth changes, and it divides by the start length each perturbation
+ * had under the pseudo-norm rather than by epsilon. Over a run that
+ * differs from the Euclidean result only by end terms of the form
+ * ln N(q) / T, so the individual exponents keep the usual 0.08 and the
+ * trace check loosens from 0.01 to 0.05. A numpy model of the same
+ * scheme on the same system landed within about 0.01 of the Euclidean
+ * result and within 0.01 of the trace; neither tolerance has been
+ * checked against a run of this code.
+ */
+TEST(ODELyapunov, ComputesLorenzTopThreeExponentsUnderPseudoNorms) {
+    constexpr double stepSize = 0.005;
+    constexpr size_t N = 3;
+    constexpr size_t numExponents = 3;
+
+    Handle hands[numExponents];
+    Lorenz<double> equation(stepSize, hands[0]);
+
+    auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), hands[0]);
+    auto lyapunovSingletons = Vec<double>::create(LyapunovExponent<double>::numSingletons(numExponents), hands[0]);
+    LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, hands);
+
+    auto initialPoint = Vec<double>::create(N, hands[0]);
+    double hostInitial[3];
+    Real3d(1.0, 1.0, 1.0).toArray(hostInitial);
+    initialPoint.set(hostInitial, hands[0]);
+
+    constexpr size_t numIntervals = 2500;
+    constexpr size_t stepsPerInterval = 20;
+    constexpr double epsilon = 1e-8;
+    constexpr double expectedLargest = 0.9056;
+    constexpr double expectedTrace = -(10.0 + 1.0 + 8.0 / 3.0);
+    constexpr double tolerance = 0.08;
+    constexpr double traceTolerance = 0.05;
+
+    const Norm1d<double> xComponent(0);
+    const NormRows<double> xyRows(0, 2);
+    const Norm<double>* norms[] = {&xComponent, &xyRows};
+
+    for (size_t normIndex = 0; normIndex < std::size(norms); ++normIndex) {
+        SCOPED_TRACE(normIndex == 0 ? "x component only" : "x and y rows");
+
+        std::vector<double> exponents = lyapunov.compute(
+            initialPoint,
+            numIntervals,
+            stepsPerInterval,
+            epsilon,
+            stepSize,
+            0,
+            *norms[normIndex]
+        );
+
+        EXPECT_NEAR(exponents[0], expectedLargest, tolerance);
+        EXPECT_NEAR(exponents[1], 0.0, tolerance);
+        EXPECT_NEAR(exponents[0] + exponents[1] + exponents[2], expectedTrace, traceTolerance);
+        EXPECT_GT(exponents[0], exponents[1]);
+        EXPECT_GT(exponents[1], exponents[2]);
+    }
+}
+
+
+/**
+ * @brief Checks the Kaplan-Yorke formula against spectra with known
+ *        answers. No GPU work.
+ *
+ * The Lorenz spectrum (0.9056, 0, -14.5723) gives 2 + 0.9056 / 14.5723,
+ * about 2.0621. A spectrum with no non-negative exponent has dimension
+ * zero, one whose running sum never goes negative saturates at its own
+ * length, and the input need not arrive sorted.
+ */
+TEST(AttractorDimension, KaplanYorkeFromKnownSpectra) {
+    EXPECT_NEAR(AttractorDim<double>::kaplanYorke({0.9056, 0.0, -14.5723}), 2.0621, 1e-3);
+    EXPECT_NEAR(AttractorDim<double>::kaplanYorke({-14.5723, 0.0, 0.9056}), 2.0621, 1e-3);
+    EXPECT_DOUBLE_EQ(AttractorDim<double>::kaplanYorke({-0.5, -1.0}), 0.0);
+    EXPECT_DOUBLE_EQ(AttractorDim<double>::kaplanYorke({0.5, 0.25}), 2.0);
+}
+
+
+/**
+ * @brief Computes the Kaplan-Yorke dimension of the Lorenz attractor
+ *        through AttractorDim, on three handles.
+ *
+ * The known value is about 2.06. The tolerance of 0.05 is generous: it
+ * is the exponents' error divided by |lambda_3|, near 14.6, so the
+ * 0.08 that the individual exponents are held to costs about 0.005
+ * here.
+ */
+TEST(ODELyapunov, ComputesLorenzAttractorDimension) {
+    constexpr double stepSize = 0.005;
+    constexpr size_t N = 3;
+    constexpr size_t numExponents = 3;
+
+    Handle hands[numExponents];
+    Lorenz<double> equation(stepSize, hands[0]);
+
+    auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), hands[0]);
+    auto lyapunovSingletons = Vec<double>::create(LyapunovExponent<double>::numSingletons(numExponents), hands[0]);
+    LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, hands);
+    AttractorDim<double> attractorDim(lyapunov);
+
+    auto initialPoint = Vec<double>::create(N, hands[0]);
+    double hostInitial[3];
+    Real3d(1.0, 1.0, 1.0).toArray(hostInitial);
+    initialPoint.set(hostInitial, hands[0]);
+
+    constexpr size_t numIntervals = 2500;
+    constexpr size_t stepsPerInterval = 20;
+    constexpr double epsilon = 1e-8;
+
+    const double dimension = attractorDim.compute(initialPoint, numIntervals, stepsPerInterval, epsilon, stepSize);
+
+    EXPECT_NEAR(dimension, 2.0621, 0.05);
+}
 
 namespace {
 
 /**
  * @brief Runs one largest-Lyapunov-exponent estimate using an
- *        already-constructed LargestLyapunovExponent.
+ *        already-constructed LyapunovExponent computing a single
+ *        exponent.
  *
- * Does not build a new Lorenz or LargestLyapunovExponent itself; only
- * start, numIntervals, stepsPerInterval, and warmupSteps vary per call.
+ * Does not build a new Lorenz or LyapunovExponent itself; only start,
+ * numIntervals, stepsPerInterval, and warmupSteps vary per call.
  * stepSize is still taken as a parameter, purely for compute()'s dt
  * argument, and must match whatever stepSize the passed-in lyapunov's
  * underlying Lorenz was actually constructed with -- this function has
- * no way to check that. sequence must be the same underlying object
- * lyapunov wraps.
+ * no way to check that. handle must be the handle lyapunov was
+ * constructed with, since the starting point is uploaded on it.
  *
- * If warmupSteps is nonzero, sequence is stepped forward that many times
- * via TimeSequence::pointAt() before measurement begins, so the
- * trajectory has settled onto the attractor rather than still being in
- * its transient approach from an arbitrary starting point. This matters
- * more for starting points far from the attractor than for nearby ones
- * -- without it, different starting points spend different fractions of
- * a fixed interval budget on an irrelevant transient, which is one of
- * the two reasons different starting points give different estimates
- * (the other is simply not having run enough intervals yet). Defaults
- * to 0 (no warm-up), unchanged from before this parameter existed.
+ * If warmupSteps is nonzero, the reference path is stepped forward that
+ * many times before measurement begins, so the trajectory has settled
+ * onto the attractor rather than still being in its transient approach
+ * from an arbitrary starting point. This matters more for starting
+ * points far from the attractor than for nearby ones -- without it,
+ * different starting points spend different fractions of a fixed
+ * interval budget on an irrelevant transient, which is one of the two
+ * reasons different starting points give different estimates (the other
+ * is simply not having run enough intervals yet). Defaults to 0 (no
+ * warm-up).
  */
 double runLyapunov(
-    TimeSequence<double>& sequence,
-    LargestLyapunovExponent<double>& lyapunov,
+    LyapunovExponent<double>& lyapunov,
     double stepSize,
     size_t numIntervals,
     size_t stepsPerInterval,
@@ -155,18 +368,12 @@ double runLyapunov(
     double hostStart[3];
     start.toArray(hostStart);
 
-    auto rawStart = Vec<double>::create(N, handle);
-    rawStart.set(hostStart, handle);
-
     auto initialPoint = Vec<double>::create(N, handle);
-    sequence.pointAt(warmupSteps, rawStart, initialPoint);
+    initialPoint.set(hostStart, handle);
 
-    double lambda = lyapunov.compute(
-        initialPoint, numIntervals, stepsPerInterval, epsilon, stepSize
-    );
-
-    handle.synch();
-    return lambda;
+    return lyapunov.compute(
+        initialPoint, numIntervals, stepsPerInterval, epsilon, stepSize, warmupSteps
+    )[0];
 }
 
 /**
@@ -174,30 +381,6 @@ double runLyapunov(
  */
 void writeRow(const std::string& row) {
     std::cout << row << std::endl;
-}
-
-
-/**
- * @brief Returns count values geometrically (log-) spaced from low to
- *        high inclusive.
- *
- * Used for the convergence-surface grid axes rather than linear spacing,
- * since Lyapunov-exponent convergence error is expected to behave
- * roughly like 1/sqrt(numIntervals) (Hartl's sigma/sqrt(N) argument) --
- * geometric spacing gives even visual coverage of that kind of curve
- * across the whole range, rather than clustering most points at the low
- * end or the high end.
- */
-std::vector<double> geometricSpace(double low, double high, size_t count) {
-    std::vector<double> values;
-    values.reserve(count);
-    double ratio = std::pow(high / low, 1.0 / static_cast<double>(count - 1));
-    double v = low;
-    for (size_t i = 0; i < count; ++i) {
-        values.push_back(v);
-        v *= ratio;
-    }
-    return values;
 }
 
 } // namespace
@@ -218,12 +401,14 @@ std::vector<double> geometricSpace(double low, double high, size_t count) {
  *        the same raw point measure from different actual points, and
  *        give different lambda accordingly.
  *
+ * Every sweep computes the largest exponent only, on a single handle.
+ *
  * Sweep "resolution" refines the RK4 timestep stepSize, holding the
  * renormalization interval's physical duration (timePerInterval =
  * stepsPerInterval * stepSize -- called tau in Hartl's paper) and the
  * number of intervals fixed. Because stepSize is fixed at Lorenz's
- * construction, this sweep rebuilds Lorenz and LargestLyapunovExponent
- * once per stepSize value.
+ * construction, this sweep rebuilds Lorenz and LyapunovExponent once per
+ * stepSize value.
  *
  * Sweep "sampleCount" increases the number of renormalization intervals,
  * holding stepSize and stepsPerInterval fixed. Each interval is one
@@ -243,6 +428,10 @@ std::vector<double> geometricSpace(double low, double high, size_t count) {
  * runLyapunov()'s warmupSteps argument, so a starting point far from the
  * attractor isn't penalized relative to one that starts close to it.
  *
+ * The sampleCount and startingPoint sweeps both use stepSize 0.005, so
+ * they share one Lorenz and one LyapunovExponent; that same Lorenz sizes
+ * the workspace buffer every sweep reuses.
+ *
  * Not part of the routine fast suite -- run on demand with
  *   --gtest_filter=ODELyapunov.ConvergenceStudy
  * Expect roughly a minute total across all three sweeps.
@@ -250,9 +439,14 @@ std::vector<double> geometricSpace(double low, double high, size_t count) {
 TEST(ODELyapunov, ConvergenceStudy) {
     Handle handle;
     constexpr size_t N = 3;
+    constexpr size_t numExponents = 1;
+    constexpr double fixedStepSize = 0.005;
 
-    auto lyapunovBuffer = Mat<double>::create(N, 3, handle);
-    auto lyapunovSingletons = Vec<double>::create(2, handle);
+    Lorenz<double> fixedEquation(fixedStepSize, handle);
+
+    auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(fixedEquation, numExponents), handle);
+    auto lyapunovSingletons = Vec<double>::create(LyapunovExponent<double>::numSingletons(numExponents), handle);
+    LyapunovExponent<double> fixedLyapunov(fixedEquation, lyapunovBuffer, lyapunovSingletons, &handle);
 
     const Real3d defaultStart(1.0, 1.0, 1.0);
 
@@ -261,16 +455,15 @@ TEST(ODELyapunov, ConvergenceStudy) {
     {
         constexpr double timePerInterval = 0.1;
         constexpr size_t numIntervals = 500;
-        const double stepSizeValues[] = {0.02, 0.01, 0.005, 0.0025, 0.00125};
 
-        for (double stepSize : stepSizeValues) {
-            size_t stepsPerInterval = static_cast<size_t>(std::round(timePerInterval / stepSize));
+        for (double stepSize = 0.02; stepSize >= 0.00125; stepSize /= 2) {
+            size_t stepsPerInterval = std::round(timePerInterval / stepSize);
 
             Lorenz<double> equation(stepSize, handle);
-            LargestLyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons);
+            LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, &handle);
 
             double lambda = runLyapunov(
-                equation, lyapunov, stepSize, numIntervals, stepsPerInterval, defaultStart, handle
+                lyapunov, stepSize, numIntervals, stepsPerInterval, defaultStart, handle
             );
 
             std::ostringstream row;
@@ -285,21 +478,18 @@ TEST(ODELyapunov, ConvergenceStudy) {
 
     double mostRefinedLambda = 0;
     {
-        constexpr double stepSize = 0.005;
         constexpr size_t stepsPerInterval = 20;
         const size_t intervalCounts[] = {100, 250, 500, 1000, 2500, 5000};
 
-        Lorenz<double> equation(stepSize, handle);
-        LargestLyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons);
-
-        for (size_t numIntervals : intervalCounts) {
+        for (size_t intervalCountIndex = 0; intervalCountIndex < std::size(intervalCounts); ++intervalCountIndex) {
+            const size_t numIntervals = intervalCounts[intervalCountIndex];
             double lambda = runLyapunov(
-                equation, lyapunov, stepSize, numIntervals, stepsPerInterval, defaultStart, handle
+                fixedLyapunov, fixedStepSize, numIntervals, stepsPerInterval, defaultStart, handle
             );
 
             std::ostringstream row;
-            row << "sampleCount," << stepSize << "," << stepsPerInterval << "," << numIntervals << ","
-                << (stepsPerInterval * stepSize) << "," << 0 << ","
+            row << "sampleCount," << fixedStepSize << "," << stepsPerInterval << "," << numIntervals << ","
+                << (stepsPerInterval * fixedStepSize) << "," << 0 << ","
                 << defaultStart.x << "," << defaultStart.y << "," << defaultStart.z << ","
                 << std::setprecision(8) << lambda;
             writeRow(row.str());
@@ -309,13 +499,9 @@ TEST(ODELyapunov, ConvergenceStudy) {
     }
 
     {
-        constexpr double stepSize = 0.005;
         constexpr size_t stepsPerInterval = 20;
         constexpr size_t numIntervals = 2500;
         constexpr size_t warmupSteps = 2000;
-
-        Lorenz<double> equation(stepSize, handle);
-        LargestLyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons);
 
         const Real3d startingPoints[] = {
             {1.0, 1.0, 1.0},
@@ -325,15 +511,16 @@ TEST(ODELyapunov, ConvergenceStudy) {
             {10.0, -10.0, 20.0}
         };
 
-        for (const auto& p : startingPoints) {
+        for (size_t startingPointIndex = 0; startingPointIndex < std::size(startingPoints); ++startingPointIndex) {
+            const Real3d& start = startingPoints[startingPointIndex];
             double lambda = runLyapunov(
-                equation, lyapunov, stepSize, numIntervals, stepsPerInterval, p, handle, warmupSteps
+                fixedLyapunov, fixedStepSize, numIntervals, stepsPerInterval, start, handle, warmupSteps
             );
 
             std::ostringstream row;
-            row << "startingPoint," << stepSize << "," << stepsPerInterval << "," << numIntervals << ","
-                << (stepsPerInterval * stepSize) << "," << warmupSteps << ","
-                << p.x << "," << p.y << "," << p.z << ","
+            row << "startingPoint," << fixedStepSize << "," << stepsPerInterval << "," << numIntervals << ","
+                << (stepsPerInterval * fixedStepSize) << "," << warmupSteps << ","
+                << start.x << "," << start.y << "," << start.z << ","
                 << std::setprecision(8) << lambda;
             writeRow(row.str());
         }
@@ -344,83 +531,82 @@ TEST(ODELyapunov, ConvergenceStudy) {
 
 
 /**
- * @brief Generates a 15x15 grid of (numIntervals, timePerInterval) ->
+ * @brief Generates a 15x15 grid of (numIntervals, stepsPerInterval) ->
  *        average error from the expected Lyapunov exponent, printed as
  *        CSV rows suitable for a heatmap or 3D surface in a spreadsheet.
  *
- * numIntervals and timePerInterval are each swept over 15
- * geometrically-spaced values -- 100 to 4000, and 0.02 to 0.4
- * respectively, the same endpoints used before, just with more
- * intermediate points (see geometricSpace() above).
+ * numIntervals is how many renormalization samples are averaged, and
+ * stepsPerInterval is how many RK4 steps pass between renormalizations.
+ * stepSize is held constant and small (0.001) rather than swept:
+ * ConvergenceStudy's resolution sweep showed no clear trend in the
+ * estimate across stepSize from 0.02 down to 0.00125, so the variation
+ * worth mapping is in how much sampling is done and how often it
+ * happens. A small stepSize means each step covers little physical time
+ * (numIntervals * stepsPerInterval * stepSize is the total), so the
+ * stepsPerInterval range starts at 30 and runs to 442, giving interval
+ * lengths of 0.03 to 0.44 time units; the Lyapunov time for this system
+ * is about 1.1, and intervals much shorter than that would leave most
+ * of the grid covering too little total time to converge.
  *
- * Starting points are drawn fresh -- from a normal distribution (mean 0,
- * standard deviation 10, independently per axis) -- for every one of the
- * three trials at every single grid cell, rather than reusing the same
- * points across cells. This deliberately leaves real point-to-point
- * noise in the surface instead of removing it: at 15x15 (225 cells) the
- * grid is dense enough that the underlying trend across numIntervals and
- * timePerInterval should still read as a clear overall gradient, with a
- * reader's eye smoothing past the local cell-to-cell scatter, the way
- * one reads noisy experimental data generally. The generator is still
- * seeded (42), so rerunning this test reproduces the identical noise
- * pattern rather than a different one each time.
+ * Both axes have 15 values and grow geometrically, so the grid covers
+ * their ranges evenly on a log scale. numIntervals starts at 100 and
+ * grows by a factor of 1.3 up to 4000 (the last value is 3896).
+ * stepsPerInterval starts at 30 and grows by a factor of 1.22 up to 500
+ * (the last value is 442). Both are whole numbers, so each
+ * multiplication truncates back to an integer, which keeps each
+ * sequence strictly increasing for these starting values.
  *
- * Each point is still burned in via warmupSteps before being counted,
- * the same reasoning as ConvergenceStudy's starting-point sweep -- more
- * important here, since these points aren't curated to be reasonably
- * close to the attractor, and a draw landing very close to the origin
- * (the system's unstable equilibrium) could still need longer than
- * warmupSteps to actually leave it; a handful of visibly anomalous cells
- * is the symptom to look for if that happens, in which case increasing
- * warmupSteps or changing the seed is the fix, not necessarily more
- * intervals.
+ * Starting points are drawn fresh, from a normal distribution (mean 0,
+ * standard deviation 10, independently per axis), for every one of the
+ * three trials at every grid cell -- not reused across cells -- so the
+ * grid is dense enough (225 cells) for the underlying trend to read as
+ * a gradient despite real cell-to-cell noise. Seeded (42) for
+ * reproducibility. Each point is burned in via warmupSteps before being
+ * counted; a draw landing very close to the origin (the system's
+ * unstable equilibrium) could still need longer than warmupSteps to
+ * actually leave it, so a handful of visibly anomalous cells is the
+ * symptom to look for, fixed by raising warmupSteps or changing the
+ * seed rather than by anything on this grid's two axes.
  *
- * Lorenz and LargestLyapunovExponent are built once, outside every loop,
- * and reused for all 225 cells and all 675 trials -- stepSize never
- * changes anywhere in this grid.
+ * Lorenz and LyapunovExponent are built once, outside both loops, since
+ * stepSize never changes; the grid computes the largest exponent only,
+ * on a single handle.
  *
  * Not part of the routine fast suite -- run on demand with
  *   --gtest_filter=ODELyapunov.ConvergenceSurface
- * Expect roughly half an hour: 225 cells x 3 starting points, with the
- * largest cells running several hundred thousand RK4 steps each, plus
- * warmup. If that's too long while iterating, temporarily lowering
- * numRandomStarts or the top of the numIntervals range is the quickest
- * way to shorten it.
+ * Expect roughly three hours, since the larger stepsPerInterval values
+ * multiply the step count. If that's too long while iterating,
+ * temporarily lowering numRandomStarts or narrowing either axis (the
+ * numIntervals upper bound especially) is the quickest way to shorten
+ * it -- expect a noisier, less-converged surface in exchange.
  */
 TEST(ODELyapunov, ConvergenceSurface) {
     Handle handle;
     constexpr size_t N = 3;
-    constexpr double stepSize = 0.005;
+    constexpr size_t numExponents = 1;
+    constexpr double stepSize = 0.001;
     constexpr double expectedLambda = 0.9056;
     constexpr size_t warmupSteps = 2000;
     constexpr size_t numRandomStarts = 3;
-    constexpr size_t gridSize = 15;
-
-    auto lyapunovBuffer = Mat<double>::create(N, 3, handle);
-    auto lyapunovSingletons = Vec<double>::create(2, handle);
 
     Lorenz<double> equation(stepSize, handle);
-    LargestLyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons);
+
+    auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), handle);
+    auto lyapunovSingletons = Vec<double>::create(LyapunovExponent<double>::numSingletons(numExponents), handle);
+    LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, &handle);
 
     std::mt19937 rng(42);
     std::normal_distribution<double> dist(0.0, 10.0);
 
-    const std::vector<double> numIntervalsValues = geometricSpace(100.0, 4000.0, gridSize);
-    const std::vector<double> timePerIntervalValues = geometricSpace(0.02, 0.4, gridSize);
+    writeRow("numIntervals,stepsPerInterval,stepSize,avgLambda,error");
 
-    writeRow("numIntervals,timePerInterval,avgLambda,error");
-
-    for (double numIntervalsExact : numIntervalsValues) {
-        size_t numIntervals = static_cast<size_t>(std::round(numIntervalsExact));
-
-        for (double timePerInterval : timePerIntervalValues) {
-            size_t stepsPerInterval = static_cast<size_t>(std::round(timePerInterval / stepSize));
-
+    for (size_t numIntervals = 100; numIntervals <= 4000; numIntervals *= 1.3) {
+        for (size_t stepsPerInterval = 30; stepsPerInterval <= 500; stepsPerInterval *= 1.22) {
             double lambdaSum = 0;
-            for (size_t i = 0; i < numRandomStarts; ++i) {
+            for (size_t randomStartIndex = 0; randomStartIndex < numRandomStarts; ++randomStartIndex) {
                 Real3d start(dist(rng), dist(rng), dist(rng));
                 lambdaSum += runLyapunov(
-                    equation, lyapunov, stepSize, numIntervals, stepsPerInterval,
+                    lyapunov, stepSize, numIntervals, stepsPerInterval,
                     start, handle, warmupSteps
                 );
             }
@@ -428,8 +614,9 @@ TEST(ODELyapunov, ConvergenceSurface) {
             double error = std::abs(avgLambda - expectedLambda);
 
             std::ostringstream row;
-            row << numIntervals << "," << timePerInterval << ","
-                << std::setprecision(8) << avgLambda << "," << error;
+            row << std::setprecision(8)
+                << numIntervals << "," << stepsPerInterval << "," << stepSize << ","
+                << avgLambda << "," << error;
             writeRow(row.str());
         }
     }
