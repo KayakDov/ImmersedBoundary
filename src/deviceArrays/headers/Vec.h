@@ -219,11 +219,16 @@ public:
     void mult(const Singleton<T>& alpha, Handle* handle = nullptr);
 
     /**
-     * @brief Fill vector with random values.
-     * 
-     * @param handle Optional GPU handle.
+     * @brief Fills the vector with uniform random values in (0, 1].
+     *
+     * The values depend only on @p seed and the vector length. The same seed
+     * always gives the same values, so two vectors filled with the same seed
+     * are identical; use different seeds for independent vectors.
+     *
+     * @param handle GPU handle to run on; nullptr uses a temporary one.
+     * @param seed   Seed of the generator. There is deliberately no default.
      */
-    void fillRandom(Handle* handle = nullptr);
+    void fillRandom(Handle* handle, uint64_t seed);
 
     /**
      * @brief Element-wise exponential/beta power operation.

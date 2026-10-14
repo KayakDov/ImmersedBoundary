@@ -284,7 +284,7 @@ __global__ void fillRandomKernel_double(DeviceData1d<double> array, curandState 
 }
 
 template<typename T>
-void Vec<T>::fillRandom(Handle *handle) {
+void Vec<T>::fillRandom(Handle *handle, uint64_t seed) {
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle *h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
@@ -297,11 +297,11 @@ void Vec<T>::fillRandom(Handle *handle) {
     std::unique_ptr<curandState, CudaFreeDeleter> devStates(rawDevStates);
 
     if constexpr (std::is_same_v<T, float>) {
-        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), 0, this->size());
+        setup_kernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), seed, this->size());
         h->synch();
         fillRandomKernel_float<<<numBlocks, threadsPerBlock, 0, *h>>>(this->toKernel1d(), devStates.get());
     } else if constexpr (std::is_same_v<T, double>) {
-        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), 0, this->size());
+        setup_kernel_double<<<numBlocks, threadsPerBlock, 0, *h>>>(devStates.get(), seed, this->size());
         h->synch();
         fillRandomKernel_double<<<numBlocks, threadsPerBlock, 0, *h>>>(this->toKernel1d(),  devStates.get());
     } else throw std::invalid_argument("Unsupported type.");

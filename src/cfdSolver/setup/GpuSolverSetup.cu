@@ -64,33 +64,34 @@ SolvedField<Real> buildFieldSolver(
     int gpuIndex
 ) {
     // Heap-allocated from the start, via std::unique_ptr, rather than a
-    // stack Handle later moved into SolvedField: Handle is deliberately
-    // neither copyable nor movable (see handle.h), so the pointer -- never
-    // the Handle itself -- is what travels into the returned SolvedField.
-    std::unique_ptr<Handle> hand = std::make_unique<Handle>(GpuIndex(gpuIndex));
-    Handle hands[3] = { Handle(GpuIndex(gpuIndex)), Handle(GpuIndex(gpuIndex)), Handle(GpuIndex(gpuIndex)) };
-    Event events[3];
+    // stack Handles later moved into SolvedField: Handles is deliberately
+    // neither copyable nor movable, so the pointer -- never the Handles
+    // itself -- is what travels into the returned SolvedField.  Handles
+    // 0-2 build the eigen data in parallel; handle SolvedField::workingHandle
+    // is the one the field solves on.
+    auto hands = std::make_unique<Handles>(SolvedField<Real>::numHandles, GpuIndex(gpuIndex));
+    Handle& hand = (*hands)[SolvedField<Real>::workingHandle];
     std::unique_ptr<EigenDecompSolver<Real>> solver;
 
     buildBoundaryConfigAndLaunch<Real>(
         dim, delta, startIsNeumann, endIsNeumann,
         XYZ<Real>(0, 0, 0), XYZ<Real>(0, 0, 0),
-        segType, hands[0],
+        segType, (*hands)[0],
         [&](const auto& boundaryHost) {
             using SegXType = typename std::decay_t<decltype(boundaryHost.x)>::SegmentType;
             if (dim.layers <= 1) {
-                solver = std::make_unique<EigenDecomp2d<Real>>(boundaryHost.forDevice(), hands, events[0], helmholtzShift);
+                solver = std::make_unique<EigenDecomp2d<Real>>(boundaryHost.forDevice(), *hands, helmholtzShift);
             } else if (thomas) {
-                solver = std::make_unique<EigenDecompThomas<Real, SegXType>>(boundaryHost, hands, events, helmholtzShift);
+                solver = std::make_unique<EigenDecompThomas<Real, SegXType>>(boundaryHost, *hands, helmholtzShift);
             } else {
-                solver = std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), hands, events, helmholtzShift);
+                solver = std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), *hands, helmholtzShift);
             }
         }
     );
-    for (int i = 0; i < 3; ++i) { events[i].record(hands[i]); events[i].hold(*hand); }
+    hands->waitFor({0, 1, 2}, {SolvedField<Real>::workingHandle});
 
-    GpuField<Real> buffer = GpuField<Real>::allocate((int)dim.cols, (int)dim.rows, (int)dim.layers, GpuIndex(gpuIndex), *hand);
-    return SolvedField<Real>(std::move(buffer), std::move(solver), std::move(hand));
+    GpuField<Real> buffer = GpuField<Real>::allocate((int)dim.cols, (int)dim.rows, (int)dim.layers, GpuIndex(gpuIndex), hand);
+    return SolvedField<Real>(std::move(buffer), std::move(solver), std::move(hands));
 }
 
 } // namespace

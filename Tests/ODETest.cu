@@ -434,11 +434,11 @@ void writeRow(const std::string& row) {
  * they share one Lorenz and one LyapunovExponent; that same Lorenz sizes
  * the workspace buffer every sweep reuses.
  *
- * Not part of the routine fast suite -- run on demand with
- *   --gtest_filter=ODELyapunov.ConvergenceStudy
+ * Disabled by default so that running every test stays quick and quiet. Run on demand with
+ *   --gtest_also_run_disabled_tests --gtest_filter=ODELyapunov.DISABLED_ConvergenceStudy
  * Expect roughly a minute total across all three sweeps.
  */
-TEST(ODELyapunov, ConvergenceStudy) {
+TEST(ODELyapunov, DISABLED_ConvergenceStudy) {
     Handles handles(1);
     Handle& handle = handles[0];
     constexpr size_t N = 3;
@@ -575,15 +575,15 @@ TEST(ODELyapunov, ConvergenceStudy) {
  * stepSize never changes; the grid computes the largest exponent only,
  * on a single handle.
  *
- * Not part of the routine fast suite -- run on demand with
- *   --gtest_filter=ODELyapunov.ConvergenceSurface
+ * Disabled by default so that running every test stays quick and quiet. Run on demand with
+ *   --gtest_also_run_disabled_tests --gtest_filter=ODELyapunov.DISABLED_ConvergenceSurface
  * Expect roughly three hours, since the larger stepsPerInterval values
  * multiply the step count. If that's too long while iterating,
  * temporarily lowering numRandomStarts or narrowing either axis (the
  * numIntervals upper bound especially) is the quickest way to shorten
  * it -- expect a noisier, less-converged surface in exchange.
  */
-TEST(ODELyapunov, ConvergenceSurface) {
+TEST(ODELyapunov, DISABLED_ConvergenceSurface) {
     Handles handles(1);
     Handle& handle = handles[0];
     constexpr size_t N = 3;

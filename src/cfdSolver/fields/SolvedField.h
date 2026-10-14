@@ -12,6 +12,7 @@
 #include "GpuField.h"
 #include "solvers/EigenDecomp/EigenDecompSolver.h"
 #include "deviceArrays/headers/SimpleArray.h"
+#include "deviceArrays/headers/Handles.h"
 
 /**
  * @ingroup cfd_solver
@@ -31,34 +32,41 @@
  * SimpleArray for EigenDecompSolver::solve() (asSimpleArray()) -- the same
  * bytes, no copy between the two.
  *
- * Owns its Handle through a std::unique_ptr rather than by value. Handle
- * is deliberately neither copyable nor movable (see handle.h's class
- * comment) -- every caller in the codebase takes a `Handle&`/`Handle*`,
+ * Owns its handles through a std::unique_ptr<Handles> rather than by
+ * value. Handles (like Handle) is deliberately neither copyable nor
+ * movable -- every caller in the codebase takes a reference or pointer,
  * and a SolvedField is no exception to that pattern even though it is
- * itself a long-lived owner: the Handle is heap-allocated once, in
+ * itself a long-lived owner: the Handles is heap-allocated once, in
  * GpuSolverBuilder::build()'s buildFieldSolver() (via
- * std::make_unique<Handle>(...)), and only the unique_ptr -- never the
- * Handle itself -- is ever moved.
+ * std::make_unique<Handles>(...)), and only the unique_ptr -- never the
+ * Handles itself -- is ever moved. The group has numHandles members:
+ * the first three build the eigendecomposition in parallel, and
+ * workingHandle is the one this field solves on and hands out.
  *
  * @tparam Real Floating-point type.
  */
 template<typename Real>
 class SolvedField {
 public:
+    /// How many handles a SolvedField's group holds.
+    static constexpr size_t numHandles = 4;
+    /// Which of the group's handles this field solves on.
+    static constexpr size_t workingHandle = 3;
+
     /**
      * @brief Constructs a SolvedField over an existing buffer, solver, and
-     * heap-owned handle.
+     * heap-owned handles.
      * @param buffer The field's data, shared between kernel access and the
      * solver.
      * @param solver The eigendecomposition solver for this field's
      * Laplacian/Helmholtz operator.
-     * @param hand The handle this field's solve runs on, already
-     * heap-allocated by the caller (e.g. via std::make_unique<Handle>(...))
-     * so that only the owning pointer, never the non-movable Handle
+     * @param hands The field's handles (numHandles of them), already
+     * heap-allocated by the caller (e.g. via std::make_unique<Handles>(...))
+     * so that only the owning pointer, never the non-movable Handles
      * itself, needs to move.
      */
-    SolvedField(GpuField<Real> buffer, std::unique_ptr<EigenDecompSolver<Real>> solver, std::unique_ptr<Handle> hand)
-        : buffer_(std::move(buffer)), solver_(std::move(solver)), hand_(std::move(hand)) {}
+    SolvedField(GpuField<Real> buffer, std::unique_ptr<EigenDecompSolver<Real>> solver, std::unique_ptr<Handles> hands)
+        : buffer_(std::move(buffer)), solver_(std::move(solver)), hands_(std::move(hands)) {}
 
     /**
      * @brief The view the stencil kernels read and write -- the field's
@@ -83,7 +91,7 @@ public:
 
     /// @return This field's handle, for building cross-field event
     /// dependencies in the surrounding timestep.
-    Handle& handle() { return *hand_; }
+    Handle& handle() { return (*hands_)[workingHandle]; }
 
     /// @return This field's real-data extents and device, via its buffer.
     const GpuField<Real>& buffer() const { return buffer_; }
@@ -101,7 +109,7 @@ private:
 
     GpuField<Real> buffer_;
     std::unique_ptr<EigenDecompSolver<Real>> solver_;
-    std::unique_ptr<Handle> hand_;
+    std::unique_ptr<Handles> hands_;
 };
 
 #endif //CFDSOLVER_SOLVEDFIELD_H

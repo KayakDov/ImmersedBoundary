@@ -18,12 +18,12 @@ template<typename Real>
 void SolvedField<Real>::solve() {
     SimpleArray<Real> rightHandSide = asSimpleArray();
     SimpleArray<Real> solution = asSimpleArray();
-    solver_->solve(solution, rightHandSide, *hand_);
+    solver_->solve(solution, rightHandSide, handle());
 }
 
 template<typename Real>
 void SolvedField<Real>::synch() {
-    hand_->synch();
+    handle().synch();
 }
 
 template class SolvedField<double>;

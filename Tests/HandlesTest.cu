@@ -15,6 +15,7 @@
 
 #include "deviceArrays/headers/Vec.h"
 #include "deviceArrays/headers/Handles.h"
+#include "deviceArrays/headers/Singleton.h"
 
 namespace {
 

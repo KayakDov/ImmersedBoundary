@@ -349,8 +349,60 @@ public:
     DeviceData2d<T> toKernel2d() const;
 
     /**
-     * @brief Orthonormalizes the columns of this matrix into @p dst, one handle per column.
-     *        See Mat.cu for the contract.
+     * @brief Orthonormalizes the columns of this matrix into @p dst by modified Gram-Schmidt, running one
+     *        column per handle so independent work overlaps on the GPU.
+     *
+     * Column @c j of @p dst is column @c j of this matrix with its components along columns @c 0 .. @c j-1 removed,
+     * scaled to length 1.  Column 0 keeps its direction.  The span of the first @c j+1 columns is unchanged for every
+     * @c j.
+     *
+     * @par Buffers
+     * @p lengths and @p inverseLengths are caller-allocated device vectors, one entry per column.  They are
+     * workspace that this method fills, not inputs, and they are overwritten on every call:
+     * - @p lengths: on return, entry @c j is the Euclidean length of column @c j after it was made orthogonal to the
+     *   earlier columns and before it was scaled to length 1.  These are the "r" diagonal of a QR factorization, so
+     *   they are the numbers to read if you want to know how much each direction stretched.  While the method runs,
+     *   entry @c j is also used to hold intermediate dot products.
+     * - @p inverseLengths: on return, entry @c j is 1 / @c lengths[j].  It is the scale factor that normalizes the
+     *   column, kept so that the final scaling needs no host round trip.
+     *
+     * Both vectors may be views into a larger buffer (a sub-vector of a Singleton pool, say).  Nothing else in them is
+     * touched.  No memory is allocated.
+     *
+     * @par Aliasing
+     * @p dst may be the same matrix as this one, which orthonormalizes in place.  Otherwise @p dst must not overlap
+     * this matrix.  @p lengths and @p inverseLengths must not overlap each other or the matrices.
+     *
+     * @par Handles and ordering
+     * Column @c j is processed on @c hands[j].  Nothing blocks the host.
+     * - On entry: this matrix must be ready on @c hands[0], meaning everything that produced it was enqueued on
+     *   @c hands[0] or already waited for there.  Every other handle waits for @c hands[0] inside this method.
+     * - On return: column @c j of @p dst, @c lengths[j] and @c inverseLengths[j] are ready on @c hands[j] only.  A
+     *   caller that reads them on another handle must make that handle wait for @c hands[j] first, and one that
+     *   reads them on the host must call @c hands[j].synch().  @c hands.waitForAll(0) makes handle 0 wait for all of
+     *   them.
+     *
+     * @par Cost
+     * @c cols * (cols - 1) / 2 projections, each a dot product and an axpy, plus @c cols norms and scalings.
+     * Different columns' projections overlap only where the order allows it: column @c j must wait for each earlier
+     * column's finished length.
+     *
+     * @param[out] dst            Receives the orthonormal columns.  Same dimensions as this matrix.
+     * @param[out] lengths        Buffer for the pre-normalization column lengths; see above.  At least @c cols
+     *                            entries.
+     * @param[out] inverseLengths Buffer for the reciprocals of @p lengths; see above.  At least @c cols entries.
+     * @param      hands          The handles to run on.  At least @c cols of them.  Column @c j uses @c hands[j].
+     *
+     * @throws std::invalid_argument if @p dst's dimensions differ from this matrix's, if @p lengths or
+     *         @p inverseLengths has fewer than @c cols entries, or if @p hands has fewer than @c cols handles.
+     *
+     * @note A column that is a linear combination of the earlier ones has length 0 after projection, so its
+     *       @p inverseLengths entry is infinite and the scaled column contains NaN.  The method does not check for
+     *       this, because that would force a host synchronization.
+     *
+     * @warning Columns are orthogonalized against the earlier columns' unnormalized versions, and scaling to length 1
+     *          is deferred to the end of the method.  If you read @p dst columns while the method is still enqueued
+     *          on other handles, you may see an unscaled column.  Follow the "On return" rule above.
      */
     void gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, Handles& hands) const;
 

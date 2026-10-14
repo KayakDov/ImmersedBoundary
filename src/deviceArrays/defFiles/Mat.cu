@@ -658,32 +658,6 @@ void Mat<T>::mult(
 }
 
 
-/**
- * Modified Gram-Schmidt spread over one handle per column.
- *
- * Column j is orthogonalized, on hands[j], against the unnormalized
- * orthogonal columns u_0..u_{j-1}, each step subtracting
- * <u_i, a_j> / r_i^2 times u_i, where r_i is the length of u_i. Using
- * unnormalized columns is what takes normalization off the critical path:
- * a later column needs u_i and r_i the moment u_i is final, not 1 / r_i
- * times it. So once column i is final, every later column updates against
- * it concurrently, each on its own handle, and the normalizations are left
- * to the end, when they too run concurrently. A column is normalized only
- * after every later column has finished reading it.
- *
- * dst may be the same matrix as this one, in which case the copy of each
- * column into dst is skipped by Vec::set; a partial overlap is not supported.
- *
- * The source must be ready on hands[0]. On return column i, lengths[i]
- * and inverseLengths[i] are ready on hands[i], not on hands[0], so
- * the caller joins the handles before reading across them. Column i is
- * waited for by the later columns through Handles::waitFor, which captures
- * everything enqueued on its handle at that moment: its own column's work,
- * since the normalizations are enqueued after every such wait. The
- * coefficient of each projection lives in lengths[j] on the device and is
- * overwritten by the column's final length, so no scratch beyond
- * inverseLengths is needed and nothing is read back to the host.
- */
 template <typename T>
 void Mat<T>::gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, Handles& hands) const {
     if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>) {
@@ -698,8 +672,7 @@ void Mat<T>::gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, H
         const Singleton<T>& one = GPUScalar<T>::get(1, hands[0]);
         const Singleton<T>& minusOne = GPUScalar<T>::get(-1, hands[0]);
 
-        for (size_t col = 1; col < dst._cols; ++col)
-            hands.waitFor(0, col);
+        hands.allWaitFor(0);
 
         for (size_t col = 0; col < dst._cols; ++col) {
             Handle& hand = hands[col];

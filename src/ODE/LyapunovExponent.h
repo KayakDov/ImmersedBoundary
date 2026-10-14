@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+#include "deviceArrays/headers/Support/Streamable.h"
+
 /**
  * @brief Estimates the n largest Lyapunov exponents of a TimeSequence
  *        with the deviation-vector method, orthonormalizing the
@@ -234,7 +236,7 @@ public:
         for (size_t exponentIndex = 0; exponentIndex < numExponents; ++exponentIndex)
             deviatedPath(exponentIndex).advance(stepsPerInterval);
 
-        leadWaitsForOthers();
+        hands_.waitForAll(0);
 
         for (size_t exponentIndex = 0; exponentIndex < numExponents; ++exponentIndex)
             v_.col(exponentIndex).setDifference(y_.col(exponentIndex), x_, one, one, &lead);
@@ -249,11 +251,11 @@ public:
             norm.measure(v_.col(exponentIndex), measured_.get(exponentIndex), hand);
         }
 
-        leadWaitsForOthers();
+        hands_.waitForAll(0);
 
         accumulateGrowth();
 
-        othersWaitForLead();
+        hands_.allWaitFor(0);
     }
 
     /**
@@ -301,8 +303,7 @@ public:
         size_t warmupSteps = 0,
         const Norm<Real>& norm = euclideanNorm<Real>()
     ) const {
-        if (numIntervals == 0 || stepsPerInterval == 0)
-            throw std::invalid_argument("There must be at least one interval of at least one step.");
+        if (numIntervals == 0 || stepsPerInterval == 0) throw std::invalid_argument("There must be at least one interval of at least one step.");
 
         Handle& lead = hands_[0];
 
@@ -310,9 +311,10 @@ public:
         referencePath().advance(warmupSteps);
 
         for (size_t exponentIndex = 0; exponentIndex < numExponents; ++exponentIndex)
-            v_.col(exponentIndex).fillRandom(&lead);
+            v_.col(exponentIndex).fillRandom(&hands_[exponentIndex], exponentIndex);
+
         orthonormalize();
-        leadWaitsForOthers();
+        hands_.waitForAll(0);
 
         const Real totalTime = numIntervals * stepsPerInterval * dt;
 
@@ -327,7 +329,7 @@ public:
 
         measureStartLengths(norm);
 
-        othersWaitForLead();
+        hands_.allWaitFor(0);
 
         for (size_t intervalIndex = 0; intervalIndex < numIntervals; ++intervalIndex)
             interval(stepsPerInterval, norm);
@@ -420,21 +422,6 @@ private:
         startLengths_.set(measured_, lead);
     }
 
-    /**
-     * @brief Makes handle 0 wait until every other handle has finished
-     *        everything enqueued on it so far.
-     */
-    void leadWaitsForOthers() const {
-        hands_.waitForAll(0);
-    }
-
-    /**
-     * @brief Makes every other handle wait until handle 0 has finished
-     *        everything enqueued on it so far.
-     */
-    void othersWaitForLead() const {
-        hands_.allWaitFor(0);
-    }
 
     /**
      * @brief A path through the sequence from the reference state x,
