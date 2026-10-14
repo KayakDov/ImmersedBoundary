@@ -13,7 +13,7 @@
 #include "../deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
 
-#include "solvers/Event.h"
+#include "deviceArrays/headers/Handles.h"
 #include <iostream>
 #include <chrono>
 #include <array>
@@ -26,8 +26,7 @@ template<typename T> class DeviceData1d;
 template<typename T> class Vec;
 template<typename T> class Mat;
 template<typename T> class BandedMat;
-class Event;
-class Handle; // Assuming Handle is a wrapper for cudaStream_t
+class Handle;
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
@@ -36,7 +35,7 @@ using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
  * for sparse linear systems $A\mathbf{x} = \mathbf{b}$ on the GPU using CUDA streams
  * and cuBLAS for high performance.
  *
- * The implementation uses multiple CUDA streams and events to overlap communication,
+ * The implementation uses multiple CUDA streams (a Handles group) and Handles::waitFor to overlap communication,
  * computation, and I/O operations, improving overall solver efficiency.
  *
  * @tparam T Floating-point type used for the computation (float or double).
@@ -44,10 +43,20 @@ using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 template<typename T>
 class BiCGSTAB {
 protected:
-    Handle* hand4;
+    /// Stream k of the algorithm runs on hands_[k]; k < numStreams.
+    Handles &hands_;
+
+    /**
+     * Marks on stream 1 that stream 0 waits for later in the code.
+     *
+     * pReadMark is set once stream 1 has read p (h = x + alpha p); pUpdate overwrites p and must wait for it.
+     * xWrittenMark is set once stream 1 has read s and omega and written x (x = h + omega s); the next
+     * iteration overwrites s and omega on stream 0 and must wait for it.  The first iteration finds no
+     * xWrittenMark and waits for nothing.
+     */
+    static constexpr size_t pReadMark = 0, xWrittenMark = 1;
 private:
     const T tolerance;
-    Event &alphaRAW, &sRAW, &sWAR, &pWAR, &omegaRAW, &rRAW, &xRAW, &rWAR, &tRAW, &tsRAW, &betaRAW, &rhoRAW;
     Mat<T> bHeightX7;
     SimpleArray<T> r, r_tilde, p, v, s, t, h;
     Vec<T> a9;
@@ -56,22 +65,10 @@ private:
 
     const size_t maxIterations;
 
-    /**
-     * @brief Waits for a list of events to complete on a specified CUDA stream.
-     */
-    void hold(const size_t streamIndex, const std::initializer_list<std::reference_wrapper<Event> > evs) const;
 
 
 
-    /**
-    * @brief Renews (resets) a list of events, preparing them for the next iteration.
-    */
-    static void renew(const std::initializer_list<std::reference_wrapper<Event> > evs);
 
-    /**
-    * @brief Records an event on a specified CUDA stream.
-    */
-    void record(size_t streamIndex, std::initializer_list<std::reference_wrapper<Event>> evs) const;
 
     /**
      * @brief Synchronizes a specific CUDA stream handle.
@@ -119,7 +116,7 @@ public:
     /**
      * @brief Constructor for the BiCGSTAB solver.
      */
-    BiCGSTAB(const Vec<T> &b, Handle *hand4, Event *events12, Mat<T> allocatedBHeightX7, Vec<T> allocated9, T tolerance, size_t maxIterations);
+    BiCGSTAB(const Vec<T> &b, Handles &hands, Mat<T> allocatedBHeightX7, Vec<T> allocated9, T tolerance, size_t maxIterations);
 
     /**
      * @brief Solves the linear system $A\mathbf{x} = \mathbf{b}$ using the
@@ -144,10 +141,10 @@ public:
     /**
      * @brief Static method to solve the equation $A\mathbf{x} = \mathbf{b}$.
      */
-    BCGBanded(Handle *hand4, BandedMat<T> A, const Vec<T> &b, Event *events11, Mat<T> bHeightX7, Vec<T> allocated9,
+    BCGBanded(Handles &hands, BandedMat<T> A, const Vec<T> &b, Mat<T> bHeightX7, Vec<T> allocated9,
               const T &tolerance, size_t maxIterations);
 
-    void solve(Handle *hand4, const BandedMat<T> &A, Vec<T> &result, const Vec<T> &b, Event *events11,
+    static void solve(Handles &hands, const BandedMat<T> &A, Vec<T> &result, const Vec<T> &b,
                Mat<T> allocatedBHeightX7, Vec<T> allocated9, T tolerance, size_t maxIterations);
 
 };
@@ -159,12 +156,12 @@ class BCGDense:  public BiCGSTAB<T>{
     void mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct,
               Singleton<T> premultResult) const override;
 public:
-    BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Event* events11, Mat<T> allocatedBSizeX7, Vec<T> allocated9, T tolerance, size_t maxIterations);
+    BCGDense(Handles &hands, SquareMat<T> A, const Vec<T> &b, Mat<T> allocatedBSizeX7, Vec<T> allocated9, T tolerance, size_t maxIterations);
 
     /**
      * @brief Static method to solve the equation $A\mathbf{x} = \mathbf{b}$.
      */
-    static void solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Event *events11, Mat<T> bHeightX7,
+    static void solve(Handles &hands, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Mat<T> bHeightX7,
                Vec<T> allocated9, T tolerance, size_t maxIterations);
 
     static void test();

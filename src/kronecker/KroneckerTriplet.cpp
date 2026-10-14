@@ -3,7 +3,7 @@
 
 #include <filesystem>
 
-#include "solvers/Event.h"
+#include "../deviceArrays/headers/Support/Event.h"
 
 template<typename T>
 void KroneckerTriplet<T>::multRows(const SimpleArray<T> &other, SimpleArray<T> result, Handle &hand)  const{

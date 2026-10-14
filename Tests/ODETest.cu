@@ -22,6 +22,7 @@
 #include "deviceArrays/headers/Mat.h"
 #include "deviceArrays/headers/Vec.h"
 #include "deviceArrays/headers/handle.h"
+#include "deviceArrays/headers/Handles.h"
 #include "ODE/Lorenz.cuh"
 #include "ODE/TimeSequence.h"
 #include "ODE/LyapunovExponent.h"
@@ -106,12 +107,13 @@ TEST(ODELyapunov, ComputesLorenzLargestExponent) {
     constexpr size_t N = 3;
     constexpr size_t numExponents = 1;
 
-    Handle handle;
+    Handles handles(1);
+    Handle& handle = handles[0];
     Lorenz<double> equation(stepSize, handle);
 
     auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), handle);
     auto lyapunovSingletons = Vec<double>::create(LyapunovExponent<double>::numSingletons(numExponents), handle);
-    LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, &handle);
+    LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, handles);
 
     auto initialPoint = Vec<double>::create(N, handle);
     double hostInitial[3];
@@ -172,7 +174,7 @@ TEST(ODELyapunov, ComputesLorenzTopThreeExponents) {
     constexpr size_t N = 3;
     constexpr size_t numExponents = 3;
 
-    Handle hands[numExponents];
+    Handles hands(numExponents);
     Lorenz<double> equation(stepSize, hands[0]);
 
     auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), hands[0]);
@@ -228,7 +230,7 @@ TEST(ODELyapunov, ComputesLorenzTopThreeExponentsUnderPseudoNorms) {
     constexpr size_t N = 3;
     constexpr size_t numExponents = 3;
 
-    Handle hands[numExponents];
+    Handles hands(numExponents);
     Lorenz<double> equation(stepSize, hands[0]);
 
     auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), hands[0]);
@@ -305,7 +307,7 @@ TEST(ODELyapunov, ComputesLorenzAttractorDimension) {
     constexpr size_t N = 3;
     constexpr size_t numExponents = 3;
 
-    Handle hands[numExponents];
+    Handles hands(numExponents);
     Lorenz<double> equation(stepSize, hands[0]);
 
     auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), hands[0]);
@@ -437,7 +439,8 @@ void writeRow(const std::string& row) {
  * Expect roughly a minute total across all three sweeps.
  */
 TEST(ODELyapunov, ConvergenceStudy) {
-    Handle handle;
+    Handles handles(1);
+    Handle& handle = handles[0];
     constexpr size_t N = 3;
     constexpr size_t numExponents = 1;
     constexpr double fixedStepSize = 0.005;
@@ -446,7 +449,7 @@ TEST(ODELyapunov, ConvergenceStudy) {
 
     auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(fixedEquation, numExponents), handle);
     auto lyapunovSingletons = Vec<double>::create(LyapunovExponent<double>::numSingletons(numExponents), handle);
-    LyapunovExponent<double> fixedLyapunov(fixedEquation, lyapunovBuffer, lyapunovSingletons, &handle);
+    LyapunovExponent<double> fixedLyapunov(fixedEquation, lyapunovBuffer, lyapunovSingletons, handles);
 
     const Real3d defaultStart(1.0, 1.0, 1.0);
 
@@ -460,7 +463,7 @@ TEST(ODELyapunov, ConvergenceStudy) {
             size_t stepsPerInterval = std::round(timePerInterval / stepSize);
 
             Lorenz<double> equation(stepSize, handle);
-            LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, &handle);
+            LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, handles);
 
             double lambda = runLyapunov(
                 lyapunov, stepSize, numIntervals, stepsPerInterval, defaultStart, handle
@@ -581,7 +584,8 @@ TEST(ODELyapunov, ConvergenceStudy) {
  * it -- expect a noisier, less-converged surface in exchange.
  */
 TEST(ODELyapunov, ConvergenceSurface) {
-    Handle handle;
+    Handles handles(1);
+    Handle& handle = handles[0];
     constexpr size_t N = 3;
     constexpr size_t numExponents = 1;
     constexpr double stepSize = 0.001;
@@ -593,7 +597,7 @@ TEST(ODELyapunov, ConvergenceSurface) {
 
     auto lyapunovBuffer = Mat<double>::create(N, LyapunovExponent<double>::bufferColumns(equation, numExponents), handle);
     auto lyapunovSingletons = Vec<double>::create(LyapunovExponent<double>::numSingletons(numExponents), handle);
-    LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, &handle);
+    LyapunovExponent<double> lyapunov(equation, lyapunovBuffer, lyapunovSingletons, handles);
 
     std::mt19937 rng(42);
     std::normal_distribution<double> dist(0.0, 10.0);

@@ -14,7 +14,7 @@
 #include "BoundaryConfig.cuh"
 #include "deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
-#include "solvers/Event.h"
+#include "../deviceArrays/headers/Support/Event.h"
 
 
 namespace poisson {

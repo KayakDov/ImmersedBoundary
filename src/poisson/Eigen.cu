@@ -10,7 +10,7 @@
 #include "deviceArrays/headers/sparse/Diagonal.h"
 #include "kronecker/KroneckerTriplet.h"
 #include "math/XYZ.cuh"
-#include "solvers/Event.h"
+#include "deviceArrays/headers/Handles.h"
 
 
 #ifndef PI_CONST
@@ -381,14 +381,13 @@ void Eigen<T>::generateEigen(Handle &hand, Mat<T> eigins, const axisSegmentT &ax
  * to be assignable, which is critical for classes with const data members.
  */
 template <typename ResultType, typename F, typename BoundaryConfigT>
-void createUnique(const BoundaryConfigT& boundaryConfig, XYZ<std::shared_ptr<ResultType>>& outputs, Handle* hands3, Event* events2, F factory) {
+void createUnique(const BoundaryConfigT& boundaryConfig, XYZ<std::shared_ptr<ResultType>>& outputs, Handles& hands, F factory) {
 
-    outputs[0] = std::make_shared<ResultType>(factory(boundaryConfig.x, hands3[0]));
+    outputs[0] = std::make_shared<ResultType>(factory(boundaryConfig.x, hands[0]));
     if (boundaryConfig.y == boundaryConfig.x)  outputs[1] = outputs[0];
     else {
-        outputs[1] = std::make_shared<ResultType>(factory(boundaryConfig.y, hands3[1]));
-        events2[0].record(hands3[1]);
-        events2[0].hold(hands3[0]);
+        outputs[1] = std::make_shared<ResultType>(factory(boundaryConfig.y, hands[1]));
+        hands.waitFor(1, 0);
 
     }
 
@@ -396,9 +395,8 @@ void createUnique(const BoundaryConfigT& boundaryConfig, XYZ<std::shared_ptr<Res
         if (boundaryConfig.z == boundaryConfig.x)  outputs[2] = outputs[0];
         else if (boundaryConfig.z == boundaryConfig.y) outputs[2] = outputs[1];
         else {
-            outputs[2] = std::make_shared<ResultType>(factory(boundaryConfig.z, hands3[2]));
-            events2[1].record(hands3[2]);
-            events2[1].hold(hands3[0]);
+            outputs[2] = std::make_shared<ResultType>(factory(boundaryConfig.z, hands[2]));
+            hands.waitFor(2, 0);
         }
     } else outputs[2] = nullptr;
 
@@ -407,22 +405,22 @@ void createUnique(const BoundaryConfigT& boundaryConfig, XYZ<std::shared_ptr<Res
 * Generates, including memory allocation, eigen values and vectors.  The matrices pointed to, that are retruned,
 * hold the values in the last column, and the vectors in the first nxn cells.
 * @param boundary The boundary configuration.
-* @param hands3 Used to create the different vectors in parrallel.  The number of handles should be equal to the number of dimentisons.
-* @param events The number of events should be equal to the number of dimesnions.
-* @param preAllocatedForL_iX3
+* @param hands Used to create the different vectors in parallel.  There must be at least one handle per dimension.
 * @return pointers to matrices containing the eigen values and vectors.
  */
 template<typename T>
 template<typename BoundaryConfigT>
-XYZ<std::shared_ptr<Mat<T>>> Eigen<T>::generateEigen(const BoundaryConfigT& boundary, Handle *hands3, Event *events) {
+XYZ<std::shared_ptr<Mat<T>>> Eigen<T>::generateEigen(const BoundaryConfigT& boundary, Handles& hands) {
+
+    if (hands.size() < boundary.dim().numDims())
+        throw std::invalid_argument("Eigen needs at least one handle per dimension.");
 
     XYZ<std::shared_ptr<Mat<T>>> eigenBack(nullptr, nullptr, nullptr);
 
     createUnique(
         boundary,
         eigenBack,
-        hands3,
-        events,
+        hands,
         [](const auto& AxisSegmentT, Handle& hand) {
 
             size_t numCols = AxisSegmentT.numNodes + 1;
@@ -436,9 +434,7 @@ XYZ<std::shared_ptr<Mat<T>>> Eigen<T>::generateEigen(const BoundaryConfigT& boun
         }
     );
 
-    hands3[0].synch();
-    hands3[1].synch();
-    hands3[2].synch();
+    hands.synch();
 
     return eigenBack;
 }
@@ -449,11 +445,11 @@ Eigen<T>::Eigen(const XYZ<Vec<T>> &vals, const KroneckerTriplet<T>& vecs, const 
 
 template<typename T>
 template<typename BoundaryConfigT>
-Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handle* hands3, Event* events2) {
+Eigen<T> Eigen<T>::make(const BoundaryConfigT& boundary, Handles& hands) {
 
     bool is3d = boundary.dim().numDims() == 3;
 
-    auto eigenBack = generateEigen(boundary, hands3, events2);
+    auto eigenBack = generateEigen(boundary, hands);
 
     XYZ<Vec<T>> vals(eigenBack[0]->lastCol(), eigenBack[1]->lastCol(), is3d ? eigenBack[2]->lastCol() : SimpleArray<T>::empty());
 
@@ -499,7 +495,7 @@ template class Eigen<double>;
 
 #define INSTANTIATE_EIGEN_MAKE_DEVICE(Real, SegX, SegY, SegZ) \
 template Eigen<Real> Eigen<Real>::make<BoundaryConfig<Real, SegX, SegY, SegZ>>( \
-const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handle*, Event*);
+const BoundaryConfig<Real, SegX, SegY, SegZ>&, Handles&);
 
 APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_EIGEN_MAKE_DEVICE)
 APPLY_TO_ALL_SEGMENT_COMBOS(float,  INSTANTIATE_EIGEN_MAKE_DEVICE)

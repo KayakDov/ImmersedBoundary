@@ -1,6 +1,8 @@
 #include "solvers/BiCGSTAB.cuh"
 
 #include "../deviceArrays/headers/Support/Streamable.h"
+#include <stdexcept>
+#include <string>
 
 
 using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
@@ -19,36 +21,24 @@ __global__ void updatePKernel(
 
 
 template<typename T>
-void BiCGSTAB<T>::hold(const size_t streamIndex, const std::initializer_list<std::reference_wrapper<Event> > evs) const {
-    for (auto &ref_e: evs)
-        ref_e.get().hold(hand4[streamIndex]);
-}
-
-template<typename T>
-void BiCGSTAB<T>::record(size_t streamIndex, const std::initializer_list<std::reference_wrapper<Event> > evs) const {
-    for (auto &ref_e: evs)
-        ref_e.get().record(hand4[streamIndex]);
-}
-
-template<typename T>
 void BiCGSTAB<T>::synch(const size_t streamInd) const {
-    hand4[streamInd].synch();
+    hands_[streamInd].synch();
 }
 template<typename T>
 void BiCGSTAB<T>::synchAll() const {
-    for (size_t i = 0; i < numStreams; i++) hand4[i].synch();
+    for (size_t i = 0; i < numStreams; i++) hands_[i].synch();
 }
 
 template<typename T>
 bool BiCGSTAB<T>::isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd) {
-    v.mult(v, preAlocated, hand4 + streamInd);
-    T vSq = preAlocated.get(hand4[streamInd]);
+    v.mult(v, preAlocated, &hands_[streamInd]);
+    T vSq = preAlocated.get(hands_[streamInd]);
     return vSq < tolerance;
 }
 
 template<typename T>
 void BiCGSTAB<T>::set(Vec<T> &dst, const Vec<T> &src, const size_t streamInd) {
-    dst.set(src, hand4[streamInd]);
+    dst.set(src, hands_[streamInd]);
 }
 
 template<typename T>
@@ -56,7 +46,7 @@ void BiCGSTAB<T>::pUpdate(const size_t streamInd) {
     KernelPrep kp = p.kernelPrep();
 
     // Kernel launch performs: p = r + beta * (p - omega * v)
-    updatePKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hand4[streamInd]>>>(
+    updatePKernel<<<kp.numBlocks, kp.threadsPerBlock, 0, hands_[streamInd]>>>(
         p.toKernel1d(), // d_p (Input/Output)
         r.toKernel1d(), // d_r
         v.toKernel1d(), // d_v
@@ -68,15 +58,13 @@ void BiCGSTAB<T>::pUpdate(const size_t streamInd) {
 template<typename T>
 BiCGSTAB<T>::BiCGSTAB(
     const Vec<T> &b,
-    Handle* hand4,
-    Event* events12,
+    Handles& hands,
     Mat<T> allocatedBHeightX7,
     Vec<T> allocated9,
     const T tolerance,
     const size_t maxIterations
-) : hand4(hand4),
+) : hands_(hands),
     tolerance(tolerance),
-    alphaRAW(events12[0]), sRAW(events12[1]), pWAR(events12[2]), omegaRAW(events12[3]), rRAW(events12[4]), xRAW(events12[5]), rWAR(events12[6]), tRAW(events12[7]), tsRAW(events12[8]), betaRAW(events12[9]), rhoRAW(events12[10]), sWAR(events12[11]),
     b(b),
     bHeightX7(allocatedBHeightX7),
     r(bHeightX7.col(0)), r_tilde(bHeightX7.col(1)), p(bHeightX7.col(2)), v(bHeightX7.col(3)), s(bHeightX7.col(4)), t(bHeightX7.col(5)), h(bHeightX7.col(6)),
@@ -86,21 +74,22 @@ BiCGSTAB<T>::BiCGSTAB(
     maxIterations(maxIterations)
 {
     static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "Algorithms.cu unpreconditionedBiCGSTAB: T must be float or double");
-    record(1, {events12[0]});
-    hold(0, {events12[0]});
+    if (hands.size() < numStreams)
+        throw std::invalid_argument("BiCGSTAB needs at least " + std::to_string(numStreams) + " handles.");
+    hands_.waitFor(1, 0);
 }
 
 template<typename T>
 void BiCGSTAB<T>::preamble(Vec<T>& x) {
-    record(0, {rWAR, sWAR, xRAW, rhoRAW});//TODO: multithread the preamble.
+    //TODO: multithread the preamble.
 
     set(r, b, 0);
 
-    mult(x, r, GPUScalar<T>::get(-1, hand4[0]), GPUScalar<T>::get(1, hand4[0])); // r = b - A * x
+    mult(x, r, GPUScalar<T>::get(-1, hands_[0]), GPUScalar<T>::get(1, hands_[0])); // r = b - A * x
 
     set(r_tilde, r, 0); //r_tilde = r
 
-    r_tilde.mult(r, rho, hand4); //rho = r_tilde * r
+    r_tilde.mult(r, rho, &hands_[0]); //rho = r_tilde * r
 
     set(p, r, 0);
 }
@@ -115,63 +104,52 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
 
     size_t i = 0;
     for (; i < maxIterations; i++) {
-        mult(p, v, GPUScalar<T>::get(1, hand4[0]), GPUScalar<T>::get(0, hand4[0])); // v = A * p
+        mult(p, v, GPUScalar<T>::get(1, hands_[0]), GPUScalar<T>::get(0, hands_[0])); // v = A * p
 
-        r_tilde.mult(v, alpha, hand4);
-        hold(0, {rhoRAW});
-        alpha.EBEPow(rho, GPUScalar<T>::get(-1, hand4[0]), hand4[0]); //alpha = rho / (r_tilde * v)
+        r_tilde.mult(v, alpha, &hands_[0]);
+        hands_.waitFor(3, 0); // rho was set on stream 3 at the end of the last iteration.
+        alpha.EBEPow(rho, GPUScalar<T>::get(-1, hands_[0]), hands_[0]); //alpha = rho / (r_tilde * v)
 
-        record(0, {alphaRAW});
-        hold(1, {alphaRAW});
+        hands_.waitFor(0, 1);
 
         set(h, x, 1);
-        h.add(p, &alpha, hand4 + 1); // h = x + alpha * p
-        record(1, {pWAR});
+        h.add(p, &alpha, &hands_[1]); // h = x + alpha * p
+        hands_.markCompletion(1, pReadMark);
 
-        hold(0, {xRAW, sWAR});
-        s.setDifference(r, v, GPUScalar<T>::get(1, hand4[0]), alpha, hand4); // s = r - alpha * v
-        record(0, {sRAW});
+        hands_.waitForMark(1, 0, xWrittenMark);
+        s.setDifference(r, v, GPUScalar<T>::get(1, hands_[0]), alpha, &hands_[0]); // s = r - alpha * v
 
-        hold(2, {sRAW});
+        hands_.waitFor(0, 2);
         if (isSmall(s, temp[2], 2)) {
             set(x, h, 1);
             break;
         }
-        record(0, {sWAR});
 
+        mult(s, t, GPUScalar<T>::get(1, hands_[0]), GPUScalar<T>::get(0, hands_[0])); // t = A * s
 
-        mult(s, t, GPUScalar<T>::get(1, hand4[0]), GPUScalar<T>::get(0, hand4[0])); // t = A * s
-        record(0, {tRAW});
+        hands_.waitFor(0, 3);
+        t.mult(s, temp[3], &hands_[3]); //temp 3 = ts
+        t.mult(t, omega, &hands_[0]); //omega = t*t
+        hands_.waitFor(3, 0);
+        omega.EBEPow(temp[3], GPUScalar<T>::get(-1, hands_[0]), hands_[0]); //omega = t * s / t * t;
 
-        hold(3, {tRAW});
-        t.mult(s, temp[3], hand4+3); //temp 3 = ts
-        record(3, {tsRAW});
-        t.mult(t, omega, hand4); //omega = t*t
-        hold(0, {tsRAW});
-        omega.EBEPow(temp[3], GPUScalar<T>::get(-1, hand4[0]), hand4[0]); //omega = t * s / t * t;
-        record(0, {omegaRAW});
+        hands_.waitFor(0, 1);
+        x.setSum(h, s, GPUScalar<T>::get(1, hands_[1]), omega, &hands_[1]); // x = h + omega * s
+        hands_.markCompletion(1, xWrittenMark);
 
-        hold(1, {omegaRAW});
-        x.setSum(h, s, GPUScalar<T>::get(1, hand4[1]), omega, hand4 + 1); // x = h + omega * s
-        record(1, {xRAW});
+        hands_.waitFor(2, 0); // Nothing on stream 2 may still be reading r.
+        r.setDifference(s, t, GPUScalar<T>::get(1, hands_[0]), omega, &hands_[0]); // r = s - omega * t
 
-        hold(0, {rWAR});
-        r.setDifference(s, t, GPUScalar<T>::get(1, hand4[0]), omega, hand4); // r = s - omega * t
-        record(0, {rRAW});
-
-        hold(2, {rRAW});
+        hands_.waitFor(0, 2);
         if (isSmall(r, temp[2])) break;
-        record(2, {rWAR});
 
-        r_tilde.mult(r, rho_new, hand4);
-        beta.setProductOfQuotients(rho_new, rho, alpha, omega, hand4[0]); // beta = (rho_new / rho) * (alpha / omega);
-        record(0, {betaRAW});
+        r_tilde.mult(r, rho_new, &hands_[0]);
+        beta.setProductOfQuotients(rho_new, rho, alpha, omega, hands_[0]); // beta = (rho_new / rho) * (alpha / omega);
 
-        hold(3, {betaRAW});
+        hands_.waitFor(0, 3);
         set(rho, rho_new, 3);
-        record(3, {rhoRAW});
 
-        hold(0, {pWAR});
+        hands_.waitForMark(1, 0, pReadMark);
         pUpdate(); // p = p - beta * omega * v
     }
     if (i >= maxIterations)
@@ -187,45 +165,44 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
 
 
 template<typename T>
-BCGBanded<T>::BCGBanded(Handle* hand4, BandedMat<T> A, const Vec<T> &b, Event* events11, Mat<T> bHeightX7, Vec<T> allocated9, const T &tolerance,
-size_t maxIterations): BiCGSTAB<T>(b, hand4, events11, bHeightX7, allocated9, tolerance, maxIterations), A(A){
+BCGBanded<T>::BCGBanded(Handles& hands, BandedMat<T> A, const Vec<T> &b, Mat<T> bHeightX7, Vec<T> allocated9, const T &tolerance,
+size_t maxIterations): BiCGSTAB<T>(b, hands, bHeightX7, allocated9, tolerance, maxIterations), A(A){
 }
 
 template<typename T>
 void BCGBanded<T>::mult(Vec<T>& vec, Vec<T>& product, Singleton<T> multProduct, Singleton<T> preMultResult) const {
-    return A.bandedMult(vec, product, this->hand4, multProduct, preMultResult);
+    return A.bandedMult(vec, product, &this->hands_[0], multProduct, preMultResult);
 }
 
 
 template<typename T>
 void BCGBanded<T>::solve(
-    Handle* hand4,
+    Handles& hands,
     const BandedMat<T> &A,
     Vec<T>& result,
     const Vec<T> &b,
-    Event* events11,
     Mat<T> allocatedBHeightX7,
     Vec<T> allocated9,
     const T tolerance,
     const size_t maxIterations
 ) {
-    BCGBanded<T> solver(hand4, A, b, events11, allocatedBHeightX7, allocated9, tolerance, maxIterations);
+    BCGBanded<T> solver(hands, A, b, allocatedBHeightX7, allocated9, tolerance, maxIterations);
     solver.solveUnpreconditioned(result);
 }
 
 template<typename T>
 void BCGDense<T>::mult(Vec<T> &vec, Vec<T> &product, Singleton<T> multProduct, Singleton<T> premultResult) const {
-    A.mult(vec, product, this->hand4, &multProduct, &premultResult, false);
+    A.mult(vec, product, &this->hands_[0], &multProduct, &premultResult, false);
 }
 
 template<typename T>
-BCGDense<T>::BCGDense(Handle *hand4, SquareMat<T> A, const Vec<T> &b, Event* events11, Mat<T> allocatedBSizeX7, Vec<T> allocated9, T tolerance, size_t maxIterations): BiCGSTAB<T>(b, hand4, events11, allocatedBSizeX7, allocated9, tolerance, maxIterations), A(A) {
+BCGDense<T>::BCGDense(Handles& hands, SquareMat<T> A, const Vec<T> &b, Mat<T> allocatedBSizeX7, Vec<T> allocated9, T tolerance, size_t maxIterations): BiCGSTAB<T>(b, hands, allocatedBSizeX7, allocated9, tolerance, maxIterations), A(A) {
 
 }
 
 template<typename T>
-void BCGDense<T>::solve(Handle *hand4, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Event* events11, Mat<T> bHeightX7, Vec<T> allocated9, T tolerance, size_t maxIterations) {
-    BCGDense<T> solver(hand4, A, b, events11, bHeightX7, allocated9, tolerance, maxIterations);
+void BCGDense<T>::solve(Handles& hands, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Mat<T> bHeightX7, Vec<T> allocated9, T tolerance, size_t maxIterations) {
+    BCGDense<T> solver(hands, A, b, bHeightX7, allocated9, tolerance, maxIterations);
     solver.solveUnpreconditioned(result);
 }
 

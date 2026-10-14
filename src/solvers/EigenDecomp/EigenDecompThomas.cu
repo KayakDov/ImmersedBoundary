@@ -158,8 +158,8 @@ EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const A
 
 template<typename T, typename SegmentT>
 template<typename SegY, typename SegZ>
-    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3, T helmholtzShift):
-        EigenDecomp3d<T>(boundary.forDevice(), hand3, event2, sizeOfBX3.col(0), helmholtzShift),
+    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handles &hands, Mat<T> sizeOfBX3, T helmholtzShift):
+        EigenDecomp3d<T>(boundary.forDevice(), hands, sizeOfBX3.col(0), helmholtzShift),
         workSpaceSuperPrime(sizeOfBX3.col(1).tensor(boundary.forDevice().dim().rows, boundary.forDevice().dim().layers)),
         workSpaceRHSPrime(sizeOfBX3.col(2).tensor(boundary.forDevice().dim().rows, boundary.forDevice().dim().layers)),
         boundaryX(boundary.x)
@@ -167,8 +167,8 @@ template<typename SegY, typename SegZ>
 
 template<typename T, typename SegmentT>
 template<typename SegY, typename SegZ>
-    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, T helmholtzShift):
-        EigenDecompThomas(boundary, hand3, event2, Mat<T>::create(boundary.forDevice().dim().size(), 3, hand3[0]), helmholtzShift)
+    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handles &hands, T helmholtzShift):
+        EigenDecompThomas(boundary, hands, Mat<T>::create(boundary.forDevice().dim().size(), 3, hands[0]), helmholtzShift)
 {
 }
 // ==============================================================================
@@ -190,8 +190,7 @@ template class EigenDecompThomas<float, VariableSegment<float>>;
 #define INSTANTIATE_EIGEN_DECOMP_THOMAS_CONSTRUCTORS(Real, SegX, SegY, SegZ) \
 template EigenDecompThomas<Real, SegX>::EigenDecompThomas(               \
     const BoundaryConfigHost<Real, SegX, SegY, SegZ>& boundary,          \
-    Handle* hands,                                                       \
-    Event* event,                                                        \
+    Handles& hands,                                                      \
     Real helmholtzShift                                                  \
 );
 

@@ -61,23 +61,22 @@ class ImmersedEq {
 
     const GridDim dim;
 
-    mutable Handle hand5[5]{Handle(), Handle(), Handle(), Handle(), Handle()}; ///< Array of 5 CUDA Handles for multi-streaming.
+    Handles hands{5}; ///< 5 CUDA Handles for multi-streaming.  Never copied or moved; pass by reference.
     mutable std::unique_ptr<SimpleArray<Real>> sparseMultBuffer = nullptr; ///< A buffer space for sparse vector multiplication.  The space grows as needed.
-    Event events12[12]{}; ///< CUDA events for fine-grained synchronization.
 
 
     SimpleArray<Int> maxSparseInds; ///< Storage for maximum allowed sparse indices.
     SimpleArray<Int> maxSparseOffsets; ///< Storage for maximum allowed sparse offsets.
-    SimpleArray<Real> maxSparseVals = SimpleArray<Real>::create(maxSparseInds.size(), hand5[0]); ///< Storage for maximum allowed sparse values.
+    SimpleArray<Real> maxSparseVals = SimpleArray<Real>::create(maxSparseInds.size(), hands[0]); ///< Storage for maximum allowed sparse values.
 
-    mutable Mat<Real> gridVecs = Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count) + 7, hand5[0]);  ///< Storage for all vectors of length grid size.
-    mutable Mat<Real> lagrangeVecs = Mat<Real>::create(maxSparseOffsets.size() - 1, static_cast<size_t>(LagrangeInd::Count), hand5[0]) ; ///< Storage for all the lagrangian vectors.
+    mutable Mat<Real> gridVecs = Mat<Real>::create(dim.size(), static_cast<size_t>(GridInd::Count) + 7, hands[0]);  ///< Storage for all vectors of length grid size.
+    mutable Mat<Real> lagrangeVecs = Mat<Real>::create(maxSparseOffsets.size() - 1, static_cast<size_t>(LagrangeInd::Count), hands[0]) ; ///< Storage for all the lagrangian vectors.
 
     /**
      * @brief Vector field storage on the staggered grid.
      * * Allocation accounts for face-centered velocities in 2d and 3D.
      */
-    SimpleArray<Real> velocities = SimpleArray<Real>::create(dim.velocitiesStaggeredSize(), hand5[0]);
+    SimpleArray<Real> velocities = SimpleArray<Real>::create(dim.velocitiesStaggeredSize(), hands[0]);
 
     /// CSR matrix mapping Eulerian space to Lagrangian space ($B$).
     std::unique_ptr<SparseMat<Real, Int>> B = std::make_unique<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
@@ -85,8 +84,6 @@ class ImmersedEq {
     std::unique_ptr<SparseMat<Real, Int>> R = std::make_unique<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
 
     const Singleton<Real> dT; ///< Time step size ($\Delta t$).
-
-    Event lhsTimes; ///< used for LHS operator multiplication multi streaming.
 
     /**
      * @brief Resets all the values in the selected sparse matrix.  Pass nullptr to leave values unchanged.
@@ -139,7 +136,7 @@ class ImmersedEq {
     /**
      * used for eigen decomposition.
      */
-    std::shared_ptr<EigenDecompSolver<Real>> eds;// = createEDS(boundary, &hand5[0], events12);
+    std::shared_ptr<EigenDecompSolver<Real>> eds;// = createEDS(boundary, hands);
 
     /**
      * @brief Computes the Left-Hand Side (LHS) operation: $x = A \cdot b$.
@@ -284,11 +281,10 @@ public:
      * @param imEq Reference to the system operator class.
      * @param allocatedRHSHeightX7 Pre-allocated workspace matrix (Grid height x 7 columns).
      * @param allocated9 Pre-allocated workspace vector of size 9.
-     * @param events11 Pointer to 11 CUDA events for synchronization.
      * @param tolerance Convergence threshold.
      * @param maxIterations Maximum BiCGSTAB iterations.
      */
-    ImmersedEqSolver(ImmersedEq<Real, Int> &imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> allocated9, Event* events11, Real tolerance, size_t maxIterations);
+    ImmersedEqSolver(ImmersedEq<Real, Int> &imEq, Mat<Real> &allocatedRHSHeightX7, Vec<Real> allocated9, Real tolerance, size_t maxIterations);
 
 };
 

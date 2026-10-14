@@ -3,7 +3,7 @@
  * @brief Implementation of the Event class for CUDA event management.
  */
 
-#include "solvers/Event.h"
+#include "../headers/Support/Event.h"
 
 Event::Event() : event(nullptr) {
     cudaEvent_t tmp;
@@ -20,7 +20,7 @@ Event::Event() : event(nullptr) {
 void Event::record(const Handle& h) const {
     if (!event) throw std::runtime_error("Attempted to record on a null CUDA event");
 
-    if (h.device() != gpuIndex_.index()) {
+    if (h.device() != gpuIndex_) {
         // This event lives on a different device than the stream we're
         // being asked to record on. cudaEventRecord() requires them to
         // match, and there's no CUDA call that rebinds an existing
@@ -35,14 +35,10 @@ void Event::record(const Handle& h) const {
         // either way whether cudaEventDestroy cares, so this costs nothing
         // extra in the common (non-mismatched) case and removes any doubt
         // in the mismatched case.
-        gpuIndex_.switchDevice();
-        event.reset();
-
-        GpuIndex(h.device()).switchDevice();
         cudaEvent_t tmp;
         CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&tmp, cudaEventDisableTiming));
         event.reset(tmp);
-        gpuIndex_.index_ = h.device();
+        gpuIndex_ = h.device();
     }
 
     CHECK_CUDA_ERROR(cudaEventRecord(event.get(), h));

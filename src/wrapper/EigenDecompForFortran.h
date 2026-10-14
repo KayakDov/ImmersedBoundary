@@ -49,13 +49,18 @@ class EigenDecompForFortran {
     /// outgoing solution -- see solve()/synch().
     std::unique_ptr<Real[], decltype(&cudaFreeHost)> pinnedBuf{nullptr, &cudaFreeHost};
 
+    /// Handles 0-2 build the eigen data in parallel (one per dimension); handle 3 is the working handle
+    /// exposed as `hand`.
+    Handles hands_;
+
     static Real* allocPinned(size_t n) {
         Real* p = nullptr;
         cudaMallocHost(&p, n * sizeof(Real));
         return p;
     }
 public:
-    Handle hand;
+    /// The working handle; it is element 3 of the internal Handles and lives as long as this object.
+    Handle& hand;
     /**
  * @brief Constructs an eigen-decomposition solver for a separable Cartesian Laplacian or Helmholtz operator.
  *

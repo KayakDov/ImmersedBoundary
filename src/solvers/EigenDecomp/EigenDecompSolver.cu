@@ -1,6 +1,6 @@
 #include "EigenDecompSolver.h"
 
-#include "../Event.h"
+#include "deviceArrays/headers/Handles.h"
 #include "deviceArrays/headers/Support/Streamable.h"
 #include "deviceArrays/headers/Singleton.h"
 #include "poisson/BoundaryConfig.cuh"
@@ -40,9 +40,9 @@ EigenDecompSolver<T>::EigenDecompSolver(const Eigen<T>& eMatsAndVecs, SimpleArra
 
 template<typename T>
 template<typename BoundaryConfigT>
-EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfigT& boundary, Handle* hands, Event* events, SimpleArray<T> sizeOfB, T helmholtzShift) :
+EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfigT& boundary, Handles& hands, SimpleArray<T> sizeOfB, T helmholtzShift) :
     EigenDecompSolver(
-        Eigen<T>::make(boundary, hands, events),
+        Eigen<T>::make(boundary, hands),
         sizeOfB,
         boundary.allNeumann(),
         helmholtzShift
@@ -51,11 +51,10 @@ EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfigT& boundary, Handle*
 
 template<typename T>
 template<typename BoundaryConfigT>
-EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfigT& boundary, Handle* hands, Event* events, T helmholtzShift) :
+EigenDecompSolver<T>::EigenDecompSolver(const BoundaryConfigT& boundary, Handles& hands, T helmholtzShift) :
     EigenDecompSolver(
         boundary,
         hands,
-        events,
         SimpleArray<T>::create(boundary.dim().size(), hands[0]),
         helmholtzShift
     ) {}
@@ -80,15 +79,13 @@ template class EigenDecompSolver<float>;
 #define INSTANTIATE_EIGEN_DECOMP_SOLVER_CONSTRUCTORS(Real, SegX, SegY, SegZ) \
 template EigenDecompSolver<Real>::EigenDecompSolver(                     \
 const BoundaryConfig<Real, SegX, SegY, SegZ>& boundary,              \
-Handle* hands,                                                       \
-Event* events,                                                       \
+Handles& hands,                                                      \
 SimpleArray<Real> sizeOfB,                                           \
 Real helmholtzShift                                                  \
 );                                                                       \
 template EigenDecompSolver<Real>::EigenDecompSolver(                     \
 const BoundaryConfig<Real, SegX, SegY, SegZ>& boundary,              \
-Handle* hands,                                                       \
-Event* events,                                                       \
+Handles& hands,                                                      \
 Real helmholtzShift                                                  \
 );
 

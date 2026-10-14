@@ -16,7 +16,7 @@
 #include <cuda_runtime.h>
 #include <cusparse.h>
 
-class Event;
+class Handles;
 
 template<typename T>
 void eigenDecompSolver(const T* frontBack, size_t fbLd,
@@ -352,7 +352,7 @@ public:
      * @brief Orthonormalizes the columns of this matrix into @p dst, one handle per column.
      *        See Mat.cu for the contract.
      */
-    void gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, Handle* hands, Event* events) const;
+    void gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, Handles& hands) const;
 
 
     /**

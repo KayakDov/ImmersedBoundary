@@ -10,8 +10,8 @@
 #include <cuda_runtime.h>
 #include <stdexcept>
 #include <memory>
-#include "../deviceArrays/headers/GpuArray.h"
-#include "../deviceArrays/headers/handle.h" // for ensure_device_impl
+#include "../GpuArray.h"
+#include "../handle.h"
 
 /**
  * @class Event

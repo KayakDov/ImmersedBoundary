@@ -11,7 +11,7 @@
 #define EIGENDECOMPSOLVER_H
 
 #include "deviceArrays/headers/SquareMat.h"
-#include "../Event.h"
+#include "deviceArrays/headers/Handles.h"
 #include "poisson/Eigen.cuh"
 
 
@@ -105,23 +105,21 @@ public:
     /**
      *
      * @param boundary The boundary conditions.
-     * @param hands A handle for each dimension.
-     * @param events If 3d, then 2 events, if 2d then 1 event.
+     * @param hands At least one handle per dimension.  They are synchronized before the constructor returns.
      * @param sizeOfB a buffer that is the same size as b.
      * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
     template<class BoundaryConfigT>
-    EigenDecompSolver(const BoundaryConfigT &boundary, Handle *hands, Event *events, SimpleArray<T> sizeOfB, T helmholtzShift);
+    EigenDecompSolver(const BoundaryConfigT &boundary, Handles &hands, SimpleArray<T> sizeOfB, T helmholtzShift);
 
     /**
      * Created an eigen decomposition solver where all memory is owned by this object.
      * @param boundary The boundary conditions.
-     * @param hands A handle for each dimension.
-     * @param events 2 for 3d and 1 for 2d.
+     * @param hands At least one handle per dimension.  They are synchronized before the constructor returns.
      * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
     template<class BoundaryConfigT>
-    EigenDecompSolver(const BoundaryConfigT &boundary, Handle *hands, Event *events, T helmholtzShift);
+    EigenDecompSolver(const BoundaryConfigT &boundary, Handles &hands, T helmholtzShift);
 
     /**
      * Solves for A x = b

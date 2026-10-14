@@ -5,7 +5,7 @@
 #include <cusolverDn.h>
 #include <stdexcept>
 #include "../headers/Mat.h"
-#include "../../solvers/Event.h"
+#include "deviceArrays/headers/Handles.h"
 
 #include "../headers/Support/GridDim.hpp"
 #include <string>
@@ -674,29 +674,32 @@ void Mat<T>::mult(
  * dst may be the same matrix as this one, in which case the copy of each
  * column into dst is skipped by Vec::set; a partial overlap is not supported.
  *
- * Column j's final length is recorded on events[j], and later columns hold
- * that event before they read column j. The coefficient of each projection
- * lives in lengths[j] on the device and is overwritten by the column's final
- * length, so no scratch beyond inverseLengths is needed and nothing is read
- * back to the host.
+ * The source must be ready on hands[0]. On return column i, lengths[i]
+ * and inverseLengths[i] are ready on hands[i], not on hands[0], so
+ * the caller joins the handles before reading across them. Column i is
+ * waited for by the later columns through Handles::waitFor, which captures
+ * everything enqueued on its handle at that moment: its own column's work,
+ * since the normalizations are enqueued after every such wait. The
+ * coefficient of each projection lives in lengths[j] on the device and is
+ * overwritten by the column's final length, so no scratch beyond
+ * inverseLengths is needed and nothing is read back to the host.
  */
 template <typename T>
-void Mat<T>::gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, Handle* hands, Event* events) const {
+void Mat<T>::gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, Handles& hands) const {
     if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>) {
         if (dst._rows != this->_rows || dst._cols != this->_cols)
             throw std::invalid_argument("Gram-Schmidt destination must have the same dimensions as the source.");
         if (lengths.size() < this->_cols || inverseLengths.size() < this->_cols)
             throw std::invalid_argument("Gram-Schmidt needs one length and one inverse length per column.");
-        if (hands == nullptr || events == nullptr)
-            throw std::invalid_argument("Gram-Schmidt needs one handle and one event per column.");
+        if (hands.size() < this->_cols)
+            throw std::invalid_argument("Gram-Schmidt needs one handle per column.");
         if (this->_rows == 0 || this->_cols == 0) return;
 
         const Singleton<T>& one = GPUScalar<T>::get(1, hands[0]);
         const Singleton<T>& minusOne = GPUScalar<T>::get(-1, hands[0]);
 
-        events[0].record(hands[0]);
         for (size_t col = 1; col < dst._cols; ++col)
-            events[0].hold(hands[col]);
+            hands.waitFor(0, col);
 
         for (size_t col = 0; col < dst._cols; ++col) {
             Handle& hand = hands[col];
@@ -706,7 +709,7 @@ void Mat<T>::gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, H
             column.set(this->col(col), hand);
 
             for (size_t previous = 0; previous < col; ++previous) {
-                events[previous].hold(hand);
+                hands.waitFor(previous, col);
                 auto direction = dst.col(previous);
                 Singleton<T> previousLength = lengths.get(previous);
 
@@ -717,15 +720,13 @@ void Mat<T>::gramSchmidt(Mat<T>& dst, Vec<T>& lengths, Vec<T>& inverseLengths, H
 
             column.norm(length, hand);
             inverseLengths.get(col).setProductOfQuotients(one, length, one, one, hand);
-            events[col].record(hand);
         }
 
         for (size_t col = 0; col < dst._cols; ++col) {
-            Handle& hand = hands[col];
             for (size_t later = col + 1; later < dst._cols; ++later)
-                events[later].hold(hand);
+                hands.waitFor(later, col);
 
-            dst.col(col).mult(inverseLengths.get(col), &hand);
+            dst.col(col).mult(inverseLengths.get(col), &hands[col]);
         }
     } else throw std::invalid_argument("Unsupported type.");
 }

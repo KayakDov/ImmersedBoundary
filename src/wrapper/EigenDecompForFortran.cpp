@@ -50,30 +50,25 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
         // Sized off x.size() alone -- guaranteed equal to b.size() (see the
         // class-level comment in the header for why), so one buffer covers
         // both directions.
-        pinnedBuf(allocPinned(sizeOfBForX.size()), &cudaFreeHost), hand(gpuIndex) {
+        pinnedBuf(allocPinned(sizeOfBForX.size()), &cudaFreeHost),
+        hands_(4, GpuIndex(gpuIndex)), hand(hands_[3]) {
     
-    Handle hands[3] = {Handle(gpuIndex), Handle(gpuIndex), Handle(gpuIndex)};
-    Event events[3];
-
     buildBoundaryConfigAndLaunch<Real>(
         dim, delta, startIsNeumann, endIsNeumann, startVal, endVal, segType,
-        hands[0],
+        hands_[0],
         [&](const auto& boundaryHost) {
-            poisson::boundaryCorrection(boundaryHost.forDevice(), sizeOfBForBAdj, hands[0]);
+            poisson::boundaryCorrection(boundaryHost.forDevice(), sizeOfBForBAdj, hands_[0]);
             using SegXType = typename std::decay_t<decltype(boundaryHost.x)>::SegmentType;
 
             if (dim.layers <= 1)
-                eds = std::make_unique<EigenDecomp2d<Real>>(boundaryHost.forDevice(), hands, events[0]);
+                eds = std::make_unique<EigenDecomp2d<Real>>(boundaryHost.forDevice(), hands_);
             else
                 eds = thomas ?
-                    std::make_unique<EigenDecompThomas<Real, SegXType>>(boundaryHost, hands, events, helmholtzShift) :
-                    std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), hands, events, helmholtzShift);
+                    std::make_unique<EigenDecompThomas<Real, SegXType>>(boundaryHost, hands_, helmholtzShift) :
+                    std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), hands_, helmholtzShift);
         }
     );
-    for (size_t i = 0; i < 3; ++i) {
-        events[i].record(hands[i]);
-        events[i].hold(hand);
-    }
+    hands_.waitFor({0, 1, 2}, {3});
 }
 
 

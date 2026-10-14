@@ -31,13 +31,12 @@ public:
     /**
      * Creates a solver that owns its own memory.
      * @param boundary The boundary conditions.
-     * @param hand2 2 contexts.
-     * @param event an empty event.
+     * @param hands At least 2 handles.
      * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      *
      */
     template<class BoundaryConfigT>
-    EigenDecomp2d(const BoundaryConfigT &boundary, Handle *hand2, Event &event, T helmholtzShift = 0);
+    EigenDecomp2d(const BoundaryConfigT &boundary, Handles &hands, T helmholtzShift = 0);
 
 
     /**

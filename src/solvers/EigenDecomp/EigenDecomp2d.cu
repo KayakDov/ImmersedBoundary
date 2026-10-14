@@ -36,8 +36,8 @@ void EigenDecomp2d<T>::eValsLInvMult(const SimpleArray<T> &src, SimpleArray<T> &
 
 template<typename T>
 template<typename BoundaryConfigT>
-EigenDecomp2d<T>::EigenDecomp2d(const BoundaryConfigT& boundary, Handle* hand2, Event& event, T helmholtzShift) :
-    EigenDecompSolver<T>(boundary, hand2, &event, helmholtzShift) {
+EigenDecomp2d<T>::EigenDecomp2d(const BoundaryConfigT& boundary, Handles& hands, T helmholtzShift) :
+    EigenDecompSolver<T>(boundary, hands, helmholtzShift) {
 }
 
 template<typename T>
@@ -58,8 +58,7 @@ template class EigenDecomp2d<float>;
 #define INSTANTIATE_EIGEN_DECOMP_2D_CONSTRUCTORS(Real, SegX, SegY, SegZ) \
 template EigenDecomp2d<Real>::EigenDecomp2d(                         \
 const BoundaryConfig<Real, SegX, SegY, SegZ>& boundary,          \
-Handle* hands,                                                   \
-Event& event,                                                    \
+Handles& hands,                                                  \
 Real helmholtzShift                                              \
 );
 

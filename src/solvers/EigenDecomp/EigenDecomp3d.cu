@@ -50,15 +50,15 @@ EigenDecomp3d<T>::EigenDecomp3d(
 
 template<typename T>
 template<typename BoundaryConfigT>
-EigenDecomp3d<T>::EigenDecomp3d(const BoundaryConfigT boundary, Handle* hand3, Event* event2, T helmholtzShift) :
-    EigenDecompSolver<T>(boundary, hand3, event2, helmholtzShift) {
+EigenDecomp3d<T>::EigenDecomp3d(const BoundaryConfigT boundary, Handles& hands, T helmholtzShift) :
+    EigenDecompSolver<T>(boundary, hands, helmholtzShift) {
 
 }
 
 template<typename T>
 template<typename BoundaryConfigT>
-EigenDecomp3d<T>::EigenDecomp3d(const BoundaryConfigT boundary, Handle *hand3, Event *event2, SimpleArray<T> sizeOfB, T helmholtzShift) :
-    EigenDecompSolver<T>(boundary, hand3, event2, sizeOfB, helmholtzShift){
+EigenDecomp3d<T>::EigenDecomp3d(const BoundaryConfigT boundary, Handles &hands, SimpleArray<T> sizeOfB, T helmholtzShift) :
+    EigenDecompSolver<T>(boundary, hands, sizeOfB, helmholtzShift){
 }
 
 template<typename T>
@@ -79,8 +79,8 @@ template class EigenDecomp3d<double>;
 template class EigenDecomp3d<float>;
 
 #define INSTANTIATE_EIGENDECOMP3D_CTORS(Real, SegX, SegY, SegZ) \
-template EigenDecomp3d<Real>::EigenDecomp3d(const BoundaryConfig<Real, SegX, SegY, SegZ>, Handle*, Event*, Real); \
-template EigenDecomp3d<Real>::EigenDecomp3d(const BoundaryConfig<Real, SegX, SegY, SegZ>, Handle*, Event*, SimpleArray<Real>, Real);
+template EigenDecomp3d<Real>::EigenDecomp3d(const BoundaryConfig<Real, SegX, SegY, SegZ>, Handles&, Real); \
+template EigenDecomp3d<Real>::EigenDecomp3d(const BoundaryConfig<Real, SegX, SegY, SegZ>, Handles&, SimpleArray<Real>, Real);
 
 APPLY_TO_ALL_SEGMENT_COMBOS(double, INSTANTIATE_EIGENDECOMP3D_CTORS)
 APPLY_TO_ALL_SEGMENT_COMBOS(float,  INSTANTIATE_EIGENDECOMP3D_CTORS)

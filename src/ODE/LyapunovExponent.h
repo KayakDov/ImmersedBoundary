@@ -11,13 +11,13 @@
 #include "deviceArrays/headers/Vec.h"
 #include "deviceArrays/headers/Singleton.h"
 #include "Norm.h"
-#include "solvers/Event.h"
+#include "deviceArrays/headers/Handles.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <memory>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 /**
@@ -42,16 +42,16 @@
  * discarded at its end; the class holds no path between intervals,
  * only the points they start from.
  *
- * This takes exactly n handles, one per exponent. hand[i] advances the
- * path for y_i; hand[0] also advances the reference path and forms the
- * differences, which leaves that stream with extra work. An extra handle
- * for the reference alone would balance it.
+ * This takes a Handles group of exactly n handles, one per exponent.
+ * handle i advances the path for y_i; handle 0 also advances the reference
+ * path and forms the differences, which leaves that stream with extra
+ * work. An extra handle for the reference alone would balance it.
  *
- * Each interval has four joins, all through events and never through the
- * host: the other handles signal hand[0] when stepping is done, hand[0]
- * signals them when the differences are in, the other handles signal
- * hand[0] when their resets are done, and hand[0] signals them again
- * before anyone steps. The second of these is the entry to Gram-Schmidt,
+ * Each interval has four joins, all through Handles and never through the
+ * host: handle 0 waits for the others when stepping is done, the others
+ * wait for handle 0 when the differences are in, handle 0 waits for the
+ * others when their resets are done, and the others wait for handle 0
+ * again before anyone steps. The second of these is the entry to Gram-Schmidt,
  * which spreads its columns over the handles. Stepping, Gram-Schmidt and
  * the resets are the parallel phases; only the differences and the
  * accumulation run on hand[0] alone.
@@ -112,14 +112,14 @@
  * and not in the interval where it happened.
  *
  * @par Required Mat method
- * `void Mat<Real>::gramSchmidt(Mat<Real>& dst, Vec<Real>& lengths, Vec<Real>& inverseLengths, Handle* hands, Event* events) const`
+ * `void Mat<Real>::gramSchmidt(Mat<Real>& dst, Vec<Real>& lengths, Vec<Real>& inverseLengths, Handles& hands) const`
  * orthonormalizes the columns of this matrix into dst, left to right
  * under the Euclidean inner product: column 0 is only normalized, column
  * 1 first has its component along column 0 removed, and so on.
  * lengths[i] receives the length column i had immediately before it was
  * normalized (the diagonal of R in A = QR), and inverseLengths[i] its
  * reciprocal. dst may be the same matrix as this one. It takes one handle
- * and one event per column and spreads the columns over them: the source
+ * per column and spreads the columns over them: the source
  * must be ready on hands[0]'s stream, and on return column i, lengths[i]
  * and inverseLengths[i] are ready on hands[i]'s stream, not on hands[0]'s,
  * so the caller joins before reading across handles. Here lengths is
@@ -170,25 +170,24 @@ public:
      *                   lengths, the n growth ratios, the n running
      *                   products, epsilon, and the exponent 1/T. This is
      *                   also how the number of exponents n is known.
-     * @param hand       Exactly n handles, one per exponent, as described
+     * @param hands      Exactly n handles, one per exponent, as described
      *                   above. Must outlive this object.
      *
      * @throws std::invalid_argument if singletons doesn't have a count of
-     *         the form 5n + 2 with n at least one, hand is null, or
-     *         buffer doesn't have bufferColumns() columns. The row count of buffer
-     *         can't be checked against the state length here --
-     *         TimeSequence is deliberately dimension-agnostic -- so that
-     *         stays on the caller, as does having n handles: a pointer
-     *         has no length to check.
+     *         the form 5n + 2 with n at least one, hands doesn't have
+     *         exactly n handles, or buffer doesn't have bufferColumns()
+     *         columns. The row count of buffer can't be checked against
+     *         the state length here -- TimeSequence is deliberately
+     *         dimension-agnostic -- so that stays on the caller.
      */
     LyapunovExponent(
         TimeSequence<Real>& sequence,
         Mat<Real> buffer,
         Vec<Real> singletons,
-        Handle* hand
-    ) : numExponents(validated(sequence, buffer, singletons, hand)),
+        Handles& hands
+    ) : numExponents(validated(sequence, buffer, singletons, hands)),
         sequence_(sequence),
-        hand_(hand),
+        hands_(hands),
         x_(buffer.col(0)),
         y_(buffer.subMat(0, 1, buffer._rows, numExponents)),
         v_(buffer.subMat(0, 1 + numExponents, buffer._rows, numExponents)),
@@ -199,8 +198,7 @@ public:
         ratios_(singletons.vec(3 * numExponents, 1, numExponents)),
         products_(singletons.vec(4 * numExponents, 1, numExponents)),
         epsilonScalar_(singletons.get(5 * numExponents)),
-        exponentScalar_(singletons.get(5 * numExponents + 1)),
-        events_(new Event[numExponents])
+        exponentScalar_(singletons.get(5 * numExponents + 1))
     {
     }
 
@@ -229,7 +227,7 @@ public:
         size_t stepsPerInterval,
         const Norm<Real>& norm = euclideanNorm<Real>()
     ) const {
-        Handle& lead = hand_[0];
+        Handle& lead = hands_[0];
         const Singleton<Real>& one = GPUScalar<Real>::get(1, lead);
 
         referencePath().advance(stepsPerInterval);
@@ -244,7 +242,7 @@ public:
         orthonormalize();
 
         for (size_t exponentIndex = 0; exponentIndex < numExponents; ++exponentIndex) {
-            Handle& hand = hand_[exponentIndex];
+            Handle& hand = hands_[exponentIndex];
             auto deviated = y_.col(exponentIndex);
             deviated.set(x_, hand);
             deviated.add(v_.col(exponentIndex), &epsilonScalar_, &hand);
@@ -306,7 +304,7 @@ public:
         if (numIntervals == 0 || stepsPerInterval == 0)
             throw std::invalid_argument("There must be at least one interval of at least one step.");
 
-        Handle& lead = hand_[0];
+        Handle& lead = hands_[0];
 
         x_.set(initialPoint, lead);
         referencePath().advance(warmupSteps);
@@ -337,14 +335,18 @@ public:
         std::vector<Real> exponents(numExponents);
         products_.get(exponents.data(), lead);
 
-        for (size_t handleIndex = 0; handleIndex < numExponents; ++handleIndex)
-            hand_[handleIndex].synch();
+        hands_.synch();
 
         for (size_t exponentIndex = 0; exponentIndex < numExponents; ++exponentIndex) {
-            exponents[exponentIndex] = std::log(exponents[exponentIndex]);
+            const Real product = exponents[exponentIndex];
+            exponents[exponentIndex] = std::log(product);
 
             if (!std::isfinite(exponents[exponentIndex]))
-                throw std::runtime_error("An exponent is not finite; the norm may have measured a deviation as zero length.");
+                throw std::runtime_error(
+                    "Exponent " + std::to_string(exponentIndex) + " of " + std::to_string(numExponents)
+                    + " is not finite: its running product is " + std::to_string(product)
+                    + ". The norm may have measured a deviation as zero length."
+                );
         }
 
         return exponents;
@@ -353,12 +355,11 @@ public:
 private:
     const size_t numExponents;
     TimeSequence<Real>& sequence_;
-    Handle* hand_;
+    Handles& hands_;
     mutable Vec<Real> x_;
     mutable Mat<Real> y_, v_, scratch_;
     mutable Vec<Real> norms_, measured_, startLengths_, ratios_, products_;
     mutable Singleton<Real> epsilonScalar_, exponentScalar_;
-    std::unique_ptr<Event[]> events_;
 
     /**
      * @brief Orthonormalizes the deviations in place, spread over every
@@ -368,7 +369,7 @@ private:
      * deviation i is ready on hand[i]'s stream, not on hand[0]'s.
      */
     void orthonormalize() const {
-        v_.gramSchmidt(v_, norms_, ratios_, hand_, events_.get());
+        v_.gramSchmidt(v_, norms_, ratios_, hands_);
     }
 
     /**
@@ -378,7 +379,7 @@ private:
      *        hand[0].
      */
     void measureStartLengths(const Norm<Real>& norm) const {
-        Handle& lead = hand_[0];
+        Handle& lead = hands_[0];
 
         for (size_t exponentIndex = 0; exponentIndex < numExponents; ++exponentIndex)
             norm.measure(v_.col(exponentIndex), measured_.get(exponentIndex), lead);
@@ -397,7 +398,7 @@ private:
      * norm the measurement is 1 and the ratio is length / epsilon.
      */
     void accumulateGrowth() const {
-        Handle& lead = hand_[0];
+        Handle& lead = hands_[0];
         const Singleton<Real>& one = GPUScalar<Real>::get(1, lead);
 
         for (size_t exponentIndex = 0; exponentIndex < numExponents; ++exponentIndex)
@@ -420,27 +421,19 @@ private:
     }
 
     /**
-     * @brief Makes hand[0] wait until every other handle has finished
+     * @brief Makes handle 0 wait until every other handle has finished
      *        everything enqueued on it so far.
      */
     void leadWaitsForOthers() const {
-        for (size_t handleIndex = 1; handleIndex < numExponents; ++handleIndex) {
-            events_[handleIndex].record(hand_[handleIndex]);
-            events_[handleIndex].hold(hand_[0]);
-        }
+        hands_.waitForAll(0);
     }
 
     /**
-     * @brief Makes every other handle wait until hand[0] has finished
+     * @brief Makes every other handle wait until handle 0 has finished
      *        everything enqueued on it so far.
      */
     void othersWaitForLead() const {
-        if (numExponents == 1)
-            return;
-
-        events_[0].record(hand_[0]);
-        for (size_t handleIndex = 1; handleIndex < numExponents; ++handleIndex)
-            events_[0].hold(hand_[handleIndex]);
+        hands_.allWaitFor(0);
     }
 
     /**
@@ -448,7 +441,7 @@ private:
      *        advanced in place on hand[0].
      */
     typename TimeSequence<Real>::Iterator referencePath() const {
-        return sequence_.iterator(x_, hand_[0], scratchBlock(0));
+        return sequence_.iterator(x_, hands_[0], scratchBlock(0));
     }
 
     /**
@@ -456,7 +449,7 @@ private:
      *        point y_i, advanced in place on hand[i].
      */
     typename TimeSequence<Real>::Iterator deviatedPath(size_t exponentIndex) const {
-        return sequence_.iterator(y_.col(exponentIndex), hand_[exponentIndex], scratchBlock(exponentIndex));
+        return sequence_.iterator(y_.col(exponentIndex), hands_[exponentIndex], scratchBlock(exponentIndex));
     }
 
     /**
@@ -482,12 +475,15 @@ private:
         const TimeSequence<Real>& sequence,
         const Mat<Real>& buffer,
         const Vec<Real>& singletons,
-        const Handle* hand
+        const Handles& hands
     ) {
-        if (singletons.size() < 7 || (singletons.size() - 2) % 5 != 0 || hand == nullptr)
-            throw std::invalid_argument("LyapunovExponent needs 5n + 2 singletons, for n exponents, and a handle array.");
+        if (singletons.size() < 7 || (singletons.size() - 2) % 5 != 0)
+            throw std::invalid_argument("LyapunovExponent needs 5n + 2 singletons, for n exponents.");
 
         const size_t numExponents = (singletons.size() - 2) / 5;
+
+        if (hands.size() != numExponents)
+            throw std::invalid_argument("LyapunovExponent needs exactly one handle per exponent.");
 
         if (buffer._cols != bufferColumns(sequence, numExponents))
             throw std::invalid_argument("LyapunovExponent buffer must have bufferColumns() columns.");

@@ -61,14 +61,13 @@ public:
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.
      * @param boundary The boundary conditions.
-     * @param hand3 Pointer to array of Handles.
-     * @param event2 Event for stream synchronization.
+     * @param hands At least 3 handles.
      * @param sizeOfBX3 allocated memory for the right hand side, and the thomas calculations.  It should have as amny rows
      * as there are rows in L, and 3 columns.
      * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
     template<typename SegY, typename SegZ>
-    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handle *hand3, Event *event2, Mat<T> sizeOfBX3, T helmholtzShift = 0);
+    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handles &hands, Mat<T> sizeOfBX3, T helmholtzShift = 0);
 
 
 
@@ -76,12 +75,11 @@ public:
     /**
      * @brief Constructs the hybrid solver and manages its own internal memory.
      * @param boundary The boundary conditions.
-     * @param hand3 Pointer to array of Handles.
-     * @param event2 Event for stream synchronization.
+     * @param hands At least 3 handles.
      * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
      */
     template<class SegY, class SegZ>
-    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ> &boundary, Handle *hand3, Event *event2, T helmholtzShift = 0);
+    EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ> &boundary, Handles &hands, T helmholtzShift = 0);
 
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const override;
 };
@@ -89,12 +87,12 @@ public:
 
 // Guide for Constructor 2 (Without Mat workspace)
 template<typename Real, typename SegX, typename SegY, typename SegZ>
-EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Real)
+EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handles&, Real)
     -> EigenDecompThomas<Real, SegX>;
 
 // FIXED CODE
 template<typename Real, typename SegX, typename SegY, typename SegZ>
-EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handle*, Event*, Mat<Real>, Real)
+EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handles&, Mat<Real>, Real)
     -> EigenDecompThomas<Real, SegX>;
 
 #endif //CUDABANDED_EIGENDECOMPTHOMAS_CUH

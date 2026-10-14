@@ -14,13 +14,13 @@
 #include "deviceArrays/headers/SquareMat.h"
 #include "kronecker/KroneckerTriplet.h"
 #include "math/XYZ.cuh"
-#include "solvers/Event.h"
+#include "deviceArrays/headers/Handles.h"
 
 template<typename T>
     class Eigen {
 
     template<class BoundaryConfigT>
-    static XYZ<std::shared_ptr<Mat<T>>> generateEigen(const BoundaryConfigT &boundary, Handle *hands3, Event *events);
+    static XYZ<std::shared_ptr<Mat<T>>> generateEigen(const BoundaryConfigT &boundary, Handles &hands);
 
     Eigen(const XYZ<Vec<T>> &vals, const KroneckerTriplet<T> &vecs, const KroneckerTriplet<T> &vecsInv);
 
@@ -38,13 +38,12 @@ public:
     /**
      * Generates the eigenvector matrices.
      * @param boundary The boundary conditions.
-     * @param hands3 A handle for each dimension.
-     * @param events2 an event for each dimension - 1
-     * @param hands3
+     * @param hands One handle per dimension (at least numDims of them).  The handles are synchronized
+     * before this method returns.
      * @return The Laplacian's Eigen vector matrices.
      */
     template<typename BoundaryConfigT>
-    static Eigen make(const BoundaryConfigT &boundary, Handle *hands3, Event *events2);
+    static Eigen make(const BoundaryConfigT &boundary, Handles &hands);
 
     [[nodiscard]] GridDim dim() const;
 

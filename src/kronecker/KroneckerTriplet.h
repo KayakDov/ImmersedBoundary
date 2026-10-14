@@ -11,7 +11,7 @@
 #define CUDABANDED_KRONECKERTRIPLET_H
 #include "deviceArrays/headers/SquareMat.h"
 #include "deviceArrays/headers/Tensor.h"
-#include "solvers/Event.h"
+#include "../deviceArrays/headers/Support/Event.h"
 
 /**
  * @class KroneckerTriplet

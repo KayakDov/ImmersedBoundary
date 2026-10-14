@@ -428,6 +428,22 @@ Vec<T> GpuArray<T>::vec(size_t offset, size_t ld, size_t size) {
     return Vec<T>(size, this->_ptr.window(offset), ld);
 }
 
+/**
+ * Declared in GpuArray.h but never defined until now -- row()/diag()'s own
+ * const overloads (just below) call through to this same offset/ld/size
+ * constructor via their non-const selves, which is how the non-const vec()
+ * above ends up implicitly instantiated for every type in
+ * INSTANTIATE_VEC_CORE without a separate instantiation line for it. The
+ * const overload had no such caller anywhere in this file, so it was never
+ * instantiated for any type -- an undefined reference the moment anything
+ * outside this translation unit (e.g. ODE/Norm.h's NormRows::measure)
+ * called vec() on a const GpuArray.
+ */
+template<typename T>
+Vec<T> GpuArray<T>::vec(size_t offset, size_t ld, size_t size) const {
+    return (const_cast<GpuArray<T>*>(this))->vec(offset, ld, size);
+}
+
 template <typename T>
 Vec<T> GpuArray<T>::row(const size_t index){
     if (index > this->_rows) throw std::out_of_range("Out of range");
@@ -607,7 +623,8 @@ void Vec<T>::mult(
 
 #define INSTANTIATE_VEC_CORE(T) \
 template class Vec<T>; \
-template Vec<T> GpuArray<T>::row(size_t) const;
+template Vec<T> GpuArray<T>::row(size_t) const; \
+template Vec<T> GpuArray<T>::vec(size_t, size_t, size_t) const;
 
 INSTANTIATE_VEC_CORE(float)
 INSTANTIATE_VEC_CORE(double)
