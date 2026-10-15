@@ -9,6 +9,7 @@
 
 #include "deviceArrays/headers/DeviceMemory.h"
 #include "immersedBoundary/ImerssedEquation.h"
+#include "deviceArrays/headers/Handles.h"
 #include "poisson/Laplacian1d.cuh"
 #include "poisson/BoundaryConfig.cuh"
 #include "poisson/AxisSegment.cuh"
@@ -142,13 +143,13 @@ std::vector<Real> generateZeroMeanRhs(size_t total) {
 // ─── Residual Norm ───────────────────────────────────────────────────────────
 
 template <typename Real, typename segX, typename segY, typename segZ>
-double computeResidualNorm(const BoundaryConfig<Real, segX, segY, segZ>& boundary, const SimpleArray<Real>& x, const SimpleArray<Real>& rhs, Singleton<Real>& normResult, Handle* hands) {
+double computeResidualNorm(const BoundaryConfig<Real, segX, segY, segZ>& boundary, const SimpleArray<Real>& x, const SimpleArray<Real>& rhs, Singleton<Real>& normResult, Handles& hands) {
 
     auto L          = poisson::laplacian<Real>(boundary, hands[0]);
     auto lxMinusRhs = Vec<Real>::create(x.size(), hands[0]);
 
-    L.bandedMult(x, lxMinusRhs, hands, GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(0, hands[0]), false);
-    lxMinusRhs.add(rhs, &GPUScalar<Real>::get(-1, hands[0]), hands);
+    L.bandedMult(x, lxMinusRhs, &hands[0], GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(0, hands[0]), false);
+    lxMinusRhs.add(rhs, &GPUScalar<Real>::get(-1, hands[0]), &hands[0]);
     lxMinusRhs.norm(normResult, hands[0]);
     cudaDeviceSynchronize();
 
@@ -162,12 +163,12 @@ double runEigenDecomp3d(const BoundaryConfig<Real, segX, segY, segZ>& boundary,
                         SimpleArray<Real>& x,
                         const SimpleArray<Real>& rhs,
                         SimpleArray<Real>& sizeOfB,
-                        Handle* hands, Event* events) {
+                        Handles& hands) {
     x.fill(0, hands[0]);
     cudaDeviceSynchronize();
 
     auto t0 = std::chrono::high_resolution_clock::now();
-    EigenDecomp3d<Real> ed(boundary, hands, events, sizeOfB);
+    EigenDecomp3d<Real> ed(boundary, hands, sizeOfB);
     ed.solve(x, rhs, hands[0]);
     cudaDeviceSynchronize();
 
@@ -180,12 +181,12 @@ double runEigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>& bo
                             SimpleArray<Real>& x,
                             const SimpleArray<Real>& rhs,
                             Mat<Real>& sizeOfBX3,
-                            Handle* hands, Event* events) {
+                            Handles& hands) {
     x.fill(0, hands[0]);
     cudaDeviceSynchronize();
 
     auto t0 = std::chrono::high_resolution_clock::now();
-    EigenDecompThomas<Real, SegX> ed(boundary, hands, events, sizeOfBX3);
+    EigenDecompThomas<Real, SegX> ed(boundary, hands, sizeOfBX3);
     ed.solve(x, rhs, hands[0]);
     cudaDeviceSynchronize();
 
@@ -223,8 +224,7 @@ void printBenchmarkRow(size_t n, size_t total, const SolverTiming& t) {
 TEST(Benchmark, SolverRuntimes) {
     using Real = double;
 
-    Handle hands[3];
-    Event  events[2];
+    Handles hands(3);
     Real3d delta(1, 1, 1);
 
     printBenchmarkHeader();
@@ -255,13 +255,13 @@ TEST(Benchmark, SolverRuntimes) {
         SolverTiming timing;
 
         try {
-            timing.eigenMs = runEigenDecomp3d<Real>(uniformBoundary.forDevice(), xEigenSub, rhsSub, sizeOfBSub, hands, events);
+            timing.eigenMs = runEigenDecomp3d<Real>(uniformBoundary.forDevice(), xEigenSub, rhsSub, sizeOfBSub, hands);
         } catch (...) {
             std::cout << "OOM in EigenDecomp3d at N=" << n << std::endl; break;
         }
 
         try {
-            timing.thomasUnifMs = runEigenDecompThomas<Real, UniformSegment<Real>>(uniformBoundary, xThomasSub, rhsSub, sizeOfBX3Sub, hands, events);
+            timing.thomasUnifMs = runEigenDecompThomas<Real, UniformSegment<Real>>(uniformBoundary, xThomasSub, rhsSub, sizeOfBX3Sub, hands);
             timing.diffNormUnif = computeResidualNorm(uniformBoundary.forDevice(), xThomasSub, rhsSub, *buf.normResult, hands);
         } catch (...) {
             std::cout << "OOM in EigenDecompThomas (Uniform) at N=" << n << std::endl; break;
@@ -269,7 +269,7 @@ TEST(Benchmark, SolverRuntimes) {
 
         try {
             timing.thomasVarMs = runEigenDecompThomas<Real, VariableSegment<Real>>(
-                variableBoundary, xVarThomasSub, rhsSub, sizeOfBX3Sub, hands, events);
+                variableBoundary, xVarThomasSub, rhsSub, sizeOfBX3Sub, hands);
             timing.diffNormVar = computeResidualNorm(
                 variableBoundary.forDevice(), xVarThomasSub, rhsSub, *buf.normResult, hands);
         } catch (...) {

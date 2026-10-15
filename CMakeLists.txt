@@ -368,6 +368,7 @@ enable_testing()
 file(GLOB TEST_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cu"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/cfdSolver/*.cpp"
 )
 list(FILTER TEST_SOURCES EXCLUDE REGEX "BenchMark\\.cpp$")
 
@@ -382,6 +383,16 @@ target_link_libraries(run_unit_tests
         CudaBandedLib
         GTest::gtest
         GTest::gtest_main
+)
+# Tests/cfdSolver/*.cpp use unqualified includes ("SimulationConfig.h",
+# "physics/Operators.cuh") that only resolve with src/cfdSolver itself as a
+# search root -- CudaBandedLib's own include dirs expose src/, not src/cfdSolver/.
+# No extra link library needed: src/cfdSolver/*.cpp is already compiled into
+# CudaBandedLib via LIB_SOURCES' recursive glob above, and these tests are
+# host-only (no CUDA/GPU calls -- see verify_padding_equivalence.cpp's header).
+target_include_directories(run_unit_tests
+        PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/cfdSolver"
 )
 
 include(GoogleTest)
@@ -402,6 +413,7 @@ gtest_discover_tests(run_unit_tests
         DISCOVERY_MODE PRE_TEST
         PROPERTIES
         ENVIRONMENT "${TEST_ENV}"
+        LABELS "unit"
 )
 
 if(WIN32)
@@ -436,6 +448,7 @@ gtest_discover_tests(run_benchmarks
         DISCOVERY_MODE PRE_TEST
         PROPERTIES
         ENVIRONMENT "${TEST_ENV}"
+        LABELS "benchmark"
 )
 
 if(WIN32)
@@ -447,6 +460,29 @@ if(WIN32)
             COMMAND_EXPAND_LISTS
     )
 endif()
+
+# =========================
+# Aggregate "run everything that is a real test, never benchmarks" target
+# =========================
+# run_unit_tests now includes both the original CudaBandedLib suites and the
+# cfdSolver suites (Tests/cfdSolver/*.cpp, folded in above) -- one binary, so
+# this list currently has one entry. Add any future standalone test
+# executable here and it is automatically (a) built as a dependency and
+# (b) swept into the single ctest invocation below. run_benchmarks is
+# deliberately never added here -- it is additionally excluded by label as a
+# second, independent safeguard in case a future test target forgets to list
+# itself.
+set(ALL_TEST_TARGETS
+        run_unit_tests
+)
+
+add_custom_target(run_all_tests
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG> -LE "benchmark"
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        DEPENDS ${ALL_TEST_TARGETS}
+        COMMENT "Building and running every non-benchmark test suite"
+)
+
 # =========================
 # Install the library and Fortran modules for external projects
 # =========================
@@ -467,6 +503,9 @@ if(NOT MSVC)
     target_link_options(run_unit_tests PRIVATE
             "-Wl,--no-undefined"
             "-Wl,--disable-new-dtags"   # Use DT_RPATH (propagates transitively) not DT_RUNPATH
+    )
+    target_link_options(run_benchmarks PRIVATE
+            "-Wl,--disable-new-dtags"
     )
 endif()
 

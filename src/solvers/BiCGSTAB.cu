@@ -141,7 +141,7 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
         r.setDifference(s, t, GPUScalar<T>::get(1, hands_[0]), omega, &hands_[0]); // r = s - omega * t
 
         hands_.waitFor(0, 2);
-        if (isSmall(r, temp[2])) break;
+        if (isSmall(r, temp[2], 2)) break;
 
         r_tilde.mult(r, rho_new, &hands_[0]);
         beta.setProductOfQuotients(rho_new, rho, alpha, omega, hands_[0]); // beta = (rho_new / rho) * (alpha / omega);

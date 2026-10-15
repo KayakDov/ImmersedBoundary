@@ -79,8 +79,17 @@ private:
 
     /**
      * @brief Checks if the squared $L_2$ norm of a vector is smaller than the tolerance.
+     *
+     * Runs on stream @p streamInd and blocks the host until the norm has been read back.  There is
+     * deliberately no default stream.  The caller must already have made that stream wait for
+     * whatever last wrote @p v.
+     *
+     * @param v Vector to measure.
+     * @param preAlocated Scratch singleton that receives the squared norm.
+     * @param streamInd Index of the stream to run on.
+     * @return True if the squared norm is below the tolerance.
      */
-    bool isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd = 0);
+    bool isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd);
 
     /**
      * @brief Sets the content of the destination vector to be equal to the source vector.
