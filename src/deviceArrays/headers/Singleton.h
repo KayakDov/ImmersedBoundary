@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <memory>
 
+class Event;
 template<typename T> class Mat;
 template<typename T> class Tensor;
 
@@ -134,6 +135,12 @@ class GPUScalar {
     /// Handle::device(), i.e. the same gpuIndex used everywhere else.
     static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
 
+    /// One Event per device, recorded right after that device's cache
+    /// finishes being written. A caller on any stream holds against it
+    /// before reading, so the read is correctly ordered after the write
+    /// without ever blocking the host.
+    static std::unordered_map<size_t, Event> ready;
+
 public:
     /**
      * Holds the Singleton constants.
@@ -150,7 +157,10 @@ public:
     /**
      * Gets a singleton that holds the desired value, on the same device as
      * hand, without allocating new memory except the first time this type
-     * is requested on that particular device.
+     * is requested on that particular device. Safe to call concurrently
+     * from different streams/handles on the same device: the calling
+     * stream is made to wait (GPU-side, not host-blocking) until the
+     * cache for that device has actually finished being written.
      * @param i An integer between -2 and 2 inclusive.
      * @param hand Determines which device's cache to use (or create).
      * @return A singleton containing the requested integer, resident on hand's device.
@@ -166,6 +176,7 @@ public:
 
     static void finalize() {
         instances.clear();
+        ready.clear();
     }
 
 };

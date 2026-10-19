@@ -80,8 +80,18 @@ const Singleton<T> & GPUScalar<T>::get(int32_t i, Handle& hand) {
     size_t gpuIndex = hand.device();
 
     auto it = instances.find(gpuIndex);
-    if (it == instances.end())
+    if (it == instances.end()) {
         it = instances.emplace(gpuIndex, std::make_unique<GPUScalar<T>>(hand)).first;
+        ready[gpuIndex].record(hand);   // marks: "this device's cache is fully
+                                         // written as of this point on hand's stream"
+    }
+    ready[gpuIndex].hold(hand);         // make the CALLING stream wait for that point
+                                         // before it can read -- free/no-op for the
+                                         // stream that just built it (or any stream
+                                         // already past that point in the event's
+                                         // completion), a real but host-non-blocking
+                                         // GPU-side wait for a concurrent caller on a
+                                         // different stream
 
     switch (i) {
         case 0: return it->second->ZERO;
@@ -113,7 +123,7 @@ GPUScalar<T>::GPUScalar(Handle& hand):
 }
 
 template <typename T> std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> GPUScalar<T>::instances;
-
+template <typename T> std::unordered_map<size_t, Event> GPUScalar<T>::ready;
 template class Singleton<int32_t>;
 template class Singleton<size_t>;
 template class Singleton<float>;

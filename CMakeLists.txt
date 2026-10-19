@@ -354,6 +354,29 @@ target_link_libraries(CudaBandedLib
 )
 
 # =========================
+# cfdSolver executable
+# =========================
+# src/cfdSolver/main.cu is deliberately excluded from LIB_SOURCES above (a
+# library can't contain a main()), but nothing previously built it into a
+# runnable program. This is that program: loads a JSON config (see
+# src/cfdSolver/example_config.json) and runs one simulation to completion,
+# matching ConvMain_3D_Q2D.f90's standalone executable. No extra include
+# dirs needed -- CfdSimulation.h's own includes ("setup/...", "physics/...")
+# resolve against its own directory (src/cfdSolver/) automatically, and
+# cross-module includes like "deviceArrays/headers/handle.h" come from
+# CudaBandedLib's own PUBLIC include dirs via the link below.
+add_executable(cfdSolver "${CMAKE_CURRENT_SOURCE_DIR}/src/cfdSolver/main.cu")
+
+set_target_properties(cfdSolver PROPERTIES
+        CUDA_RUNTIME_LIBRARY Shared
+        BUILD_RPATH "${INTLC_LIB_DIR}"
+)
+target_link_libraries(cfdSolver
+        PRIVATE
+        CudaBandedLib
+)
+
+# =========================
 # RPATH configuration
 # =========================
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -462,6 +485,34 @@ if(WIN32)
 endif()
 
 # =========================
+# Intel runtime (libimf.so etc.) rpath, explicit
+# =========================
+# The BUILD_RPATH property set on each target above does not reliably end
+# up in the final binary -- confirmed via `readelf -d cfdSolver | grep -i
+# rpath` printing nothing at all, even with INTLC_LIB_DIR correctly
+# resolved, which is why running cfdSolver directly (outside CTest, which
+# masked this by injecting LD_LIBRARY_PATH itself via TEST_ENV) failed with
+# "libimf.so: cannot open shared object file". An explicit linker rpath
+# flag is harder for CMake to silently drop than the property is. Linux
+# only -- Windows has no rpath concept; its runtime DLLs are copied next to
+# the executable by the WIN32 TARGET_RUNTIME_DLLS steps above instead.
+if(NOT WIN32 AND INTLC_LIB_DIR)
+    foreach(_rpath_target run_unit_tests run_benchmarks cfdSolver)
+        target_link_options(${_rpath_target} PRIVATE
+                "-Wl,-rpath,${INTLC_LIB_DIR}"
+                "-Wl,--disable-new-dtags"   # embed old-style DT_RPATH, not DT_RUNPATH --
+                                            # DT_RUNPATH only resolves a binary's own
+                                            # direct NEEDED entries and does not
+                                            # propagate to libraries those libraries in
+                                            # turn depend on, unlike DT_RPATH. Applying
+                                            # this consistently to every target here
+                                            # (not just run_unit_tests, which is where it
+                                            # previously lived alone) removes that gap.
+        )
+    endforeach()
+endif()
+
+# =========================
 # Aggregate "run everything that is a real test, never benchmarks" target
 # =========================
 # run_unit_tests now includes both the original CudaBandedLib suites and the
@@ -502,10 +553,6 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
 if(NOT MSVC)
     target_link_options(run_unit_tests PRIVATE
             "-Wl,--no-undefined"
-            "-Wl,--disable-new-dtags"   # Use DT_RPATH (propagates transitively) not DT_RUNPATH
-    )
-    target_link_options(run_benchmarks PRIVATE
-            "-Wl,--disable-new-dtags"
     )
 endif()
 
