@@ -1,4 +1,5 @@
 #include "../headers/Singleton.h"
+#include "deviceArrays/headers/Support/Event.h"
 
 #include <vector>
 

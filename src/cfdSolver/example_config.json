@@ -6,7 +6,7 @@
   },
   "numerics": {
     "eps": 0.0000001, "eps_convergence": 0.000001, "max_iterations": 9000,
-    "time_step": 0.0001, "time_interval": 0.1, "print_every": 1000
+    "time_step": 0.0001, "time_interval": 0.1, "print_every": 1
   },
   "diagnostics": { "run_conservation_checks": false, "mode": "full" },
   "temperature": {

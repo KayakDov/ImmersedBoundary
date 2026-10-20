@@ -73,6 +73,18 @@ public:
     /**
      * @brief The Lorentz force's x contribution at one cell, added to
      * RHSx. Port of EM_force's first loop.
+     *
+     * Verified directly against EM_forcing.f90's EM_force:
+     *   Coef = DGr * (Hartmann * WidRa)**2
+     *   RHSx(i,j,k) = RHSx(i,j,k) + Coef * ( DFi_dz + VMx(i,j,k) )
+     * Both terms inside the parentheses are positive. A previous revision
+     * of this file flipped the velocity term to a minus sign on a damping
+     * ("Hartmann braking") argument that sounded physically reasonable but
+     * does not match the reference Fortran -- that flip was the actual bug:
+     * it is what caused the Hartmann=1000 blow-up this function was
+     * (incorrectly) blamed for during diagnosis. Restored to match the
+     * Fortran exactly.
+     *
      * @tparam Real Floating-point type.
      * @param i 1-based x index in [1, Nx].
      * @param j 1-based y index in [1, Ny1].
@@ -97,6 +109,12 @@ public:
     /**
      * @brief The Lorentz force's z contribution at one cell, subtracted
      * from RHSz. Port of EM_force's second loop.
+     *
+     * Verified directly against EM_forcing.f90's EM_force:
+     *   RHSz(i,j,k) = RHSz(i,j,k) - Coef * ( DFi_dx - VMz(i,j,k) )
+     * i.e. RHSz -= Coef*DFi_dx; RHSz += Coef*VMz. Same restoration as
+     * applyForceX above, for the same reason.
+     *
      * @tparam Real Floating-point type.
      * @param i 1-based x index in [1, Nx1].
      * @param j 1-based y index in [1, Ny1].

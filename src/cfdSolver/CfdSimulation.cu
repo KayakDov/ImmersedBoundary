@@ -29,6 +29,24 @@ struct LaunchConfig3D {
     dim3 blocks, threads;
     explicit LaunchConfig3D(int nx, int ny, int nz)
         : blocks((nx + 7) / 8, (ny + 7) / 8, (nz + 7) / 8), threads(8, 8, 8) {}
+
+    /**
+     * @brief Bytes of dynamic shared memory a block-level reduction
+     * (Diagnostics.cuh's blockSumInto) needs for a launch using this
+     * config: one Real per thread in the block.
+     *
+     * blockSumInto's shared buffer is declared `extern __shared__`, which
+     * means its size is NOT fixed by that declaration -- it is whatever
+     * byte count the launch's third <<<>>> argument supplies. Passing 0
+     * there (as every reduction-kernel launch in this file used to)
+     * allocates a zero-byte buffer, so every thread's `shared[tid] = value`
+     * write is out of bounds. Any kernel that calls blockSumInto must pass
+     * this, not 0, as its launch's shared-memory-size argument.
+     */
+    template<typename Real>
+    size_t reductionSharedBytes() const {
+        return (size_t)threads.x * threads.y * threads.z * sizeof(Real);
+    }
 };
 
 template<typename Real>
@@ -370,6 +388,16 @@ void CfdSimulation<Real>::launchVxAndVz() {
     FieldView<Real> rhsX = rhsXScratch_.view();
     LaunchConfig3D cfgX(rhsX.nx(), rhsX.ny(), rhsX.nz());
     scaleKernel<Real><<<cfgX.blocks, cfgX.threads, 0, handX>>>(rhsX, inverseDGr);
+    // FIX: vx_.solved()'s buffer is reused across timesteps and is never
+    // otherwise assigned (only accumulated into) before this point, so
+    // without zeroing it first, addIntoKernel below adds this step's RHS
+    // on top of the PREVIOUS timestep's fully-solved Vx -- not a fresh
+    // RHS. That extra term compounds every timestep and was the cause of
+    // the unconditional exponential blow-up (see SolvedField::zero()'s
+    // doc comment: "for a right-hand-side build that accumulates with
+    // +=", which this build does, via addIntoKernel, but previously
+    // without the required zero() first).
+    vx_.solved().zero(handX);
     FieldView<Real> solveTargetX = vx_.solved().view();
     addIntoKernel<Real><<<cfgX.blocks, cfgX.threads, 0, handX>>>(solveTargetX, rhsX);
     vx_.solved().solve();
@@ -378,6 +406,10 @@ void CfdSimulation<Real>::launchVxAndVz() {
     FieldView<Real> rhsZ = rhsZScratch_.view();
     LaunchConfig3D cfgZ(rhsZ.nx(), rhsZ.ny(), rhsZ.nz());
     scaleKernel<Real><<<cfgZ.blocks, cfgZ.threads, 0, handZ>>>(rhsZ, inverseDGr);
+    // FIX: same reasoning as vx_ above -- vz_.solved()'s buffer must be
+    // zeroed before this addInto, or it accumulates onto the previous
+    // timestep's solved Vz instead of starting from a fresh RHS.
+    vz_.solved().zero(handZ);
     FieldView<Real> solveTargetZ = vz_.solved().view();
     addIntoKernel<Real><<<cfgZ.blocks, cfgZ.threads, 0, handZ>>>(solveTargetZ, rhsZ);
     vz_.solved().solve();
@@ -546,20 +578,20 @@ void CfdSimulation<Real>::printFinalReport() const {
 
     LaunchConfig3D volumeCfg(nx1, ny1, nz1);
     Real kineticEnergySum = sumReduction([&](GpuField<Real>& scratch) {
-        kineticEnergyKernel<Real><<<volumeCfg.blocks, volumeCfg.threads, 0, hand>>>(
+        kineticEnergyKernel<Real><<<volumeCfg.blocks, volumeCfg.threads, volumeCfg.reductionSharedBytes<Real>(), hand>>>(
             vx_.currentView(), vy_.currentView(), vz_.currentView(), spacing, nx1, ny1, nz1, scratch.view().data());
     });
 
     LaunchConfig3D wallCfg(1, ny1, nz1);
     Real nusseltSum = sumReduction([&](GpuField<Real>& scratch) {
-        nusseltKernel<Real><<<wallCfg.blocks, wallCfg.threads, 0, hand>>>(
+        nusseltKernel<Real><<<wallCfg.blocks, wallCfg.threads, wallCfg.reductionSharedBytes<Real>(), hand>>>(
             temperature_.currentView(), temperatureBc, spacing, ny1, nz1, scratch.view().data());
     });
 
     int midplaneY = (cfg_.Ny + 2) / 2;
     LaunchConfig3D lineCfg(nz1, 1, 1);
     Real nusseltMiddleSum = sumReduction([&](GpuField<Real>& scratch) {
-        nusseltMiddleKernel<Real><<<lineCfg.blocks, lineCfg.threads, 0, hand>>>(
+        nusseltMiddleKernel<Real><<<lineCfg.blocks, lineCfg.threads, lineCfg.reductionSharedBytes<Real>(), hand>>>(
             temperature_.currentView(), temperatureBc, spacing, midplaneY, nz1, scratch.view().data());
     });
 

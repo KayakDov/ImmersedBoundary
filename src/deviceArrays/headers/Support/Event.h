@@ -10,8 +10,8 @@
 #include <cuda_runtime.h>
 #include <stdexcept>
 #include <memory>
-#include "../GpuArray.h"
-#include "../handle.h"
+#include "deviceArrays/headers/GpuArray.h"
+#include "deviceArrays/headers/handle.h" // for ensure_device_impl
 
 /**
  * @class Event
@@ -55,6 +55,16 @@
  * each call undoes the device switch the previous call made. If you need to
  * record events on more than one device, keep one Event per device rather
  * than sharing a single Event across them.
+ *
+ * @par Shutdown behavior
+ * cudaEventDestroy() can return cudaErrorCudartUnloading ("driver shutting
+ * down") when it runs during process exit, after the CUDA driver has
+ * already begun tearing itself down -- which can happen to any Event with
+ * static storage duration, since static destructors run very late, during
+ * global teardown. EventDeleter tolerates that specific case rather than
+ * throwing into its noexcept operator() (which would call
+ * std::terminate()), mirroring GpuPointer.h's makeCudaFreeDeleter, which
+ * handles the exact same case for cudaFree().
  */
 class Event {
 public:
@@ -100,17 +110,22 @@ public:
      */
     void hold(const Handle& h) const;
 
-    ~Event() { gpuIndex_.switchDevice(); }
 private:
 
     /**
      * @struct EventDeleter
      * @brief Custom deleter that destroys the CUDA event when the unique_ptr resets.
+     *
+     * Tolerates cudaErrorCudartUnloading ("driver shutting down"): see this
+     * file's class-level @par Shutdown behavior section. Any other error is
+     * still reported via CHECK_CUDA_ERROR, same as before.
      */
     struct EventDeleter {
         void operator()(cudaEvent_t e) const noexcept {
-
-            if (e) CHECK_CUDA_ERROR(cudaEventDestroy(e));
+            if (!e) return;
+            cudaError_t err = cudaEventDestroy(e);
+            if (err != cudaSuccess && err != cudaErrorCudartUnloading)
+                CHECK_CUDA_ERROR(err);
         }
     };
 
