@@ -33,7 +33,7 @@ Mat<T> Mat<T>::mult(
     const Singleton<T>* b = Singleton<T>::_get_or_create_target(static_cast<T>(0), *h, beta, temp_b_ptrSing2);
 
     GpuArray<T>::mult(other, resPtr, h, a, b, transposeA, transposeB);
-    
+
     return *resPtr;
 }
 
@@ -60,9 +60,11 @@ void Mat<T>::mult(
     const Singleton<T>* b = Singleton<T>::_get_or_create_target(0, *h, beta, temp_b_ptr);
 
     if constexpr(std::is_same_v<T, float>)
-        cublasSgemv(*h, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->toKernel1d(), this->toKernel2d(), this->_ld, other.toKernel1d(), other._ld, b->toKernel1d(), result.toKernel1d(), result._ld);
+        cublasSgemv(*h, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->toKernel1d(), this->toKernel2d(), this->_ld,
+                other.toKernel1d(), other._ld, b->toKernel1d(), result.toKernel1d(), result._ld);
     else if constexpr(std::is_same_v<T, double>)
-        cublasDgemv(*h, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->toKernel1d(), this->toKernel2d(), this->_ld, other.toKernel1d(), other._ld, b->toKernel1d(), result.toKernel1d(), result._ld);
+        cublasDgemv(*h, transpose ? CUBLAS_OP_T : CUBLAS_OP_N, this->_rows, this->_cols, a->toKernel1d(), this->toKernel2d(), this->_ld,
+                other.toKernel1d(), other._ld, b->toKernel1d(), result.toKernel1d(), result._ld);
     else throw std::invalid_argument("Unsupported type.");
 }
 
@@ -183,7 +185,7 @@ void Mat<T>::set(std::istream& input_stream, bool isText, bool isColMjr, Handle*
 }
 
 /**
- *TODO: rewrite this so that it returns an object that holds the paramaters, and we can call ostream << objectThatHoldsParamaters for smoother code.  Also for istream.
+ *TODO: rewrite this so that it returns an object that holds the parameters, and we can call ostream << objectThatHoldsParameters for smoother code.  Also for istream.
  * Note, if gets to text, will print data as row major and is much slower.  If gets to binary data, will write as column major and is fast.
  */
 template <typename T>
@@ -197,7 +199,7 @@ std::ostream &Mat<T>::get(std::ostream &output_stream, bool isText, bool printCo
         transposed.get(output_stream, isText, true, hand);
         return output_stream;
     }
-    
+
     while (helper.hasNext()) {
         Mat<T> subMat = this->subMat(
             0,
@@ -222,7 +224,7 @@ Singleton<T> Mat<T>::get(size_t row, size_t col) {
 
 template <typename T>
 Mat<T> Mat<T>::plus(
-    const Mat<T>& x, 
+    const Mat<T>& x,
     Mat<T>* result,
     const Singleton<T>* alpha,
     const Singleton<T>* beta,
@@ -241,13 +243,13 @@ Mat<T> Mat<T>::plus(
     const Singleton<T>* a = Singleton<T>::_get_or_create_target(1, *h , alpha, temp_a_ptr);
     std::unique_ptr<Singleton<T>> temp_b_ptr;
     const Singleton<T>* b = Singleton<T>::_get_or_create_target(0, *h, beta, temp_b_ptr);
-    
+
     if constexpr (std::is_same_v<T, float>)
         CHECK_CUBLAS_ERROR(cublasSgeam(
             *h,
             transposeA ? CUBLAS_OP_T : CUBLAS_OP_N,
             transposeB ? CUBLAS_OP_T : CUBLAS_OP_N,
-            this->_rows, this->_cols, 
+            this->_rows, this->_cols,
             a->toKernel1d(), x.toKernel2d(), x._ld,
             b->toKernel1d(), this->toKernel2d(), this->_ld,
             resPtr->toKernel2d(), resPtr->_ld
@@ -257,7 +259,7 @@ Mat<T> Mat<T>::plus(
             *h,
             transposeA ? CUBLAS_OP_T : CUBLAS_OP_N,
             transposeB ? CUBLAS_OP_T : CUBLAS_OP_N,
-            this->_rows, this->_cols, 
+            this->_rows, this->_cols,
             a->toKernel1d(), x.toKernel2d(), x._ld,
             b->toKernel1d(), this->toKernel2d(), this->_ld,
             resPtr->toKernel2d(), resPtr->_ld
@@ -301,7 +303,7 @@ __global__ void scaleKernel(DeviceData2d<T>  matrix, const T* alpha) {
 template <typename T>
 void Mat<T>::mult(const Singleton<T>& alpha, Handle* handle) {
     if (this->_rows == 0 || this->_cols == 0) return;
-    
+
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
 
@@ -339,7 +341,7 @@ void Mat<T>::transpose(
     } else if constexpr (std::is_same_v<T, double>) {
         CHECK_CUBLAS_ERROR(cublasDgeam(
             handle,
-            CUBLAS_OP_T, 
+            CUBLAS_OP_T,
             CUBLAS_OP_N,
             this->_cols,
             this->_rows,
@@ -352,25 +354,25 @@ void Mat<T>::transpose(
 }
 
 /**
- * @brief Performs an in-place transpose of the matrix. This method modifies the
- * existing CuArray2D object by creating and using a temporary buffer.
+ * @brief Transposes this matrix in place, using a temporary buffer.  Only square matrices are supported;
+ * other shapes throw std::runtime_error.
  *
+ * @param handle The CUDA handle to run on.
  * @param temp Optional pre-allocated temporary matrix to use for the transpose operation.  It should be the same size as this matrix.
  * If nullptr, a new temporary matrix will be created.
- * @param handle Optional Cuda handle for stream/context management.
  */
 template <typename T>
 void Mat<T>::transpose(Handle* handle, Mat<T>* temp) {
     if (this->_rows == 0 || this->_cols == 0) return;
     if(this->_rows != this->_cols)
         throw std::runtime_error("In-place transpose is only supported for square matrices. For non-square matrices, use the out-of-place version.");
-    
+
     std::unique_ptr<Mat<T>> temp_res_ptr;
     Mat<T>* temp_ptr = this->_get_or_create_target(this->_cols, this->_rows, temp, *handle, temp_res_ptr);
-    
+
     if (temp_ptr->_rows != this->_cols || temp_ptr->_cols != this->_rows)
         throw std::invalid_argument("Provided temporary matrix has incorrect dimensions for transpose.");
-    
+
     this->transpose(*temp_ptr, *handle);
 
     this->set(*temp_ptr, *handle);
@@ -382,7 +384,7 @@ Mat<T> Mat<T>::create(size_t rows, size_t cols, Handle& hand, bool initDescr){
     T* rawPtr = nullptr;
     size_t pitch = 0;
 
-    CHECK_CUDA_ERROR(cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols));//Note: there does not seem to be an asynchronos version of this method.
+    CHECK_CUDA_ERROR(cudaMallocPitch(&rawPtr, &pitch, rows * sizeof(T), cols));//Note: there does not seem to be an asynchronous version of this method.
 
     return {rows, cols, pitch / sizeof(T), GpuPointer<T>(rawPtr), initDescr};
 }
@@ -513,13 +515,12 @@ GpuArray<T>::operator DeviceData2d<T>() const {
     return toKernel2d();
 }
 
-//TODO: these methods are in the parent class as private and copied here as public.  This is redundant code.  Sort it out.  It's private in parent class so that Vec and Tensor don't accidently use it.  But we need the code here and in dependents of this class.
+//TODO: toKernel2d is duplicated here as public; the parent class keeps it private so Vec and Tensor can't use it by accident. Consolidate.
 template <typename T>
 DeviceData2d<T> Mat<T>::toKernel2d() { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
 template <typename T>
 DeviceData2d<T> Mat<T>::toKernel2d() const { return DeviceData2d<T>(this->_rows, this->_cols, this->_ld, this->_ptr.get()); }
 
-// 1. You must update the signature to accept the Int template parameter
 template<typename T>
 template<typename Int>
 size_t Mat<T>::factorLUBufferSize(Handle& hand) {
@@ -550,12 +551,11 @@ size_t Mat<T>::factorLUBufferSize(Handle& hand) {
 
         CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
 
-        // Convert bytes back to elements of T to keep your upstream allocations consistent
+        // Convert bytes back to elements of T
         return (workspaceInBytesOnDevice + sizeof(T) - 1) / sizeof(T);
     }
 }
 
-// 2. The Factorization Method
 template<typename T>
 template<typename Int>
 void Mat<T>::factorLU(Handle& hand, SimpleArray<Int>& rowSwaps, Singleton<int32_t>& info, SimpleArray<T>& workSpace) {
@@ -592,10 +592,10 @@ void Mat<T>::factorLU(Handle& hand, SimpleArray<Int>& rowSwaps, Singleton<int32_
             CHECK_CUSOLVER_ERROR(cusolverDnXgetrf(
                 hand, params, this->_rows, this->_cols,
                 dataType, this->data(), this->_ld,
-                rowSwaps.data(), // Flawlessly accepts int64_t*
+                rowSwaps.data(), // int64_t*
                 dataType, workSpace.data(), workspaceInBytesOnDevice,
                 hostWorkspace.data(), hostWorkspace.size(),
-                info.data() // Flawlessly accepts int32_t*
+                info.data() // int32_t*
             ));
 
             CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
@@ -614,10 +614,9 @@ void Mat<T>::initDescr() const{
         this->_ld,           // Leading dimension (can be > rows)
         const_cast<void*>(static_cast<const void*>(this->data())),
         valueType,
-        CUSPARSE_ORDER_COL    // Change to CUSPARSE_ORDER_ROW if C-style
+        CUSPARSE_ORDER_COL
     ));
 
-    // Use the same smart pointer pattern as your SimpleArray
     dnMatDescr = DnMatDescrPtr(rawDescr, [](const cusparseDnMatDescr_t p) {
         if (p) cusparseDestroyDnMat(p);
     });

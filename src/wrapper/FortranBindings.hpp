@@ -7,12 +7,12 @@
 #include <stdexcept>
 #include "wrapper/LaplOperatorType.h"
 
-#include "immersedBoundary/ImerssedEquation.h"
+#include "immersedBoundary/ImmersedEquation.h"
 #include "wrapper/EigenDecompForFortran.h"
 
 
 /**
- * @file ImmersedEquationInterface.hpp
+ * @file FortranBindings.hpp
  * @brief Explicitly typed interface for Shroud compatibility.
  * Functions are suffixed by types:
  * d = double, s = float (single)
@@ -20,8 +20,7 @@
  * @ingroup public_api
  */
 
-//TODO: export a synchronization method into the wrappe and remove synchronization from methods to give caller control over synchronization.
-//TODO: All of these methods currently
+//TODO: export a synchronization method into the wrapper and remove synchronization from methods to give caller control over synchronization.
 
 namespace ImEq {
 
@@ -64,7 +63,7 @@ namespace ImEq {
             [&](const auto& boundary) {
                     // buildBoundaryConfigAndLaunch hands us a BoundaryConfigHost, but
                     // ImmersedEq's constructor (explicitly instantiated in
-                    // ImerssedEquation.cu for BoundaryConfig only) needs the
+                    // ImmersedEquation.cu for BoundaryConfig only) needs the
                     // device-side type -- BoundaryConfigHost has no dim()/delta(),
                     // only forDevice().
                     eq<Real, Int> = std::make_unique<ImmersedEq<Real, Int>>(boundary.forDevice(), forceSize, nnzMax, p, f, dt, tol, maxIterations);
@@ -80,7 +79,8 @@ namespace ImEq {
     }
 
     template<typename Real, typename Int>
-    void solveImmersedEq(Real* resultPPrime, Real* resultFPrime, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR, Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real* uStar) {
+    void solveImmersedEq(Real* resultPPrime, Real* resultFPrime, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR,
+            Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real* uStar) {
         if (!eq<Real, Int>) throw std::runtime_error("The solver is not initialized.  Be sure you're using consistent types.");
         eq<Real, Int>->solve(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB,nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
         CHECK_CUDA_ERROR(cudaDeviceSynchronize()); // surface kernel faults here, at the solve call, not in some later unrelated CUDA call
@@ -212,19 +212,23 @@ namespace ImEq {
             solveImmersedEq<float, int64_t>(result, nnzB, rowOffsetsB, colIndsB, val);
         }
 
-        inline void solveImmersedEqPrimes_d_i32(double* resultPPrime, double* resultFPrime, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, double *valuesB, size_t nnzR, int32_t *colOffsetsR, int32_t *rowIndsR, double *valuesR, double *UGamma, double* uStar) {
+        inline void solveImmersedEqPrimes_d_i32(double* resultPPrime, double* resultFPrime, size_t nnzB, int32_t *rowOffsetsB,
+                int32_t *colIndsB, double *valuesB, size_t nnzR, int32_t *colOffsetsR, int32_t *rowIndsR, double *valuesR, double *UGamma, double* uStar) {
             solveImmersedEq<double, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
         }
 
-        inline void solveImmersedEqPrimes_s_i32(float* resultPPrime, float* resultFPrime, size_t nnzB, int32_t *rowOffsetsB, int32_t *colIndsB, float *valuesB, size_t nnzR, int32_t *colOffsetsR, int32_t *rowIndsR, float *valuesR, float *UGamma, float* uStar) {
+        inline void solveImmersedEqPrimes_s_i32(float* resultPPrime, float* resultFPrime, size_t nnzB, int32_t *rowOffsetsB,
+                int32_t *colIndsB, float *valuesB, size_t nnzR, int32_t *colOffsetsR, int32_t *rowIndsR, float *valuesR, float *UGamma, float* uStar) {
             solveImmersedEq<float, int32_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
         }
 
-        inline void solveImmersedEqPrimes_d_i64(double* resultPPrime, double* resultFPrime, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, double *valuesB, size_t nnzR, int64_t *colOffsetsR, int64_t *rowIndsR, double *valuesR, double *UGamma, double* uStar) {
+        inline void solveImmersedEqPrimes_d_i64(double* resultPPrime, double* resultFPrime, size_t nnzB, int64_t *rowOffsetsB,
+                int64_t *colIndsB, double *valuesB, size_t nnzR, int64_t *colOffsetsR, int64_t *rowIndsR, double *valuesR, double *UGamma, double* uStar) {
             solveImmersedEq<double, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
         }
 
-        inline void solveImmersedEqPrimes_s_i64(float* resultPPrime, float* resultFPrime, size_t nnzB, int64_t *rowOffsetsB, int64_t *colIndsB, float *valuesB, size_t nnzR, int64_t *colOffsetsR, int64_t *rowIndsR, float *valuesR, float *UGamma, float* uStar) {
+        inline void solveImmersedEqPrimes_s_i64(float* resultPPrime, float* resultFPrime, size_t nnzB, int64_t *rowOffsetsB,
+                int64_t *colIndsB, float *valuesB, size_t nnzR, int64_t *colOffsetsR, int64_t *rowIndsR, float *valuesR, float *UGamma, float* uStar) {
             solveImmersedEq<float, int64_t>(resultPPrime, resultFPrime, nnzB, rowOffsetsB, colIndsB, valuesB, nnzR, colOffsetsR, rowIndsR, valuesR, UGamma, uStar);
         }
 
@@ -252,16 +256,6 @@ namespace eigen {
 
     template<typename Real>
     std::vector<std::unique_ptr<EigenDecompForFortran<Real>>> solvers;
-
-    // inline double currentTime() {
-    //     return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
-    // }
-
-    // std::atomic<double> totalEigenSolverTime{0.0};
-    // inline void addSolverTime(double elapsed) {
-    //     double current = totalEigenSolverTime.load();
-    //     while (!totalEigenSolverTime.compare_exchange_weak(current, current + elapsed));
-    // }
 
     template<typename Real>
     size_t initEigenDecompSolver(
@@ -306,8 +300,6 @@ namespace eigen {
             )
         );
 
-        // addSolverTime(currentTime() - startTime);
-
         return solverIndex;
     }
 
@@ -323,16 +315,12 @@ namespace eigen {
 
     template<typename Real>
     void runDecompSolver(size_t solverHandle) {
-        // double startTime = currentTime();
         getSolverOrThrow<Real>(solverHandle).solve();
-        // addSolverTime(currentTime() - startTime);
     }
 
     template<typename Real>
     void synch(size_t solverHandle) {
-        // double startTime = currentTime();
         getSolverOrThrow<Real>(solverHandle).synch();
-        // addSolverTime(currentTime() - startTime);
     }
 
     /// Returns the raw pinned host pointer a given solver uses for both its
@@ -421,13 +409,10 @@ namespace eigen {
     }
 
     inline void finalizeEigenDecomp() {
-        // double startTime = currentTime();
         solvers<float>.clear();
         solvers<double>.clear();
 
         GPUScalar<float>::finalize();
         GPUScalar<double>::finalize();
-        // addSolverTime(currentTime() - startTime);
-        // std::cout << "Total eigen decomp time: " << totalEigenSolverTime.load() << std::endl;
     }
 };

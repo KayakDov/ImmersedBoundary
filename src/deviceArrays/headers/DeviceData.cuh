@@ -2,13 +2,10 @@
  * @file DeviceData.cuh
  * @brief Defines lightweight kernel-side views over one-, two-, and three-dimensional device data.
  * @ingroup device_arrays
- *
- * @details
- * These classes form the core GPU container layer. Public containers generally own or view CUDA device memory through shared ownership, while explicit factory functions allocate new storage.
  */
 
-#ifndef BICGSTAB_DEVICEDATA_CUH
-#define BICGSTAB_DEVICEDATA_CUH
+#ifndef CUDABANDED_DEVICEDATA_CUH
+#define CUDABANDED_DEVICEDATA_CUH
 
 #include "KernelSupport.cuh"
 #include "deviceArrays/headers/Support/GridDim.hpp"
@@ -29,14 +26,6 @@ class DeviceData1d {
 public:
 
     __host__ __device__  DeviceData1d(const size_t cols, const size_t ld, T* data): cols(cols), ld(ld), data(data) {
-
-        // if (idx() == 0 && idy() == 0) printf(
-        //     "row=%llu col=%llu x.row(0) = (%f, %f, %f)  ld = %llu\n",
-        //     idy(),
-        //     idx(),
-        //     (*this)[0],(*this)[1],(*this)[2],
-        //     ld
-        // );
     }
 
 
@@ -55,7 +44,7 @@ public:
 
     /**
      * @brief Provides 1D array access to the data using the logical flat index.
-     * * This operator translates a logical 1D index (0 to rows*cols - 1)
+     * This operator translates a logical 1D index (0 to rows*cols - 1)
      * into the physical memory index and returns a reference to the element.
      * @param idx The logical 1D index.
      * @return A writable reference to the element T at that index.
@@ -87,7 +76,7 @@ public:
  * @tparam T The type of data stored (e.g., float, double).
  */
 template <typename T>
-class DeviceData2d: public DeviceData1d<T>{  //TODO: get 1d and 3d versions to be used.
+class DeviceData2d: public DeviceData1d<T>{
 public:
 
     /**
@@ -98,7 +87,6 @@ public:
      * @param data The device pointer to the allocated data.
      */
     __host__ __device__ DeviceData2d(size_t rows, size_t cols, size_t ld, T *data) : DeviceData1d<T>(cols, ld, data), rows(rows) {
-        // if (idx() == 0 && idy() == 0) printf("row=%llu col=%llu 2dld = %llu\n",idy(),idx(),ld);
     }
 
     /** The number of logical rows in the matrix. */
@@ -120,7 +108,7 @@ public:
     }
     /**
      * @brief Provides 1D array access to the data using the logical flat index.
-     * * This operator translates a logical 1D index (0 to rows*cols - 1)
+     * This operator translates a logical 1D index (0 to rows*cols - 1)
      * into the physical memory index and returns a reference to the element.
      * @param idx The logical 1D index.
      * @return A writable reference to the element T at that index.
@@ -145,7 +133,7 @@ public:
 
     /**
      * @brief Provides 2D matrix access to the data.
-     * * This operator translates a 2D index (row, col) into the physical
+     * This operator translates a 2D index (row, col) into the physical
      * memory index and returns a reference to the element.
      * @param row The row index (0 to rows-1).
      * @param col The column index (0 to cols-1).
@@ -184,7 +172,7 @@ public:
     }
 
     /**
-     * returns a drow from this matrix.
+     * returns a row from this matrix.
      * @param rowInd The index of the row.
      * @return A row from this matrix.
      */
@@ -321,4 +309,4 @@ template<typename T>
 __device__ bool operator<(const GridInd2d &ind, const DeviceData2d<T> &dim) {
     return ind.row < dim.rows && ind.col < dim.cols;
 }
-#endif //BICGSTAB_DEVICEDATA_CUH
+#endif //CUDABANDED_DEVICEDATA_CUH

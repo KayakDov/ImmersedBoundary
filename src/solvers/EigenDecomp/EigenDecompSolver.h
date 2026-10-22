@@ -1,10 +1,7 @@
 /**
  * @file EigenDecompSolver.h
- * @brief Declares the public API for EigenDecompSolver.h.
+ * @brief Base class for the eigen-decomposition solvers.
  * @ingroup eigen_decomp
- *
- * @details
- * Solver interfaces consume the GPU container layer and CUDA library handles to implement direct, iterative, and eigen-decomposition based algorithms.
  */
 
 #ifndef EIGENDECOMPSOLVER_H
@@ -20,21 +17,7 @@
  *
  * This class diagonalizes the 3D discrete Laplacian operator using the
  * Kronecker structure:
- *static EigenDecompSolver<Real>* createEDS(
-        SquareMat<Real>& dim,
-        Mat<Real>& maxDim,
-        SimpleArray<Real>& sizeP,
-        Handle* hand,
-        Real3d delta)
-    {
-        if (maxDim._cols == 3) {
-            // Standard 3D construction
-            return new EigenDecompSolver3d<Real>(dim, dim, dim, maxDim, sizeP, hand, delta);
-        } else {
-            // Explicitly slice Real3d to Real2d to satisfy the 2D constructor
-            return new EigenDecompSolver2d<Real>(dim, dim, maxDim, sizeP, hand, Real2d(delta.x, delta.y));
-        }
-    }
+ *
  *     L = L_x ⊕ L_y ⊕ L_z
  *
  * where each L_i is diagonalized as:
@@ -98,7 +81,7 @@ public:
      * @param eMatsAndVecs The eigen matrices and values for the laplacian.
      * @param sizeOfB An array the size of b = xLength * yLength * zLength that will be overwritten.  You may use b for this.
      * @param allNeumann set to true if singular.
-     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtzShift is sigma.
      */
     EigenDecompSolver(const Eigen<T> &eMatsAndVecs, SimpleArray<T> &sizeOfB, bool allNeumann, T helmholtzShift);
 
@@ -107,7 +90,7 @@ public:
      * @param boundary The boundary conditions.
      * @param hands At least one handle per dimension.  They are synchronized before the constructor returns.
      * @param sizeOfB a buffer that is the same size as b.
-     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtzShift is sigma.
      */
     template<class BoundaryConfigT>
     EigenDecompSolver(const BoundaryConfigT &boundary, Handles &hands, SimpleArray<T> sizeOfB, T helmholtzShift);
@@ -116,7 +99,7 @@ public:
      * Created an eigen decomposition solver where all memory is owned by this object.
      * @param boundary The boundary conditions.
      * @param hands At least one handle per dimension.  They are synchronized before the constructor returns.
-     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtzShift is sigma.
      */
     template<class BoundaryConfigT>
     EigenDecompSolver(const BoundaryConfigT &boundary, Handles &hands, T helmholtzShift);

@@ -2,14 +2,11 @@
  * @file deviceArraySupport.h
  * @brief Defines host-side streaming helpers for chunked array input and output.
  * @ingroup device_arrays
- *
- * @details
- * These classes form the core GPU container layer. Public containers generally own or view CUDA device memory through shared ownership, while explicit factory functions allocate new storage.
  */
 
 
-#ifndef BICGSTAB_DEVICEARRAYSUPPORT_H
-#define BICGSTAB_DEVICEARRAYSUPPORT_H
+#ifndef CUDABANDED_DEVICEARRAYSUPPORT_H
+#define CUDABANDED_DEVICEARRAYSUPPORT_H
 
 #include <vector>
 #include <string>
@@ -162,4 +159,4 @@ throw std::runtime_error( \
 } while (0)
 
 
-#endif //BICGSTAB_DEVICEARRAYSUPPORT_H
+#endif //CUDABANDED_DEVICEARRAYSUPPORT_H

@@ -1,6 +1,6 @@
 /**
- * @file BoundaryCondition.h
- * @brief Defines boundary condition handling for discrete Laplacian systems on staggered grids.
+ * @file BoundaryCondition.cuh
+ * @brief Defines boundary condition handling for discrete Laplacian systems.
  *
  * This module provides an abstraction for incorporating Dirichlet and Neumann
  * boundary conditions into a linear system of the form:
@@ -9,10 +9,10 @@
  *
  * where L is a discrete Laplacian operator and b is the right-hand side vector.
  *
- * The implementation assumes a staggered (cell-centered) grid, where domain
- * boundaries lie halfway between interior grid points. Boundary conditions are
- * enforced by modifying the system matrix L and RHS vector b using finite
- * difference stencils.
+ * It supports node-centered grids, where the first and last nodes lie on the domain
+ * boundaries, and staggered (cell-centered) grids, where the domain boundaries lie
+ * halfway between interior grid points. Boundary conditions are enforced by modifying
+ * the system matrix L and RHS vector b using finite difference stencils.
  * @ingroup poisson
  */
 
@@ -56,10 +56,10 @@ public:
      *
      * @param isNeumann
      * @param val
-     * @param deltaPM If isEnd is false (we're at te beginning), then the first value should be the distance to the beggining boundary and the
+     * @param deltaPM If isEnd is false (we're at the beginning), then the first value should be the distance to the beginning boundary and the
      * second should be the distance between the first two elements.  If isEnd is true, then the first value should
-     * be the distance between the last two elements, and the second mvalue should be the distance between the last
-     * element and the clsoing boundary.
+     * be the distance between the last two elements, and the second value should be the distance between the last
+     * element and the closing boundary.
      */
     VariableBoundary(bool isNeumann, Real val, const SimpleArray<Real>& deltaPM) :
         BoundaryCondition<Real>(val, isNeumann),
@@ -143,7 +143,7 @@ public:
         isStaggered(isStaggered) {};
 
     /**
-     * An empty conditon, similar to a null pointer.
+     * An empty condition, similar to a null pointer.
      */
     __device__ __host__ UniformBoundary() :
         BoundaryCondition<Real>(0, false),
@@ -200,8 +200,8 @@ public:
  * Row for the boundary-adjacent cell, derived by integrating u'' over the
  * cell and applying the divergence theorem: (flux_out - flux_in)/W, where W
  * is the width of this cell.  The wall face takes the place of one
- * neighbour: Dirichlet prescribes the value AT the wall (distance dWall
- * from the cell centre); Neumann prescribes the wall flux itself, so the
+ * neighbor: Dirichlet prescribes the value AT the wall (distance dWall
+ * from the cell center); Neumann prescribes the wall flux itself, so the
  * (u_0 - u_wall) term never forms.
  *
  * @tparam Real Floating-point type.
@@ -211,8 +211,8 @@ template<typename Real, bool isEnd>
 class FluxBoundary: public BoundaryCondition<Real> {
 public:
     /** Two deltas, exactly like VariableBoundary: for the start boundary
-     *  {wall-to-first-centre, first-to-second-centre}; for the end boundary
-     *  {second-last-to-last-centre, last-centre-to-wall}. */
+     *  {wall-to-first-center, first-to-second-center}; for the end boundary
+     *  {second-last-to-last-center, last-center-to-wall}. */
     const DeviceData1d<Real> deltaPM;
 
     /** One-element view: the finite-volume width of THIS boundary-adjacent
@@ -228,7 +228,7 @@ public:
     __device__ void setL(Real& mainDiagVal, Real& offDiagVal) const {
         Real dp = deltaPM[1], dm = deltaPM[0];
         Real W = width[0];
-        // distance to the wall face vs. distance to the interior neighbour
+        // distance to the wall face vs. distance to the interior neighbor
         Real dWall = isEnd ? dp : dm;
         Real dIn   = isEnd ? dm : dp;
 

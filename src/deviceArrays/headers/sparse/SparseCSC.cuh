@@ -2,9 +2,6 @@
  * @file SparseCSC.cuh
  * @brief Defines CSC sparse-matrix storage and operations.
  * @ingroup sparse_matrices
- *
- * @details
- * Sparse-matrix classes build on the device array layer and expose storage-format-specific operations while preserving explicit CUDA handle and stream control.
  */
 
 
@@ -41,14 +38,14 @@ public:
 };
 /**
  * @brief A high-performance utility for assembling sparse matrices in Compressed Sparse Column (CSC) format.
- * * @tparam Real The floating-point type (float or double).
+ * @tparam Real The floating-point type (float or double).
  * @tparam Int The integer type used for indexing (typically int32_t).
- * * @note **Performance Requirement:** To ensure $O(1)$ insertion time, elements MUST be added
+ * @note **Performance Requirement:** To ensure $O(1)$ insertion time, elements MUST be added
  * strictly in increasing order of column index (@p col), and then increasing order of
  * row index (@p row) within each column.
- * * Failure to follow this ordering will result in an invalid CSC structure or significantly
+ * Failure to follow this ordering will result in an invalid CSC structure or significantly
  * degraded performance if the internal logic attempts to sort or shift data.
- * * @code
+ * @code
  * SparseMatrixBuilder builder(numCols);
  * for (Int c = 0; c < numCols; ++c) {
  * for (Int r : neighboringRows) {
@@ -72,10 +69,10 @@ public:
 
     /**
      * @brief Adds a non-zero element to the sparse matrix.
-     * * @param val The numerical value to store.
+     * @param val The numerical value to store.
      * @param row The row index (must be >= previous row index in the current column).
      * @param col The column index (must be >= current column index).
-     * * @warning If @p col is greater than the current active column, the builder
+     * @warning If @p col is greater than the current active column, the builder
      * automatically finalizes the offsets for all skipped columns.
      */
     void add(Real val, Int row, Int col);

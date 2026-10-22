@@ -1,5 +1,5 @@
 /**
- * @file PhasePortrait.h
+ * @file PhasePortrait3d.h
  * @brief Stateful VTK window for displaying multiple GPU trajectories.
  */
 
@@ -10,6 +10,7 @@
 
 #include <vtkAOSDataArrayTemplate.h>
 #include <vtkActor.h>
+#include <vtkCallbackCommand.h>
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
 #include <vtkInteractorStyleTrackballCamera.h>
@@ -24,10 +25,12 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSmartPointer.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
+#include <vector>
 
 #include "TimeSequence.h"
 
@@ -49,10 +52,17 @@ public:
     /**
      * @brief Creates and connects the window, renderer, and interactor.
      * @param title Window title.
+     * @param closeAfterSeconds Seconds show() keeps the window open before it
+     *        closes itself; a negative value means it stays until closed by hand.
+     *        Zero is rejected.
      *
      * Does not start the event loop. Add curves using draw(), then call show().
      */
-    explicit PhasePortrait(const char* title = "Phase portrait") {
+    explicit PhasePortrait(const char* title = "Phase portrait", double closeAfterSeconds = -1)
+        : closeAfterSeconds_(closeAfterSeconds) {
+        if (closeAfterSeconds == 0.0 || closeAfterSeconds != closeAfterSeconds) {
+            throw std::invalid_argument("closeAfterSeconds must be positive, or negative for never.");
+        }
         renderer_ = vtkSmartPointer<vtkRenderer>::New();
         window_ = vtkSmartPointer<vtkRenderWindow>::New();
         interactor_ = vtkSmartPointer<vtkRenderWindowInteractor>::New();
@@ -137,15 +147,58 @@ public:
     }
 
     /**
+     * @brief Adds a trajectory held in host memory and renders all retained curves.
+     *
+     * @param xyz Coordinates of successive points: x, y, z of the first point, then of the second, and so on.
+     * @param RGB Curve color.
+     *
+     * Makes no CUDA call, so it is safe in a process that was forked after CUDA was used.
+     */
+    void draw(const std::vector<Real>& xyz, XYZ<double> RGB) {
+        if (xyz.size() < 6 || xyz.size() % 3 != 0) {
+            throw std::invalid_argument("draw requires at least two xyz points.");
+        }
+        vtkNew<vtkAOSDataArrayTemplate<Real>> coordinates;
+        coordinates->SetNumberOfComponents(3);
+        coordinates->SetNumberOfTuples(static_cast<vtkIdType>(xyz.size() / 3));
+        std::copy(xyz.begin(), xyz.end(), coordinates->GetPointer(0));
+
+        auto vertices = vtkSmartPointer<vtkPoints>::New();
+        vertices->SetData(coordinates);
+        auto geometry = createCurve(vertices);
+        auto actor = createActor(geometry, RGB[0], RGB[1], RGB[2]);
+
+        renderer_->AddActor(actor);
+        renderer_->ResetCamera();
+        window_->Render();
+    }
+
+    /**
      * @brief Starts mouse interaction with the window.
      *
-     * Blocks until the interaction loop exits. Drag to rotate and scroll
-     * to zoom. Add initial curves before calling this method.
+     * Blocks until the window is closed by hand or, when the constructor was
+     * given a positive closeAfterSeconds, until that time has passed,
+     * whichever comes first. Drag to rotate and scroll to zoom. Add initial
+     * curves before calling this method.
      */
     void show() {
         interactor_->Initialize();
         window_->Render();
+
+        vtkNew<vtkCallbackCommand> stopLoop;
+        unsigned long observerTag = 0;
+        if (closeAfterSeconds_ > 0.0) {
+            stopLoop->SetClientData(interactor_.Get());
+            stopLoop->SetCallback([](vtkObject*, unsigned long, void* clientData, void*) {
+                static_cast<vtkRenderWindowInteractor*>(clientData)->TerminateApp();
+            });
+            observerTag = interactor_->AddObserver(vtkCommand::TimerEvent, stopLoop);
+            interactor_->CreateOneShotTimer(static_cast<unsigned long>(closeAfterSeconds_ * 1000.0));
+        }
         interactor_->Start();
+        if (observerTag != 0) {
+            interactor_->RemoveObserver(observerTag);
+        }
     }
 
     /**
@@ -163,6 +216,7 @@ private:
     vtkSmartPointer<vtkRenderer> renderer_;
     vtkSmartPointer<vtkRenderWindow> window_;
     vtkSmartPointer<vtkRenderWindowInteractor> interactor_;
+    double closeAfterSeconds_;
 
     /**
      * @brief Sets the initial viewing direction with the z axis pointing up.

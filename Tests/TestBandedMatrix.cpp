@@ -41,8 +41,6 @@ protected:
         // 3. Upload the dense diagonal data to the device
         A.set(h_banded_data.data(), this->handle);
 
-        // std::cout << "A = \n" << GpuOut<T>(dense, handle) << std::endl;
-
         return A;
     }
 };
@@ -142,7 +140,6 @@ TYPED_TEST(BandedMatWrappersTest, VectorBandedMatrixProduct) {
     // Expected: y^T = x^T * A
     std::vector<T> expected = {8.0, 27.0, 31.0};
 
-    // std::cout << "x = " << GpuOut<T>(x, this->handle) << std::endl;
     // Invoke Vec framework overload (takes Handle as reference)
     x.mult(A, y, this->handle, alpha, beta);
 
@@ -168,8 +165,6 @@ TYPED_TEST(BandedMatWrappersTest, DenseMatrixBandedMatrixProduct) {
     auto X = Mat<T>::create(R, this->N, this->handle);
     X.set(h_X.data(), this->handle);
 
-    // std::cout << "X =\n" << GpuOut<T>(X, this->handle) << std::endl;
-
     std::vector<T> h_Y = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     auto Y = Mat<T>::create(R, this->N, this->handle);
     Y.set(h_Y.data(), this->handle);
@@ -185,8 +180,6 @@ TYPED_TEST(BandedMatWrappersTest, DenseMatrixBandedMatrixProduct) {
 
     // Invoke Mat framework overload (takes Handle as reference)
     X.mult(A, Y, this->handle, alpha, beta);
-
-    // std::cout << "Y =\n" << GpuOut<T>(Y, this->handle) << std::endl;
 
     std::vector<T> actual(R * this->N);
     Y.get(actual.data(), this->handle);

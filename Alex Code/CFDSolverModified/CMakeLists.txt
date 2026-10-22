@@ -248,16 +248,47 @@ find_package(CUDAToolkit REQUIRED)
 
 set(DEP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 
-if(EXISTS "${DEP_ROOT}/cmake-build-release/libCudaBandedLib.a")
-    set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-release")
-elseif(EXISTS "${DEP_ROOT}/cmake-build-debug/libCudaBandedLib.a")
+# Pick whichever of cmake-build-release / cmake-build-debug has the NEWER
+# libCudaBandedLib.a, rather than a hardcoded "release wins if it exists at
+# all" preference. The old logic silently preferred release even if it were
+# a stale build from weeks ago sitting next to a freshly-rebuilt debug one
+# (or vice versa) -- there was no feedback that an old library had been
+# picked, since both branches look identical in the STATUS message. Comparing
+# mtimes means whichever one you *just* rebuilt is always the one that gets
+# linked, in either directory.
+set(_RELEASE_LIB "${DEP_ROOT}/cmake-build-release/libCudaBandedLib.a")
+set(_DEBUG_LIB   "${DEP_ROOT}/cmake-build-debug/libCudaBandedLib.a")
+
+if(EXISTS "${_RELEASE_LIB}" AND EXISTS "${_DEBUG_LIB}")
+    file(TIMESTAMP "${_RELEASE_LIB}" _RELEASE_TS "%Y%m%d%H%M%S")
+    file(TIMESTAMP "${_DEBUG_LIB}"   _DEBUG_TS   "%Y%m%d%H%M%S")
+    if(_DEBUG_TS VERSION_GREATER _RELEASE_TS)
+        set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-debug")
+        message(STATUS "libCudaBandedLib.a exists in both cmake-build-release (${_RELEASE_TS}) and "
+                "cmake-build-debug (${_DEBUG_TS}) -- debug is newer, using it.")
+    else()
+        set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-release")
+        message(STATUS "libCudaBandedLib.a exists in both cmake-build-release (${_RELEASE_TS}) and "
+                "cmake-build-debug (${_DEBUG_TS}) -- release is newer (or equal), using it.")
+    endif()
+elseif(EXISTS "${_DEBUG_LIB}")
     set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-debug")
+elseif(EXISTS "${_RELEASE_LIB}")
+    set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-release")
 else()
     set(DEP_LIB_DIR "${DEP_ROOT}/cmake-build-release")
 endif()
 
 message(STATUS "Using CudaBandedLib from ${DEP_LIB_DIR}")
 
+# find_library()'s result is a CACHE variable: by default, once set, CMake
+# will NOT re-search for it on a later configure even if DEP_LIB_DIR above
+# resolves to a different directory next time (e.g. a release build appears,
+# or you delete one build dir but not the other). Un-setting it first forces
+# a fresh lookup on every configure, so this always tracks whatever
+# DEP_LIB_DIR just picked rather than whatever it happened to find the very
+# first time this build directory was configured.
+unset(CUDA_BANDED_LIB CACHE)
 find_library(CUDA_BANDED_LIB
         NAMES CudaBandedLib
         PATHS ${DEP_LIB_DIR}

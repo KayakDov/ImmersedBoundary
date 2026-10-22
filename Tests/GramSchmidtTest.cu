@@ -2,8 +2,7 @@
  * @file GramSchmidtTest.cu
  * @brief Checks Mat::gramSchmidt, spread over several handles, against a CPU reference.
  *
- * Isolates the multi-handle Gram-Schmidt from the Lyapunov code. If these
- * pass, the fault is in how LyapunovExponent uses it; if they fail, the
+ * Isolates the multi-handle Gram-Schmidt from the Lyapunov code.  On a failure the
  * printed column and value say where.
  */
 

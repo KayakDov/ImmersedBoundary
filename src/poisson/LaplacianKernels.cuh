@@ -1,10 +1,7 @@
 /**
  * @file LaplacianKernels.cuh
- * @brief Declares the public API for LaplacianKernels.cuh.
+ * @brief CUDA kernels that build the banded Laplacian.
  * @ingroup poisson
- *
- * @details
- * The Poisson module assembles structured operators, boundary metadata, and solver-facing data structures for grid-based elliptic solves.
  */
 
 
@@ -23,9 +20,8 @@
  * dimension of a 3D grid, accumulating contributions to the banded system matrix L
  * and modifying the RHS vector to account for boundary conditions.
  *
- * The staggered grid Laplacian is built by calling laplacianStaggered1d() three times—
- * once for each dimension (row, column, layer)—with coefficients accumulating on the
- * system matrix.
+ * The Laplacian is built by applying a 1D stencil along each dimension (row, column,
+ * layer), one row of the banded matrix at a time (see setRowInBanded1d()).
  *
  * @tparam T Floating-point type (float or double).
  */
@@ -36,7 +32,7 @@ public:
     DeviceData2d<T>* laplacian;
     size_t rowL;
     /**
-     * @brief Constructs a DimensionSetter for a given grid point.
+     * @brief Constructs an LSetter for one row of the banded matrix L.
      */
     __device__ LSetter(DeviceData2d<T>& L, size_t rowL) : laplacian(&L), rowL(rowL) {}
 
@@ -52,8 +48,8 @@ public:
      * to the supplied adjacency pattern and boundary conditions.
      *
      * @param indexInLine       Grid point index along this dimension.
-     * @param boundaries    The boundary conditions in the dimesnion being worked on.
-     * @param primary          The value at the main diagoanl.
+     * @param boundaries    The boundary conditions in the dimension being worked on.
+     * @param primary          The value at the main diagonal.
      * @param leftRight          The value at the left and right diagonals on the row.
 
 
@@ -200,7 +196,7 @@ __global__ void buildL1dKernel(
  * @param[in] start               Boundary condition at i == 0.
  * @param[in] end                 Boundary condition at i == n - 1.
  * @param[in] primary             Adjacency info for the main diagonal.
- * @param[in] prevNext            The indices of the previouse and next element.
+ * @param[in] prevNext            The indices of the previous and next element.
 
  */
 

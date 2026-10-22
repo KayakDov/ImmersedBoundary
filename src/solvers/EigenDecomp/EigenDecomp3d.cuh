@@ -1,10 +1,7 @@
 /**
  * @file EigenDecomp3d.cuh
- * @brief Declares the public API for EigenDecomp3d.cuh.
+ * @brief Eigen-decomposition solver for 3D problems.
  * @ingroup eigen_decomp
- *
- * @details
- * Solver interfaces consume the GPU container layer and CUDA library handles to implement direct, iterative, and eigen-decomposition based algorithms.
  */
 
 #ifndef CUDABANDED_EIGENDECOMP3D_CUH
@@ -30,15 +27,15 @@ public:
      * @param eigen The eigens.
      * @param sizeOfB Workspace vector. Must be the same size as the Eulerian Pressure grid (the system RHS).
      * @param isSingular Is the laplacian singular (all boundary conditions are Neumann)
-     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtzShift is sigma.
      */
     EigenDecomp3d(const Eigen<T> &eigen, SimpleArray<T> sizeOfB, bool isSingular, T helmholtzShift = 0);
 
     /**
-     * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.
+     * Creates an eigen decomposition solver for a laplacian built from a 3d grid.
      * @param boundary The boundary conditions.
      * @param hands At least 3 handles for parallel streaming.
-     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtzShift is sigma.
      */
     template<typename BoundaryConfigT>
     EigenDecomp3d(BoundaryConfigT boundary, Handles &hands, T helmholtzShift = 0);
@@ -47,17 +44,17 @@ public:
 
 
     /**
-     * Creates an eigen deocmposoiton solver for a laplacian built from a 3d grid.
+     * Creates an eigen decomposition solver for a laplacian built from a 3d grid.
      * @param boundary The boundary conditions.
      * @param hands At least 3 handles for parallel streaming.
      * @param sizeOfB A scratch space the size of the RHS.  This will be overwritten.
-     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtzShift is sigma.
      */
     template<typename BoundaryConfigT>
     EigenDecomp3d(BoundaryConfigT boundary, Handles &hands, SimpleArray<T> sizeOfB, T helmholtzShift = 0);
 
     /**
-     * Be sure that b is in the column space of L.  Otheriwise you will receive a projection onto the column space
+     * Be sure that b is in the column space of L.  Otherwise you will receive a projection onto the column space
      * that will not actually solve Lx = b.
      * @param x The solution will be put here.
      * @param b The rhs of the equation Lx = b.
@@ -66,7 +63,7 @@ public:
     void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const;
 
     /**
-     * Be sure that b is in the column space of L.  Otheriwise you will receive a projection onto the column space
+     * Be sure that b is in the column space of L.  Otherwise you will receive a projection onto the column space
      * that will not actually solve Lx = b.
      * @param x The solution will be put here.
      * @param b The rhs of the equation Lx = b.

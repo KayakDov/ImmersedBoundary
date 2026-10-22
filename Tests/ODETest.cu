@@ -1,9 +1,6 @@
-//
-// Created by usr on 9/15/26.
-//
 /**
- * @file LorenzTest.cu
- * @brief Generates and optionally displays a Lorenz trajectory using GTest.
+ * @file ODETest.cu
+ * @brief Tests for the ODE module: Lorenz trajectory generation and Lyapunov exponent validation.
  */
 
 #include "deviceArrays/headers/Mat.h"
@@ -12,12 +9,12 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
+#if defined(__unix__)
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 #include "ODE/Lorenz.cuh"
-
-/**
- * @file LyapunovTest.cu
- * @brief Numerical validation test for Lyapunov exponent calculations using GTest.
- */
 
 #include "deviceArrays/headers/Mat.h"
 #include "deviceArrays/headers/Vec.h"
@@ -40,24 +37,37 @@
 
 
 /**
+ * Draws the curves in one window and returns when the window is closed, or after
+ * closeAfterSeconds when that is positive. Uses no CUDA call.
+ */
+static void showCurves(const std::vector<std::vector<double>>& curves, const XYZ<double>* colors, double closeAfterSeconds) {
+    PhasePortrait<double> portrait("Lorenz trajectory test", closeAfterSeconds);
+    for (size_t i = 0; i < curves.size(); ++i) portrait.draw(curves[i], colors[i]);
+    portrait.show();
+}
+
+/**
  * @brief Checks trajectory creation and optionally opens its VTK window.
  *
  * Verifies the initial point, finite coordinates, and nonstationary motion.
  * This is a smoke test, not a numerical convergence test.
  *
  * Each curve is generated with TimeSequence::trajectory() into one shared
- * matrix, then drawn; PhasePortrait keeps its own snapshot of every
- * curve, so the matrix is reused for the second one.
+ * matrix and copied to the host, so the matrix is reused for the second one.
  *
  * The interactive window is only opened when SHOW_LORENZ_PORTRAIT=1 is set
  * in the environment (set by CMake's SHOW_LORENZ_PORTRAIT option when run
  * via ctest -- see CMakeLists.txt). It defaults to skipped, not shown, when
  * the variable is absent entirely, since that's what happens for a plain
  * run_unit_tests invocation outside ctest (e.g. a raw binary run or most
- * IDE "Run" configurations) -- portrait.show() blocks the whole process
- * until a human closes the window, which would otherwise hang every other
- * test in the suite behind it, and hang indefinitely with no human present
- * at all under CI.
+ * IDE "Run" configurations).
+ *
+ * The window opens in a separate process, started after the curves have been
+ * computed and copied to the host, so the remaining tests keep running while it
+ * is open. The window closes itself after LORENZ_WINDOW_SECONDS seconds
+ * (CMake's LORENZ_WINDOW_SECONDS; 1 if unset); a negative value keeps it open
+ * until it is closed by hand. On platforms without fork the window opens in
+ * this process and blocks until it closes.
  */
 TEST(ODETrajectory, CreatesLorenzCurve) {
     constexpr double stepSize = 0.005;
@@ -69,7 +79,7 @@ TEST(ODETrajectory, CreatesLorenzCurve) {
     auto points = Mat<double>::create(3, pointCount, handle);
     auto scratch = Mat<double>::create(3, equation.scratchColumns(), handle);
 
-    PhasePortrait<double> portrait("Lorenz trajectory test");
+    std::vector<std::vector<double>> curves;
 
     const Real3d starts[] = {{1.0, 1.0, 1.0}, {1.0, 1.1, 1.0}};
     const XYZ<double> colors[] = {{1, 0, 0}, {0, 1, 0}};
@@ -80,12 +90,41 @@ TEST(ODETrajectory, CreatesLorenzCurve) {
         points.col(0).set(hostStart, size_t{1}, handle);
 
         equation.trajectory(points, handle, scratch);
-        portrait.draw(points, handle, colors[curveIndex]);
+
+        std::vector<double> host(3 * pointCount);
+        points.get(host.data(), handle);
+        handle.synch();
+
+        for (double coordinate : host) ASSERT_TRUE(std::isfinite(coordinate));
+        for (size_t k = 0; k < 3; ++k) EXPECT_NEAR(host[k], hostStart[k], 1e-12);
+        EXPECT_NE(host[3 * (pointCount - 1)], host[0]);
+        curves.push_back(std::move(host));
     }
 
     const char* showPortrait = std::getenv("SHOW_LORENZ_PORTRAIT");
     if (showPortrait && std::strcmp(showPortrait, "1") == 0) {
-        portrait.show();
+        const char* secondsText = std::getenv("LORENZ_WINDOW_SECONDS");
+        const double closeAfterSeconds = secondsText ? std::atof(secondsText) : 1.0;
+#if defined(__unix__)
+        std::fflush(nullptr);
+        const pid_t viewer = fork();
+        ASSERT_NE(viewer, -1) << "could not start the viewer process";
+        if (viewer == 0) {
+            // Viewer process: no CUDA call may be made from here on.
+            setsid();
+            const int null = open("/dev/null", O_RDWR);
+            dup2(null, 0);
+            dup2(null, 1);
+            dup2(null, 2);
+            try {
+                showCurves(curves, colors, closeAfterSeconds);
+            } catch (...) {
+            }
+            _exit(0);
+        }
+#else
+        showCurves(curves, colors, closeAfterSeconds);
+#endif
     }
 }
 
@@ -166,8 +205,7 @@ TEST(ODELyapunov, ComputesLorenzLargestExponent) {
  * still stepping, so a missing join between streams would show up here
  * as garbage in the sum.
  *
- * The tolerances are the existing 0.08 for the individual exponents and
- * 0.01 for the sum; neither has been checked against a run.
+ * The tolerances are 0.08 for the individual exponents and 0.01 for the sum.
  */
 TEST(ODELyapunov, ComputesLorenzTopThreeExponents) {
     constexpr double stepSize = 0.005;
@@ -222,8 +260,7 @@ TEST(ODELyapunov, ComputesLorenzTopThreeExponents) {
  * ln N(q) / T, so the individual exponents keep the usual 0.08 and the
  * trace check loosens from 0.01 to 0.05. A numpy model of the same
  * scheme on the same system landed within about 0.01 of the Euclidean
- * result and within 0.01 of the trace; neither tolerance has been
- * checked against a run of this code.
+ * result and within 0.01 of the trace.
  */
 TEST(ODELyapunov, ComputesLorenzTopThreeExponentsUnderPseudoNorms) {
     constexpr double stepSize = 0.005;
@@ -416,7 +453,7 @@ void writeRow(const std::string& row) {
  * holding stepSize and stepsPerInterval fixed. Each interval is one
  * "sample" in Hartl's rescaled-deviation-vector sense (Eq. 2.7-2.8 of
  * "Lyapunov exponents in constrained and unconstrained ordinary
- * differential equations," 2003) -- this sweep is the direct analogue of
+ * differential equations," 2003) -- this sweep is the direct analog of
  * his sigma/sqrt(N) convergence argument, and demonstrates that
  * numIntervals=1000 is not yet converged: the estimate is still rising
  * noticeably between 1000 and 5000 intervals.

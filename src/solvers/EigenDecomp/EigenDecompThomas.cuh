@@ -1,10 +1,7 @@
 /**
  * @file EigenDecompThomas.cuh
- * @brief Declares the public API for EigenDecompThomas.cuh.
+ * @brief Eigen-decomposition solver that applies the Thomas algorithm along one axis.
  * @ingroup eigen_decomp
- *
- * @details
- * Solver interfaces consume the GPU container layer and CUDA library handles to implement direct, iterative, and eigen-decomposition based algorithms.
  */
 
 #ifndef CUDABANDED_EIGENDECOMPTHOMAS_CUH
@@ -14,15 +11,15 @@
 
 /**
  * @class EigenDecompThomas
- * @brief A hybrid 3D Poisson solver using Eigen-decomposition (X, Y) and the Thomas Algorithm (Z).
- * * This class implements a semi-direct solver for the discrete 3D Laplacian. It optimizes
- * the Fast Diagonalization Method by only diagonalizing two dimensions (typically X and Y).
- * The third dimension (Z) is solved in the transformed eigen-space as a set of independent
- * tridiagonal systems using the Thomas Algorithm (TDMA).
- * * This approach is particularly useful when:
- * 1. The Z-dimension has boundary conditions or grid spacing that make full diagonalization difficult.
- * 2. You want to reduce the number of high-latency matrix multiplications (multEZ) required.
- * * @tparam T Floating-point type (float or double).
+ * @brief A hybrid 3D Poisson solver using eigen-decomposition along Y and Z and the Thomas Algorithm along X.
+ * This class implements a semi-direct solver for the discrete 3D Laplacian. It optimizes
+ * the Fast Diagonalization Method by diagonalizing only two dimensions, Y (rows) and Z (layers).
+ * The X dimension (columns) is solved in the transformed eigen-space as a set of independent
+ * tridiagonal systems using the Thomas Algorithm (TDMA), one system for each (y, z) pair.
+ * This approach is particularly useful when:
+ * 1. The X-dimension has boundary conditions or grid spacing that make full diagonalization difficult.
+ * 2. You want to reduce the number of high-latency matrix multiplications by one of the three.
+ * @tparam T Floating-point type (float or double).
  */
 template<typename T, typename SegmentT>
 class EigenDecompThomas : public EigenDecomp3d<T> {
@@ -38,11 +35,12 @@ protected:
 
     /**
      * @brief Solves the tridiagonal systems in the eigen-space.
-     * * Applies the Thomas algorithm across the "depths" of the tensor. For each (i, j)
-     * in the eigen-transformed XY plane, it solves the system:
-     * \f[ ( \lambda_x[i] + \lambda_y[j] + L_z ) \tilde{u} = \tilde{f} \f]
-     * where \f$ L_z \f$ is the 1D tridiagonal Laplacian operator for the Z-direction.
-     * * @param src Input tensor in transformed eigen-space (f-tilde).
+     * Applies the Thomas algorithm along the columns (the X direction) of the tensor. For each (j, k)
+     * in the eigen-transformed YZ plane, it solves the system:
+     * \f[ ( L_x + \lambda_y[j] + \lambda_z[k] - \sigma I ) \tilde{u} = \tilde{f} \f]
+     * where \f$ L_x \f$ is the 1D tridiagonal Laplacian operator for the X direction and
+     * \f$ \sigma \f$ is the Helmholtz shift.
+     * @param src Input tensor in transformed eigen-space (f-tilde).
      * @param dst Output tensor in transformed eigen-space (u-tilde).
      * @param hand CUDA handle for kernel execution.
      */
@@ -54,7 +52,7 @@ public:
      * @param eigen The eigen vectors and values.
      * @param sizeOfBX3 A 3-column matrix providing scratch space for [Solution, SuperPrime, RHSPrime].
      * @param isSingular true if the laplacian is singular.
-     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtzShift is sigma.
      */
     EigenDecompThomas(const Eigen<T> &eigen, const AxisSegmentHost<SegmentT> &boundX, Mat<T> &sizeOfBX3, bool isSingular, T helmholtzShift = 0);
 
@@ -62,9 +60,9 @@ public:
      * @brief Constructs the hybrid solver and manages its own internal memory.
      * @param boundary The boundary conditions.
      * @param hands At least 3 handles.
-     * @param sizeOfBX3 allocated memory for the right hand side, and the thomas calculations.  It should have as amny rows
+     * @param sizeOfBX3 allocated memory for the right hand side, and the thomas calculations.  It should have as many rows
      * as there are rows in L, and 3 columns.
-     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtzShift is sigma.
      */
     template<typename SegY, typename SegZ>
     EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ>& boundary, Handles &hands, Mat<T> sizeOfBX3, T helmholtzShift = 0);
@@ -76,7 +74,7 @@ public:
      * @brief Constructs the hybrid solver and manages its own internal memory.
      * @param boundary The boundary conditions.
      * @param hands At least 3 handles.
-     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtShift is sigma.
+     * @param helmholtzShift set to a non zero value to solve (L - sigma I)x =  b where the helmholtzShift is sigma.
      */
     template<class SegY, class SegZ>
     EigenDecompThomas(const BoundaryConfigHost<T, SegmentT, SegY, SegZ> &boundary, Handles &hands, T helmholtzShift = 0);
@@ -85,12 +83,12 @@ public:
 };
 
 
-// Guide for Constructor 2 (Without Mat workspace)
+// Deduction guide for the constructor without a Mat workspace
 template<typename Real, typename SegX, typename SegY, typename SegZ>
 EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handles&, Real)
     -> EigenDecompThomas<Real, SegX>;
 
-// FIXED CODE
+// Deduction guide for the constructor with a Mat workspace
 template<typename Real, typename SegX, typename SegY, typename SegZ>
 EigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>&, Handles&, Mat<Real>, Real)
     -> EigenDecompThomas<Real, SegX>;

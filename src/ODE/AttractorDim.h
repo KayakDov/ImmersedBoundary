@@ -3,12 +3,9 @@
 #define CUDABANDED_ATTRACTORDIM_H
 
 /**
- * @file AttractorDimension.h
+ * @file AttractorDim.h
  * @brief Computes the Kaplan-Yorke (Lyapunov) dimension of an attractor.
  */
-
-#ifndef ATTRACTOR_DIMENSION_H
-#define ATTRACTOR_DIMENSION_H
 
 #include "LyapunovExponent.h"
 #include "Norm.h"
@@ -126,7 +123,5 @@ public:
 private:
     const LyapunovExponent<Real>& lyapunov_;
 };
-
-#endif // ATTRACTOR_DIMENSION_H
 
 #endif //CUDABANDED_ATTRACTORDIM_H

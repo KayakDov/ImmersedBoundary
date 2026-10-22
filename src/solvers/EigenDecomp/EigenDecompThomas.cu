@@ -7,7 +7,7 @@
 
 /**
  * @brief Core implementation of the Thomas Algorithm (TDMA) for a 1D tridiagonal system.
- * * This device function performs the forward elimination and back-substitution required
+ * This device function performs the forward elimination and back-substitution required
  * to solve a tridiagonal system of the form:
  * \f[ a_i x_{i-1} + b_i x_i + c_i x_{i+1} = r_i \f]
  * In this specific implementation, the sub-diagonal and super-diagonal coefficients are
@@ -18,7 +18,7 @@
  * @param x Output Solution vector.
  * @param superPrimeBuffer Workspace for the modified super-diagonal coefficients.
  * @param rhsPrimeBuffer Workspace for the modified intermediate RHS values.
- * @param seg The interior and boundary values of the tridaigonal matrix.
+ * @param seg The interior and boundary values of the tridiagonal matrix.
  */
 template<typename Real, typename SegmentT>
 __device__ void solveThomas3dLap(
@@ -63,12 +63,11 @@ __device__ void solveThomas3dLap(
 }
 
 /**
- * @brief CUDA kernel that solves independent tridiagonal systems along the Z-axis (depth).
- * * This kernel maps each (x, y) coordinate of the 3D grid to a single CUDA thread. Each
- * thread solves a 1D tridiagonal system along the X-dimension. This is the "Semi-Direct"
- * step where the main diagonal is modified by the eigenvalues of the X and Y operators
- * to solve the 3D Helmholtz/Poisson equation in the partially transformed eigen-space.
- *
+ * @brief CUDA kernel that solves independent tridiagonal systems along the X-axis (columns).
+ * This kernel maps each (y, z) pair of the 3D grid, that is each row and layer, to a single
+ * CUDA thread. Each thread solves a 1D tridiagonal system along the X-dimension. This is the
+ * "Semi-Direct" step where the main diagonal is modified by the eigenvalues of the Y and Z
+ * operators to solve the 3D Helmholtz/Poisson equation in the partially transformed eigen-space.
  *
  * @tparam Real Floating-point precision (float or double).
  * @param x Output 3D tensor for the solution.
@@ -140,7 +139,6 @@ void EigenDecompThomas<T, SegmentT>::multLEigenValInverse(const SimpleArray<T> &
         this->helmholtzShift
     );
 }
-//EigenDecomp3d(const poisson::Eigen<T> &eigen, SimpleArray<T>& sizeOfB, Vec<T>& size1IfSingular, bool isSingular);
 template<typename T, typename SegmentT>
 EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const AxisSegmentHost<SegmentT>& boundX, Mat<T> &sizeOfBX3, bool isSingular, T helmholtzShift):
     EigenDecomp3d<T>(
@@ -185,8 +183,8 @@ template class EigenDecompThomas<float, UniformSegment<float>>;
 template class EigenDecompThomas<float, VariableSegment<float>>;
 
 // 2. Macro for the Thomas constructor
-// Note: Removed the explicit <SegY, SegZ> from the constructor name,
-// as C++ deduces these from the BoundaryConfigHost parameter.
+// SegY and SegZ are deduced from the BoundaryConfigHost parameter, so they are
+// not repeated in the constructor name.
 #define INSTANTIATE_EIGEN_DECOMP_THOMAS_CONSTRUCTORS(Real, SegX, SegY, SegZ) \
 template EigenDecompThomas<Real, SegX>::EigenDecompThomas(               \
     const BoundaryConfigHost<Real, SegX, SegY, SegZ>& boundary,          \

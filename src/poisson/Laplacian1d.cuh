@@ -2,9 +2,6 @@
  * @file Laplacian1d.cuh
  * @brief Defines one-dimensional Laplacian operators.
  * @ingroup poisson
- *
- * @details
- * The Poisson module assembles structured operators, boundary metadata, and solver-facing data structures for grid-based elliptic solves.
  */
 
 
@@ -14,9 +11,8 @@
 #include <stddef.h>
 #include <cstdint>
 
-// Forward dependencies required for by-value tracking
 #include "BoundaryConfig.cuh"
-#include "deviceArrays/headers/Support/Streamable.h" // Replace with actual path to SimpleArray/Handle if different
+#include "deviceArrays/headers/Support/Streamable.h"
 #include "deviceArrays/headers/sparse/BandedMat.h"
 #include "deviceArrays/headers/SquareMat.h"
 #include "deviceArrays/headers/sparse/TriDiagonal.cuh"

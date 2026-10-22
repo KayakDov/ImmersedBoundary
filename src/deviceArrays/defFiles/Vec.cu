@@ -446,7 +446,7 @@ Vec<T> GpuArray<T>::vec(size_t offset, size_t ld, size_t size) const {
 
 template <typename T>
 Vec<T> GpuArray<T>::row(const size_t index){
-    if (index > this->_rows) throw std::out_of_range("Out of range");
+    if (index >= this->_rows) throw std::out_of_range("Out of range");
     return this->vec(index, this->_ld, this->_cols);
 }
 template <typename T>

@@ -2,19 +2,16 @@
  * @file TriDiagonal.cuh
  * @brief Defines tridiagonal sparse-matrix specializations.
  * @ingroup sparse_matrices
- *
- * @details
- * Sparse-matrix classes build on the device array layer and expose storage-format-specific operations while preserving explicit CUDA handle and stream control.
  */
 
-#ifndef BICGSTAB_TRIDIAGONAL_H
-#define BICGSTAB_TRIDIAGONAL_H
+#ifndef CUDABANDED_TRIDIAGONAL_H
+#define CUDABANDED_TRIDIAGONAL_H
 
 #include "BandedMat.h"
 
 /**
  * @brief Represents a square tridiagonal matrix layout.
- * * Column mapping strategy:
+ * Column mapping strategy:
  * - Column 0: Main/Primary diagonal (offset 0)
  * - Column 1: Subdiagonal (offset -1)
  * - Column 2: Superdiagonal (offset 1)
@@ -45,4 +42,4 @@ private:
     static const Vec<int32_t>& getSharedIndices(Handle &hand);
 };
 
-#endif //BICGSTAB_TRIDIAGONAL_H
+#endif //CUDABANDED_TRIDIAGONAL_H

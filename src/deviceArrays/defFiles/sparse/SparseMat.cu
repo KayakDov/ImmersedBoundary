@@ -8,7 +8,8 @@ cusparseOperation_t cuTranspose(bool trans) {
 }
 
 template <typename Real, typename Int>
-size_t SparseMat<Real, Int>::multWorkspaceSize(const SimpleArray<Real>& vec, SimpleArray<Real>& result, const Singleton<Real>& multProduct, const Singleton<Real>& preMultResult, const bool transposeThis, Handle& h) const {
+size_t SparseMat<Real, Int>::multWorkspaceSize(const SimpleArray<Real>& vec, SimpleArray<Real>& result, const Singleton<Real>& multProduct,
+        const Singleton<Real>& preMultResult, const bool transposeThis, Handle& h) const {
     size_t bytesRequired = 0;
     cudaDataType valueType = cuValueType<Real>();
     cusparseOperation_t op = cuTranspose(transposeThis);
@@ -23,7 +24,8 @@ size_t SparseMat<Real, Int>::multWorkspaceSize(const SimpleArray<Real>& vec, Sim
 }
 
 template <typename Real, typename Int>
-void SparseMat<Real, Int>::mult(const SimpleArray<Real>& vec, SimpleArray<Real>& result, const Singleton<Real>& multProduct, const Singleton<Real>& preMultResult, bool transposeMat, SimpleArray<Real>& workSpace, Handle& h) const{
+void SparseMat<Real, Int>::mult(const SimpleArray<Real>& vec, SimpleArray<Real>& result, const Singleton<Real>& multProduct,
+        const Singleton<Real>& preMultResult, bool transposeMat, SimpleArray<Real>& workSpace, Handle& h) const{
 
     cudaDataType valueType = cuValueType<Real>();
     cusparseOperation_t op = cuTranspose(transposeMat);

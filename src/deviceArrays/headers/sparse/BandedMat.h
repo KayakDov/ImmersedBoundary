@@ -2,13 +2,10 @@
  * @file BandedMat.h
  * @brief Defines banded sparse matrices stored as diagonal columns.
  * @ingroup sparse_matrices
- *
- * @details
- * Sparse-matrix classes build on the device array layer and expose storage-format-specific operations while preserving explicit CUDA handle and stream control.
  */
 
-#ifndef BICGSTAB_BANDEDMAT_H
-#define BICGSTAB_BANDEDMAT_H
+#ifndef CUDABANDED_BANDEDMAT_H
+#define CUDABANDED_BANDEDMAT_H
 
 #include "deviceArrays/headers/Mat.h"
 #include "deviceArrays/headers/Singleton.h"
@@ -62,7 +59,7 @@ public:
 
     const Vec<int32_t> _indices;
 
-    /**const
+    /**
     * @brief Constructs a banded matrix by wrapping an existing dense matrix buffer.
     *
     * @param windowTo Existing matrix (device or host-backed) whose memory and dimensions
@@ -131,14 +128,14 @@ public:
 
 
     /**
-     * Creates a matrix with lots of 0s stored off the diagonals of ineterst.
+     * Creates a matrix with lots of 0s stored off the diagonals of interest.
      * @param dense Where the matrix with all the zeroes is stored.  It should be _rows x _rows.
      * @param hand
      */
     void getDense(SquareMat<T> dense, Handle &hand) const;
 
     /**
-     * This method allocates its own ememory.
+     * This method allocates its own memory.
      * @param hand
      * @return A dense version of this matrix.
      */
@@ -146,4 +143,4 @@ public:
 };
 
 
-#endif //BICGSTAB_BANDEDMAT_H
+#endif //CUDABANDED_BANDEDMAT_H

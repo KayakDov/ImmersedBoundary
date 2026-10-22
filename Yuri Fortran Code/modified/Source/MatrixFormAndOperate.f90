@@ -55,7 +55,7 @@ MODULE  MatrixFormAndOperate
 ! bare literal.
 !
 ! Still not verified: whether the library's divergence stencil in
-! ImerssedEquation.cu's setRHSPPrime matches Yuri's FdDiv/Ckor exactly (both
+! ImmersedEquation.cu's setRHSPPrime matches Yuri's FdDiv/Ckor exactly (both
 ! look like standard 2nd-order MAC divergence scaled by 3/(2*dt), but I
 ! haven't proven the constants and boundary treatment agree). Compare
 ! against orig/Source's CPU path for the same case before trusting a full

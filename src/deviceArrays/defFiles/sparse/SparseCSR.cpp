@@ -1,7 +1,3 @@
-//
-// Created by usr on 1/28/26.
-//
-
 #include "../../headers/sparse/SparseCSR.h"
 # include <string>
 #include "deviceArrays/headers/SimpleArray.h"
@@ -15,12 +11,12 @@ void SparseCSR<Real, Int>::setDescriptor() {
     CHECK_SPARSE_ERROR(cusparseCreateCsr(
         &descr,
         this->rows, this->cols, this->nnz(),
-        this->offsets.data(), // int* (size cols + 1)
+        this->offsets.data(), // int* (size rows + 1)
         this->inds.data(), // int* (size nnz)
         this->values.data(), // float* or double* (size nnz)
         cuIndexType<Int>(), // Offset type
         cuIndexType<Int>(), //maybe use a smaller data type       // Index type
-        CUSPARSE_INDEX_BASE_ZERO, // The 0-based indexing you requested
+        CUSPARSE_INDEX_BASE_ZERO, // 0-based indexing
         valueType
     ));
 
@@ -37,7 +33,7 @@ SparseCSR<Real, Int>::SparseCSR(size_t rows, size_t cols, SimpleArray<Real>& val
 template<typename Real, typename Int>
 SparseCSR<Real, Int> SparseCSR<Real, Int>::create(size_t nnz, size_t rows, size_t cols, Handle& stream) {
     auto vals = SimpleArray<Real>::create(nnz, stream);
-    auto rowOffsets = SimpleArray<Int>::create(rows + 1, stream);//warning, aligning these arrays to be contiguouse in memory seems to cause problems.
+    auto rowOffsets = SimpleArray<Int>::create(rows + 1, stream);//warning, aligning these arrays to be contiguous in memory seems to cause problems.
     auto colInds = SimpleArray<Int>::create(nnz, stream);
     return {rows, cols, vals, rowOffsets, colInds};
 }

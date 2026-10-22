@@ -2,13 +2,10 @@
  * @file DeviceMemory.h
  * @brief Defines a utility for querying and reporting CUDA device memory.
  * @ingroup device_arrays
- *
- * @details
- * These classes form the core GPU container layer. Public containers generally own or view CUDA device memory through shared ownership, while explicit factory functions allocate new storage.
  */
 
-#ifndef BICGSTAB_DEVICEMEMORY_H
-#define BICGSTAB_DEVICEMEMORY_H
+#ifndef CUDABANDED_DEVICEMEMORY_H
+#define CUDABANDED_DEVICEMEMORY_H
 
 #include <cuda_runtime_api.h>
 #include <driver_types.h>
@@ -55,4 +52,4 @@ public:
  */
 std::ostream& operator << (std::ostream& os, const DeviceMemory& dm);
 
-#endif //BICGSTAB_DEVICEMEMORY_H
+#endif //CUDABANDED_DEVICEMEMORY_H

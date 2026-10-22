@@ -2,9 +2,6 @@
  * @file AxisSegment.cuh
  * @brief Defines axis-aligned segment helpers for Poisson boundary logic.
  * @ingroup poisson
- *
- * @details
- * The Poisson module assembles structured operators, boundary metadata, and solver-facing data structures for grid-based elliptic solves.
  */
 
 #ifndef CUDABANDED_AXISSEGMENT_CUH
@@ -22,11 +19,11 @@
  * @brief Host-side reconstruction of finite-volume cell widths from deltas.
  *
  * For a FluxLapl axis with n unknowns, the n+1 deltas are
- * {wall-to-centre_0, centre-to-centre, ..., centre_{n-1}-to-wall}, and the
+ * {wall-to-center_0, center-to-center, ..., center_{n-1}-to-wall}, and the
  * n cell widths satisfy d_0 = W_0/2, d_i = (W_{i-1}+W_i)/2, d_n = W_{n-1}/2.
  * Solving front-to-back gives the recursion below; the leftover equation
  * W_{n-1} == 2 d_n is a consistency check that the deltas really came from
- * cell centres of cells tiling the segment wall-to-wall.
+ * cell centers of cells tiling the segment wall-to-wall.
  *
  * @throws std::invalid_argument if the deltas are inconsistent with a
  *         wall-to-wall cell tiling, or any reconstructed width is <= 0.
@@ -45,7 +42,7 @@ std::vector<Real> makeFvmWidths(const std::vector<Real>& d) {
         throw std::invalid_argument(
             "FluxLapl deltas are inconsistent: the reconstructed last cell width "
             "does not equal twice the last delta. The n+1 deltas must be the "
-            "wall/centre distances of n cells tiling the segment wall-to-wall.");
+            "wall/center distances of n cells tiling the segment wall-to-wall.");
     for (size_t i = 0; i < n; ++i)
         if (!(w[i] > 0)) throw std::invalid_argument("FluxLapl reconstructed a non-positive cell width.");
     return w;
@@ -120,7 +117,7 @@ public:
      * Adds the boundary-condition-induced contribution to the right-hand side
      * vector, assuming the operator (L) is assembled independently.
      *
-     * @param rhs Right-hand side vector (modisfied in place)
+     * @param rhs Right-hand side vector (modified in place)
      * @param indexInLine  The index of this point in this dimension.
      * @return true if a modification is made, false otherwise.
      */
@@ -211,7 +208,7 @@ public:
  * @class FluxLaplacian
  * @brief Conservative finite-volume Laplacian axis with variable spacing.
  *
- * Unknowns are cell averages at the centres of n cells that tile the segment
+ * Unknowns are cell averages at the centers of n cells that tile the segment
  * wall-to-wall.  Interior row i is the flux difference over cell i:
  *     ( (u_{i+1}-u_i)/d_{i+1} - (u_i-u_{i-1})/d_i ) / W_i
  * Summing W_i * row_i telescopes interior fluxes, so the operator is
@@ -224,7 +221,7 @@ public:
 template<typename T>
 class FluxLaplacian : public AxisSegment<T, FluxBoundary<T, false>, FluxBoundary<T, true>> {
 public:
-    /** n+1 centre/wall distances (same layout as VariableSegment's delta). */
+    /** n+1 center/wall distances (same layout as VariableSegment's delta). */
     const DeviceData1d<T> delta;
 
     /** n reconstructed cell widths (see makeFvmWidths). */
@@ -285,7 +282,7 @@ public:
  * of a dimension (e.g., Left/Right, Top/Bottom). By storing these by value,
  * the pair maintains its own valid copy of the conditions, preventing dangling
  * references during kernel execution.
- * * @tparam T The floating-point type (float or double).
+ * @tparam T The floating-point type (float or double).
  */
 template<typename T>
 class UniformSegment : public AxisSegment<T, UniformBoundary<T>, UniformBoundary<T>> {
@@ -297,13 +294,13 @@ public:
     * @brief Construct by providing raw parameters for both boundaries.
      * This constructor initializes the internal BoundaryCondition objects directly.
      *
-     * @param beginIsNeumann Is the beggin condition Neuman.  Set to false for Dirichlet.
+     * @param beginIsNeumann Is the begin condition Neumann.  Set to false for Dirichlet.
      * @param endIsNeumann Is the end condition Neumann.  Set to false for Dirichlet.
      * @param beginVal The value at the beginning condition.
      * @param endVal The value at the end condition.
      * @param isStaggered True if the grid is staggered, false if it's node centered.
      * @param delta The distance between grid points.
-     * @param numNodes The numver of grid points in this dimension.
+     * @param numNodes The number of grid points in this dimension.
      */
     __device__ __host__ UniformSegment(
         bool beginIsNeumann,

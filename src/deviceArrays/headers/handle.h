@@ -2,13 +2,10 @@
  * @file handle.h
  * @brief Defines RAII wrappers for CUDA streams and cuBLAS/cuSOLVER/cuSPARSE handles.
  * @ingroup device_arrays
- *
- * @details
- * These classes form the core GPU container layer. Public containers generally own or view CUDA device memory through shared ownership, while explicit factory functions allocate new storage.
  */
 
-#ifndef BICGSTAB_HANDLE_H
-#define BICGSTAB_HANDLE_H
+#ifndef CUDABANDED_HANDLE_H
+#define CUDABANDED_HANDLE_H
 
 #include <cusolverDn.h>
 #include <memory>
@@ -95,11 +92,12 @@ using CusparseHandlePtr = std::unique_ptr<std::remove_pointer<cusparseHandle_t>:
 
 
 /**
- * @brief Wrapper class for managing cuBLAS, cuSOLVER, and CUDA streams.
+ * @brief Wrapper class for managing cuBLAS, cuSOLVER, cuSPARSE, and CUDA streams.
  *
  * Handle encapsulates:
  * - A cublasHandle_t for cuBLAS operations
  * - A cusolverDnHandle_t for cuSOLVER operations
+ * - A cusparseHandle_t for cuSPARSE operations
  * - A cudaStream_t for asynchronous execution
  * - A GpuIndex identifying which physical GPU all of the above live on
  *
@@ -160,7 +158,7 @@ public:
     static Handle *_get_or_create_handle(Handle *handle, std::unique_ptr<Handle> &out_ptr_unique);
 
     /**
-     * @brief Destructor. Destroys cuBLAS and cuSOLVER handles.
+     * @brief Destructor. Destroys cuBLAS, cuSOLVER and cuSPARSE handles.
      *
      * If the Handle owns the CUDA stream, synchronizes and destroys it as well.
      */
@@ -189,4 +187,4 @@ private:
     bool isOwner = false; ///< True if the Handle owns the CUDA stream and should destroy it
 };
 
-#endif //BICGSTAB_HANDLE_H
+#endif //CUDABANDED_HANDLE_H

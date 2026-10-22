@@ -2,14 +2,11 @@
  * @file Poisson.cuh
  * @brief Declares structured-grid Poisson solver interfaces.
  * @ingroup poisson
- *
- * @details
- * The Poisson module assembles structured operators, boundary metadata, and solver-facing data structures for grid-based elliptic solves.
  */
 
 
-#ifndef CUDABANDED_POISSONLHS_H
-#define CUDABANDED_POISSONLHS_H
+#ifndef CUDABANDED_POISSON_H
+#define CUDABANDED_POISSON_H
 
 #include "BoundaryConfig.cuh"
 #include "deviceArrays/headers/sparse/BandedMat.h"
@@ -84,4 +81,4 @@ namespace poisson {
 
 
 }
-#endif //CUDABANDED_POISSONLHS_H
+#endif //CUDABANDED_POISSON_H

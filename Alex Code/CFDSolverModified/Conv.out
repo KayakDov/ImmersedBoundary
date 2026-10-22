@@ -14,7 +14,7 @@
  Initial time step             = 0.10000000E-03
  Time interval                 = 0.10000000    
  Maximal number of iterations  = 9000
- Print step                    = 1000
+ Print step                    =    1
  Precision                     = 0.10000000E-06
 
 
@@ -336,3 +336,39 @@
  i=100  Y=  1.000      Hy12= 0.9942E-05  Y12=  1.000      HPy= 0.1103E-04
  i=101  Y=  1.000                        Y12=  1.000      HPy= 0.4971E-05
  i=102                                   Y12=  1.000    
+
+
+  Istp=    1   Time Step= 0.1000E-03 Time= 0.10000000E-03   End Time= 0.10000000    
+  RNSx= 0.4223E-04  RNSy= 0.1626E-04  RNSz= 0.6539E-04  RTmpr= 0.1000E-05  RDP= 0.4624    
+
+
+  Istp=    2   Time Step= 0.1000E-03 Time= 0.20000000E-03   End Time= 0.10000000    
+  RNSx= 0.4451E-04  RNSy= 0.1954E-04  RNSz= 0.6289E-04  RTmpr= 0.2452E-06  RDP= 0.1150    
+
+
+  Istp=    3   Time Step= 0.1000E-03 Time= 0.30000000E-03   End Time= 0.10000000    
+  RNSx= 0.3233E-04  RNSy= 0.7242E-05  RNSz= 0.3232E-04  RTmpr= 0.1357E-06  RDP= 0.2803E-01
+
+
+  Istp=    4   Time Step= 0.1000E-03 Time= 0.40000000E-03   End Time= 0.10000000    
+  RNSx= 0.3313E-04  RNSy= 0.3158E-05  RNSz= 0.3312E-04  RTmpr= 0.9075E-07  RDP= 0.2117E-02
+
+
+  Istp=    5   Time Step= 0.1000E-03 Time= 0.50000000E-03   End Time= 0.10000000    
+  RNSx= 0.3337E-04  RNSy= 0.1740E-05  RNSz= 0.3337E-04  RTmpr= 0.6660E-07  RDP= 0.3146E-03
+
+
+  Istp=    6   Time Step= 0.1000E-03 Time= 0.60000000E-03   End Time= 0.10000000    
+  RNSx= 0.3344E-04  RNSy= 0.8415E-06  RNSz= 0.3344E-04  RTmpr= 0.5208E-07  RDP= 0.4722E-04
+
+
+  Istp=    7   Time Step= 0.1000E-03 Time= 0.70000000E-03   End Time= 0.10000000    
+  RNSx= 0.3345E-04  RNSy= 0.4424E-06  RNSz= 0.3345E-04  RTmpr= 0.4243E-07  RDP= 0.9513E-05
+
+
+  Istp=    8   Time Step= 0.1000E-03 Time= 0.80000000E-03   End Time= 0.10000000    
+  RNSx= 0.3344E-04  RNSy= 0.2767E-06  RNSz= 0.3344E-04  RTmpr= 0.3623E-07  RDP= 0.5526E-05
+
+
+  Istp=    9   Time Step= 0.1000E-03 Time= 0.90000000E-03   End Time= 0.10000000    
+  RNSx= 0.3343E-04  RNSy= 0.1934E-06  RNSz= 0.3343E-04  RTmpr= 0.3155E-07  RDP= 0.4276E-05

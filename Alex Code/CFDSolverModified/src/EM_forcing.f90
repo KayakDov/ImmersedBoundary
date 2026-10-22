@@ -26,6 +26,18 @@ Subroutine Get_Potential_Launch
      End Do
    End Do
 
+   ! TEMPORARY DIAGNOSTIC (Hartmann=1000 investigation): curl RHS, both its
+   ! Sum() and two specific, deliberately asymmetric single-cell values.
+   ! Potential is the only field where x and z are both VariableDeltaLapl
+   ! AND (in this config, Nx=Nz=100) the same length, so an x<->z transpose
+   ! anywhere in how this array is handed to/read back from the solver
+   ! would not change its shape or its Sum() -- only which value lands at
+   ! which cell. Comparing these two points directly against the C++ port's
+   ! identical diagnostic (same two points) is how that gets ruled in or out.
+   Write (*,*) ' EM: curl RHS=', Sum(FDRHP(1:Nx,1:Ny1,1:Nz))
+   Write (*,*) ' EM: curl RHS(10,5,90)=', FDRHP(10,5,90)
+   Write (*,*) ' EM: curl RHS(90,5,10)=', FDRHP(90,5,10)
+
         ! GPU: pure Poisson (shift = 0, alpha = 1 on all axes -- no RHS
         ! scaling needed, no reindexing needed), was
         ! Call EVDmethod(..., 1,1,1, beta=0).
@@ -175,7 +187,7 @@ Subroutine Get_Potential_Finish
         End Do
     End If
 
- !   Write (*,*) ' EM: Potential=', Sum(Potential)
+    Write (*,*) ' EM: Potential=', Sum(Potential)
   Return
 End Subroutine Get_Potential_Finish
 
@@ -203,7 +215,7 @@ Subroutine EM_force
       End Do
      End Do
    End Do
- !  Write (*,*) ' EM: RHSx=', Sum(RHSx)
+   Write (*,*) ' EM: RHSx=', Sum(RHSx)
 
 !$OMP Parallel Do Private(i,j,k,DFi_dx)
    Do i=1,Nx1
@@ -215,7 +227,7 @@ Subroutine EM_force
       End Do
      End Do
     End Do
-!   Write (*,*) ' EM: RHSz=', Sum(RHSz)
+   Write (*,*) ' EM: RHSz=', Sum(RHSz)
 
 ! ........... Make div-free force .........................
 

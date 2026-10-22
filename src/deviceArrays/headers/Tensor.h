@@ -11,8 +11,8 @@
  * @ingroup device_arrays
  */
 
-#ifndef BICGSTAB_TENSOR_H
-#define BICGSTAB_TENSOR_H
+#ifndef CUDABANDED_TENSOR_H
+#define CUDABANDED_TENSOR_H
 
 #include "Mat.h"
 
@@ -24,8 +24,6 @@
  * Tensor is a final class that inherits from Mat<T> and provides additional
  * access methods for 3D data. It supports row/column/depth access and allows
  * retrieving individual elements as Singleton<T>.
- *
- * @warning Some Tensor operations are declared before their implementations are complete.
  *
  * Memory layout is that each layer is beneath the layer above it when visualized in two dimensions,
  * so ld >= rows*layers, and to map from flatIndex -> (row, col, layer) we have
@@ -142,7 +140,7 @@ public:
     SimpleArray<T> col(size_t col, size_t layer);
 
     /**
-     * sets the values of this tensor from a padded grid.  The buffer should be padded in the height and depth dimesnion,
+     * sets the values of this tensor from a padded grid.  The buffer should be padded in the height and depth dimension,
      * but need not be padded in the width dimension.
      * @param hostData
      * @param paddedBuffer
@@ -151,7 +149,7 @@ public:
     void set(const T *hostData, Tensor<T> paddedBuffer, Handle &hand);
 
     /**
-    * * sets the values of this tensor from a padded grid.  The buffer should be padded in the height and depth dimesnion,
+    * sets the values of this tensor from a padded grid.  The buffer should be padded in the height and depth dimension,
      * but need not be padded in the width dimension.
      * @param hostData
      * @param paddedBuffer
@@ -160,8 +158,8 @@ public:
     void get(T *hostData, Tensor<T> paddedBuffer, Handle &hand);
 
     /**
-     * Sets this tensor from an array flatened in row major order, with the z index changing slowest.
-     * @param host The array that represents a flatened tensor.
+     * Sets this tensor from an array flattened in row major order, with the z index changing slowest.
+     * @param host The array that represents a flattened tensor.
      * @param buffer Should be the same size as this tensor.
      * @param hand
      */
@@ -222,4 +220,4 @@ public:
     std::ostream &get(std::ostream &output_stream, bool isText, bool printColMajor, Handle &hand) const override;
 };
 
-#endif //BICGSTAB_TENSOR_H
+#endif //CUDABANDED_TENSOR_H

@@ -1,7 +1,3 @@
-//
-// Created by usr on 12/26/25.
-//
-
 #include "Real3d.h"
 
 #include <stdexcept>

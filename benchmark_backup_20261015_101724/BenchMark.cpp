@@ -8,7 +8,7 @@
 #include <random>
 
 #include "deviceArrays/headers/DeviceMemory.h"
-#include "immersedBoundary/ImerssedEquation.h"
+#include "immersedBoundary/ImmersedEquation.h"
 #include "poisson/Laplacian1d.cuh"
 #include "poisson/BoundaryConfig.cuh"
 #include "poisson/AxisSegment.cuh"

@@ -2,13 +2,10 @@
  * @file Singleton.h
  * @brief Defines a GPU-resident scalar wrapper used by vector and matrix operations.
  * @ingroup device_arrays
- *
- * @details
- * These classes form the core GPU container layer. Public containers generally own or view CUDA device memory through shared ownership, while explicit factory functions allocate new storage.
  */
 
-#ifndef BICGSTAB_SINGLETON_H
-#define BICGSTAB_SINGLETON_H
+#ifndef CUDABANDED_SINGLETON_H
+#define CUDABANDED_SINGLETON_H
 
 #include "deviceArrays/headers/SimpleArray.h"
 #include <unordered_map>
@@ -20,11 +17,11 @@ template<typename T> class Tensor;
 
 /**
  * @brief Represents a single-element vector on the GPU.
- * 
+ *
  * Inherits from Vec<T> and is designed to provide convenient access to a single scalar
  * while still using the GPU-backed memory model of Vec<T>. Useful for operations that
  * require a scalar in GPU computations, e.g., as alpha/beta in matrix-vector multiplications.
- * 
+ *
  * @tparam T Type of the element.
  */
 template <typename T>
@@ -183,4 +180,4 @@ public:
 
 
 
-#endif //BICGSTAB_SINGLETON_H
+#endif //CUDABANDED_SINGLETON_H

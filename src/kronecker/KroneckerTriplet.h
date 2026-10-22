@@ -2,9 +2,6 @@
  * @file KroneckerTriplet.h
  * @brief Defines Kronecker-product triplet helpers.
  * @ingroup kronecker
- *
- * @details
- * This header is part of the public interface and is included in the generated Doxygen module overview.
  */
 
 #ifndef CUDABANDED_KRONECKERTRIPLET_H
@@ -21,7 +18,8 @@
  * for 3D spectral decompositions where the matrices correspond to 1D eigenbases.
  *
  * Memory layout assumption: Flattened indices represent a 3D grid where the
- * row (Y) changes fastest, then the layer (Z), and the column (X) changes slowest.
+ * row (Y) changes fastest, then the layer (Z), and the column (X) changes slowest:
+ * flat index = y + rows * (z + layers * x).
  *
  * @tparam T Floating-point type (e.g., float, double).
  */
@@ -33,7 +31,8 @@ class KroneckerTriplet : public XYZ<SquareMat<T>> {
 
 public:
     /**
-     * @brief Applies the X-dimension matrix to the rows of the tensor.
+     * @brief Applies the X-dimension matrix to every row vector of the tensor, that is to each
+     *        set of values that runs along X for a fixed y and z.
      * @param other Input tensor.
      * @param result Output tensor.
      * @param hand CUDA handle.
@@ -41,7 +40,8 @@ public:
     void multRows(const SimpleArray<T> &other, SimpleArray<T> result, Handle &hand)  const;
 
     /**
-     * @brief Applies the Y-dimension matrix to the columns of the tensor.
+     * @brief Applies the Y-dimension matrix to every column vector of the tensor, that is to each
+     *        set of values that runs along Y for a fixed x and z.
      * @param other Input tensor.
      * @param result Output tensor.
      * @param hand CUDA handle.
@@ -49,7 +49,8 @@ public:
     void multCols(const SimpleArray<T> &other, SimpleArray<T> result, Handle &hand) const;
 
     /**
-     * @brief Applies the Z-dimension matrix to the layers of the tensor.
+     * @brief Applies the Z-dimension matrix to every depth vector of the tensor, that is to each
+     *        set of values that runs along Z for a fixed x and y.
      * @param other Input tensor.
      * @param result Output tensor.
      * @param hand CUDA handle.

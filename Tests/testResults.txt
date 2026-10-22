@@ -1,0 +1,56 @@
+--- DIAGNOSTIC: Test Binary Starting ---
+Note: Google Test filter = ThomasAxisAssignment.*
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from ThomasAxisAssignment
+[ RUN      ] ThomasAxisAssignment.VxShapedAsymmetricGrid
+[       OK ] ThomasAxisAssignment.VxShapedAsymmetricGrid (193 ms)
+[ RUN      ] ThomasAxisAssignment.VyShapedAsymmetricGrid
+[       OK ] ThomasAxisAssignment.VyShapedAsymmetricGrid (3 ms)
+[ RUN      ] ThomasAxisAssignment.VyRealMeshUniformRhsStaysSymmetric
+/home/usr/Documents/TelAvivU/Tests/test.cpp:1194: Failure
+Expected: (relDiff(zVarying0, zVarying1)) < (1e-6), actual: 0.047915279629886488 vs 1e-06
+x<->z symmetry broken on the z-varying pair: at(50,50,10)=-2.3642177705478869e-09 vs at(50,50,90)=-2.4832010428954481e-09
+
+/home/usr/Documents/TelAvivU/Tests/test.cpp:1197: Failure
+Expected: (relDiff(xVarying0, zVarying0)) < (1e-6), actual: 0.84739039920731418 vs 1e-06
+x<->z exchange symmetry broken: at(10,50,50)=-1.5491933392575901e-08 vs at(50,50,10)=-2.3642177705478869e-09
+
+[VyRealMeshUniformRhsStaysSymmetric] exhaustive x<->z scan: 415632/505000 pairs violate 1e-6 relative tolerance; worst at (37,64,101)=-1.09584e-10 vs (101,64,37)=-1.54919e-08 relDiff=0.992926
+/home/usr/Documents/TelAvivU/Tests/test.cpp:1228: Failure
+Expected: (maxRelDiff) < (1e-6), actual: 0.99292638240291442 vs 1e-06
+415632/505000 (x,y,z)<->(z,y,x) pairs violate symmetry; worst at (37,64,101) vs (101,64,37)
+
+[VyRealMeshUniformRhsStaysSymmetric] EigenDecomp3d A/B comparison -- same boundaryHost/shift/rhs, X treated via eigen-transform instead of Thomas sweep: 415632/505000 pairs violate 1e-6 relative tolerance; worst at (37,64,101)=-1.09584e-10 vs (101,64,37)=-1.54919e-08 relDiff=0.992926
+/home/usr/Documents/TelAvivU/Tests/test.cpp:1296: Failure
+Expected: (maxRelDiff3d) < (1e-6), actual: 0.99292638240291442 vs 1e-06
+415632/505000 (x,y,z)<->(z,y,x) pairs violate symmetry under EigenDecomp3d (eigen-transform for all 3 axes, no Thomas sweep); worst at (37,64,101) vs (101,64,37)
+
+[VyRealMeshUniformRhsStaysSymmetric] UNSORTED (raw mode-index order) eigenvalue comparison (lapEigen.vals.x[k] vs lapEigen.vals.z[k]): max relative diff = 0 at index 0
+[VyRealMeshUniformRhsStaysSymmetric] sorted eigenvalue-spectrum comparison (lapEigen.vals.x vs lapEigen.vals.z, 101 values each): max relative diff = 0 at sorted index 0 (sortedX=-3.31078e+10, sortedZ=-3.31078e+10)
+[VyRealMeshUniformRhsStaysSymmetric] eigenvector comparison (lapEigen.vecs.x vs lapEigen.vecs.z, 101x101): max relative diff = 0 at (0,0)
+[VyRealMeshUniformRhsStaysSymmetric] dense 1D operator comparison (X=dense(0) vs Z=dense(2), 101x101): direct elementwise max relative diff = 0 at (0,0); transposed (Lx[i][j] vs Lz[j][i]) max relative diff = 0.179628 at (99,100)
+[VyRealMeshUniformRhsStaysSymmetric] universal eigenpair check via checkEigens (trusted SquareMat::mult(), not a hand-rolled host matmul) completed for both X and Z at absolute tolerance 10000 -- any ASSERT_NEAR failure this triggered appears above with its own flat index, row and column.
+[  FAILED  ] ThomasAxisAssignment.VyRealMeshUniformRhsStaysSymmetric (79 ms)
+[ RUN      ] ThomasAxisAssignment.VyShapedSizeShiftBisection
+[VyShapedSizeShiftBisection] relative residuals:
+  N=10,  shift=0              : 2.48053e-13
+  N=10,  shift=6.45497e+07 : 9.0244e-16
+  N=100, shift=0              : 2.15466e-09
+  N=100, shift=6.45497e+07 : 1.24404e-14
+[       OK ] ThomasAxisAssignment.VyShapedSizeShiftBisection (59 ms)
+[ RUN      ] ThomasAxisAssignment.VyRealMeshYZRoleSwapMatchesTranspose
+unknown file: Failure
+C++ exception with description "FluxLapl deltas are inconsistent: the reconstructed last cell width does not equal twice the last delta. The n+1 deltas must be the wall/centre distances of n cells tiling the segment wall-to-wall." thrown in the test body.
+
+[  FAILED  ] ThomasAxisAssignment.VyRealMeshYZRoleSwapMatchesTranspose (2 ms)
+[----------] 5 tests from ThomasAxisAssignment (337 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (337 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 2 tests, listed below:
+[  FAILED  ] ThomasAxisAssignment.VyRealMeshUniformRhsStaysSymmetric
+[  FAILED  ] ThomasAxisAssignment.VyRealMeshYZRoleSwapMatchesTranspose
+
+ 2 FAILED TESTS

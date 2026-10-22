@@ -16,15 +16,15 @@ namespace eigen {
     /**
      * Discretization used along one axis.
      *  - UniformDeltaNodeCenteredLapl: uniform spacing, unknowns at nodes,
-     *    walls ON the first/last node's neighbouring position (the historical
+     *    domain boundaries at the first and last nodes (the historical
      *    isStaggered == false uniform path).
-     *  - UniformDeltaStaggeredLapl: uniform spacing, unknowns at cell centres,
+     *  - UniformDeltaStaggeredLapl: uniform spacing, unknowns at cell centers,
      *    walls half a spacing beyond the first/last unknown (the historical
      *    isStaggered == true uniform path).
      *  - VariableDeltaLapl: variable spacing, pointwise 3-point Laplacian
      *    (exact for quadratics at each node; faces implicitly at midpoints).
      *  - FluxLapl: variable spacing, conservative finite-volume flux form;
-     *    unknowns are centres of cells that tile the segment wall-to-wall,
+     *    unknowns are centers of cells that tile the segment wall-to-wall,
      *    cell widths are reconstructed from the deltas.  Required when the
      *    operator must equal div(grad) discretely (e.g. pressure projection).
      *

@@ -2,9 +2,6 @@
  * @file BoundaryConfig.cuh
  * @brief Defines boundary-configuration containers for Poisson solves.
  * @ingroup poisson
- *
- * @details
- * The Poisson module assembles structured operators, boundary metadata, and solver-facing data structures for grid-based elliptic solves.
  */
 
 #ifndef CUDABANDED_BOUNDARYCONFIG_CUH
@@ -20,8 +17,8 @@
  * @struct BoundaryConfig
  * @brief Stores boundary condition configuration for a 3D domain.
  *
- * This version forces the user to explicitly define the segment type 
- * for each axis (X, Y, and Z), accommodating any mixture of uniform 
+ * This version forces the user to explicitly define the segment type
+ * for each axis (X, Y, and Z), accommodating any mixture of uniform
  * and variable boundary conditions.
  */
 template<typename Real, typename SegX, typename SegY, typename SegZ>
@@ -38,7 +35,7 @@ struct BoundaryConfig {
 
     /**
      * @brief Explicit constructor requiring all 3 axis segments.
-     * * This forces the user to instantiate the segments (Uniform or Variable)
+     * This forces the user to instantiate the segments (Uniform or Variable)
      * beforehand and pass them in directly.
      */
     __host__ __device__ BoundaryConfig(const SegX& axisX, const SegY& axisY, const SegZ& axisZ)
@@ -51,7 +48,7 @@ struct BoundaryConfig {
      * @return The dimensions of the grid.
      */
     __host__ __device__ GridDim dim() const {
-        return GridDim(this->y.numNodes, this->x.numNodes, this->z.numNodes); // [cite: 257]
+        return GridDim(this->y.numNodes, this->x.numNodes, this->z.numNodes);
     }
 
 
@@ -66,7 +63,7 @@ struct BoundaryConfig {
     bool allNeumann() const {
         return this->x.bothNeumann() &&
                this->y.bothNeumann() &&
-               (this->z.bothNeumann() || this->z.numNodes <= 1); // [cite: 254]
+               (this->z.bothNeumann() || this->z.numNodes <= 1);
     }
 };
 
@@ -81,7 +78,6 @@ public:
     BoundaryConfigHost(const AxisSegmentHost<SegX>& axisX, const AxisSegmentHost<SegY>& axisY, const AxisSegmentHost<SegZ>& axisZ)
         : x(axisX), y(axisY), z(axisZ) {}
 
-    // Deterministic return type! Flawless parameter passing for kernels.
     auto forDevice() const {
         return BoundaryConfig<Real, SegX, SegY, SegZ>(x.forDevice(), y.forDevice(), z.forDevice());
     }
@@ -90,7 +86,7 @@ public:
 /**
  * @brief A factory that deduces boundary types at runtime and injects the
  * strongly-typed BoundaryConfig into a provided callback.
- * * @param dim The dimensions of the grid (rows=Y, cols=X, layers=Z).
+ * @param dim The dimensions of the grid (rows=Y, cols=X, layers=Z).
  * @param delta XYZ struct containing the delta vectors for each axis.
  * @param startIsNeumann XYZ struct of Neumann flags for the start boundaries.
  * @param endIsNeumann XYZ struct of Neumann flags for the end boundaries.

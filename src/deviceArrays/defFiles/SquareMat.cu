@@ -36,7 +36,7 @@ SquareMat<T> SquareMat<T>::create(size_t rowsCols, size_t ld, GpuPointer<T> ptr)
  *
  * @throws std::runtime_error if info != 0.
  */
-inline void processInfo(const Singleton<int32_t>& info_dev, Handle& stream, const std::string& context = "cusolverDnXgeev")
+inline void processInfo(const Singleton<int32_t>& info_dev, Handle& stream, const std::string& context)
 {
     const int info_host = info_dev.get(stream);
 
@@ -54,7 +54,6 @@ inline void processInfo(const Singleton<int32_t>& info_dev, Handle& stream, cons
         case -6: msg << "Parameter 6 (VL matrix pointer/ldvl) had an illegal value."; break;
         case -7: msg << "Parameter 7 (VR matrix pointer/ldvr) had an illegal value."; break;
         case -8: msg << "Parameter 8 (workspace pointer/size) had an illegal value."; break;
-            // You can extend this mapping based on full cusolverDnXgeev docs.
         default:
             if (info_host > 0) {
                 msg << "The QR algorithm failed to compute all eigenvalues. "
@@ -76,7 +75,7 @@ SquareMat<T> SquareMat<T>::empty() {
 }
 
 template <typename T>
-void SquareMat<T>::eigen(//TODO: This method may not be correctly handaling real and imaginary componenets.
+void SquareMat<T>::eigen(//TODO: This method may not be correctly handling real and imaginary components.
     Vec<T>& eVals,           // Will hold BOTH real (first n) and imaginary (last n) parts
     SquareMat<T>* eVecs,     // Eigenvectors (stored as real/imaginary parts) Set to null if not computed.
     Handle& hand
@@ -88,13 +87,11 @@ void SquareMat<T>::eigen(//TODO: This method may not be correctly handaling real
 
     std::unique_ptr<Vec<T>> temp_reEVal;
 
-    // FIXED: Replaced undeclared '*h' with the passed 'hand' variable
     Vec<T>* eValsPtr = Vec<T>::_get_or_create_target(2*n, &eVals, temp_reEVal, hand);
 
     size_t workDeviceBytes = 0, workHostBytes = 0;
     cudaDataType_t dataType;
 
-    // Your float/double logic is perfectly suited for the 64-bit generic API
     if constexpr (std::is_same_v<T, float>) dataType = CUDA_R_32F;
     else if constexpr (std::is_same_v<T, double>) dataType = CUDA_R_64F;
     else throw std::invalid_argument("Unsupported type for cusolverDnXgeev.");
@@ -132,7 +129,7 @@ void SquareMat<T>::eigen(//TODO: This method may not be correctly handaling real
         info_dev.toKernel1d()
     ));
 
-    // processInfo(info_dev);
+    processInfo(info_dev, hand, "cusolverDnXgeev");
 }
 
 template<typename T>
@@ -257,7 +254,7 @@ template<typename T>
 double SquareMat<T>::determinant(Handle& hand) {
     //TODO: This method should call my LU decomp method.
     if constexpr (!std::is_floating_point_v<T>) {
-        throw std::runtime_error("determinent requires a floating-point matrix (float or double).");
+        throw std::runtime_error("determinant requires a floating-point matrix (float or double).");
     } else {
 
 
@@ -422,7 +419,7 @@ std::pair<size_t, size_t> SquareMat<T>::eigenSPDBufferSize(Handle& hand) const
  *
  * @throws std::runtime_error if info != 0.
  */
-inline void processInfoSyevd(const Singleton<int32_t>& info_dev, Handle& stream, const std::string& context = "cusolverDnXsyevd")
+inline void processInfoSyevd(const Singleton<int32_t>& info_dev, Handle& stream, const std::string& context)
 {
     const int info_host = info_dev.get(stream);
 
@@ -459,8 +456,6 @@ inline void processInfoSyevd(const Singleton<int32_t>& info_dev, Handle& stream,
             default: msg << "(unknown parameter)"; break;
         }
     }
-
-    std::cout << "SquareMat.cu::processInforSyved info ran" << std::endl;
 
     throw std::runtime_error(msg.str());
 }
@@ -503,7 +498,7 @@ void SquareMat<T>::eigenSPD(
 
         CHECK_CUSOLVER_ERROR(cusolverDnDestroyParams(params));
         hand.synch(); //It looks like if hostBuffer gets cleaned up to soon after this is done running, then crash.
-        // processInfoSyevd(info, hand);
+        processInfoSyevd(info, hand, "cusolverDnXsyevd");
     }
 }
 

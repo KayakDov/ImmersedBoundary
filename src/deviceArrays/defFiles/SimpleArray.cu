@@ -1,7 +1,3 @@
-//
-// Created by usr on 1/5/26.
-//
-
 #include "../headers/SimpleArray.h"
 #include "deviceArrays/headers/Tensor.h"
 #include <string>

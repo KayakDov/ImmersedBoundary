@@ -1,5 +1,5 @@
 ! ************************************************************
-! *   Subroutine for straight-forward solution  of           *     
+! *   Subroutine for straight-forward solution  of           *
 ! *       FD problem for convection in rectangulars          *
 ! *                                                          *
 ! *   This is version with 3-level time integrator           *
@@ -36,26 +36,26 @@
          ! already make these Integer (i,j,k fall in the I-N range), but
          ! they're declared explicitly for clarity since they're new.
          Integer :: i, j, k, iLo, iHi, jLo, jHi, kLo, kHi
-	 
+
           Ht = 2.D0 * Htime
 
-          dt_temp = Dble(Istat) 
-          
+          dt_temp = Dble(Istat)
+
 ! ########### Time step for temperature ##################
-          
+
 !          Write (*,*) ' time step entered', dt_temp
 
 ! +++++++++++ Right hand side ++++++++++++++++++++++++++++++++
-        
+
            FDRHP = 0.D0
            Call  VgrTmp
 !           Write (*,*) '1 FDRHP =', Sum(abs(FDRHP))
 
 ! +++++++++++ Time derivative +++++++++++++++++++++++++++++++
-           
+
            FDRHP(1:Nx1,1:Ny1,1:Nz1) = FDRHP(1:Nx1,1:Ny1,1:Nz1) -          &
      &              dt_temp * ( 4.D0 * Tmpr(1:Nx1,1:Ny1,1:Nz1) -          &
-     &                               TmpOld(1:Nx1,1:Ny1,1:Nz1)     )  / Ht 
+     &                               TmpOld(1:Nx1,1:Ny1,1:Nz1)     )  / Ht
 
  !          Write (*,*) '2 FDRHP =', Maxval(abs(FDRHP))
 
@@ -76,7 +76,7 @@
 ! ========= so it can go out immediately.                          ========
 
           FDRHP = 0.D0
-          Call   VgrdVy 
+          Call   VgrdVy
           Call   GradPy( RHSy(1:Nx1,1:Ny ,1:Nz1), Prs )
           RHSy(1:Nx1,1:Ny,1:Nz1) = RHSy(1:Nx1,1:Ny,1:Nz1) + FDRHP(1:Nx1,1:Ny,1:Nz1)
 
@@ -88,6 +88,17 @@
       ! after Vx/Vz below, by which point this has had the whole
       ! Temperature/Potential/Vx/Vz sequence to finish on the GPU.
          Vy_pinned = RHSy(1:Nx1,1:Ny,1:Nz1) / DGr
+         ! TEMPORARY DIAGNOSTIC (Hartmann=1000 investigation): Vy/RHSy have
+         ! never actually been sampled in this whole investigation -- every
+         ! print so far only covered Vx/Vz/Potential. Vy feeds directly
+         ! into FdDiv (Dprs's RHS), so a bug here would corrupt the
+         ! pressure correction -- and hence BOTH Vx and Vz's final values
+         ! -- even though Vx/Vz's own RHS-build-and-solve pipeline, checked
+         ! in isolation, is already proven correct to 9-10 significant
+         ! figures.
+         If (Istp == 1) Then
+             Write (*,*) ' EM: Sum|RHSy/DGr(pre-solve)|=', Sum(Abs(Vy_pinned))
+         End If
          Call solve_eigen_decomp_d(VyHandle)
 
 ! ========= RHS/launch for Potential -- only needs VMx/VMz from the =======
@@ -106,12 +117,12 @@
 ! ======== (VMx/VMxOld, VMz/VMzOld, Prs), same as they always have.   =======
 
           FDRHP = 0.D0
-          Call   VgrdVx 
+          Call   VgrdVx
           Call   GradPx( RHSx(1:Nx ,1:Ny1,1:Nz1), Prs )
           RHSx(1:Nx,1:Ny1,1:Nz1) = RHSx(1:Nx,1:Ny1,1:Nz1) + FDRHP(1:Nx,1:Ny1,1:Nz1)
 
           FDRHP = 0.D0
-          Call   VgrdVz 
+          Call   VgrdVz
           Call   GradPz( RHSz(1:Nx1,1:Ny1,1:Nz ), Prs )
           RHSz(1:Nx1,1:Ny1,1:Nz) = RHSz(1:Nx1,1:Ny1,1:Nz) + FDRHP(1:Nx1,1:Ny1,1:Nz)
 
@@ -141,10 +152,10 @@
              End Do
            End Do
          End Do
-           
+
  !          Write (*,*) ' TmpNew=', Maxval(abs(TMpNew))
 
-      Call EVDbounds 
+      Call EVDbounds
 
       RTmpr = Dist2D (TmpNew, Tmpr, Nx2, Ny2, Nz2, Nx2, Ny2, Nz2)
 !      Write (*,*) ' RTmpr=', RTmpr, Minval(TmpNew), Maxval(tmpnew)
@@ -159,29 +170,41 @@
 
            RHSz(1:Nx1,1:Ny1,1:Nz) = RHSz(1:Nx1,1:Ny1,1:Nz)  &
      &     - 0.5d0 * Bu_Gr * ( TmpNew(1:Nx1,1:Ny1,1:Nz) + TmpNew(1:Nx1,1:Ny1,2:Nz1) ) &
-     &     - 0.5d0 * Bu_Gr *  (   Teta(1:Nx1,1:Ny1,1:Nz) +   Teta(1:Nx1,1:Ny1,2:Nz1) ) 
-    
+     &     - 0.5d0 * Bu_Gr *  (   Teta(1:Nx1,1:Ny1,1:Nz) +   Teta(1:Nx1,1:Ny1,2:Nz1) )
+
 ! ########### Potential is needed now: synch (via Finish) ##################
 
            Call Get_Potential_Finish
 
 ! +++++++++ Electromagnetic force (needs Potential, just synched) ++++++++++
-          
+
            Call EM_force
 
 ! ++++++++++++ [Calculate Lap(u)^-1]*RHSx +++++++++++++++++++++++
-      
+
       ! GPU: was Call EVD_Thomas(..., 1.D0) with the CPU's own
       ! DGr-scaled Vx_left/Vx_center/Vx_right coefficients.
       ! Not synched here -- VMxNew isn't needed until the EVDbounds call
       ! below, after Vz is launched too.
          Vx_pinned = RHSx(1:Nx,1:Ny1,1:Nz1) / DGr
+         ! TEMPORARY DIAGNOSTIC (Hartmann=1000 investigation): same reasoning
+         ! as the C++ port's mirrored print right after its own 1/DGr scale --
+         ! Sum|Vx|/Sum|Vz| after the correction step already disagree with
+         ! C++ by 6-22% at Istp=1, well above GPU run-to-run noise, so this
+         ! checks whether that discrepancy is already present in the array
+         ! going INTO solve_eigen_decomp_d(VxHandle), or only appears after.
+         If (Istp == 1) Then
+             Write (*,*) ' EM: Sum|RHSx/DGr(pre-solve)|=', Sum(Abs(Vx_pinned))
+         End If
          Call solve_eigen_decomp_d(VxHandle)
 
 ! ++++++++++++++ [Calculate Lap(w)^-1]*RHSz ++++++++++++++++++++++++++
-      
+
       ! GPU: was Call EVD_Thomas(..., 1.D0), same DGr scaling as Vx/Vy.
          Vz_pinned = RHSz(1:Nx1,1:Ny1,1:Nz) / DGr
+         If (Istp == 1) Then
+             Write (*,*) ' EM: Sum|RHSz/DGr(pre-solve)|=', Sum(Abs(Vz_pinned))
+         End If
          Call solve_eigen_decomp_d(VzHandle)
 
 ! ########### Vy, Vx, Vz are all needed now: synch each #####################
@@ -197,6 +220,14 @@
              End Do
            End Do
          End Do
+
+         If (Istp == 1) Then
+             Write (*,*) ' EM: Sum|Vy(post-solve)|=', Sum(Abs(VMyNew(1:Nx1,1:Ny,1:Nz1)))
+             Write (*,*) ' EM: Vy(post-solve)(10,50,50)=', VMyNew(10,50,50)
+             Write (*,*) ' EM: Vy(post-solve)(90,50,50)=', VMyNew(90,50,50)
+             Write (*,*) ' EM: Vy(post-solve)(50,50,10)=', VMyNew(50,50,10)
+             Write (*,*) ' EM: Vy(post-solve)(50,50,90)=', VMyNew(50,50,90)
+         End If
 
          Call synch_d(VxHandle)
 !$OMP Parallel Do Private(i,j,k)
@@ -218,23 +249,88 @@
            End Do
          End Do
 
-      Call EVDbounds 
-         
+         ! TEMPORARY DIAGNOSTIC (Hartmann=1000 investigation): bisection
+         ! point between the two remaining suspects. Sum|RHSx/DGr| and
+         ! Sum|RHSz/DGr| above (right before solve_eigen_decomp_d) already
+         ! match the C++ port to 8-9 significant figures, so the RHS build
+         ! is exonerated. Sum|Vx|/Sum|Vz| below (after the pressure
+         ! correction) still disagree with C++ by 22%/6%. This samples
+         ! VMxNew/VMzNew at the one point in between: right after
+         ! synch_d(VxHandle)/synch_d(VzHandle) and the padded<->unpadded
+         ! remap, but BEFORE EVDbounds and the pressure-correction block
+         ! touch them at all -- same bisection point as the C++ port's
+         ! mirrored print right after its own synchVelocities(). If these
+         ! already disagree with C++'s labels 5/6 by a similar margin, the
+         ! bug is inside the implicit solve itself. If they match, the
+         ! solve is innocent and the bug is in EVDbounds or the
+         ! pressure-correction block that follows.
+         If (Istp == 1) Then
+             Write (*,*) ' EM: Sum|Vx(post-solve,pre-correction)|=', Sum(Abs(VMxNew(1:Nx,1:Ny1,1:Nz1)))
+             Write (*,*) ' EM: Sum|Vz(post-solve,pre-correction)|=', Sum(Abs(VMzNew(1:Nx1,1:Ny1,1:Nz)))
+             Write (*,*) ' EM: Vx(post-solve,pre-correction)(10,50,50)=', VMxNew(10,50,50)
+             Write (*,*) ' EM: Vx(post-solve,pre-correction)(90,50,50)=', VMxNew(90,50,50)
+             Write (*,*) ' EM: Vx(post-solve,pre-correction)(50,50,10)=', VMxNew(50,50,10)
+             Write (*,*) ' EM: Vx(post-solve,pre-correction)(50,50,90)=', VMxNew(50,50,90)
+             Write (*,*) ' EM: Vz(post-solve,pre-correction)(10,50,50)=', VMzNew(10,50,50)
+             Write (*,*) ' EM: Vz(post-solve,pre-correction)(90,50,50)=', VMzNew(90,50,50)
+             Write (*,*) ' EM: Vz(post-solve,pre-correction)(50,50,10)=', VMzNew(50,50,10)
+             Write (*,*) ' EM: Vz(post-solve,pre-correction)(50,50,90)=', VMzNew(50,50,90)
+         End If
+
+      Call EVDbounds
+
 !        RNSx = Dist2D (VMx, VMxNew, Nx1, Ny2, Nz2, Nx1, Ny2, Nz2)
 !        RNSy = Dist2D (VMy, VMyNew, Nx2, Ny1, Nz2, Nx2, Ny1, Nz2)
 !        RNSz = Dist2D (VMz, VMzNew, Nx2, Ny2, Nz1, Nx2, Ny2, Nz1)
-!                 
+!
 !        Write (*,*) ' RNS=', RNSx, RNSy, RNSz
 !stop
 
 ! ++++++++ Calcualte pressure correction ++++++++++++
 
       FDRHP= 0.d0
-      
+
       Call FdDiv
-  
+
+         ! TEMPORARY DIAGNOSTIC (Hartmann=1000 investigation): the scaled
+         ! RHS below (Sum|pressure RHS(pre-solve)|, unchanged further down)
+         ! disagrees with the C++ port by ~23.7% even though every formula
+         ! and every aggregate input has independently checked out: FdDiv's
+         ! formula above matches divergenceKernel character-for-character,
+         ! Subroutine Mesh's Hx12/Hy12/Hz12 match computeAxisSpacing, Ckor/
+         ! Htime matches Real(1.5)/cfg_.timeStep exactly (Htime is read
+         ! straight off the input deck and used nowhere as anything but the
+         ! raw timestep -- it is NOT secretly 2*dt; Ht=2.D0*Htime elsewhere
+         ! is a different, local quantity), EVDbounds's unconditional
+         ! VMxNew/VMyNew/VMzNew zero blocks match
+         ! BoundaryConditions::readVelocity's unconditional zero exactly (no
+         ! Dirichlet/Neumann branch on velocity at all), and Sum|Vx|/
+         ! Sum|Vy|/Sum|Vz| above already match the C++ port to 9-12 digits.
+         ! The one thing a Sum(|.|) genuinely cannot rule out is a pointwise
+         ! difference in VMxNew/VMyNew/VMzNew that cancels in their own
+         ! aggregate but still lands on the wrong side of FdDiv's
+         ! neighbor-difference stencil. This prints the raw divergence,
+         ! before vs. after the Ckor/Htime scale, at the same four points
+         ! now also sampled on VMxNew/VMyNew/VMzNew themselves above --
+         ! directly comparable, cell by cell, against the C++ port's
+         ! labels 5/6/8/11/10.
+         If (Istp == 1) Then
+             Write (*,*) ' EM: Sum|divergence(pre-scale)|=', Sum(Abs(FDRHP(1:Nx1,1:Ny1,1:Nz1)))
+             Write (*,*) ' EM: divergence(pre-scale)(10,50,50)=', FDRHP(10,50,50)
+             Write (*,*) ' EM: divergence(pre-scale)(90,50,50)=', FDRHP(90,50,50)
+             Write (*,*) ' EM: divergence(pre-scale)(50,50,10)=', FDRHP(50,50,10)
+             Write (*,*) ' EM: divergence(pre-scale)(50,50,90)=', FDRHP(50,50,90)
+         End If
+
       FDRHP = FDRHP * Ckor / Htime
-      
+
+         If (Istp == 1) Then
+             Write (*,*) ' EM: pressure RHS(pre-solve)(10,50,50)=', FDRHP(10,50,50)
+             Write (*,*) ' EM: pressure RHS(pre-solve)(90,50,50)=', FDRHP(90,50,50)
+             Write (*,*) ' EM: pressure RHS(pre-solve)(50,50,10)=', FDRHP(50,50,10)
+             Write (*,*) ' EM: pressure RHS(pre-solve)(50,50,90)=', FDRHP(50,50,90)
+         End If
+
   !    Write (*,*) ' FDRHP=', Sum(abs(FDRHP))
 
 !      Call   EVD_Thomas (Dprs(1:Nx1,1:Ny1,1:Nz1), FDRHP(1:Nx1,1:Ny1,1:Nz1),  &
@@ -261,10 +357,36 @@
          ! previously didn't need has been added -- roughly a wash for this
          ! one field, not a net reduction like the other five get.
          Pressure_pinned = FDRHP(1:Nx1,1:Ny1,1:Nz1)
+         ! TEMPORARY DIAGNOSTIC (Hartmann=1000 investigation): Dprs
+         ! post-solve disagrees with the C++ port by 31% (the Sum|Dprs...|
+         ! line below) -- the largest mismatch found yet, bigger than Vx's
+         ! 22% or Vz's 6%, and those are explained by it (both read this
+         ! same Dprs through GradPx/GradPz, already proven-correct
+         ! formulas). Vx/Vy/Vz's RHS AND post-solve values all matched to
+         ! 9-12 digits, so this is the one piece left unverified. Same
+         ! bisection as every other field: if this already disagrees with
+         ! the C++ port, the bug is upstream (FdDiv/the Ckor/Htime scale);
+         ! if it matches, the bug is inside the solve itself.
+         If (Istp == 1) Then
+             Write (*,*) ' EM: Sum|pressure RHS(pre-solve)|=', Sum(Abs(Pressure_pinned))
+         End If
          Call solve_eigen_decomp_d(PressureHandle)
          Call synch_d(PressureHandle)
          Dprs(1:Nx1,1:Ny1,1:Nz1) = Pressure_pinned
  !   Write (*,*) ' Dprs=', Sum(abs(Dprs))
+
+         ! TEMPORARY DIAGNOSTIC (Hartmann=1000 investigation): Dprs has
+         ! never been sampled either. Pressure's solver construction
+         ! (dim lengths, deltas, all-Neumann BCs, FLUX_LAPL segments,
+         ! shift=0) matches the C++ port's exactly, and this all-Neumann
+         ! system is singular -- per the comment a few lines up, "the
+         ! library's singular-mode handling must stay engaged" -- so a
+         ! difference in how that singular mode is actually handled
+         ! wouldn't show up as a parameter mismatch, only as a numeric
+         ! one here.
+         If (Istp == 1) Then
+             Write (*,*) ' EM: Sum|Dprs(pressure-correction,post-solve)|=', Sum(Abs(Dprs(1:Nx1,1:Ny1,1:Nz1)))
+         End If
 
 ! ++++++++++++ Calculate velocities ++++++++++++++++++++++++++++++
 
@@ -273,7 +395,7 @@
       Call GradPx( RHSx(1:Nx ,1:Ny1,1:Nz1), Dprs )
       Call GradPy( RHSy(1:Nx1,1:Ny ,1:Nz1), Dprs )
       Call GradPz( RHSz(1:Nx1,1:Ny1,1:Nz ), Dprs )
-      
+
 ! ........... Correct velocities .........................................
 
       VMxNew(1:Nx,1:Ny1,1:Nz1) = VMxNew(1:Nx,1:Ny1,1:Nz1) - RHSx(1:Nx ,1:Ny1,1:Nz1) * Htime / Ckor
@@ -282,16 +404,52 @@
 
       Prs = Prs + DPrs
 
-      call EVDbounds 
+      ! TEMPORARY DIAGNOSTIC (Hartmann=1000 investigation, next step): the
+      ! C++ port's curl RHS (Potential's RHS build) already matches this
+      ! run's Sum() closely at Istp=1, but the SOLVED Potential coming back
+      ! from that same, parameter-identical CudaBandedLib call does not
+      ! (wrong sign, ~9x magnitude). Since both codebases call the
+      ! identical library routine with identical parameters for that solve,
+      ! and it's correct here, the library itself is a dead end -- the one
+      ! thing that can still differ is what's actually in the RHS buffer
+      ! cell-by-cell, which traces back to VMx/VMz. So: sample VMxNew/
+      ! VMzNew themselves, right here, right after this correction -- these
+      ! are exactly what next step's curl-RHS build (Get_Potential_Launch)
+      ! will read as VMx/VMz once the Old<-New shift below runs. Points
+      ! spread near the x-wall and z-wall (where VariableDeltaLapl/mesh
+      ! stretching concentrate resolution, i.e. where Hartmann layers would
+      ! form) rather than clustered in one spot, since the last point
+      ! samples (two cells of Potential's curl RHS) turned out to land in a
+      ! near-zero/decaying bulk region that was too noisy to read anything
+      ! into. Same four points, both fields, as the C++ port's mirrored
+      ! diagnostic in correctVelocitiesAndPressure().
+      If (Istp == 1) Then
+          Write (*,*) ' EM: Vx(10,50,50)=', VMxNew(10,50,50)
+          Write (*,*) ' EM: Vx(90,50,50)=', VMxNew(90,50,50)
+          Write (*,*) ' EM: Vx(50,50,10)=', VMxNew(50,50,10)
+          Write (*,*) ' EM: Vx(50,50,90)=', VMxNew(50,50,90)
+          Write (*,*) ' EM: Vz(10,50,50)=', VMzNew(10,50,50)
+          Write (*,*) ' EM: Vz(90,50,50)=', VMzNew(90,50,50)
+          Write (*,*) ' EM: Vz(50,50,10)=', VMzNew(50,50,10)
+          Write (*,*) ' EM: Vz(50,50,90)=', VMzNew(50,50,90)
+          ! Robust tiebreaker: Sum(Abs(.)), not Sum(.) -- can't hide a real
+          ! discrepancy behind positive/negative cancellation the way a
+          ! plain Sum() (or a couple of point samples right at the
+          ! quiescent-start noise floor) can.
+          Write (*,*) ' EM: Sum|Vx|=', Sum(Abs(VMxNew(1:Nx,1:Ny1,1:Nz1)))
+          Write (*,*) ' EM: Sum|Vz|=', Sum(Abs(VMzNew(1:Nx1,1:Ny1,1:Nz)))
+      End If
+
+      call EVDbounds
 
          RNSx = Dist2D (VMx, VMxNew, Nx1, Ny2, Nz2, Nx1, Ny2, Nz2)
          RNSy = Dist2D (VMy, VMyNew, Nx2, Ny1, Nz2, Nx2, Ny1, Nz2)
          RNSz = Dist2D (VMz, VMzNew, Nx2, Ny2, Nz1, Nx2, Ny2, Nz1)
-         
+
          RDP = MaxVal(Abs(Dprs) )
-         
- !     FDRHP= 0.d0     
- !     Call FdDiv    
+
+ !     FDRHP= 0.d0
+ !     Call FdDiv
   !    Write (*,*) ' DivV=', Sum(abs(FDRHP))
  !        Write (*,*) RNSx, RNSy, RNSz, RDP
  !        stop
@@ -302,7 +460,7 @@
       Call FdDiv
 
         If (Icheck .EQ. 0)  Call    Check
-                    
+
 ! ######## Shift of the time step ########################
 
 444     		Continue

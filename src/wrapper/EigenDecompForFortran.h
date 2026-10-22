@@ -1,10 +1,7 @@
 /**
  * @file EigenDecompForFortran.h
- * @brief Declares the public API for EigenDecompForFortran.h.
+ * @brief Wraps an eigen-decomposition solver with the pinned-buffer interface used by the Fortran bindings.
  * @ingroup eigen_decomp
- *
- * @details
- * Solver interfaces consume the GPU container layer and CUDA library handles to implement direct, iterative, and eigen-decomposition based algorithms.
  */
 
 #ifndef CUDABANDED_EIGENDECOMPFORFORTRAN_H

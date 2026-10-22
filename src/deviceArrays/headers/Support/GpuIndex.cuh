@@ -1,5 +1,5 @@
 /**
- * @file GpuIndex.h
+ * @file GpuIndex.cuh
  * @brief A small value type identifying which physical GPU something belongs to.
  * @ingroup device_arrays
  */

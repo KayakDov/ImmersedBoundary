@@ -1,7 +1,3 @@
-//
-// Created by usr on 6/18/26.
-//
-
 #include "../../headers/sparse/Diagonal.h"
 #include "deviceArrays/headers/Support/Streamable.h"
 #include "deviceArrays/headers/sparse/BandedMat.h"
@@ -37,7 +33,7 @@ template<typename T>
 Diagonal<T>::Diagonal(const SimpleArray<T> &windowInto, Handle &hand): Diagonal(windowInto.matrix(windowInto.size()), hand) {
 }
 
-// Mirroring your system's explicit instantiations
+// Explicit instantiations
 template class Diagonal<float>;
 template class Diagonal<double>;
 template class Diagonal<size_t>;

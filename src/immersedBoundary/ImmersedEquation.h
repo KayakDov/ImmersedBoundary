@@ -1,15 +1,14 @@
 /**
-* @file ImmersedEq.h
+ * @file ImmersedEquation.h
  * @brief High-performance CUDA implementation of the Immersed Boundary Method linear system.
- * * This file contains the primary operators for solving the pressure-force coupled system:
+ * This file contains the primary operators for solving the pressure-force coupled system:
  * @f[ (L + 2 B^T B)x = 2 B^T f + p@f]
- * * @author E. Dov Neimand
+ * @author E. Dov Neimand
  * @ingroup immersed_boundary
  */
 
-#ifndef CUDABANDED_YURIFILEREADER_H
-#define CUDABANDED_YURIFILEREADER_H
-#include <fstream>
+#ifndef CUDABANDED_IMMERSEDEQUATION_H
+#define CUDABANDED_IMMERSEDEQUATION_H
 
 #include "deviceArrays/headers/sparse/SparseCSR.h"
 #include "../deviceArrays/headers/sparse/SparseCSC.cuh"
@@ -31,10 +30,10 @@ enum class GridInd : size_t {
     RHSPPrime   = 1,  ///< Right-Hand Side for the pressure correction (p')
     Result      = 2,  ///< General output buffer
     pPrime      = 2,  ///< Pressure correction field (aliases Result)
-    LHS_BTBx    = 3, ///< LHS intermediate: $B^T B x$ (aliases RHS_BTF)
+    LHS_BTBx    = 3, ///< LHS intermediate: $B^T B x$
     LHS_invLBTBx= 4,  ///< LHS intermediate: $L^{-1} B^T B x$
     RHS         = 4,  ///< Global Right-Hand Side vector (aliases LHS_invLBTBx)
-    boundRHSAdj = 5, ///< adjustmant to the right hand side of the equation on account of the boundary.
+    boundRHSAdj = 5, ///< adjustment to the right hand side of the equation on account of the boundary.
     Count       = 6   ///< Number of standard grid indices
 };
 
@@ -74,14 +73,16 @@ class ImmersedEq {
 
     /**
      * @brief Vector field storage on the staggered grid.
-     * * Allocation accounts for face-centered velocities in 2d and 3D.
+     * Allocation accounts for face-centered velocities in 2d and 3D.
      */
     SimpleArray<Real> velocities = SimpleArray<Real>::create(dim.velocitiesStaggeredSize(), hands[0]);
 
     /// CSR matrix mapping Eulerian space to Lagrangian space ($B$).
-    std::unique_ptr<SparseMat<Real, Int>> B = std::make_unique<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
+    std::unique_ptr<SparseMat<Real, Int>> B = std::make_unique<SparseCSR<Real, Int>>(SparseCSR<Real, Int>::create(dim.size(),
+            maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
     /// CSC matrix mapping Lagrangian space to discretized staggered vector field space ($R$).
-    std::unique_ptr<SparseMat<Real, Int>> R = std::make_unique<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(), maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
+    std::unique_ptr<SparseMat<Real, Int>> R = std::make_unique<SparseCSC<Real, Int>>(SparseCSC<Real, Int>::create(velocities.size(),
+            maxSparseVals.subArray(0,0), maxSparseOffsets, maxSparseInds.subArray(0,0)));
 
     const Singleton<Real> dT; ///< Time step size ($\Delta t$).
 
@@ -123,7 +124,7 @@ class ImmersedEq {
 
     /**
      * Checks if the value passed is permitted as the number of non zero values.
-     * @param nnzThe ptential number of non zer values for some sparse matrix.
+     * @param nnz The potential number of non-zero values for some sparse matrix.
      */
     void checkNNZ(size_t nnz) const;
     friend ImmersedEqSolver<Real, Int>;
@@ -136,7 +137,7 @@ class ImmersedEq {
     /**
      * used for eigen decomposition.
      */
-    std::shared_ptr<EigenDecompSolver<Real>> eds;// = createEDS(boundary, hands);
+    std::shared_ptr<EigenDecompSolver<Real>> eds;
 
     /**
      * @brief Computes the Left-Hand Side (LHS) operation: $x = A \cdot b$.
@@ -200,9 +201,9 @@ public:
 
     /**
      * @brief Constructor for the ImmersedEq system.
-     * * Initializes the CUDA environment, pre-allocates workspace matrices for
+     * Initializes the CUDA environment, pre-allocates workspace matrices for
      * iterative solving, and sets up the Eigen-Decomposition for the Laplacian operator.
-     * * @param boundary              Dimensions of the Eulerian grid.
+     * @param boundary              Dimensions of the Eulerian grid.
      * @param fSize            Size of the Lagrangian force vector (number of boundary points).
      * @param nnzMax           Maximum expected non-zero elements in the sparse matrices B and R.
      * @param p                Initial pressure field array (Size: dim.size()).
@@ -220,7 +221,7 @@ public:
      *
  * This method executes the iterative solver for the operation:
      * $(I + 2L^{-1} B^T B)x = L^{-1}(B^T f + p)$
-     * * @param result   [out] Host or Device pointer where the resulting grid field is written.
+     * @param result   [out] Host or Device pointer where the resulting grid field is written.
      * @param nnzB     Number of non-zero elements in the current Sparse Matrix B.
      * @param offsetsB Pointer to row (CSR) or column (CSC) offsets for Matrix B.
      * @param indsB    Pointer to column (CSR) or row (CSC) indices for Matrix B.
@@ -230,10 +231,10 @@ public:
 
     /**
      * @brief Solves the coupled system for both Pressure (Eulerian) and Force (Lagrangian) corrections.
-     * *
-     * * Performs a full system solve using the provided boundary constraints (R) and
+     *
+     * Performs a full system solve using the provided boundary constraints (R) and
      * velocity fields (uStar), mapping results back to both domain and interface.
-     * * @param resultP      [out] Pointer for the Eulerian grid result (Pressure field).
+     * @param resultP      [out] Pointer for the Eulerian grid result (Pressure field).
      * @param resultF      [out] Pointer for the Lagrangian boundary result (Force field).
      * @param nnzB         Non-zero count for Sparse Matrix B.
      * @param rowOffsetsB  Row offsets for CSR Matrix B.
@@ -244,9 +245,9 @@ public:
      * @param rowIndsR     Row indices for CSC Matrix R.
      * @param valuesR      Non-zero values for Matrix R.
      * @param UGamma       Pointer to prescribed boundary velocities/states.
-     * @param uStar        Pointer to the intermediate staggered velocity field.  The first contiguouse third should be
-     * in the x component of each velocity vector, then next contiguouse third in the y component of each velocity
-     * vector, and the final contiguouse third thousl be the z component of the velocity vector.
+     * @param uStar        Pointer to the intermediate staggered velocity field.  The first contiguous third should be
+     * in the x component of each velocity vector, then next contiguous third in the y component of each velocity
+     * vector, and the final contiguous third should be the z component of the velocity vector.
      */
     void solve(Real *resultP, Real *resultF, size_t nnzB, Int *rowOffsetsB, Int *colIndsB, Real *valuesB, size_t nnzR,
                Int *colOffsetsR, Int *rowIndsR, Real *valuesR, Real *UGamma, Real *uStar);
@@ -259,7 +260,7 @@ public:
 /**
  * @class ImmersedEqSolver
  * @brief Specialized BiCGSTAB implementation for the Immersed Boundary operator.
- * * @tparam Real Floating point precision (float/double).
+ * @tparam Real Floating point precision (float/double).
  * @tparam Int Integer precision for indexing (int32_t/int64_t).
  */
 template <typename Real, typename Int>
@@ -288,4 +289,4 @@ public:
 
 };
 
-#endif //CUDABANDED_YURIFILEREADER_H
+#endif //CUDABANDED_IMMERSEDEQUATION_H

@@ -2,9 +2,6 @@
  * @file AdjacencyIndex.cuh
  * @brief Defines adjacency and diagonal index helpers used by structured sparse kernels.
  * @ingroup device_support
- *
- * @details
- * Support utilities are small host/device helpers used to prepare kernels, map indices, and adapt GPU arrays to standard C++ streams.
  */
 
 #pragma once
@@ -15,7 +12,7 @@
 
 /**
  * @brief Represents a single diagonal's metadata within a banded matrix storage format.
- * * Maps a specific data column in the banded buffer to its mathematical diagonal offset
+ * Maps a specific data column in the banded buffer to its mathematical diagonal offset
  * in the original square matrix.
  */
 class AdjacencyInd {
@@ -27,7 +24,7 @@ public:
 
     /**
      * @brief The mathematical diagonal offset.
-     * * Positive values represent upper diagonals; negative values represent lower diagonals;
+     * Positive values represent upper diagonals; negative values represent lower diagonals;
      * 0 represents the main diagonal.
      */
     const int32_t diag;
@@ -42,7 +39,7 @@ public:
     }
 
     /**
-     * Provides the corespondoing index in a banded matrix.
+     * Provides the corresponding index in a banded matrix.
      * @param denseRow The row of the index in the dense matrix format.
      * @return Indices for a dense matrix.
      */
@@ -52,7 +49,7 @@ public:
     }
 
     /**
-     * generates the dense index that coresponds to the given sparse row.
+     * generates the dense index that corresponds to the given sparse row.
      * @param sparseRow
      * @return
      */
@@ -62,7 +59,7 @@ public:
         (diag > 0 ? sparseRow + diag : sparseRow)
         };
     }
-    /*
+    /**
      * @brief Provides the corresponding index in a banded matrix.
      * @param denseCol The column of the index in the dense matrix format.
      * @return Indices for a banded matrix.
@@ -75,7 +72,7 @@ public:
     /**
      * The column in the dense matrix.
      * @param denseRow The row in the dense matrix.
-     * @return The column in the dense marix.
+     * @return The column in the dense matrix.
      */
     __device__ size_t denseCol(size_t denseRow) const{
         return denseRow + diag;
@@ -85,7 +82,7 @@ public:
     }
 
     /**
-     * Provides the corespondoing index in a dense matrix.
+     * Provides the corresponding index in a dense matrix.
      * @param denseRow The row of the index in the dense matrix format.
      * @return Indices for a dense matrix.
      */
@@ -108,7 +105,7 @@ public:
     }
 
     /**
-     * Checks if hte element on this diagonal at the given column is in bounds.
+     * Checks if the element on this diagonal at the given column is in bounds.
      * @param denseCol A column in the dense matrix.
      * @param height The height of the matrix.
      * @return True if this diagonal includes the given dense column.
@@ -124,7 +121,7 @@ public:
 
 /**
  * @brief Helper class for managing symmetric or paired diagonals in a banded operator.
- * * Provides utility methods to derive "left" (lower) and "right" (upper) diagonal
+ * Provides utility methods to derive "left" (lower) and "right" (upper) diagonal
  * descriptors based on a central mapping.
  */
 class AdjacencyIndPair {

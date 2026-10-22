@@ -1,15 +1,15 @@
 /**
  * @file Vec.h
  * @brief Defines the Vec class for 1D GPU-stored arrays.
- * 
+ *
  * This class represents a vector stored in GPU memory and provides methods
  * for element-wise access, arithmetic operations, and multiplication with
  * Mat or Vec objects. It inherits from GpuArray<T>.
  * @ingroup device_arrays
  */
 
-#ifndef BICGSTAB_VEC_H
-#define BICGSTAB_VEC_H
+#ifndef CUDABANDED_VEC_H
+#define CUDABANDED_VEC_H
 
 #include "deviceArrays/headers/GpuArray.h"
 
@@ -29,10 +29,10 @@ template<typename T> void eigenDecompSolver(const T* frontBack,  size_t fbLd,
 /**
  * @class Vec
  * @brief Represents a 1D vector stored on GPU.
- * 
+ *
  * Vec provides access to vector elements, supports arithmetic operations,
  * and can multiply with matrices or other vectors. It inherits from GpuArray<T>.
- * 
+ *
  * @tparam T The type of elements (e.g., float, double, int32_t).
  */
 template <typename T>
@@ -71,7 +71,7 @@ public:
     using GpuArray<T>::get;
     /**
      * @brief Factory method to create a new vector of given length.
-     * 
+     *
      * @param length Number of elements.
      * @param handle Optional CUDA stream.
      * @return Vec<T> instance.
@@ -87,7 +87,6 @@ public:
      * @param stream Optional CUDA stream.
      * @return Vec<T> instance.
      */
-    // Inside Vec.h
     static Vec<T> create(size_t length, size_t stride, T* pointer);
 
     template<typename U = T, typename = std::enable_if_t<!std::is_const_v<U>>>
@@ -95,7 +94,7 @@ public:
 
     /**
      * @brief Returns a subvector view of this vector.
-     * 
+     *
      * @param offset Starting index.
      * @param length Length of the subvector.
      * @param stride Optional stride between elements.
@@ -152,7 +151,7 @@ public:
 
     /**
      * @brief Multiply this vector by a matrix and optionally store result.
-     * 
+     *
      * @param other Matrix to multiply with.
      * @param result Optional pointer to store result.
      * @param handle Optional GPU handle for operations.
@@ -165,7 +164,7 @@ public:
 
     /**
      * @brief Dot product with another vector.
-     * 
+     *
      * @param other Vector to dot with.
      * @param result Output Singleton<T> for result.
      * @param handle Optional GPU handle.
@@ -182,7 +181,7 @@ public:
 
     /**
      * @brief Operator overload for multiplication with a matrix.
-     * 
+     *
      * @param other Matrix to multiply with.
      * @return Vec<T> result of multiplication.
      */
@@ -190,7 +189,7 @@ public:
 
     /**
      * @brief Adds a scaled vector to this vector.
-     * 
+     *
      * @param x Vector to add.
      * @param alpha Scales x.
      * @param handle Optional GPU handle.
@@ -201,7 +200,7 @@ public:
 
     /**
      * @brief Subtracts a scaled vector from this vector.
-     * 
+     *
      * @param x Vector to subtract.
      * @param alpha Scaling factor.
      * @param buffer
@@ -212,7 +211,7 @@ public:
 
     /**
      * @brief Multiply this vector by a scalar.
-     * 
+     *
      * @param alpha Scalar multiplier.
      * @param handle Optional GPU handle.
      */
@@ -232,7 +231,7 @@ public:
 
     /**
      * @brief Element-wise exponential/beta power operation.
-     * 
+     *
      * @param t Singleton<T> exponent base.
      * @param n Singleton<T> power exponent.
      * @param hand CUDA stream to use.
@@ -258,9 +257,9 @@ public:
 
     /**
      * @brief Set this vector to a sum of two scaled vectors.
-     * 
+     *
      * Performs: this = alpha * a + beta * B
-     * 
+     *
      * @param a First vector.
      * @param b Second vector.
      * @param alpha Scaling factor for a.
@@ -294,16 +293,16 @@ public:
 
     /**
      * @brief Initializes the vector with a sequence of its own indices.
-     * * Performs the operation: this[i] = i for all elements in the vector.
+     * Performs the operation: this[i] = i for all elements in the vector.
      * Typically used to create an initial identity permutation before sorting.
-     * * @param hand CUDA handle for stream synchronization and execution.
+     * @param hand CUDA handle for stream synchronization and execution.
      */
     void setValsToIndecies(Handle& hand);
 
     /**
      * @brief Reorders vector elements into a destination vector using a gather permutation.
-     * * Performs the operation: dst[i] = this[permutation[i]].
-     * * @tparam Int   Integer type used for indices (e.g., int, size_t).
+     * Performs the operation: dst[i] = this[permutation[i]].
+     * @tparam Int   Integer type used for indices (e.g., int, size_t).
      * @param permutation A vector containing source indices (gather map).
      * @param dst         Destination vector to store reordered elements.
      * @param hand        CUDA handle for stream synchronization and execution.
@@ -314,7 +313,7 @@ public:
     /**
      * Finds the product of all elements in this array.  This will not be efficient if the number of blocks from kernel
      * Prep is very large.  If that is the case, a more efficient method should be written.
-     * @param bufferNumBlocksSize An array the size of the numvber of blocks.
+     * @param bufferNumBlocksSize An array the size of the number of blocks.
      * @param hand
      * @return The product of all the elements in this vector.
      */
@@ -329,4 +328,4 @@ public:
 
 };
 
-#endif //BICGSTAB_VEC_H
+#endif //CUDABANDED_VEC_H

@@ -2,9 +2,6 @@
  * @file XYZ.cuh
  * @brief Defines typed x/y/z aggregate helpers.
  * @ingroup math_utils
- *
- * @details
- * This header is part of the public interface and is included in the generated Doxygen module overview.
  */
 
 #ifndef CUDABANDED_XYZ_H

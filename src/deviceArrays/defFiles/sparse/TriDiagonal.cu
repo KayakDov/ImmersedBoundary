@@ -1,7 +1,3 @@
-//
-// Created by usr on 06/11/26.
-//
-
 #include "../../headers/sparse/TriDiagonal.cuh"
 
 #include "deviceArrays/headers/Support/Streamable.h"
@@ -32,7 +28,7 @@ TriDiagonal<T>::TriDiagonal(const Mat<T> &copyFrom, Handle &hand)
 
 }
 
-// Mirroring your system's explicit instantiations
+// Explicit instantiations
 template class TriDiagonal<float>;
 template class TriDiagonal<double>;
 template class TriDiagonal<size_t>;

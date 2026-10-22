@@ -2,9 +2,6 @@
  * @file SparseMat.h
  * @brief Defines the abstract sparse-matrix base class.
  * @ingroup sparse_matrices
- *
- * @details
- * Sparse-matrix classes build on the device array layer and expose storage-format-specific operations while preserving explicit CUDA handle and stream control.
  */
 
 
@@ -44,14 +41,14 @@ public:
     void changeStorageType(SparseMat<Real, Int> &dest, Handle &hand, std::shared_ptr<SimpleArray<Real>> &buffer) const;
 
     /**
-     * The numver of elements of size T needed for the workspace for mult;
+     * The number of elements of size T needed for the workspace for mult;
      * @param vec The dense vector being multiplied by.
      * @param result The product will be placed here.
      * @param multProduct A scalar that scales the product.
      * @param preMultResult  A scalar that scales whatever is in the result before the product is added to itt
      * @param transposeThis Should this be transposed.
      * @param h The handle
-     * @return The numver of T type elements in the workspace that mult will need.
+     * @return The number of T type elements in the workspace that mult will need.
      */
     virtual size_t multWorkspaceSize(const SimpleArray<Real> &vec, SimpleArray<Real> &result,
                              const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult,
@@ -59,7 +56,7 @@ public:
 
 
     /**
-     * This version alocated memory.  If you'd like to prealocate the memory, call a different function.
+     * This version allocated memory.  If you'd like to preallocate the memory, call a different function.
     * @param vec The dense vector being multiplied by.
      * @param result The product will be added to whatever is here.
      * @param multProduct A scalar that scales the product.
@@ -68,10 +65,11 @@ public:
      * @param workSpace
      * @param h The handle
      */
-    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeMat, SimpleArray<Real> &workSpace, Handle &h) const;
+    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult,
+            bool transposeMat, SimpleArray<Real> &workSpace, Handle &h) const;
 
     /**
-     * This method allocated memory.  To recycyle memory, use the other sparse mult method.
+     * This method allocated memory.  To recycle memory, use the other sparse mult method.
      * @param vec
      * @param result
      * @param multProduct
@@ -82,9 +80,8 @@ public:
     void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeMat, Handle &h) const;
 
     /**
-     * Creates a dense version of this matrix.
-     * This method creates a buffer, so it can be made more efficient, but since it'll probably only be used for
-     * debugging, I skipped that.
+     * Creates a dense copy of this matrix. Intended for debugging: it allocates a temporary
+     * buffer on every call, so it is not optimized for performance.
      * @param dense Where the dense matrix will be put.
      * @param h the handle.
      */

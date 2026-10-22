@@ -1,6 +1,6 @@
 
-#ifndef CUDABANDED_DISTANCE_H
-#define CUDABANDED_DISTANCE_H
+#ifndef CUDABANDED_NORM_H
+#define CUDABANDED_NORM_H
 
 #include "deviceArrays/headers/Vec.h"
 #include <cmath>
@@ -88,4 +88,4 @@ public:
     }
 };
 
-#endif //CUDABANDED_DISTANCE_H
+#endif //CUDABANDED_NORM_H

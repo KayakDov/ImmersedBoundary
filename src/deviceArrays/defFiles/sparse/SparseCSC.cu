@@ -21,7 +21,7 @@ void SparseCSC<Real, Int>::setDescriptor() {
         this->values.data(),        // float* or double* (size nnz)
         cuIndexType<Int>(),       // Offset type
         cuIndexType<Int>(),//maybe use a smaller data type       // Index type
-        CUSPARSE_INDEX_BASE_ZERO,  // The 0-based indexing you requested
+        CUSPARSE_INDEX_BASE_ZERO,  // 0-based indexing
         valueType
     ));
 
@@ -38,7 +38,7 @@ SparseCSC<Real, Int>::SparseCSC(size_t rows, size_t cols, SimpleArray<Real>& val
 template<typename Real, typename Int>
 SparseCSC<Real, Int> SparseCSC<Real, Int>::create(size_t nnz, size_t rows, size_t cols, Handle& handle) {
     auto vals = SimpleArray<Real>::create(nnz, handle);
-    auto colOffsets = SimpleArray<Int>::create(cols + 1, handle);//warning, aligning these arrays to be contiguouse in memory seems to cause problems.
+    auto colOffsets = SimpleArray<Int>::create(cols + 1, handle);//warning, aligning these arrays to be contiguous in memory seems to cause problems.
     auto rowInds = SimpleArray<Int>::create(nnz, handle);
     return {rows, cols, vals, colOffsets, rowInds};
 }
@@ -82,45 +82,3 @@ template class SparseCSC<float, int32_t>;
 template class SparseCSC<double, int32_t>;
 template class SparseCSC<float, int64_t>;
 template class SparseCSC<double, int64_t>;
-
-
-
-
-
-// void testSparseMult() {
-//     Handle hand;
-//     size_t rows = 4, cols = 5;
-//
-//     // auto dense = Mat<double>::create(4,4);
-//     // std::vector<double> hostDense = {0,0,0,0,   0,1,1,0,   0,1,1,0,   0,0,0,0};
-//     // dense.set(hostDense.data(), hand);
-//
-//     auto sparse = SparseCSC<double>::create(4, rows, cols, hand);
-//     std::vector<double> hostValsDense = {1, 1, 1, 1};
-//     std::vector<int32_t> hostColOffsets = {0, 0, 2, 4, 4, 4, 4};
-//     std::vector<int32_t> hostRowInds = {1, 2, 1, 2};
-//
-//     sparse.values.set(hostValsDense.data(), hand);
-//     sparse.columnOffsets.set(hostColOffsets.data(), hand);
-//     sparse.rowsPointers.set(hostRowInds.data(), hand);
-//
-//     auto x = SimpleArray<double>::create(cols, hand);
-//     std::vector<double> hostVec = {1, 2, 3, 4};
-//     x.set(hostVec.data(), hand);
-//
-//
-//     auto result = SimpleArray<double>::create(rows, hand);
-//
-//     // dense.mult(vec, result, &hand, &Singleton<double>::ONE, &Singleton<double>::ZERO, false);
-//
-//     // (const SimpleArray<Real>& vec, SimpleArray<Real>& result,
-//     //                     const Singleton<Real>& multProduct, const Singleton<Real>& multThis,
-//     //                     bool transposeThis, SimpleArray<Real>& workSpace, Handle& h)
-//
-//     std::cout << "x = \n" << GpuOut<double>(x, hand) << std::endl;
-//     sparse.mult(x, result, Singleton<double>::ONE, Singleton<double>::ZERO, false, hand);
-//
-//     // std::cout << GpuOut<double>(dense, hand) << std::endl;
-//
-//     std::cout << "result = \n" << GpuOut<double>(result, hand) << std::endl;
-// }

@@ -2,9 +2,6 @@
  * @file SimpleArray.h
  * @brief Defines a contiguous one-dimensional GPU array with optional cuSPARSE descriptor support.
  * @ingroup device_arrays
- *
- * @details
- * These classes form the core GPU container layer. Public containers generally own or view CUDA device memory through shared ownership, while explicit factory functions allocate new storage.
  */
 
 

@@ -1,5 +1,5 @@
 /**
- * @file deviceArrays.cu
+ * @file GpuArray.cu
  * @brief Templated classes for managing 1D and 2D arrays on a CUDA device in column-major order.
  */
 #include "deviceArrays/headers/GpuArray.h"
@@ -109,7 +109,7 @@ void GpuArray<T>::mult(
     bool transposeA,
     bool transposeB
 ) const {
-    
+
     std::unique_ptr<Handle> temp_hand_ptr;
     Handle* h = Handle::_get_or_create_handle(handle, temp_hand_ptr);
     std::unique_ptr<Singleton<T>> temp_a_ptr;

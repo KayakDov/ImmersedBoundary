@@ -31,7 +31,7 @@ template <typename T>
 void Singleton<T>::set(T val, Handle &stream){
     T cpuPointer[1];
     cpuPointer[0] = val;
-    this->Vec<T>::set(cpuPointer, stream);    
+    this->Vec<T>::set(cpuPointer, stream);
 }
 
 

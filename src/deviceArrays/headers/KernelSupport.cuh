@@ -2,13 +2,10 @@
  * @file KernelSupport.cuh
  * @brief Defines CUDA kernel helper declarations and utility functions.
  * @ingroup device_arrays
- *
- * @details
- * These classes form the core GPU container layer. Public containers generally own or view CUDA device memory through shared ownership, while explicit factory functions allocate new storage.
  */
 
-#ifndef BICGSTAB_KERNELSUPPORT_CUH
-#define BICGSTAB_KERNELSUPPORT_CUH
+#ifndef CUDABANDED_KERNELSUPPORT_CUH
+#define CUDABANDED_KERNELSUPPORT_CUH
 
 #include <cstddef>
 #include <cstdint>
@@ -26,7 +23,7 @@
  *
  * Provides bounds checking and flat indexing suitable for linear memory access.
  */
-class DenseInd : public GridInd2d{//TODO: Is this class used?  If not, delete it!
+class DenseInd : public GridInd2d{
 public:
     const int32_t d;    ///< Diagonal index for the current banded row. 0 = main diagonal, >0 = upper, <0 = lower
 
@@ -77,4 +74,4 @@ __host__ __device__ T modPos(T a, T n) {
     return result;
 }
 
-#endif //BICGSTAB_KERNELSUPPORT_CUH
+#endif //CUDABANDED_KERNELSUPPORT_CUH

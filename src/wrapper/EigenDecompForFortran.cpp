@@ -11,9 +11,9 @@
 
 /**
  * @brief Constructs the overarching Fortran interop wrapper for the Eigen Decomposition solver.
- * * Acts as the entry point from the Fortran/Shroud API, translating raw host vectors
+ * Acts as the entry point from the Fortran/Shroud API, translating raw host vectors
  * and configuration flags into the heavily templated, GPU-accelerated C++ environment.
- * * @param rows The number of rows (Y-dimension) in the computational grid.
+ * @param rows The number of rows (Y-dimension) in the computational grid.
  * @param cols The number of columns (X-dimension) in the computational grid.
  * @param layers The number of layers (Z-dimension) in the computational grid.
  * @param dx Host vector containing grid spacing for the X-axis. Size 1 implies uniform.
@@ -52,7 +52,7 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
         // both directions.
         pinnedBuf(allocPinned(sizeOfBForX.size()), &cudaFreeHost),
         hands_(4, GpuIndex(gpuIndex)), hand(hands_[3]) {
-    
+
     buildBoundaryConfigAndLaunch<Real>(
         dim, delta, startIsNeumann, endIsNeumann, startVal, endVal, segType,
         hands_[0],

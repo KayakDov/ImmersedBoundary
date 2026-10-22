@@ -419,7 +419,8 @@ target_include_directories(run_unit_tests
 )
 
 include(GoogleTest)
-option(SHOW_LORENZ_PORTRAIT "Show the Lorenz window during tests" ON)
+option(SHOW_LORENZ_PORTRAIT "Show the Lorenz window during tests" OFF)
+set(LORENZ_WINDOW_SECONDS "1" CACHE STRING "Seconds the Lorenz window stays open before closing itself; negative means until closed by hand")
 
 if(SHOW_LORENZ_PORTRAIT)
     set(LORENZ_WINDOW_ENABLED 1)
@@ -427,7 +428,7 @@ else()
     set(LORENZ_WINDOW_ENABLED 0)
 endif()
 
-set(TEST_ENV "SHOW_LORENZ_PORTRAIT=${LORENZ_WINDOW_ENABLED}")
+set(TEST_ENV "SHOW_LORENZ_PORTRAIT=${LORENZ_WINDOW_ENABLED}" "LORENZ_WINDOW_SECONDS=${LORENZ_WINDOW_SECONDS}")
 if(INTLC_LIB_DIR)
     list(APPEND TEST_ENV "LD_LIBRARY_PATH=${INTLC_LIB_DIR}:$ENV{LD_LIBRARY_PATH}")
 endif()
@@ -467,11 +468,18 @@ target_link_libraries(run_benchmarks
         GTest::gtest_main
 )
 
-gtest_discover_tests(run_benchmarks
-        DISCOVERY_MODE PRE_TEST
-        PROPERTIES
-        ENVIRONMENT "${TEST_ENV}"
-        LABELS "benchmark"
+# Benchmarks are deliberately NOT registered with ctest, so `ctest` never runs
+# them. Run them on request with `cmake --build <dir> --target benchmark`, or
+# run the run_benchmarks executable directly (e.g. with --gtest_filter=...).
+set(BENCHMARK_ENV "")
+if(INTLC_LIB_DIR)
+    list(APPEND BENCHMARK_ENV "LD_LIBRARY_PATH=${INTLC_LIB_DIR}:$ENV{LD_LIBRARY_PATH}")
+endif()
+add_custom_target(benchmark
+        COMMAND ${CMAKE_COMMAND} -E env ${BENCHMARK_ENV} $<TARGET_FILE:run_benchmarks>
+        DEPENDS run_benchmarks
+        USES_TERMINAL
+        COMMENT "Running the benchmarks (never part of ctest)"
 )
 
 if(WIN32)
@@ -520,9 +528,8 @@ endif()
 # this list currently has one entry. Add any future standalone test
 # executable here and it is automatically (a) built as a dependency and
 # (b) swept into the single ctest invocation below. run_benchmarks is
-# deliberately never added here -- it is additionally excluded by label as a
-# second, independent safeguard in case a future test target forgets to list
-# itself.
+# deliberately never added here: benchmarks are not registered with ctest at
+# all (see the `benchmark` target above).
 set(ALL_TEST_TARGETS
         run_unit_tests
 )

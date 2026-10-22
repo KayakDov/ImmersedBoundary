@@ -1,7 +1,3 @@
-//
-// Created by usr on 2/3/26.
-//
-
 #include "../../headers/sparse/SparseCOO.h"
 
 #include "deviceArrays//headers/sparse/SparseCSR.h"
@@ -25,10 +21,10 @@ void SparseCOO<Real, Int>::setDescriptor() {
         &descr,
         this->rows, this->cols, this->nnz(),
         this->offsets.data(), // int* (size nnz)
-        this->inds.data(), // int* (size cols + 1)
+        this->inds.data(), // int* (size nnz)
         this->values.data(), // float* or double* (size nnz)
         cuIndexType<Int>(), // Offset type
-        CUSPARSE_INDEX_BASE_ZERO, // The 0-based indexing you requested
+        CUSPARSE_INDEX_BASE_ZERO, // 0-based indexing
         valueType
     ));
 
@@ -67,7 +63,7 @@ SparseCSR<Real, Int> SparseCOO<Real, Int>::getCSR(SimpleArray<Int>& offsets, Sim
     nnzAllocated.setValsToIndecies(hand);
     size_t bufferSizeInBytes[1];
 
-    //TODO:  The address of pBuffer must be multiple of 128 bytes. If not, CUSPARSE_STATUS_INVALID_VALUE is returned.  This might be a limit on the tupe in buffer.  We'll see if it works without this.
+    //TODO:  The address of pBuffer must be multiple of 128 bytes. If not, CUSPARSE_STATUS_INVALID_VALUE is returned.  Currently unverified without this alignment.
 
     CHECK_SPARSE_ERROR(cusparseXcoosort_bufferSizeExt(
         hand,

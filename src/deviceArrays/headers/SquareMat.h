@@ -1,14 +1,14 @@
 /**
  * @file SquareMat.h
  * @brief Defines the SquareMat class, a specialization of Mat for square matrices.
- * 
+ *
  * This class provides square-matrix-specific operations such as computing eigenvalues
  * and eigenvectors. It inherits from Mat<T> and uses GPU memory for storage.
  * @ingroup device_arrays
  */
 
-#ifndef BICGSTAB_SQUAREMAT_H
-#define BICGSTAB_SQUAREMAT_H
+#ifndef CUDABANDED_SQUAREMAT_H
+#define CUDABANDED_SQUAREMAT_H
 
 #include "Mat.h"
 #include "GpuArray.h"
@@ -17,11 +17,11 @@
 /**
  * @class SquareMat
  * @brief Represents a square matrix with GPU support.
- * 
+ *
  * SquareMat is a specialization of Mat<T> for square matrices. It provides
  * operations specific to square matrices, including computation of eigenvalues
  * and eigenvectors. Use the static create method to instantiate a SquareMat.
- * 
+ *
  * @tparam T The type of the matrix elements (e.g., float, double).
  */
 template <typename T>
@@ -31,10 +31,10 @@ class SquareMat : public Mat<T> {
 private:
     /**
      * @brief Private constructor for internal use.
-     * 
+     *
      * Constructs a SquareMat with a given leading dimension and shared pointer to the data.
      * Users should typically use the static create() method instead.
-     * 
+     *
      * @param rowsCols The number of rows and columns (matrix is square).
      * @param ld The leading dimension of the matrix storage.
      * @param _ptr Shared pointer to the underlying GPU memory.
@@ -45,9 +45,9 @@ public:
     using Mat<T>::factorLUBufferSize;
     /**
      * @brief Factory method to create a SquareMat of given size.
-     * 
+     *
      * Allocates a square matrix of size `rowsCols x rowsCols` in GPU memory.
-     * 
+     *
      * @param rowsCols The number of rows and columns (matrix is square).
      * @return A new SquareMat object.
      */
@@ -92,12 +92,12 @@ public:
      *
      * Will overwrite this matrix!
      * Allocates and frees additional memory.
-     * 
+     *
      * @param eVals Vector to store the computed eigenvalues.
      * @param eVecs Pointer to a SquareMat to store eigenvectors, or nullptr if eigenvectors are not needed.
      * @param hand
      * @param hand
-     * 
+     *
      * @note This function assumes the matrix is square.
      */
     void eigen(Vec<T> &eVals, SquareMat *eVecs, Handle& hand) const;
@@ -143,7 +143,7 @@ public:
      * Destroys/overwrites this matrix.  Computes the inverse of this matrix.
      * @tparam Int
      * @param result The inverse will be placed here.
-     * @param rowSwaps row swaps informationmation for lu decomposition.
+     * @param rowSwaps row swaps information for lu decomposition.
      * @param handle
      * @param info info for lu decomposition.
      * @param buffer Get size information for LU decomposition buffer size.
@@ -167,13 +167,13 @@ public:
     void solve(Mat<T> &b, Handle &handle, Singleton<int32_t> &info, SimpleArray<T> &buffer, SimpleArray<Int> &rowSwaps, bool transpose);
 
     /**
-     * Allocates and frees memory.  Gets the determinent using LU factorization.  Destroys this matrix.
+     * Allocates and frees memory.  Gets the determinant using LU factorization.  Destroys this matrix.
      * @param hand
      * @return
      */
     double determinant(Handle& hand) ;
     /**
-     * Gets the determinent using LU factorization.  Destroys this matrix.
+     * Gets the determinant using LU factorization.  Destroys this matrix.
      * @param sizeOfNumRows Allocated memory.
      * @param info info about the LU decomposition will be stored here.
      * @param workSpaceForLUDecomp A workspace for the LU decomposition
@@ -201,7 +201,7 @@ public:
      * returns, then pass them to eigenSPDFromBuffer() to perform the actual
      * computation without any internal heap allocation.
      *
-     * The split is modelled on the existing factorLUBufferSize() / factorLU()
+     * The split is modeled on the existing factorLUBufferSize() / factorLU()
      * pattern in Mat.cu so that callers that run many decompositions in a loop
      * can reuse the same workspace across calls.
      *
@@ -233,10 +233,8 @@ public:
      *  - **Real**: complex-valued matrices are not supported.
      *  - **Symmetric**: only the lower triangle is read; the upper triangle is
      *    ignored.  If the matrix is not actually symmetric, results are undefined.
-     *  - **Positive semi-definite**: all eigenvalues must be ≥ 0.  The cuSOLVER
-     *    symmetric solver (dsytd2 / ssytd2 via cusolverDnXsyevd) is numerically
-     *    stable for PSD matrices, but may produce incorrect or negative eigenvalues
-     *    if the matrix is indefinite or has significant numerical asymmetry.
+     *  - **Definiteness**: not required.  cusolverDnXsyevd accepts any real symmetric matrix, so
+     *    negative eigenvalues are returned as they are.
      *
      * @par In-place operation
      * cusolverDnXsyevd overwrites @p *this with the eigenvectors.  After the call,
@@ -273,7 +271,7 @@ public:
      *        positive (semi-)definite matrix, allocating all workspaces internally.
      *
      * This method combines eigenSPDBufferSize() and eigenSPDFromBuffer() into a
-     * single call for callers that do not need to amortise workspace allocation
+     * single call for callers that do not need to amortize workspace allocation
      * across multiple decompositions.  For hot paths, prefer the two-phase API.
      *
      * @par Mathematical requirements
@@ -297,7 +295,7 @@ public:
     void eigenSPD(Vec<T> &eVals, Handle &hand);
 
     /**
-     * Checks if the matrix is singular by looking at the eigen values.  Will destory this matrix.
+     * Checks if the matrix is singular by looking at the eigen values.  Will destroy this matrix.
      * @param tolerance
      * @param buffer2n A buffer with twice as many elements as this matrix has rows.
      * @param buffeNXN A buffer the same size as this matrix.
@@ -310,4 +308,4 @@ public:
 
 };
 
-#endif //BICGSTAB_SQUAREMAT_H
+#endif //CUDABANDED_SQUAREMAT_H

@@ -8,7 +8,7 @@
 #include <random>
 
 #include "deviceArrays/headers/DeviceMemory.h"
-#include "immersedBoundary/ImerssedEquation.h"
+#include "immersedBoundary/ImmersedEquation.h"
 #include "deviceArrays/headers/Handles.h"
 #include "poisson/Laplacian1d.cuh"
 #include "poisson/BoundaryConfig.cuh"
@@ -221,6 +221,14 @@ void printBenchmarkRow(size_t n, size_t total, const SolverTiming& t) {
 
 // ─── Test ────────────────────────────────────────────────────────────────────
 
+/**
+ * Times the three solvers on cubic grids of growing size.
+ *
+ * The loop over n has no upper bound on purpose: the benchmark runs until the GPU runs
+ * out of memory. That is the goal, since it finds the largest grid each solver handles.
+ * Running out of memory ends the run cleanly (growToFit returns false, or a solver
+ * throws and the catch block reports the size and stops), so this is not a failure.
+ */
 TEST(Benchmark, SolverRuntimes) {
     using Real = double;
 

@@ -2,9 +2,6 @@
  * @file GpuArray.h
  * @brief Defines the common base interface for GPU-resident array views and containers.
  * @ingroup device_arrays
- *
- * @details
- * These classes form the core GPU container layer. Public containers generally own or view CUDA device memory through shared ownership, while explicit factory functions allocate new storage.
  */
 
 #ifndef GPUARRAY_H
@@ -175,7 +172,7 @@ protected:
      */
     virtual void mult(const GpuArray<T> & other, GpuArray<T> * result, Handle *handle, const Singleton<T> *alpha, const Singleton<T> *beta, bool transposeA, bool transposeB) const;
 
-    
+
 public:
     /**
      * @brief Destructor for the GpuArray class.
@@ -347,7 +344,7 @@ public:
      * @param dst Where the result is put.
      * @param alpha Times this.
      * @param beta Times the other.
-     * @param transposeThis true to transpose this, false otherwsie.
+     * @param transposeThis true to transpose this, false otherwise.
      * @param transposeOther true to transpose the other, false otherwise.
      * @param hand
      */
@@ -357,7 +354,7 @@ public:
      * Adds this matrix to another matrix.
      * @param other The other matrix that's added to this one.
      * @param dst Where the result is put.
-     * @param transposeThis true to transpose this, false otherwsie.
+     * @param transposeThis true to transpose this, false otherwise.
      * @param transposeOther true to transpose the other, false otherwise.
      * @param hand
      */
@@ -408,7 +405,7 @@ public:
 
 
     /**
-     * Severs the connection to the gou memory.  If this is the last array using that block of memory, then the memory
+     * Severs the connection to the GPU memory.  If this is the last array using that block of memory, then the memory
      * is freed.
      */
     void freeMem();
@@ -465,7 +462,6 @@ public:
      * @brief Extract a row vector from the matrix.
      * @param index Row index.
      * @return Row as a Vec<T>.
-     * @note Not yet implemented.
      */
     virtual Vec<T> row(size_t index);
 
@@ -504,9 +500,9 @@ public:
     Vec<T> vec(size_t offset, size_t ld, size_t size) const;
 
     /**
-     * A matirx that is every nth column of this matrix.  For example, if n is 2 then the new matrxi will be all the even
+     * A matrix that is every nth column of this matrix.  For example, if n is 2 then the new matrix will be all the even
      * columns of this matrix.
-     * @param n The new matrix will incldue all columns with indicis divisible by n.
+     * @param n The new matrix will include all columns with indices divisible by n.
      * @return A new matrix made up of columns from this matrix with indices divisible by n.
      */
     Mat<T> everyNthCol(size_t n, bool initDescr = false);

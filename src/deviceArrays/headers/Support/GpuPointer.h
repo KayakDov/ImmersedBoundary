@@ -117,9 +117,8 @@ public:
      * @param raw The raw device pointer (e.g. straight out of cudaMallocPitch).
      * @param gpuIndex Which device raw lives on -- for the ownsMemory=false
      *        case, this is the caller's responsibility to get right; there's
-     *        no way to verify it from the pointer value alone (see the
-     *        earlier discussion of cudaPointerGetAttributes for why that's
-     *        not a reliable check).
+     *        no way to verify it from the pointer value alone
+     *        (cudaPointerGetAttributes is not a reliable check).
      * @param ownsMemory If true (the default), raw is freed via cudaFree
      *        -- on gpuIndex's device, switched to automatically -- when
      *        the last GpuPointer referencing it is destroyed. If false,

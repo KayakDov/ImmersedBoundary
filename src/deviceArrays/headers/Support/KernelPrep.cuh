@@ -2,9 +2,6 @@
  * @file KernelPrep.cuh
  * @brief Defines launch-configuration helpers for CUDA kernels.
  * @ingroup device_support
- *
- * @details
- * Support utilities are small host/device helpers used to prepare kernels, map indices, and adapt GPU arrays to standard C++ streams.
  */
 
 #ifndef KERNELPREP_H
@@ -15,7 +12,7 @@
 
 /**
  * @brief Utility class to calculate optimal CUDA grid and block dimensions for kernel launches.
- * * Provides methods to set up dim3 structures for 1D, 2D, and 3D data processing.
+ * Provides methods to set up dim3 structures for 1D, 2D, and 3D data processing.
  */
 class KernelPrep {
 

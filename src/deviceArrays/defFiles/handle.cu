@@ -87,19 +87,16 @@ Handle::operator struct cusolverDnContext*() const {
 }
 
 
-// Add this to handle.cu
 Handle::operator cusparseHandle_t() const {
     ensureDevice();
     return sparseHandlePtr.get();
 }
 
-// Clean up the stream operator to use the standard type
 Handle::operator cudaStream_t() const {
     ensureDevice();
     return stream;
 }
 
-// Add these to handle.cu to satisfy GpuArray and Mat links
 Handle::operator cublasHandle_t() const {
     ensureDevice();
     return handlePtr.get();

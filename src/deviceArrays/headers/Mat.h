@@ -2,14 +2,11 @@
  * @file Mat.h
  * @brief Defines the GPU-backed matrix abstraction and matrix operations.
  * @ingroup device_arrays
- *
- * @details
- * These classes form the core GPU container layer. Public containers generally own or view CUDA device memory through shared ownership, while explicit factory functions allocate new storage.
  */
 
 
-#ifndef BICGSTAB_MAT_H
-#define BICGSTAB_MAT_H
+#ifndef CUDABANDED_MAT_H
+#define CUDABANDED_MAT_H
 
 #include "deviceArrays/headers/GpuArray.h"
 #include <memory>
@@ -179,36 +176,33 @@ public:
 
     /**
      * @brief Add another matrix to this one.
-     * @note Not yet implemented.
      */
     virtual Mat<T> plus(const Mat<T>& x, Mat<T>* result, const Singleton<T>* alpha, const Singleton<T>* beta, bool transposeA, bool transposeB, Handle* handle);
 
     /**
      * @brief Subtract another matrix from this one.
-     * @note Not yet implemented.
      */
     virtual Mat<T> minus(const Mat<T>& x, Mat<T>* result, const Singleton<T>* alpha, const Singleton<T>* beta , bool transposeA, bool transposeB, Handle* handle);
 
     /**
      * @brief Multiply this matrix by a scalar in-place.
-     * @note Not yet implemented.
      */
     virtual void mult(const Singleton<T>& alpha, Handle* handle);
 
     /**
-     * Transposes the matrix. This method creates and returns a new CuArray2D
-     * object with transposed dimensions.
-     * @param result Optional pointer to an existing CuArray2D to store the result.
-     * @param handle Optional Cuda handle for stream/context management.
-     * @return A new CuArray2D object containing the transposed matrix.
+     * Writes the transpose of this matrix into result.
+     * @param result The matrix that receives the transpose.  It must already be allocated with this
+     * matrix's columns as its rows and this matrix's rows as its columns.
+     * @param handle The CUDA handle to run on.
      */
     void transpose(Mat<T>& result, Handle &handle) const;
 
     /**
-     * @brief Transpose this matrix, optionally using pre-allocated memory.
-     * @note Not yet implemented.
+     * @brief Transposes this matrix in place, optionally using pre-allocated memory.
+     * @note Only square matrices are supported; other shapes throw std::runtime_error.
+     *       For non-square matrices use transpose(Mat&, Handle&).
      */
-    virtual void transpose(Handle* handle, Mat<T>* preAlocatedMem);
+    virtual void transpose(Handle* handle, Mat<T>* preAllocatedMem);
 
     /**
      * @brief Static factory method to create a new matrix.
@@ -246,7 +240,6 @@ public:
      * @param height Number of rows in the submatrix.
      * @param width Number of columns in the submatrix.
      * @return Submatrix as a new Mat<T>.
-     * @note Not yet implemented.
      */
     [[nodiscard]] virtual Mat<T> subMat(size_t startRow, size_t startCol, size_t height, size_t width) const;
 
@@ -260,8 +253,8 @@ public:
     [[nodiscard]] SquareMat<T> sqSubMat(size_t startRow, size_t startCol, size_t dim) const;
 
     /**
-     * Returns the largest sqyare matrix with start indicies (0, 0).
-     * @return The largest sqyare matrix with start indicies (0, 0).
+     * Returns the largest square matrix with start indices (0, 0).
+     * @return The largest square matrix with start indices (0, 0).
      */
     SquareMat<T> sqSubMatFirstBiggest() const;
 
@@ -270,7 +263,6 @@ public:
      * @brief Normalize the columns of the matrix, setting a specific row to 1.
      * @param setRowTo1 Index of the row that should be set to 1.
      * @param handle Optional Handle object for GPU streams.
-     * @note Not yet implemented.
      */
     virtual void normalizeCols(size_t setRowTo1, Handle* handle);
 
@@ -442,4 +434,4 @@ public:
 
     void mult(const BandedMat<T> &banded, Mat<T> &result, Handle& handle, const Singleton<T> alpha, const Singleton<T> beta) const;
 };
-#endif //BICGSTAB_MAT_H
+#endif //CUDABANDED_MAT_H

@@ -2,9 +2,6 @@
  * @file SparseCSR.h
  * @brief Defines CSR sparse-matrix storage and operations.
  * @ingroup sparse_matrices
- *
- * @details
- * Sparse-matrix classes build on the device array layer and expose storage-format-specific operations while preserving explicit CUDA handle and stream control.
  */
 
 #ifndef CUDABANDED_SPARSECSR_H

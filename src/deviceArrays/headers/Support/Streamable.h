@@ -2,13 +2,10 @@
  * @file Streamable.h
  * @brief Defines stream wrappers for reading and writing GPU arrays.
  * @ingroup device_support
- *
- * @details
- * Support utilities are small host/device helpers used to prepare kernels, map indices, and adapt GPU arrays to standard C++ streams.
  */
 
-#ifndef BICGSTAB_STREAMABLE_H
-#define BICGSTAB_STREAMABLE_H
+#ifndef CUDABANDED_STREAMABLE_H
+#define CUDABANDED_STREAMABLE_H
 
 #include "deviceArrays/headers/GpuArray.h"
 
@@ -138,4 +135,4 @@ std::istream& operator>>(std::istream& input_stream, GpuIn<T>&& wrapper) {
 
 
 
-#endif //BICGSTAB_STREAMABLE_H
+#endif //CUDABANDED_STREAMABLE_H

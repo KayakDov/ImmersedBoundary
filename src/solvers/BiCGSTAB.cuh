@@ -2,9 +2,6 @@
  * @file BiCGSTAB.cuh
  * @brief Declares BiCGSTAB iterative solver interfaces.
  * @ingroup solvers
- *
- * @details
- * Solver interfaces consume the GPU container layer and CUDA library handles to implement direct, iterative, and eigen-decomposition based algorithms.
  */
 
 #ifndef BICGSTAB_H
@@ -21,7 +18,7 @@
 
 #include "../deviceArrays/headers/Support/Streamable.h"
 
-// Forward declaration of required types (assuming they are defined elsewhere)
+// Forward declarations
 template<typename T> class DeviceData1d;
 template<typename T> class Vec;
 template<typename T> class Mat;
@@ -85,11 +82,11 @@ private:
      * whatever last wrote @p v.
      *
      * @param v Vector to measure.
-     * @param preAlocated Scratch singleton that receives the squared norm.
+     * @param preAllocated Scratch singleton that receives the squared norm.
      * @param streamInd Index of the stream to run on.
      * @return True if the squared norm is below the tolerance.
      */
-    bool isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd);
+    bool isSmall(const Vec<T> &v, Singleton<T> preAllocated, const size_t streamInd);
 
     /**
      * @brief Sets the content of the destination vector to be equal to the source vector.
@@ -103,7 +100,7 @@ private:
 
     /**
  *
- * @brief Initalizes variables r_tilde, r, b, p, and rx.ho
+ * @brief Initializes variables r_tilde, r, b, and p
  */
     void preamble(Vec<T> &x);
 protected:
@@ -172,8 +169,6 @@ public:
      */
     static void solve(Handles &hands, const SquareMat<T> &A, Vec<T> &result, const Vec<T> &b, Mat<T> bHeightX7,
                Vec<T> allocated9, T tolerance, size_t maxIterations);
-
-    static void test();
 
 };
 

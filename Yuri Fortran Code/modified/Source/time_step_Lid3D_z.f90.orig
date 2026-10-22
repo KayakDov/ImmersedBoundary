@@ -31,7 +31,7 @@
 	     Real(kind=8), Allocatable :: uStar(:)
           Ht = 2.D0 * Htime
 
-         ! uStar layout: three segments -- u,v,w in ImerssedEquation.cu's
+         ! uStar layout: three segments -- u,v,w in ImmersedEquation.cu's
          ! setRHSPPrime slicing, staggered +1 in the axis assigned to
          ! dim1(rows)/dim3(cols)/dim2(layers) respectively. With dim1=X,
          ! dim2=Y, dim3=Z (see Init_GPU_IBM_Solver's header comment in

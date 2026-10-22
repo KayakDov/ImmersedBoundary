@@ -2,9 +2,6 @@
  * @file Real3d.h
  * @brief Defines a lightweight three-component real-valued vector.
  * @ingroup math_utils
- *
- * @details
- * This header is part of the public interface and is included in the generated Doxygen module overview.
  */
 
 #ifndef CUDABANDED_REAL3D_H

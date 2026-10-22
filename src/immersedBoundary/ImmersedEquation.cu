@@ -1,4 +1,4 @@
-#include "ImerssedEquation.h"
+#include "ImmersedEquation.h"
 
 #include "solvers/EigenDecomp/EigenDecompSolver.h"
 #include "deviceArrays/headers/Handles.h"
@@ -50,10 +50,10 @@ SimpleArray<Real> ImmersedEq<Real, Int>::gridVec(GridInd ind) const{
 }
 
 template<typename Real, typename  BoundaryConfigT>
-std::shared_ptr<EigenDecompSolver<Real>> createEDS(const BoundaryConfigT &bounary, Handles &hands) {
+std::shared_ptr<EigenDecompSolver<Real>> createEDS(const BoundaryConfigT &boundary, Handles &hands) {
 
-    if (bounary.dim().numDims() == 3) return std::make_shared<EigenDecomp3d<Real>>(bounary, hands);
-    return std::make_shared<EigenDecomp2d<Real>>(bounary, hands);
+    if (boundary.dim().numDims() == 3) return std::make_shared<EigenDecomp3d<Real>>(boundary, hands);
+    return std::make_shared<EigenDecomp2d<Real>>(boundary, hands);
 
 }
 
@@ -121,7 +121,7 @@ ImmersedEq<Real, Int>::ImmersedEq(
     poisson::boundaryCorrection(boundary, gridVec(GridInd::boundRHSAdj), hands[0]);
 }
 
-template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivilently, x = (I+2L^-1BT*B)^-1 b
+template<typename Real, typename Int> //(I+2L^-1BT*B) * x = b, or equivalently, x = (I+2L^-1BT*B)^-1 b
 void ImmersedEq<Real, Int>::LHSTimes(const SimpleArray<Real> &x, SimpleArray<Real> &result, const Singleton<Real> &multLinearOperationOutput, const Singleton<Real> &preMultResult) {
 
     if (preMultResult.data() == GPUScalar<Real>::get(0, hands[0]).data()) result.fill(0, hands[4]);
@@ -354,7 +354,6 @@ SimpleArray<Real> ImmersedEq<Real, Int>::solve() {
     auto result = gridVec(GridInd::Result);
 
     result.set(gridVec(GridInd::RHS), hands[0]);
-    // baseData.result.fillRandom(&hands[0]);
 
 
     solver.solveUnpreconditioned(result);

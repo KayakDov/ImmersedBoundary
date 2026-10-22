@@ -2,9 +2,6 @@
  * @file Eigen.cuh
  * @brief Declares eigenbasis helpers used by Poisson solvers.
  * @ingroup poisson
- *
- * @details
- * The Poisson module assembles structured operators, boundary metadata, and solver-facing data structures for grid-based elliptic solves.
  */
 
 #ifndef CUDABANDED_EIGEN_CUH
@@ -50,7 +47,7 @@ public:
 
     /**
      * @brief Dispatches the appropriate Eigen-decomposition kernel to generate the spectral basis.
-     * * Reads the condition types (Dirichlet/Neumann) of the start and end boundaries,
+     * Reads the condition types (Dirichlet/Neumann) of the start and end boundaries,
      * computes the necessary normalization coefficients, and executes the corresponding
      * analytical eigen-kernel.
 
@@ -72,12 +69,12 @@ public:
      * Assigns the eigenvectors and eigen values.
      * @tparam axisSegmentT Should either be a VariableSegment or a UniformSegment.
      * @param hand
-     * @param eigins the first n columns will have eigen vectors assigned to them, and the last column will
+     * @param eigenMat the first n columns will have eigen vectors assigned to them, and the last column will
      * have all the eigenvalues assigned to it.
      * @param axisSegment Boundary conditions and spacing.
      */
     template<typename axisSegmentT>
-    static void generateEigen(Handle& hand, Mat<T> eigins, const axisSegmentT& axisSegment) ;
+    static void generateEigen(Handle& hand, Mat<T> eigenMat, const axisSegmentT& axisSegment) ;
 
 };
 

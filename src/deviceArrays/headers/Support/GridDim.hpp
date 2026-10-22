@@ -2,22 +2,11 @@
  * @file GridDim.hpp
  * @brief Defines grid extents and thread-index helpers for CUDA kernels.
  * @ingroup device_support
- *
- * @details
- * Support utilities are small host/device helpers used to prepare kernels, map indices, and adapt GPU arrays to standard C++ streams.
  */
 
-#ifndef BICGSTAB_GRIDDIM_H
-#define BICGSTAB_GRIDDIM_H
+#ifndef CUDABANDED_GRIDDIM_H
+#define CUDABANDED_GRIDDIM_H
 #include "KernelPrep.cuh"
-
-//I have no idea why I need this.  TODO:delete this if everything seems to be working.
-// #ifndef __CUDACC__
-// #define __host__
-// #define __device__
-// #define __global__
-// #endif
-
 
 #include <cstddef>
 #include <device_launch_parameters.h>
@@ -109,7 +98,7 @@ public:
     __device__ [[nodiscard]] inline GridInd3d operator()(size_t idx) const{
         return {idx % rows, (idx / rows) % cols, idx/(layerSize)};
     }
-    
+
     /**
      * The flat index for the row, column, and height.  This does not account for leading dimension.
      * @param row
@@ -156,7 +145,7 @@ public:
     [[nodiscard]] Real3d center() const{
         return {cols/2.0, rows/2.0, layers/2.0};
     }
-    
+
     __host__ size_t velocitiesStaggeredSize() const{
         return numDims() * size() + cols * layers + rows * layers + cols * rows * (layers > 1);
     }
@@ -187,4 +176,4 @@ __device__ bool inline operator>=(const GridInd3d& ind, const GridDim& dim){
 }
 
 
-#endif //BICGSTAB_GRIDDIM_H
+#endif //CUDABANDED_GRIDDIM_H

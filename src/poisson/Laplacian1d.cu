@@ -1,7 +1,3 @@
-//
-// Created by usr on 6/11/26.
-//
-
 #include "Laplacian1d.cuh"
 #include "BoundaryConfig.cuh"
 #include "deviceArrays/headers/SquareMat.h"

@@ -1,7 +1,3 @@
-//
-// Created by usr on 6/11/26.
-//
-
 #include "Eigen.cuh"
 #include "BoundaryConfig.cuh"
 #include "Laplacian1d.cuh"
@@ -86,7 +82,7 @@ __global__ void eigenValLKernel_DD(DeviceData1d<T> eVals, const T minFourOverDel
  *
  * @tparam T Floating-point precision.
  * @param eVecs 2D device array to store the orthogonal basis.
- * @param isNodeCentered True if the gird is node centered, false if it's staggered / cell centered.
+ * @param isNodeCentered True if the grid is node centered, false if it's staggered / cell centered.
  */
 template<typename T>
 __global__ void eigenMatLKernel_NN(DeviceData2d<T> eVecs, bool isNodeCentered) {
@@ -182,7 +178,7 @@ __global__ void eigenMatLKernel_ND(DeviceData2d<T> eVecs, bool isNodeCentered) {
 }
 
 /** * @brief Computes eigenvalues for Neumann-Dirichlet boundary conditions.
- * * @note The energy spectrum for ND is mathematically identical to DN.
+ * @note The energy spectrum for ND is mathematically identical to DN.
  * This kernel acts as a direct passthrough to ensure a consistent API.
  *
  * @tparam T Floating-point precision.
@@ -227,22 +223,13 @@ void Eigen<T>::generateEigen(Handle& hand, SquareMat<T>& eVecs, SquareMat<T>& eV
 
 
 ////////////////////////////////////////////////////Remainder of Eigen methods//////////////////////////////////////////
-///
-///
-///
-template <typename T>
-__global__ void setSymetrizationMatrix(DeviceData1d<T> symnetrizationBand, Delta1d<T> delta) {
-    if (size_t i = idx(); i < symnetrizationBand._cols) {
-        symnetrizationBand[i] = sqrt(delta[i] + delta[i + 1]);
-    }
-}
 
 /**
  * Computes the matrix S = -D L D^{-1}, with D = diag(sqrt(axisSegment.delta[i] + axisSegment.delta[i + 1])).
  * @tparam T
  * @param mat The dense matrix S will be stored here.
  * @param primaryDiag  The primary diagonal of S.
- * @param subDiag The sub diagoanl of S.
+ * @param subDiag The sub diagonal of S.
  * @param superDiag The super diagonal of S.
  * @param axisSegment Any segment type providing symmScale(i): the diagonal of
  * D^2 in the symmetrizing similarity S = -D L D^{-1}.  VariableSegment returns
@@ -253,7 +240,7 @@ __global__ void setSymetrizationMatrix(DeviceData1d<T> symnetrizationBand, Delta
  * including the boundary rows (verified algebraically for all BC combinations).
  */
 template <typename T, typename AxisSegmentT>
-__global__ void setSymetricMatrix(
+__global__ void setSymmetricMatrix(
     DeviceData1d<T> primaryDiag,
     DeviceData1d<T> subDiag,
     DeviceData1d<T> superDiag,
@@ -321,7 +308,7 @@ void generateEigenVariableSpacing(Handle& hand, SquareMat<T>& eVecs, SquareMat<T
     eVecs.fill(0, hand);
 
     auto kp1d = eVals.kernelPrep();
-    setSymetricMatrix<T><<<kp1d.numBlocks, kp1d.threadsPerBlock, 0, hand>>>(
+    setSymmetricMatrix<T><<<kp1d.numBlocks, kp1d.threadsPerBlock, 0, hand>>>(
         eVecs.diag(0).toKernel1d(),
         eVecs.diag(-1).toKernel1d(),
         eVecs.diag(1).toKernel1d(),
@@ -357,10 +344,10 @@ void Eigen<T>::generateEigen(Handle &hand, SquareMat<T> &eVecs, SquareMat<T> &eV
 
 template<typename T>
 template<typename axisSegmentT>
-void Eigen<T>::generateEigen(Handle &hand, Mat<T> eigins, const axisSegmentT &axisSegment) {
-    auto vecs = eigins.sqSubMat(0, 0, eigins._rows);
-    auto vecsInv = eigins.sqSubMat(0, eigins._rows, eigins._rows);
-    auto vals = eigins.col(eigins._cols - 1);
+void Eigen<T>::generateEigen(Handle &hand, Mat<T> eigenMat, const axisSegmentT &axisSegment) {
+    auto vecs = eigenMat.sqSubMat(0, 0, eigenMat._rows);
+    auto vecsInv = eigenMat.sqSubMat(0, eigenMat._rows, eigenMat._rows);
+    auto vals = eigenMat.col(eigenMat._cols - 1);
     generateEigen(hand, vecs, vecsInv, vals, axisSegment);
 }
 
@@ -377,7 +364,7 @@ void Eigen<T>::generateEigen(Handle &hand, Mat<T> eigins, const axisSegmentT &ax
 
  * @param[out] outputs  An array of 3 shared_ptrs to be populated with the results.
  * @param[in]  factory  A factory function: `ResultType factory(const LaplacianConditions<T>&)`.
- * * @note Because ResultType is wrapped in a shared_ptr, ResultType does not need
+ * @note Because ResultType is wrapped in a shared_ptr, ResultType does not need
  * to be assignable, which is critical for classes with const data members.
  */
 template <typename ResultType, typename F, typename BoundaryConfigT>
@@ -402,7 +389,7 @@ void createUnique(const BoundaryConfigT& boundaryConfig, XYZ<std::shared_ptr<Res
 
 }
 /**
-* Generates, including memory allocation, eigen values and vectors.  The matrices pointed to, that are retruned,
+* Generates, including memory allocation, eigen values and vectors.  The matrices pointed to, that are returned,
 * hold the values in the last column, and the vectors in the first nxn cells.
 * @param boundary The boundary configuration.
 * @param hands Used to create the different vectors in parallel.  There must be at least one handle per dimension.

@@ -30,9 +30,9 @@ void BiCGSTAB<T>::synchAll() const {
 }
 
 template<typename T>
-bool BiCGSTAB<T>::isSmall(const Vec<T> &v, Singleton<T> preAlocated, const size_t streamInd) {
-    v.mult(v, preAlocated, &hands_[streamInd]);
-    T vSq = preAlocated.get(hands_[streamInd]);
+bool BiCGSTAB<T>::isSmall(const Vec<T> &v, Singleton<T> preAllocated, const size_t streamInd) {
+    v.mult(v, preAllocated, &hands_[streamInd]);
+    T vSq = preAllocated.get(hands_[streamInd]);
     return vSq < tolerance;
 }
 
@@ -153,14 +153,12 @@ void BiCGSTAB<T>::solveUnpreconditioned(Vec<T>& initGuess) {
         pUpdate(); // p = p - beta * omega * v
     }
     if (i >= maxIterations)
-        std::cout << "WARNING: Maximum number of iterations reached.  Convergence failed.";
+        std::cerr << "WARNING: Maximum number of iterations reached.  Convergence failed.\n";
 
     synchAll();
 
     const TimePoint end = std::chrono::steady_clock::now();
     const double time = (static_cast<std::chrono::duration<double, std::milli>>(end - start)).count();
-    // std::cout<< "BiCGSTAB #iterations = " << i << " with tolderance = " << tolerance << std::endl;
-    // std::cout << time << ", ";
 }
 
 
@@ -196,7 +194,8 @@ void BCGDense<T>::mult(Vec<T> &vec, Vec<T> &product, Singleton<T> multProduct, S
 }
 
 template<typename T>
-BCGDense<T>::BCGDense(Handles& hands, SquareMat<T> A, const Vec<T> &b, Mat<T> allocatedBSizeX7, Vec<T> allocated9, T tolerance, size_t maxIterations): BiCGSTAB<T>(b, hands, allocatedBSizeX7, allocated9, tolerance, maxIterations), A(A) {
+BCGDense<T>::BCGDense(Handles& hands, SquareMat<T> A, const Vec<T> &b, Mat<T> allocatedBSizeX7, Vec<T> allocated9, T tolerance,
+        size_t maxIterations): BiCGSTAB<T>(b, hands, allocatedBSizeX7, allocated9, tolerance, maxIterations), A(A) {
 
 }
 
