@@ -30,8 +30,7 @@ void expectMatrixNear(const Mat<T>& A, const Mat<T>& B, Handle& hand, T tol = 1e
 }
 
 template <typename Real, typename Int, typename BoundaryConfigT>
-SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vector<Real>& x0Host, SquareMat<Real>& lhsOperator,
-        std::vector<Int>& rowOffsetsB, std::vector<Real>& valuesB, std::vector<Int>& colIndsB, Handle& hand) {
+SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vector<Real>& x0Host, SquareMat<Real>& lhsOperator, std::vector<Int>& rowOffsetsB, std::vector<Real>& valuesB, std::vector<Int>& colIndsB, Handle& hand) {
 
     std::mt19937 rng(42); // Deterministic seed for reproducible testing
     std::uniform_real_distribution<Real> dist(-5.0, 5.0);
@@ -48,18 +47,18 @@ SparseCSR<Real, Int> basics(const BoundaryConfigT& boundary, size_t n, std::vect
     return B;
 }
 
-TEST(CudaWrapper, transpose) {
+TEST(CudaWrapper, tranpose) {
     using Real = double;
     Handle hand;
     size_t rows = 2, cols = 3;
     std::vector<Real> host = {1, 2, 3, 4, 5, 6};
-    std::vector<Real> transposedHost = {1, 3, 5, 2, 4, 6};
+    std::vector<Real> tranpose = {1, 3, 5, 2, 4, 6};
     auto a = Mat<Real>::create(rows, cols, hand);
     auto aT = Mat<Real>::create(cols, rows, hand);
     auto aTFromHost = Mat<Real>::create(cols, rows, hand);
 
     a.set(host.data(), hand);
-    aTFromHost.set(transposedHost.data(), hand);
+    aTFromHost.set(tranpose.data(), hand);
 
     a.transpose(aT, hand);
 
@@ -137,14 +136,14 @@ TEST(FortranWrapper, MultipleEigenSolversSideBySide){
     eigen::finalizeEigenDecomp();
 }
 
-TEST(FortranWrapper, ThomasMatchesStandardOnLargeFluxGrid)
+TEST(FortranWrapper, SmokeTestAlex)
 {
     using Real = double;
 
     constexpr size_t N = 257;
 
     //------------------------------------------------------------------
-    // Spacing arrays for a uniform grid
+    // Alex's HP arrays
     //------------------------------------------------------------------
 
     XYZ<std::vector<Real>> d(std::vector<Real>(N + 1), std::vector<Real>(N + 1), std::vector<Real>(N + 1));
@@ -176,11 +175,11 @@ TEST(FortranWrapper, ThomasMatchesStandardOnLargeFluxGrid)
     std::vector<Real> xThomas(size,-9999.0);
 
     //------------------------------------------------------------------
-    // The same interface a Fortran caller uses
+    // Exactly the same API Alex calls
     //------------------------------------------------------------------
 
-    // The h/2, h, ..., h, h/2 arrays above are the spacing of
-    // cell centers of N uniform cells tiling [0,1] wall-to-wall.  That is the
+    // The h/2, h, ..., h, h/2 arrays above are exactly Alex's HP spacing:
+    // cell centres of N uniform cells tiling [0,1] wall-to-wall.  That is the
     // FluxLapl geometry, so this smoke test now exercises the flux operator
     // through both solve paths.
     size_t handleStandard = eigen::initEigenDecomp_d(
@@ -283,6 +282,8 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
     std::vector<Real> resultP(dim.size(), 0);
     std::vector<Real> resultF(f.size(), 0);
 
+    // ToeplitzLaplacian<Real>::printL(dim, hand, delta);
+
     ImmersedEq<Real, Int> imEq(boundaryHost.forDevice(), f.size(), valsR.size(), p.data(), f.data(), deltaT, 1e-8, 1000);
 
     imEq.solve(resultP.data(), valuesB.size(), rowOffsetsB.data(), colIndsB.data(), valuesB.data());
@@ -319,7 +320,7 @@ TEST(ImmersedEq, SolvesPrimes_3x2x1) {
     for (size_t i = 0; i < resultF.size(); ++i) ASSERT_NEAR(resultF[i], expectedF[i], 1e-4);
 }
 
-TEST(ImmersedEq, SolvesImmersed_Generic) {
+TEST(ImmersedEq, SolvesImmeresed_Generic) {
 
     using Real = double;
     using Int  = int;
@@ -431,7 +432,7 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
  * @param V The eigenvectors for the 1d laplacian.  Each column is a vector.
  * @param lambda The eigen values.
  * @param hand The context.
- * @param errorMsg Anything that should be appended to an error message.
+ * @param errorMsg Anthing that should be appended to an error message.
  * @param tol The tolerance.
  */
 /**
@@ -440,6 +441,8 @@ TEST(KroneckerTripletTest, ProductMatchesMultOnIdentity) {
  */
 template<typename T>
 static void checkEigens(const SquareMat<T>& L, const SquareMat<T>& V, const Vec<T>& lambda, Handle& hand, const std::string& errorMsg, bool uniformDelta, T tol = 1e-8) {
+
+    // std::cout << "checkEigens L = \n" << GpuOut<T>(L, hand) << std::endl << "V = \n" << GpuOut<T>(V, hand) << std::endl << "lambda = " << GpuOut<T>(lambda, hand) << std::endl;
 
     // ---------------------------------------------------------
     // UNIVERSAL CHECK: L * V = V * Lambda
@@ -513,6 +516,9 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real
 
     auto laplacian = poisson::laplacian<Real>(boundary.forDevice(), hands[0]);
 
+    // std::cout << "verifyEigenSolverIdentity banded laplacian = \n" << GpuOut<Real>(laplacian, hands[0]) << std::endl;
+    // std::cout << "verifyEigenSolverIdentity dense laplacian = \n" << GpuOut<Real>(laplacian.getDense(hands[0]), hands[0]) << std::endl;
+
     auto x = SimpleArray<Real>::create(dim.size(), hands[0]);
 
     std::vector<Real> xCpuOrig(dim.size());
@@ -526,6 +532,9 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real
     auto rhs = SimpleArray<Real>::create(dim.size(), hands[0]);
     laplacian.bandedMult(x, rhs, &hands[0], GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(0, hands[0]), false);
 
+    // std::cout << "init x = " << GpuOut<Real>(x, hands[0]) << std::endl;
+    // std::cout << "rhs = " << GpuOut<Real>(rhs, hands[0]) << std::endl;
+
     x.fill(0, hands[0]);
 
     if (dim.numDims() == 2) {
@@ -535,6 +544,7 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real
         EigenDecomp3d<Real> ed(boundary.forDevice(), hands);
         ed.solve(x, rhs, hands[0]);
     }
+    // std::cout << "verifyEigenSolverIdentity x_solution = \n" << GpuOut<Real>(x, hands[0]) << std::endl;
     cudaDeviceSynchronize();
 
     laplacian.bandedMult(x, rhs, &hands[0], GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(-1, hands[0]), false);
@@ -543,6 +553,8 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real
     Real normHost[1];
     rhs.norm(normDevice, hands[0]);
     normDevice.get(normHost, hands[0]);
+
+    // std::cout << "verifyEigenSolverIdentity norm = \n" << normHost[0] << std::endl;
 
     cudaDeviceSynchronize();
     ASSERT_NEAR(normHost[0], 0, tolerance) << " || L_i x - rhs|| > " << tolerance << std::endl << msg;
@@ -555,6 +567,7 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real
         x.fill(0, hands[0]);
 
         ed.solve(x, rhs, hands[0]);
+        // std::cout << "verifyEigenSolverIdentity x_Thomas = \n" << GpuOut<Real>(x, hands[0]) << std::endl;
 
         laplacian.bandedMult(x, rhs, &hands[0], GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(-1, hands[0]), false);
         auto normDevice = x.get(0);
@@ -562,6 +575,7 @@ void verifyEigenSolverIdentity(const GridDim& dim, const BoundaryConfigHost<Real
         rhs.norm(normDevice, hands[0]);
         normDevice.get(normHost, hands[0]);
 
+        // std::cout << "verifyEigenSolverIdentity norm Thomas = \n" << normHost[0] << std::endl;
         cudaDeviceSynchronize();
         ASSERT_NEAR(normHost[0], 0, tolerance) << " Thomas || L_i x - rhs|| > " << tolerance;
     }
@@ -582,6 +596,7 @@ void verifyImmersedEqWithBoundary(const BoundaryConfig<Real, segX, segY, segZ>& 
     std::vector<Int> rowOffsetsB = {0, 2, 4};
     std::vector<Int> colIndsB = {0, 1, 0, 1};
     std::vector<Real> valuesB = {1.0, -1.0, -1.0, 1.0};
+    //const BoundaryConfig<Real>& boundary, size_t n, std::vector<Real>& x0Host, Mat<Real>& lhsOperator, std::vector<Real>& rowOffsetsB, std::vector<Real>& valuesB, std::vector<Real>& colIndsB, Handle& hand
     auto B = basics<Real, Int>(boundary, n, x0Host, lhsOperator, rowOffsetsB, valuesB, colIndsB, hand);
     size_t numB = B.offsets.size() - 1;
 
@@ -649,7 +664,7 @@ void boundaryBattery(
     Handles& hands, double tolerance, Mat<Real> bufferNXNPlus5) {
 
     std::stringstream ss;
-    ss << "startIsNeumann = " << startIsN
+    ss << "startIsNeuman = " << startIsN
        << " endIsNeumann = " << endIsN
        << " isStagered = " << isStag
        << " startVal = " << startVal
@@ -802,6 +817,13 @@ void laplacianBattery(int kindLo, int kindHi, bool fullValueMatrix) {
 
                                                                      double tolerance = 1e-11 * std::sqrt(static_cast<double>(dim.size()));
 
+
+                                                                     // if (++count % 500 == 0)
+                                                                     //     std::cout << "  [battery] config " << count
+                                                                     //               << "  kind=" << isStag
+                                                                     //               << " dim=(" << rows << "," << cols << "," << layers << ")"
+                                                                     //               << " N=(" << x0IsN << x1IsN << y0IsN << y1IsN << z0IsN << z1IsN << ")"
+                                                                     //               << std::endl;
 
                                                                      boundaryBattery<Real>(
                                                                          startIsN,
@@ -1659,14 +1681,41 @@ TEST(ThomasAxisAssignment, VyRealMeshYZRoleSwapMatchesTranspose) {
     // it doesn't need the real mesh.
     const int nx1 = 12, nyLen = 9, nzLen = 15;
 
-    // Every FluxLapl/VariableDeltaLapl axis needs axisLength+1 delta values
-    // (confirmed directly from FortranBindings.hpp's initEigenDecompSolver:
-    // hasVariableDelta(...) is true for both kinds, and it sizes each delta
-    // vector to cols+1 / rows+1 / layers+1 accordingly).
-    std::vector<Real> A(nx1 + 1), B(nyLen + 1), C(nzLen + 1);
-    for (int i = 0; i <= nx1; ++i) A[i] = Real(1) + Real(0.05) * i;
-    for (int i = 0; i <= nyLen; ++i) B[i] = Real(0.5) + Real(0.07) * i + Real(0.01) * i * i;
-    for (int i = 0; i <= nzLen; ++i) C[i] = Real(2) + Real(0.03) * i - Real(0.002) * i * i;
+    // generateAxisDeltas (already defined above, used by the passing
+    // VxShapedAsymmetricGrid/VyShapedAsymmetricGrid tests) -- not hand-rolled
+    // values -- because FluxLapl deltas aren't free: they must be the
+    // wall/centre distances of n cells tiling the segment wall-to-wall
+    // (d_0=W_0/2, d_i=(W_{i-1}+W_i)/2, d_n=W_{n-1}/2), which the library
+    // validates and a hand-rolled smooth sequence does not generally satisfy
+    // (confirmed the hard way: an earlier version of this test fabricated
+    // A/B/C directly and the library rightly threw
+    // "FluxLapl deltas are inconsistent" at construction). One shared rng,
+    // advanced across all three calls exactly like generateMixedKindDeltas
+    // does, so A/B/C are deterministic and reproducible.
+    std::mt19937 rng(24601);
+    std::vector<Real> A = generateAxisDeltas<Real>(nx1, eigen::FluxLapl, rng);
+    std::vector<Real> B = generateAxisDeltas<Real>(nyLen, eigen::VariableDeltaLapl, rng);
+    std::vector<Real> C = generateAxisDeltas<Real>(nzLen, eigen::FluxLapl, rng);
+
+    // DIAGNOSTIC (temporary): check A and C individually against the exact
+    // same wall-reconstruction rule buildBoundaryConfigAndLaunch applies,
+    // with no GridDim/role involved at all. By hand, generateAxisDeltas's
+    // FluxLapl branch should reconstruct exactly (w'[0]=2d[0]=W0, and each
+    // w'[i]=2d[i]-w'[i-1] telescopes back to W_i), so this should print OK
+    // for both -- if either one THREW here, the bug is in generation, not
+    // in which axis role A/C get assigned to afterward.
+    try {
+        auto wA = makeFvmWidths<Real>(A);
+        std::cout << "[YZRoleSwap diag] makeFvmWidths(A) OK, reconstructed " << wA.size() << " widths\n";
+    } catch (const std::exception& e) {
+        std::cout << "[YZRoleSwap diag] makeFvmWidths(A) THREW: " << e.what() << "\n";
+    }
+    try {
+        auto wC = makeFvmWidths<Real>(C);
+        std::cout << "[YZRoleSwap diag] makeFvmWidths(C) OK, reconstructed " << wC.size() << " widths\n";
+    } catch (const std::exception& e) {
+        std::cout << "[YZRoleSwap diag] makeFvmWidths(C) THREW: " << e.what() << "\n";
+    }
 
     // Vy's real Hartmann=1000 shift magnitude; only roughly matters here.
     const Real shiftVelocity = Real(1.5) / (Real(1e-4) * (Real(1) / std::sqrt(Real(1.85185185e7))));
@@ -1678,37 +1727,65 @@ TEST(ThomasAxisAssignment, VyRealMeshYZRoleSwapMatchesTranspose) {
 
     std::vector<Real> xOriginalHost(dimOriginal.size()), xSwappedHost(dimSwapped.size());
 
+    // DIAGNOSTIC (temporary): try/catch each construction separately so we
+    // learn exactly which one throws (and why), instead of gtest just
+    // reporting "exception thrown in test body" with no indication of
+    // which of the two buildBoundaryConfigAndLaunch calls is responsible.
+    bool originalOk = false, swappedOk = false;
+    std::string originalErr, swappedErr;
+
     XYZ<std::vector<Real>> deltasOriginal(A, B, C);
     XYZ<eigen::LaplOperatorT> kindOriginal(eigen::FluxLapl, eigen::VariableDeltaLapl, eigen::FluxLapl);
-    buildBoundaryConfigAndLaunch<Real>(dimOriginal, deltasOriginal, allDirichlet, allDirichlet, zeroR3, zeroR3, kindOriginal, hands[0],
-        [&](const auto& boundaryHost) {
-            EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimOriginal, deltasOriginal, allDirichlet, allDirichlet, zeroR3, zeroR3, kindOriginal, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
 
-            auto rhs = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
-            rhs.fill(1.0, hands[0]);
-            auto x = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
-            x.fill(0, hands[0]);
-            ed.solve(x, rhs, hands[0]);
+                auto rhs = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
 
-            x.get(xOriginalHost.data(), hands[0]);
-            cudaDeviceSynchronize();
-        });
+                x.get(xOriginalHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        originalOk = true;
+    } catch (const std::exception& e) {
+        originalErr = e.what();
+    }
 
     XYZ<std::vector<Real>> deltasSwapped(A, C, B);
     XYZ<eigen::LaplOperatorT> kindSwapped(eigen::FluxLapl, eigen::FluxLapl, eigen::VariableDeltaLapl);
-    buildBoundaryConfigAndLaunch<Real>(dimSwapped, deltasSwapped, allDirichlet, allDirichlet, zeroR3, zeroR3, kindSwapped, hands[0],
-        [&](const auto& boundaryHost) {
-            EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimSwapped, deltasSwapped, allDirichlet, allDirichlet, zeroR3, zeroR3, kindSwapped, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
 
-            auto rhs = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
-            rhs.fill(1.0, hands[0]);
-            auto x = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
-            x.fill(0, hands[0]);
-            ed.solve(x, rhs, hands[0]);
+                auto rhs = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
 
-            x.get(xSwappedHost.data(), hands[0]);
-            cudaDeviceSynchronize();
-        });
+                x.get(xSwappedHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        swappedOk = true;
+    } catch (const std::exception& e) {
+        swappedErr = e.what();
+    }
+
+    std::cout << "[YZRoleSwap diag] ORIGINAL (X=A/Y=B/Z=C, kind=Flux/Var/Flux) construction: "
+              << (originalOk ? "OK" : ("THREW: " + originalErr)) << "\n";
+    std::cout << "[YZRoleSwap diag] SWAPPED  (X=A/Y=C/Z=B, kind=Flux/Flux/Var) construction: "
+              << (swappedOk ? "OK" : ("THREW: " + swappedErr)) << "\n";
+
+    ASSERT_TRUE(originalOk && swappedOk)
+        << "At least one construction threw before any numeric comparison could run -- see the "
+        << "[YZRoleSwap diag] lines above for exactly which one and why. "
+        << "original: " << (originalOk ? "ok" : originalErr) << " | "
+        << "swapped: " << (swappedOk ? "ok" : swappedErr);
 
     for (Real v : xOriginalHost) ASSERT_TRUE(std::isfinite(v)) << "original construction produced a non-finite value -- not a valid baseline.";
     for (Real v : xSwappedHost)  ASSERT_TRUE(std::isfinite(v)) << "swapped construction produced a non-finite value -- not a valid baseline.";
@@ -1759,8 +1836,965 @@ TEST(ThomasAxisAssignment, VyRealMeshYZRoleSwapMatchesTranspose) {
         << "for what's meant to be the same physical Vy field.";
 }
 
+// Direct analog of VyRealMeshYZRoleSwapMatchesTranspose above, but for the
+// OTHER pair. That test proved Y-role/Z-role are interchangeable (passed
+// cleanly), which rules out Fortran's Y<->Z relabeling as the explanation
+// for the x<->z asymmetry bug. But Fortran's init_eigen_decomp_d permutation
+// for Vy does something else too: it puts physical Z into the X-role (the
+// one EigenDecompThomas Thomas-sweeps), while GpuSolverSetup.cu's direct
+// C++ construction puts physical X there instead. This test checks THAT
+// swap specifically: does it matter which physical axis occupies the
+// Thomas-swept X-role vs the eigen-transformed Z-role, holding the
+// VariableDeltaLapl axis fixed on Y throughout?
+TEST(ThomasAxisAssignment, VyRealMeshXZRoleSwapMatchesTranspose) {
+    Handles hands(3);
+    using Real = double;
+
+    const int nx1 = 12, nyLen = 9, nzLen = 15;
+
+    std::mt19937 rng(24601);
+    std::vector<Real> A = generateAxisDeltas<Real>(nx1, eigen::FluxLapl, rng);
+    std::vector<Real> B = generateAxisDeltas<Real>(nyLen, eigen::VariableDeltaLapl, rng);
+    std::vector<Real> C = generateAxisDeltas<Real>(nzLen, eigen::FluxLapl, rng);
+
+    const Real shiftVelocity = Real(1.5) / (Real(1e-4) * (Real(1) / std::sqrt(Real(1.85185185e7))));
+    XYZ<bool> allDirichlet(false, false, false);
+    XYZ<Real> zeroR3(0.0, 0.0, 0.0);
+
+    // original: X-role=A(len nx1), Y-role=B(len nyLen, VariableDeltaLapl), Z-role=C(len nzLen)
+    GridDim dimOriginal(/*rows=*/nyLen, /*cols=*/nx1, /*layers=*/nzLen);
+    // swapped: X-role=C(len nzLen), Y-role=B unchanged, Z-role=A(len nx1)
+    GridDim dimSwapped(/*rows=*/nyLen, /*cols=*/nzLen, /*layers=*/nx1);
+
+    std::vector<Real> xOriginalHost(dimOriginal.size()), xSwappedHost(dimSwapped.size());
+
+    bool originalOk = false, swappedOk = false;
+    std::string originalErr, swappedErr;
+
+    XYZ<std::vector<Real>> deltasOriginal(A, B, C);
+    XYZ<eigen::LaplOperatorT> kindOriginal(eigen::FluxLapl, eigen::VariableDeltaLapl, eigen::FluxLapl);
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimOriginal, deltasOriginal, allDirichlet, allDirichlet, zeroR3, zeroR3, kindOriginal, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
+
+                auto rhs = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
+
+                x.get(xOriginalHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        originalOk = true;
+    } catch (const std::exception& e) {
+        originalErr = e.what();
+    }
+
+    XYZ<std::vector<Real>> deltasSwapped(C, B, A);
+    XYZ<eigen::LaplOperatorT> kindSwapped(eigen::FluxLapl, eigen::VariableDeltaLapl, eigen::FluxLapl);
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimSwapped, deltasSwapped, allDirichlet, allDirichlet, zeroR3, zeroR3, kindSwapped, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
+
+                auto rhs = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
+
+                x.get(xSwappedHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        swappedOk = true;
+    } catch (const std::exception& e) {
+        swappedErr = e.what();
+    }
+
+    std::cout << "[XZRoleSwap diag] ORIGINAL (X-role=A/Z-role=C) construction: "
+              << (originalOk ? "OK" : ("THREW: " + originalErr)) << "\n";
+    std::cout << "[XZRoleSwap diag] SWAPPED  (X-role=C/Z-role=A) construction: "
+              << (swappedOk ? "OK" : ("THREW: " + swappedErr)) << "\n";
+
+    ASSERT_TRUE(originalOk && swappedOk)
+        << "At least one construction threw before any numeric comparison could run -- see the "
+        << "[XZRoleSwap diag] lines above for exactly which one and why. "
+        << "original: " << (originalOk ? "ok" : originalErr) << " | "
+        << "swapped: " << (swappedOk ? "ok" : swappedErr);
+
+    for (Real v : xOriginalHost) ASSERT_TRUE(std::isfinite(v)) << "original construction produced a non-finite value -- not a valid baseline.";
+    for (Real v : xSwappedHost)  ASSERT_TRUE(std::isfinite(v)) << "swapped construction produced a non-finite value -- not a valid baseline.";
+
+    auto atOriginal = [&](int xi, int yi, int zi) -> Real {
+        size_t idx = (size_t)(xi - 1) + (size_t)dimOriginal.cols * ((size_t)(yi - 1) + (size_t)dimOriginal.rows * (size_t)(zi - 1));
+        return xOriginalHost[idx];
+    };
+    // Swapped's 1st argument is its X-role index (native C/Z-index in
+    // "original" terms), 3rd argument is its Z-role index (native A/X-index).
+    auto atSwapped = [&](int xRoleIdx, int yi, int zRoleIdx) -> Real {
+        size_t idx = (size_t)(xRoleIdx - 1) + (size_t)dimSwapped.cols * ((size_t)(yi - 1) + (size_t)dimSwapped.rows * (size_t)(zRoleIdx - 1));
+        return xSwappedHost[idx];
+    };
+
+    auto relDiff = [](Real a, Real b) {
+        Real absA = std::abs(a), absB = std::abs(b);
+        Real scale = absA > absB ? absA : absB;
+        if (scale < Real(1e-300)) scale = Real(1e-300);
+        return std::abs(a - b) / scale;
+    };
+
+    Real maxRelDiff = 0;
+    int worstXi = 0, worstYi = 0, worstZi = 0;
+    size_t violations = 0, total = 0;
+    for (int zi = 1; zi <= nzLen; ++zi) {
+        for (int yi = 1; yi <= nyLen; ++yi) {
+            for (int xi = 1; xi <= nx1; ++xi) {
+                ++total;
+                Real original = atOriginal(xi, yi, zi);
+                // original's (xi,zi) [native A-index, native C-index] maps to
+                // swapped's (xRole=zi [native C-index], zRole=xi [native A-index]).
+                Real swapped = atSwapped(/*xRole=*/ zi, yi, /*zRole=*/ xi);
+                Real d = relDiff(original, swapped);
+                if (d >= 1e-6) ++violations;
+                if (d > maxRelDiff) { maxRelDiff = d; worstXi = xi; worstYi = yi; worstZi = zi; }
+            }
+        }
+    }
+    std::cout << "[VyRealMeshXZRoleSwapMatchesTranspose] " << violations << "/" << total
+              << " points violate 1e-6 after swapping which array (Thomas-swept X-role vs "
+              << "eigen-transformed Z-role) occupies physical-X-shaped data (A) vs physical-Z-shaped "
+              << "data (C); worst relative diff = " << maxRelDiff
+              << " at physical point (xi=" << worstXi << ",yi=" << worstYi << ",zi=" << worstZi << ")\n";
+    EXPECT_LT(maxRelDiff, 1e-6)
+        << violations << "/" << total << " points differ by more than 1e-6 between the X=A/Z=C "
+        << "construction and the X=C/Z=A construction, read back at the corresponding physical point. "
+        << "EigenDecompThomas's X-role (Thomas-swept) and Z-role (eigen-transformed) are NOT "
+        << "interchangeable -- which would mean Fortran's init_eigen_decomp_d permutation (which puts "
+        << "physical Z into the X-role for Vy, where C++'s GpuSolverSetup.cu puts physical X instead) "
+        << "is not a harmless relabeling: Fortran and C++ end up solving genuinely different linear "
+        << "systems for what's meant to be the same physical Vy field.";
+}
+
+// Isolates WHY VyRealMeshUniformRhsStaysSymmetric fails. That test uses
+// aspectRatio=widthRatio=1.0, which means X (Thomas-role) and Z (eigen-role)
+// get BIT-IDENTICAL FluxLapl delta content -- a true square duct. Every
+// role-swap test above used deliberately DIFFERENT content/sizes for X vs Z
+// and passed cleanly, so none of them actually exercised this degenerate
+// X===Z case. Separately, VyShapedSizeShiftBisection already proves solve()
+// itself inverts (L-shift*I) correctly at N=100 with this exact real shift
+// value (6.45497e7) and X=Y=Z spacing -- so if VyRealMeshUniformRhsStaysSymmetric
+// is failing, it's the assembled operator's x<->z symmetry, not solve
+// correctness. This test runs the IDENTICAL square-duct construction (same
+// aspectRatio/widthRatio/stretchFactor, same real shiftVelocity formula,
+// same FluxLapl/VariableDeltaLapl/FluxLapl kind, same all-Dirichlet BCs) at
+// a SMALL N instead of 100, to split two explanations: if this ALSO shows
+// the asymmetry, the bug is inherent to X-role/Z-role sharing identical
+// content, independent of grid size. If this PASSES, the bug needs scale
+// (N~100) to appear, pointing at something size-dependent instead.
+TEST(ThomasAxisAssignment, VySquareDuctSmallNStaysSymmetric) {
+    Handles hands(3);
+    using Real = double;
+
+    const int N = 15;
+    const Real aspectRatio = 1.0, widthRatio = 1.0, stretchFactor = 10.0;
+
+    AxisSpacingForTest<Real> xAxis = computeAxisSpacingForTest<Real>(N, aspectRatio, stretchFactor);
+    AxisSpacingForTest<Real> yAxis = computeAxisSpacingForTest<Real>(N, widthRatio, stretchFactor);
+    AxisSpacingForTest<Real> zAxis = computeAxisSpacingForTest<Real>(N, Real(1), stretchFactor);
+
+    GridDim dim(/*rows=*/N, /*cols=*/N + 1, /*layers=*/N + 1);
+    XYZ<std::vector<Real>> deltas(xAxis.hHalf, yAxis.hFull, zAxis.hHalf);
+    XYZ<eigen::LaplOperatorT> kind(eigen::FluxLapl, eigen::VariableDeltaLapl, eigen::FluxLapl);
+    XYZ<bool> allDirichlet(false, false, false);
+    XYZ<Real> zeroR3(0.0, 0.0, 0.0);
+
+    const Real grashof = Real(1.85185185e7), timeStep = Real(1e-4);
+    const Real correctionCoefficient = Real(1.5);
+    const Real gravitationalScale = Real(1) / std::sqrt(grashof);
+    const Real shiftVelocity = correctionCoefficient / (timeStep * gravitationalScale);
+
+    buildBoundaryConfigAndLaunch<Real>(dim, deltas, allDirichlet, allDirichlet, zeroR3, zeroR3, kind, hands[0],
+        [&](const auto& boundaryHost) {
+            EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
+
+            auto rhs = SimpleArray<Real>::create(dim.size(), hands[0]);
+            rhs.fill(1.0, hands[0]);
+
+            auto x = SimpleArray<Real>::create(dim.size(), hands[0]);
+            x.fill(0, hands[0]);
+            ed.solve(x, rhs, hands[0]);
+
+            std::vector<Real> xHost(dim.size());
+            x.get(xHost.data(), hands[0]);
+            cudaDeviceSynchronize();
+
+            // Same residual check as VyRealMeshUniformRhsStaysSymmetric: confirms
+            // solve() actually inverted (L-shift*I) for whatever L got built here.
+            {
+                auto laplacian = poisson::laplacian<Real>(boundaryHost.forDevice(), hands[0]);
+                auto residual = SimpleArray<Real>::create(dim.size(), hands[0]);
+                residual.fill(Real(1.0), hands[0]);
+                laplacian.bandedMult(x, residual, &hands[0], GPUScalar<Real>::get(1, hands[0]), GPUScalar<Real>::get(-1, hands[0]), false);
+                auto negShift = Singleton<Real>::create(-shiftVelocity, hands[0]);
+                residual.add(x, &negShift, &hands[0]);
+
+                auto normDevice = x.get(0);
+                Real normHost[1];
+                residual.norm(normDevice, hands[0]);
+                normDevice.get(normHost, hands[0]);
+                cudaDeviceSynchronize();
+
+                Real rhsNorm = std::sqrt(Real(dim.size()));
+                Real relResidual = normHost[0] / rhsNorm;
+                EXPECT_LT(relResidual, 1e-6)
+                    << "||(L-shift*I)*x_solved - rhs|| / ||rhs|| = " << relResidual
+                    << " (||residual||=" << normHost[0] << ") at small N=" << N;
+            }
+
+            auto at = [&](int xi, int yi, int zi) -> Real {
+                size_t idx = (size_t)(xi - 1)
+                    + (size_t)dim.cols * ((size_t)(yi - 1) + (size_t)dim.rows * (size_t)(zi - 1));
+                return xHost[idx];
+            };
+
+            auto relDiff = [](Real a, Real b) {
+                Real absA = std::abs(a), absB = std::abs(b);
+                Real scale = absA > absB ? absA : absB;
+                if (scale < Real(1e-300)) scale = Real(1e-300);
+                return std::abs(a - b) / scale;
+            };
+
+            Real maxRelDiff = 0;
+            int worstXi = 0, worstYi = 0, worstZi = 0;
+            size_t violations = 0, total = 0;
+            for (int zi = 1; zi <= N + 1; ++zi) {
+                for (int yi = 1; yi <= N; ++yi) {
+                    for (int xi = 1; xi <= N + 1; ++xi) {
+                        ++total;
+                        Real a = at(xi, yi, zi), b = at(zi, yi, xi);
+                        Real d = relDiff(a, b);
+                        if (d >= 1e-6) ++violations;
+                        if (d > maxRelDiff) { maxRelDiff = d; worstXi = xi; worstYi = yi; worstZi = zi; }
+                    }
+                }
+            }
+            std::cout << "[VySquareDuctSmallNStaysSymmetric] N=" << N << ": " << violations << "/" << total
+                      << " (x,y,z)<->(z,y,x) pairs violate 1e-6; worst relative diff = " << maxRelDiff
+                      << " at (xi=" << worstXi << ",yi=" << worstYi << ",zi=" << worstZi << ")"
+                      << ", i.e. at(" << worstXi << "," << worstYi << "," << worstZi << ")=" << at(worstXi, worstYi, worstZi)
+                      << " vs at(" << worstZi << "," << worstYi << "," << worstXi << ")=" << at(worstZi, worstYi, worstXi) << "\n";
+            EXPECT_LT(maxRelDiff, 1e-6)
+                << violations << "/" << total << " points violate x<->z symmetry at small N=" << N
+                << " in the exact same square-duct (aspectRatio=widthRatio=1) construction as "
+                << "VyRealMeshUniformRhsStaysSymmetric -- if this fails too, the bug is NOT about grid "
+                << "size/scale, it's inherent to X-role and Z-role carrying bit-identical FluxLapl "
+                << "content at ANY size. If this PASSES while the N=100 version fails, the bug IS "
+                << "size-dependent.";
+        });
+}
+
+// THE decisive test. Every role-swap test above only checked whether a SINGLE
+// construction is internally self-consistent under relabeling -- none of them
+// built BOTH of the real constructions side by side and compared outputs for
+// the IDENTICAL physical problem. This does exactly that.
+//
+// Fortran's permutation, reverified directly from FortranBindings.hpp this
+// round (initEigenDecomp_d -> initEigenDecompSolver(dim1Length, dim3Length,
+// dim2Length, dim3Delta, dim1Delta, dim2Delta, dim3SegType, dim1SegType,
+// dim2SegType, ...), with initEigenDecompSolver's OWN body confirming
+// xDelta/xSegSpacing pair with cols, yDelta/ySegSpacing with rows,
+// zDelta/zSegSpacing with layers via "hasVariableDelta(xSegSpacing) ? cols+1
+// : 1" etc): cols(X-role, Thomas-swept) <- dim3; rows(Y-role, eigen) <-
+// dim1; layers(Z-role, eigen) <- dim2. AlexCudaCompatibility.f90's Vy call
+// passes dim1=physical X (FLUX_LAPL), dim2=physical Y (VARIABLE_DELTA_LAPL),
+// dim3=physical Z (FLUX_LAPL). So Fortran's actual roles are: cols(X-role)
+// <- physical Z; rows(Y-role) <- physical X; layers(Z-role) <- physical Y.
+// C++'s GpuSolverSetup.cu instead builds GridDim(rows=physical Y,
+// cols=physical X, layers=physical Z) directly, with no such permutation.
+TEST(ThomasAxisAssignment, VyFortranPermutationMatchesCppForSamePhysicalProblem) {
+    Handles hands(3);
+    using Real = double;
+
+    const int N = 15;
+    const Real stretchFactor = 10.0;
+
+    AxisSpacingForTest<Real> xAxis = computeAxisSpacingForTest<Real>(N, Real(1.0), stretchFactor);
+    AxisSpacingForTest<Real> yAxis = computeAxisSpacingForTest<Real>(N, Real(1.0), stretchFactor);
+    AxisSpacingForTest<Real> zAxis = computeAxisSpacingForTest<Real>(N, Real(1.0), stretchFactor);
+
+    XYZ<bool> allDirichlet(false, false, false);
+    XYZ<Real> zeroR3(0.0, 0.0, 0.0);
+
+    const Real grashof = Real(1.85185185e7), timeStep = Real(1e-4);
+    const Real correctionCoefficient = Real(1.5);
+    const Real gravitationalScale = Real(1) / std::sqrt(grashof);
+    const Real shiftVelocity = correctionCoefficient / (timeStep * gravitationalScale);
+
+    // --- C++ construction: GpuSolverSetup.cu's actual GridDim/delta/kind order ---
+    GridDim dimCpp(/*rows=*/N, /*cols=*/N + 1, /*layers=*/N + 1);
+    XYZ<std::vector<Real>> deltasCpp(xAxis.hHalf, yAxis.hFull, zAxis.hHalf);
+    XYZ<eigen::LaplOperatorT> kindCpp(eigen::FluxLapl, eigen::VariableDeltaLapl, eigen::FluxLapl);
+
+    std::vector<Real> xCppHost(dimCpp.size());
+    buildBoundaryConfigAndLaunch<Real>(dimCpp, deltasCpp, allDirichlet, allDirichlet, zeroR3, zeroR3, kindCpp, hands[0],
+        [&](const auto& boundaryHost) {
+            EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
+            auto rhs = SimpleArray<Real>::create(dimCpp.size(), hands[0]);
+            rhs.fill(1.0, hands[0]);
+            auto x = SimpleArray<Real>::create(dimCpp.size(), hands[0]);
+            x.fill(0, hands[0]);
+            ed.solve(x, rhs, hands[0]);
+            x.get(xCppHost.data(), hands[0]);
+            cudaDeviceSynchronize();
+        });
+
+    // --- Fortran construction: cols(X-role)<-physical Z, rows(Y-role)<-physical
+    // X, layers(Z-role)<-physical Y, exactly as derived above. ---
+    GridDim dimFortran(/*rows=*/N + 1, /*cols=*/N + 1, /*layers=*/N);
+    XYZ<std::vector<Real>> deltasFortran(/*X-role=*/zAxis.hHalf, /*Y-role=*/xAxis.hHalf, /*Z-role=*/yAxis.hFull);
+    XYZ<eigen::LaplOperatorT> kindFortran(eigen::FluxLapl, eigen::FluxLapl, eigen::VariableDeltaLapl);
+
+    std::vector<Real> xFortranHost(dimFortran.size());
+    bool fortranOk = false;
+    std::string fortranErr;
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimFortran, deltasFortran, allDirichlet, allDirichlet, zeroR3, zeroR3, kindFortran, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
+                auto rhs = SimpleArray<Real>::create(dimFortran.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimFortran.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
+                x.get(xFortranHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        fortranOk = true;
+    } catch (const std::exception& e) {
+        fortranErr = e.what();
+    }
+    ASSERT_TRUE(fortranOk) << "Fortran-permutation construction threw: " << fortranErr;
+
+    for (Real v : xCppHost) ASSERT_TRUE(std::isfinite(v)) << "C++ construction produced a non-finite value.";
+    for (Real v : xFortranHost) ASSERT_TRUE(std::isfinite(v)) << "Fortran-permutation construction produced a non-finite value.";
+
+    auto atCpp = [&](int xi, int yi, int zi) -> Real {
+        size_t idx = (size_t)(xi - 1) + (size_t)dimCpp.cols * ((size_t)(yi - 1) + (size_t)dimCpp.rows * (size_t)(zi - 1));
+        return xCppHost[idx];
+    };
+    // Fortran's cols(X-role) holds physical Z -> index zi; Fortran's
+    // rows(Y-role) holds physical X -> index xi; Fortran's layers(Z-role)
+    // holds physical Y -> index yi.
+    auto atFortran = [&](int xi, int yi, int zi) -> Real {
+        size_t idx = (size_t)(zi - 1) + (size_t)dimFortran.cols * ((size_t)(xi - 1) + (size_t)dimFortran.rows * (size_t)(yi - 1));
+        return xFortranHost[idx];
+    };
+
+    auto relDiff = [](Real a, Real b) {
+        Real absA = std::abs(a), absB = std::abs(b);
+        Real scale = absA > absB ? absA : absB;
+        if (scale < Real(1e-300)) scale = Real(1e-300);
+        return std::abs(a - b) / scale;
+    };
+
+    Real maxRelDiff = 0;
+    int worstXi = 0, worstYi = 0, worstZi = 0;
+    size_t violations = 0, total = 0;
+    for (int zi = 1; zi <= N + 1; ++zi) {
+        for (int yi = 1; yi <= N; ++yi) {
+            for (int xi = 1; xi <= N + 1; ++xi) {
+                ++total;
+                Real a = atCpp(xi, yi, zi), b = atFortran(xi, yi, zi);
+                Real d = relDiff(a, b);
+                if (d >= 1e-6) ++violations;
+                if (d > maxRelDiff) { maxRelDiff = d; worstXi = xi; worstYi = yi; worstZi = zi; }
+            }
+        }
+    }
+    std::cout << "[VyFortranPermutationMatchesCpp] " << violations << "/" << total
+              << " physical points differ between C++'s direct construction and Fortran's "
+              << "permuted construction by more than 1e-6; worst relative diff = " << maxRelDiff
+              << " at physical point (xi=" << worstXi << ",yi=" << worstYi << ",zi=" << worstZi << ")"
+              << ", C++=" << atCpp(worstXi, worstYi, worstZi) << " vs Fortran=" << atFortran(worstXi, worstYi, worstZi) << "\n";
+    EXPECT_LT(maxRelDiff, 1e-6)
+        << violations << "/" << total << " physical points differ by more than 1e-6 between C++'s "
+        << "direct GpuSolverSetup.cu-style construction and Fortran's actual init_eigen_decomp_d "
+        << "permuted construction, for the IDENTICAL physical Vy problem (same meshes/RHS/shift/BCs). "
+        << "If this fails, Fortran and C++ are provably solving different linear systems for what's "
+        << "meant to be the same physical field -- which would finally explain why C++ blows up at "
+        << "Hartmann=1000 while Fortran stays stable.";
+}
+
+
+TEST(ThomasAxisAssignment, PotentialFortranPermutationMatchesCppForSamePhysicalProblem) {
+    // Potential is the one field flagged (in CfdSimulation.cu's own earlier
+    // diagnostic comments) as diverging from Fortran at iteration 2 of the
+    // real Hartmann=1000 run: -6118.11 (C++) vs 692.10 (Fortran) -- wrong
+    // sign, ~9x magnitude. Unlike Vy (EigenDecompThomas, where X-role is a
+    // real-space Thomas sweep and structurally different from the two
+    // eigen-transformed roles), Potential uses EigenDecomp3d: thomas=false
+    // in BOTH Fortran (AlexCudaCompatibility.f90, hardcoded) and C++
+    // (example_config.json's potential.use_thomas_algorithm=false matches),
+    // so all three roles -- X, Y, Z -- go through the identical
+    // eigen-transform treatment with no special role.
+    //
+    // GpuSolverSetup.cu's direct (unpermuted) construction for potential --
+    // XYZ<LaplOperatorT>(VariableDeltaLapl, FluxLapl, VariableDeltaLapl) --
+    // puts the two VariableDeltaLapl axes on X-role and Z-role. Fortran's
+    // actual init_eigen_decomp_d call for Potential (dim1=physical X
+    // VARIABLE_DELTA_LAPL, dim2=physical Y FLUX_LAPL, dim3=physical Z
+    // VARIABLE_DELTA_LAPL), forwarded through initEigenDecompSolver's
+    // dim1->Y-role/dim2->Z-role/dim3->X-role mapping (the same forwarding
+    // already verified for Vy), instead puts the two VariableDeltaLapl axes
+    // on X-role and Y-role -- a DIFFERENT pair of roles than C++ uses.
+    //
+    // This test builds both constructions for the identical physical
+    // problem (same meshes, RHS, shift, BCs -- Dirichlet/nonzero-shift here
+    // instead of Potential's real all-Neumann/zero-shift singular setup, to
+    // isolate the one question this test is actually about: under
+    // EigenDecomp3d, does it matter WHICH pair of the three mutually
+    // eigen-transformed roles carries the "matching" axis type? Singularity
+    // handling is a separate concern already exercised correctly elsewhere
+    // (pressure) and not what's being tested here) and compares them in
+    // physical space, exactly as VyFortranPermutationMatchesCppForSamePhysicalProblem
+    // did for Vy.
+    Handles hands(3);
+    using Real = double;
+    const int N = 15;
+    const Real stretchFactor = 10.0;
+    AxisSpacingForTest<Real> xAxis = computeAxisSpacingForTest<Real>(N, Real(1.0), stretchFactor);
+    AxisSpacingForTest<Real> yAxis = computeAxisSpacingForTest<Real>(N, Real(1.0), stretchFactor);
+    AxisSpacingForTest<Real> zAxis = computeAxisSpacingForTest<Real>(N, Real(1.0), stretchFactor);
+    XYZ<bool> allDirichlet(false, false, false);
+    XYZ<Real> zeroR3(0.0, 0.0, 0.0);
+    const Real helmholtzShift = Real(1000.0);
+
+    // C++ construction: mirrors GpuSolverSetup.cu's actual, direct potential
+    // call. VariableDeltaLapl axes (size N, .hFull) go on X-role and
+    // Z-role; FluxLapl (size N+1, .hHalf) goes on Y-role.
+    GridDim dimCpp(/*rows=*/N + 1, /*cols=*/N, /*layers=*/N);
+    XYZ<std::vector<Real>> deltasCpp(/*X-role*/xAxis.hFull, /*Y-role*/yAxis.hHalf, /*Z-role*/zAxis.hFull);
+    XYZ<eigen::LaplOperatorT> kindCpp(eigen::VariableDeltaLapl, eigen::FluxLapl, eigen::VariableDeltaLapl);
+    std::vector<Real> xCppHost(dimCpp.size());
+    buildBoundaryConfigAndLaunch<Real>(dimCpp, deltasCpp, allDirichlet, allDirichlet, zeroR3, zeroR3, kindCpp, hands[0],
+        [&](const auto& boundaryHost) {
+            EigenDecomp3d<Real> ed(boundaryHost.forDevice(), hands, helmholtzShift);
+            auto rhs = SimpleArray<Real>::create(dimCpp.size(), hands[0]);
+            rhs.fill(1.0, hands[0]);
+            auto x = SimpleArray<Real>::create(dimCpp.size(), hands[0]);
+            x.fill(0, hands[0]);
+            ed.solve(x, rhs, hands[0]);
+            x.get(xCppHost.data(), hands[0]);
+            cudaDeviceSynchronize();
+        });
+
+    // Fortran construction: X-role(cols)<-physical Z (VariableDeltaLapl),
+    // Y-role(rows)<-physical X (VariableDeltaLapl), Z-role(layers)<-physical
+    // Y (FluxLapl) -- the two VariableDeltaLapl axes land on X-role and
+    // Y-role instead.
+    GridDim dimFortran(/*rows=*/N, /*cols=*/N, /*layers=*/N + 1);
+    XYZ<std::vector<Real>> deltasFortran(/*X-role*/zAxis.hFull, /*Y-role*/xAxis.hFull, /*Z-role*/yAxis.hHalf);
+    XYZ<eigen::LaplOperatorT> kindFortran(eigen::VariableDeltaLapl, eigen::VariableDeltaLapl, eigen::FluxLapl);
+    std::vector<Real> xFortranHost(dimFortran.size());
+    bool fortranOk = false; std::string fortranErr;
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimFortran, deltasFortran, allDirichlet, allDirichlet, zeroR3, zeroR3, kindFortran, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecomp3d<Real> ed(boundaryHost.forDevice(), hands, helmholtzShift);
+                auto rhs = SimpleArray<Real>::create(dimFortran.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimFortran.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
+                x.get(xFortranHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        fortranOk = true;
+    } catch (const std::exception& e) { fortranErr = e.what(); }
+    ASSERT_TRUE(fortranOk) << "Fortran-permutation construction threw: " << fortranErr;
+
+    for (Real v : xCppHost) ASSERT_TRUE(std::isfinite(v)) << "C++ construction produced a non-finite value.";
+    for (Real v : xFortranHost) ASSERT_TRUE(std::isfinite(v)) << "Fortran-permutation construction produced a non-finite value.";
+
+    auto atCpp = [&](int xi, int yi, int zi) -> Real {
+        size_t idx = (size_t)(xi - 1) + (size_t)dimCpp.cols * ((size_t)(yi - 1) + (size_t)dimCpp.rows * (size_t)(zi - 1));
+        return xCppHost[idx];
+    };
+    auto atFortran = [&](int xi, int yi, int zi) -> Real {
+        size_t idx = (size_t)(zi - 1) + (size_t)dimFortran.cols * ((size_t)(xi - 1) + (size_t)dimFortran.rows * (size_t)(yi - 1));
+        return xFortranHost[idx];
+    };
+    auto relDiff = [](Real a, Real b) {
+        Real diff = std::abs(a - b);
+        Real scale = std::max(Real(1e-300), std::max(std::abs(a), std::abs(b)));
+        return diff / scale;
+    };
+
+    Real maxRelDiff = 0; int worstXi = 0, worstYi = 0, worstZi = 0; size_t violations = 0, total = 0;
+    for (int zi = 1; zi <= N; ++zi)
+        for (int yi = 1; yi <= N + 1; ++yi)
+            for (int xi = 1; xi <= N; ++xi) {
+                ++total;
+                Real a = atCpp(xi, yi, zi), b = atFortran(xi, yi, zi);
+                Real d = relDiff(a, b);
+                if (d >= 1e-6) ++violations;
+                if (d > maxRelDiff) { maxRelDiff = d; worstXi = xi; worstYi = yi; worstZi = zi; }
+            }
+    std::cout << "[PotentialFortranPermutationMatchesCpp] " << violations << "/" << total
+              << " physical points differ between C++'s direct construction and Fortran's "
+              << "permuted construction by more than 1e-6; worst relative diff = " << maxRelDiff
+              << " at physical point (xi=" << worstXi << ",yi=" << worstYi << ",zi=" << worstZi << ")"
+              << ", C++=" << atCpp(worstXi, worstYi, worstZi) << " vs Fortran=" << atFortran(worstXi, worstYi, worstZi) << "\n";
+    EXPECT_LT(maxRelDiff, 1e-6)
+        << violations << "/" << total << " physical points differ by more than 1e-6 between C++'s "
+        << "direct GpuSolverSetup.cu-style construction and Fortran's actual init_eigen_decomp_d "
+        << "permuted construction, for the IDENTICAL physical Potential problem (same meshes/RHS/"
+        << "shift/BCs), under EigenDecomp3d. If this fails, GpuSolverSetup.cu's direct (unpermuted) "
+        << "axis-to-role mapping for potential produces a genuinely different linear system than "
+        << "Fortran's own permuted mapping -- a real C++-only bug, consistent with the already-observed "
+        << "Potential(-6118.11) vs Fortran(692.10) mismatch at iteration 2 of the real Hartmann=1000 run.";
+}
+
+TEST(ThomasAxisAssignment, PotentialFortranPermutationMatchesCppWithAsymmetricBoundaryValues) {
+    // Follow-up to PotentialFortranPermutationMatchesCppForSamePhysicalProblem
+    // (passed: 0/3600 points differ, worst relative diff 1.08e-15). That test
+    // used rhs.fill(1.0,...) with ZERO boundary values on both constructions --
+    // a fully symmetric setup that is invariant under an axis-role permutation
+    // by construction. Passing it cannot actually rule out a permutation-
+    // sensitivity bug: every role saw the identical trivial input either way,
+    // so even a real bug that depends on *which* physical axis occupies which
+    // role would have been invisible.
+    //
+    // This breaks that symmetry the cheap way: identical per-ROLE Dirichlet
+    // boundary values (same XYZ<Real> tuple, unchanged, in both constructions
+    // below -- exactly how kindCpp/kindFortran are already both expressed in
+    // role terms) instead of all-zero. RHS stays a uniform fill; the asymmetry
+    // only needs to enter once for the test to become discriminating, and
+    // boundary values are the simplest way to inject it without a custom
+    // upload kernel.
+    //
+    // If the two constructions still agree at every physical point under this
+    // genuinely asymmetric setup, the operator-equivalence conclusion is now
+    // solid, not just true-for-trivial-input, and the real bug must be
+    // upstream of GpuSolverSetup.cu's role assignment (i.e. in the actual
+    // Vx/Vz data feeding the real curl RHS, not in how Potential's solver is
+    // built). If it fails here where the symmetric version passed, that
+    // pins the bug precisely: EigenDecomp3d's numerics are sensitive to which
+    // physical axis occupies which role, and GpuSolverSetup.cu's direct
+    // (unpermuted) role assignment for potential is a real, fixable bug.
+    Handles hands(3);
+    using Real = double;
+    const int N = 15;
+    const Real stretchFactor = 10.0;
+    AxisSpacingForTest<Real> xAxis = computeAxisSpacingForTest<Real>(N, Real(1.0), stretchFactor);
+    AxisSpacingForTest<Real> yAxis = computeAxisSpacingForTest<Real>(N, Real(1.0), stretchFactor);
+    AxisSpacingForTest<Real> zAxis = computeAxisSpacingForTest<Real>(N, Real(1.0), stretchFactor);
+    XYZ<bool> allDirichlet(false, false, false);
+    // Per-ROLE boundary values (X-role, Y-role, Z-role) -- deliberately all
+    // distinct and nonzero, so a role swap changes the answer. Same tuple,
+    // unchanged, for both constructions below.
+    XYZ<Real> boundaryStart(1.0, 2.0, 3.0);
+    XYZ<Real> boundaryEnd(4.0, 5.0, 6.0);
+    const Real helmholtzShift = Real(1000.0);
+
+    // C++ construction: identical to PotentialFortranPermutationMatchesCppForSamePhysicalProblem,
+    // only the boundary values changed.
+    GridDim dimCpp(/*rows=*/N + 1, /*cols=*/N, /*layers=*/N);
+    XYZ<std::vector<Real>> deltasCpp(xAxis.hFull, yAxis.hHalf, zAxis.hFull);
+    XYZ<eigen::LaplOperatorT> kindCpp(eigen::VariableDeltaLapl, eigen::FluxLapl, eigen::VariableDeltaLapl);
+    std::vector<Real> xCppHost(dimCpp.size());
+    buildBoundaryConfigAndLaunch<Real>(dimCpp, deltasCpp, allDirichlet, allDirichlet, boundaryStart, boundaryEnd, kindCpp, hands[0],
+        [&](const auto& boundaryHost) {
+            EigenDecomp3d<Real> ed(boundaryHost.forDevice(), hands, helmholtzShift);
+            auto rhs = SimpleArray<Real>::create(dimCpp.size(), hands[0]);
+            rhs.fill(1.0, hands[0]);
+            auto x = SimpleArray<Real>::create(dimCpp.size(), hands[0]);
+            x.fill(0, hands[0]);
+            ed.solve(x, rhs, hands[0]);
+            x.get(xCppHost.data(), hands[0]);
+            cudaDeviceSynchronize();
+        });
+
+    // Fortran construction: identical to PotentialFortranPermutationMatchesCppForSamePhysicalProblem,
+    // only the boundary values changed.
+    GridDim dimFortran(/*rows=*/N, /*cols=*/N, /*layers=*/N + 1);
+    XYZ<std::vector<Real>> deltasFortran(zAxis.hFull, xAxis.hFull, yAxis.hHalf);
+    XYZ<eigen::LaplOperatorT> kindFortran(eigen::VariableDeltaLapl, eigen::VariableDeltaLapl, eigen::FluxLapl);
+    std::vector<Real> xFortranHost(dimFortran.size());
+    bool fortranOk = false; std::string fortranErr;
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimFortran, deltasFortran, allDirichlet, allDirichlet, boundaryStart, boundaryEnd, kindFortran, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecomp3d<Real> ed(boundaryHost.forDevice(), hands, helmholtzShift);
+                auto rhs = SimpleArray<Real>::create(dimFortran.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimFortran.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
+                x.get(xFortranHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        fortranOk = true;
+    } catch (const std::exception& e) { fortranErr = e.what(); }
+    ASSERT_TRUE(fortranOk) << "Fortran-permutation construction threw: " << fortranErr;
+
+    for (Real v : xCppHost) ASSERT_TRUE(std::isfinite(v)) << "C++ construction produced a non-finite value.";
+    for (Real v : xFortranHost) ASSERT_TRUE(std::isfinite(v)) << "Fortran-permutation construction produced a non-finite value.";
+
+    auto atCpp = [&](int xi, int yi, int zi) -> Real {
+        size_t idx = (size_t)(xi - 1) + (size_t)dimCpp.cols * ((size_t)(yi - 1) + (size_t)dimCpp.rows * (size_t)(zi - 1));
+        return xCppHost[idx];
+    };
+    auto atFortran = [&](int xi, int yi, int zi) -> Real {
+        size_t idx = (size_t)(zi - 1) + (size_t)dimFortran.cols * ((size_t)(xi - 1) + (size_t)dimFortran.rows * (size_t)(yi - 1));
+        return xFortranHost[idx];
+    };
+    auto relDiff = [](Real a, Real b) {
+        Real diff = std::abs(a - b);
+        Real scale = std::max(Real(1e-300), std::max(std::abs(a), std::abs(b)));
+        return diff / scale;
+    };
+
+    Real maxRelDiff = 0; int worstXi = 0, worstYi = 0, worstZi = 0; size_t violations = 0, total = 0;
+    for (int zi = 1; zi <= N; ++zi)
+        for (int yi = 1; yi <= N + 1; ++yi)
+            for (int xi = 1; xi <= N; ++xi) {
+                ++total;
+                Real a = atCpp(xi, yi, zi), b = atFortran(xi, yi, zi);
+                Real d = relDiff(a, b);
+                if (d >= 1e-6) ++violations;
+                if (d > maxRelDiff) { maxRelDiff = d; worstXi = xi; worstYi = yi; worstZi = zi; }
+            }
+    std::cout << "[PotentialAsymmetricBoundary] " << violations << "/" << total
+              << " physical points differ between C++'s direct construction and Fortran's "
+              << "permuted construction by more than 1e-6 under ASYMMETRIC per-role boundary "
+              << "values; worst relative diff = " << maxRelDiff
+              << " at physical point (xi=" << worstXi << ",yi=" << worstYi << ",zi=" << worstZi << ")"
+              << ", C++=" << atCpp(worstXi, worstYi, worstZi) << " vs Fortran=" << atFortran(worstXi, worstYi, worstZi) << "\n";
+    EXPECT_LT(maxRelDiff, 1e-6)
+        << violations << "/" << total << " physical points differ by more than 1e-6 between C++'s "
+        << "direct GpuSolverSetup.cu-style construction and Fortran's actual init_eigen_decomp_d "
+        << "permuted construction for Potential, under ASYMMETRIC per-role Dirichlet boundary "
+        << "values (1,2,3 / 4,5,6) that break the symmetry the earlier uniform-RHS/zero-boundary "
+        << "test could not probe. If this fails where the symmetric version passed, EigenDecomp3d's "
+        << "numerics are genuinely sensitive to which physical axis occupies which role, and "
+        << "GpuSolverSetup.cu's direct (unpermuted) role assignment for potential is a real bug.";
+}
+
+TEST(ThomasAxisAssignment, PotentialYZRoleSwapMatchesTranspose) {
+    // The asymmetric-boundary-value test above (PotentialFortranPermutationMatchesCppWithAsymmetricBoundaryValues)
+    // came back bit-identical to the plain symmetric version -- same worst
+    // point, same value, same relative diff to the last digit. That's not a
+    // robust pass: it means the boundary values never actually disturbed
+    // anything. The reason is structural, not an API misunderstanding --
+    // xAxis/yAxis/zAxis in both of those tests are built by calling
+    // computeAxisSpacingForTest with IDENTICAL arguments three times, so
+    // they're the same data. Permuting which one occupies which role is
+    // undetectable no matter what RHS or boundary values sit on top, because
+    // there's nothing to tell apart.
+    //
+    // This is a direct port of the already-proven VyRealMeshYZRoleSwapMatchesTranspose
+    // methodology instead: three DELIBERATELY DISTINCT arrays (different
+    // sizes, different random content, via the same generateAxisDeltas/rng
+    // pattern already used and validated by the Vy role-swap tests), with
+    // the actual swap that differs between Fortran and C++ for Potential.
+    //
+    // Potential's X-role is VariableDeltaLapl in BOTH Fortran's permuted
+    // mapping and C++'s direct mapping (see HARTMANN1000_INVESTIGATION.md) --
+    // only Y-role and Z-role differ: C++'s direct GpuSolverSetup.cu
+    // construction puts FluxLapl on Y-role and the second VariableDeltaLapl
+    // on Z-role; Fortran's permutation puts them the other way around. That's
+    // exactly a Y<->Z content swap, structurally identical to what
+    // VyRealMeshYZRoleSwapMatchesTranspose already proved harmless for
+    // EigenDecompThomas. This checks whether EigenDecomp3d is equally
+    // forgiving -- with no Thomas role to fall back on as a safety net.
+    Handles hands(3);
+    using Real = double;
+
+    const int nx1 = 12, nyLen = 9, nzLen = 15;
+
+    std::mt19937 rng(24601);
+    std::vector<Real> A = generateAxisDeltas<Real>(nx1, eigen::VariableDeltaLapl, rng);  // X-role, fixed throughout
+    std::vector<Real> B = generateAxisDeltas<Real>(nyLen, eigen::FluxLapl, rng);          // original: Y-role
+    std::vector<Real> C = generateAxisDeltas<Real>(nzLen, eigen::VariableDeltaLapl, rng); // original: Z-role
+
+    const Real helmholtzShift = Real(1000.0);
+    XYZ<bool> allDirichlet(false, false, false);
+    XYZ<Real> zeroR3(0.0, 0.0, 0.0);
+
+    // original: X-role=A(VariableDeltaLapl), Y-role=B(FluxLapl), Z-role=C(VariableDeltaLapl)
+    // -- matches C++'s direct GpuSolverSetup.cu kind pattern for potential exactly.
+    GridDim dimOriginal(/*rows=*/nyLen, /*cols=*/nx1, /*layers=*/nzLen);
+    // swapped: X-role=A unchanged, Y-role=C, Z-role=B -- matches Fortran's
+    // permuted kind pattern for potential exactly.
+    GridDim dimSwapped(/*rows=*/nzLen, /*cols=*/nx1, /*layers=*/nyLen);
+
+    std::vector<Real> xOriginalHost(dimOriginal.size()), xSwappedHost(dimSwapped.size());
+    bool originalOk = false, swappedOk = false;
+    std::string originalErr, swappedErr;
+
+    XYZ<std::vector<Real>> deltasOriginal(A, B, C);
+    XYZ<eigen::LaplOperatorT> kindOriginal(eigen::VariableDeltaLapl, eigen::FluxLapl, eigen::VariableDeltaLapl);
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimOriginal, deltasOriginal, allDirichlet, allDirichlet, zeroR3, zeroR3, kindOriginal, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecomp3d<Real> ed(boundaryHost.forDevice(), hands, helmholtzShift);
+                auto rhs = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
+                x.get(xOriginalHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        originalOk = true;
+    } catch (const std::exception& e) { originalErr = e.what(); }
+
+    XYZ<std::vector<Real>> deltasSwapped(A, C, B);
+    XYZ<eigen::LaplOperatorT> kindSwapped(eigen::VariableDeltaLapl, eigen::VariableDeltaLapl, eigen::FluxLapl);
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimSwapped, deltasSwapped, allDirichlet, allDirichlet, zeroR3, zeroR3, kindSwapped, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecomp3d<Real> ed(boundaryHost.forDevice(), hands, helmholtzShift);
+                auto rhs = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
+                x.get(xSwappedHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        swappedOk = true;
+    } catch (const std::exception& e) { swappedErr = e.what(); }
+
+    std::cout << "[PotentialYZRoleSwap diag] ORIGINAL (X=A/Y=B/Z=C, kind=Var/Flux/Var) construction: "
+              << (originalOk ? "OK" : ("THREW: " + originalErr)) << "\n";
+    std::cout << "[PotentialYZRoleSwap diag] SWAPPED  (X=A/Y=C/Z=B, kind=Var/Var/Flux) construction: "
+              << (swappedOk ? "OK" : ("THREW: " + swappedErr)) << "\n";
+
+    ASSERT_TRUE(originalOk && swappedOk)
+        << "At least one construction threw before any numeric comparison could run -- see the "
+        << "[PotentialYZRoleSwap diag] lines above for exactly which one and why. "
+        << "original: " << (originalOk ? "ok" : originalErr) << " | "
+        << "swapped: " << (swappedOk ? "ok" : swappedErr);
+
+    for (Real v : xOriginalHost) ASSERT_TRUE(std::isfinite(v)) << "original construction produced a non-finite value -- not a valid baseline.";
+    for (Real v : xSwappedHost)  ASSERT_TRUE(std::isfinite(v)) << "swapped construction produced a non-finite value -- not a valid baseline.";
+
+    auto atOriginal = [&](int xi, int yi, int zi) -> Real {
+        size_t idx = (size_t)(xi - 1) + (size_t)dimOriginal.cols * ((size_t)(yi - 1) + (size_t)dimOriginal.rows * (size_t)(zi - 1));
+        return xOriginalHost[idx];
+    };
+    // Swapped's 2nd argument is its Y-role index (native C/Z-index in
+    // "original" terms), 3rd argument is its Z-role index (native B/Y-index).
+    auto atSwapped = [&](int xi, int yRoleIdx, int zRoleIdx) -> Real {
+        size_t idx = (size_t)(xi - 1) + (size_t)dimSwapped.cols * ((size_t)(yRoleIdx - 1) + (size_t)dimSwapped.rows * (size_t)(zRoleIdx - 1));
+        return xSwappedHost[idx];
+    };
+
+    auto relDiff = [](Real a, Real b) {
+        Real absA = std::abs(a), absB = std::abs(b);
+        Real scale = absA > absB ? absA : absB;
+        if (scale < Real(1e-300)) scale = Real(1e-300);
+        return std::abs(a - b) / scale;
+    };
+
+    Real maxRelDiff = 0;
+    int worstXi = 0, worstYi = 0, worstZi = 0;
+    size_t violations = 0, total = 0;
+    for (int zi = 1; zi <= nzLen; ++zi) {
+        for (int yi = 1; yi <= nyLen; ++yi) {
+            for (int xi = 1; xi <= nx1; ++xi) {
+                ++total;
+                Real original = atOriginal(xi, yi, zi);
+                Real swapped = atSwapped(xi, /*Y-role=C/Z-native-index=*/ zi, /*Z-role=B/Y-native-index=*/ yi);
+                Real d = relDiff(original, swapped);
+                if (d >= 1e-6) ++violations;
+                if (d > maxRelDiff) { maxRelDiff = d; worstXi = xi; worstYi = yi; worstZi = zi; }
+            }
+        }
+    }
+    std::cout << "[PotentialYZRoleSwapMatchesTranspose] " << violations << "/" << total
+              << " points violate 1e-6 after swapping which array (FluxLapl B vs VariableDeltaLapl C) "
+              << "occupies the Y-role vs the Z-role under EigenDecomp3d; worst relative diff = " << maxRelDiff
+              << " at physical point (xi=" << worstXi << ",yi=" << worstYi << ",zi=" << worstZi << ")\n";
+    EXPECT_LT(maxRelDiff, 1e-6)
+        << violations << "/" << total << " points differ by more than 1e-6 between the Y=B/Z=C "
+        << "construction and the Y=C/Z=B construction, read back at the corresponding physical point, "
+        << "under EigenDecomp3d. If this fails where Vy's analogous EigenDecompThomas test passed, "
+        << "EigenDecomp3d's Y-role and Z-role are NOT interchangeable -- which would mean Fortran's "
+        << "init_eigen_decomp_d permutation for potential (which swaps exactly this pair) is not a "
+        << "harmless relabeling: GpuSolverSetup.cu's direct role assignment for potential is a real, "
+        << "fixable C++-only bug, consistent with the observed Potential(-6118) vs Fortran(692) "
+        << "mismatch at iteration 2 of the real Hartmann=1000 run.";
+}
+
+// Neither existing EigenDecompThomas role-swap test actually covers Vx's or
+// Vz's real scenario. VyRealMeshYZRoleSwapMatchesTranspose moves
+// VariableDeltaLapl between the two eigen-transformed roles (Y<->Z, never
+// touching the Thomas-swept X-role) and passed cleanly -- solid evidence,
+// but only for that one pair. VyRealMeshXZRoleSwapMatchesTranspose, despite
+// its name, does NOT move VariableDeltaLapl at all: it holds it fixed on
+// Y-role in both constructions and only swaps which of two FluxLapl arrays
+// sits on X vs Z. So the one thing neither test checks is whether it
+// matters for VariableDeltaLapl itself to move onto or off of the
+// Thomas-swept X-role -- which is exactly Vx's situation (Fortran's
+// init_eigen_decomp_d forwarding puts Vx's VariableDeltaLapl axis on
+// Y-role; GpuSolverSetup.cu's direct C++ construction puts it on X-role
+// instead -- an X<->Y move) and, structurally, Vz's situation too
+// (Fortran puts Vz's VariableDeltaLapl axis on X-role; direct C++ puts it
+// on Z-role -- an X<->Z move). This test checks Vx's X<->Y move directly,
+// holding Z-role's content fixed throughout exactly as
+// VyRealMeshXZRoleSwapMatchesTranspose holds Y-role's content fixed. If it
+// passes, combined with the already-proven Y~Z interchangeability (Vy's
+// test above), transitivity (X~Y and Y~Z implies X~Z) covers Vz's X<->Z
+// move too, with no third test needed. If it fails, this is a second real
+// bug in the same family as Potential's confirmed EigenDecomp3d
+// role-sensitivity, affecting EigenDecompThomas instead -- meaning this
+// file's earlier "CLOSED" status for Thomas role assignment (based on
+// analogy to Vy rather than a direct check) was wrong, and Vx and Vz both
+// need the same kind of role-permutation fix already applied to Potential
+// (see HARTMANN1000_INVESTIGATION.md).
+TEST(ThomasAxisAssignment, VxRealMeshXYRoleSwapMatchesTranspose) {
+    Handles hands(3);
+    using Real = double;
+
+    const int nxLen = 9, nyLen = 12, nzLen = 15;
+
+    std::mt19937 rng(24601);
+    std::vector<Real> A = generateAxisDeltas<Real>(nxLen, eigen::VariableDeltaLapl, rng);
+    std::vector<Real> B = generateAxisDeltas<Real>(nyLen, eigen::FluxLapl, rng);
+    std::vector<Real> C = generateAxisDeltas<Real>(nzLen, eigen::FluxLapl, rng);
+
+    const Real shiftVelocity = Real(1.5) / (Real(1e-4) * (Real(1) / std::sqrt(Real(1.85185185e7))));
+    XYZ<bool> allDirichlet(false, false, false);
+    XYZ<Real> zeroR3(0.0, 0.0, 0.0);
+
+    // original: X-role=A(len nxLen, VariableDeltaLapl), Y-role=B(len nyLen), Z-role=C(len nzLen)
+    // -- matches GpuSolverSetup.cu's direct C++ construction for Vx exactly.
+    GridDim dimOriginal(/*rows=*/nyLen, /*cols=*/nxLen, /*layers=*/nzLen);
+    // swapped: X-role=B(len nyLen), Y-role=A unchanged, Z-role=C unchanged
+    // -- matches Fortran's init_eigen_decomp_d-permuted construction for Vx exactly.
+    GridDim dimSwapped(/*rows=*/nxLen, /*cols=*/nyLen, /*layers=*/nzLen);
+
+    std::vector<Real> xOriginalHost(dimOriginal.size()), xSwappedHost(dimSwapped.size());
+
+    bool originalOk = false, swappedOk = false;
+    std::string originalErr, swappedErr;
+
+    XYZ<std::vector<Real>> deltasOriginal(A, B, C);
+    XYZ<eigen::LaplOperatorT> kindOriginal(eigen::VariableDeltaLapl, eigen::FluxLapl, eigen::FluxLapl);
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimOriginal, deltasOriginal, allDirichlet, allDirichlet, zeroR3, zeroR3, kindOriginal, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
+
+                auto rhs = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimOriginal.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
+
+                x.get(xOriginalHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        originalOk = true;
+    } catch (const std::exception& e) {
+        originalErr = e.what();
+    }
+
+    XYZ<std::vector<Real>> deltasSwapped(B, A, C);
+    XYZ<eigen::LaplOperatorT> kindSwapped(eigen::FluxLapl, eigen::VariableDeltaLapl, eigen::FluxLapl);
+    try {
+        buildBoundaryConfigAndLaunch<Real>(dimSwapped, deltasSwapped, allDirichlet, allDirichlet, zeroR3, zeroR3, kindSwapped, hands[0],
+            [&](const auto& boundaryHost) {
+                EigenDecompThomas ed(boundaryHost, hands, shiftVelocity);
+
+                auto rhs = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
+                rhs.fill(1.0, hands[0]);
+                auto x = SimpleArray<Real>::create(dimSwapped.size(), hands[0]);
+                x.fill(0, hands[0]);
+                ed.solve(x, rhs, hands[0]);
+
+                x.get(xSwappedHost.data(), hands[0]);
+                cudaDeviceSynchronize();
+            });
+        swappedOk = true;
+    } catch (const std::exception& e) {
+        swappedErr = e.what();
+    }
+
+    std::cout << "[VxXYRoleSwap diag] ORIGINAL (X-role=A/Y-role=B) construction: "
+              << (originalOk ? "OK" : ("THREW: " + originalErr)) << "\n";
+    std::cout << "[VxXYRoleSwap diag] SWAPPED  (X-role=B/Y-role=A) construction: "
+              << (swappedOk ? "OK" : ("THREW: " + swappedErr)) << "\n";
+
+    ASSERT_TRUE(originalOk && swappedOk)
+        << "At least one construction threw before any numeric comparison could run -- see the "
+        << "[VxXYRoleSwap diag] lines above for exactly which one and why. "
+        << "original: " << (originalOk ? "ok" : originalErr) << " | "
+        << "swapped: " << (swappedOk ? "ok" : swappedErr);
+
+    for (Real v : xOriginalHost) ASSERT_TRUE(std::isfinite(v)) << "original construction produced a non-finite value -- not a valid baseline.";
+    for (Real v : xSwappedHost)  ASSERT_TRUE(std::isfinite(v)) << "swapped construction produced a non-finite value -- not a valid baseline.";
+
+    auto atOriginal = [&](int xi, int yi, int zi) -> Real {
+        size_t idx = (size_t)(xi - 1) + (size_t)dimOriginal.cols * ((size_t)(yi - 1) + (size_t)dimOriginal.rows * (size_t)(zi - 1));
+        return xOriginalHost[idx];
+    };
+    // Swapped's 1st argument is its X-role index (native B/Y-index in
+    // "original" terms), 2nd argument is its Y-role index (native A/X-index).
+    auto atSwapped = [&](int xRoleIdx, int yRoleIdx, int zi) -> Real {
+        size_t idx = (size_t)(xRoleIdx - 1) + (size_t)dimSwapped.cols * ((size_t)(yRoleIdx - 1) + (size_t)dimSwapped.rows * (size_t)(zi - 1));
+        return xSwappedHost[idx];
+    };
+
+    auto relDiff = [](Real a, Real b) {
+        Real absA = std::abs(a), absB = std::abs(b);
+        Real scale = absA > absB ? absA : absB;
+        if (scale < Real(1e-300)) scale = Real(1e-300);
+        return std::abs(a - b) / scale;
+    };
+
+    Real maxRelDiff = 0;
+    int worstXi = 0, worstYi = 0, worstZi = 0;
+    size_t violations = 0, total = 0;
+    for (int zi = 1; zi <= nzLen; ++zi) {
+        for (int yi = 1; yi <= nyLen; ++yi) {
+            for (int xi = 1; xi <= nxLen; ++xi) {
+                ++total;
+                Real original = atOriginal(xi, yi, zi);
+                // original's (xi,yi) [native A-index, native B-index] maps to
+                // swapped's (xRole=yi [native B-index], yRole=xi [native A-index]).
+                Real swapped = atSwapped(/*xRole=*/ yi, /*yRole=*/ xi, zi);
+                Real d = relDiff(original, swapped);
+                if (d >= 1e-6) ++violations;
+                if (d > maxRelDiff) { maxRelDiff = d; worstXi = xi; worstYi = yi; worstZi = zi; }
+            }
+        }
+    }
+    std::cout << "[VxRealMeshXYRoleSwapMatchesTranspose] " << violations << "/" << total
+              << " points violate 1e-6 after swapping which array (VariableDeltaLapl A vs FluxLapl B) "
+              << "occupies the Thomas-swept X-role vs the eigen-transformed Y-role; worst relative "
+              << "diff = " << maxRelDiff << " at physical point (xi=" << worstXi << ",yi=" << worstYi
+              << ",zi=" << worstZi << ")\n";
+    EXPECT_LT(maxRelDiff, 1e-6)
+        << violations << "/" << total << " points differ by more than 1e-6 between the X=A/Y=B "
+        << "construction and the X=B/Y=A construction, read back at the corresponding physical point, "
+        << "under EigenDecompThomas. If this fails where Vy's analogous Y<->Z test passed, "
+        << "EigenDecompThomas's X-role (Thomas-swept) and Y-role (eigen-transformed) are NOT "
+        << "interchangeable when the VariableDeltaLapl axis moves between them -- which would mean "
+        << "Fortran's init_eigen_decomp_d permutation (which does exactly this for Vx, and by "
+        << "transitivity the structurally identical X<->Z move for Vz) is not a harmless relabeling "
+        << "there either: GpuSolverSetup.cu's direct role assignment for Vx (and Vz) would be a real, "
+        << "fixable C++-only bug of the same family already fixed for Potential.";
+}
+
 int main(int argc, char **argv) {
 
+    std::cout << "--- DIAGNOSTIC: Test Binary Starting ---" << std::endl;
     testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();

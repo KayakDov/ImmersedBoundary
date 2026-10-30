@@ -175,6 +175,8 @@ SimulationConfig SimulationConfig::loadFromFile(const std::string& path) {
         if (r.contains("read_from_file") && !r.at("read_from_file").is_null())
             cfg.restartFile = r.at("read_from_file").get<std::string>();
         cfg.checkpointEvery = optionalField(r, "write_checkpoint_every", cfg.checkpointEvery);
+        if (cfg.checkpointEvery < 1)
+            throw std::runtime_error("restart.write_checkpoint_every must be at least 1");
     }
 
     // --- output ---

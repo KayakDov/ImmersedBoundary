@@ -16,7 +16,7 @@
 /**
  * @ingroup cfd_solver
  * @brief The electric-potential curl right-hand side, Lorentz force, and
- * the mean-subtraction needed by the pure-Poisson potential solve.
+ * the reference subtraction applied after the potential solve.
  */
 class ElectromagneticForce {
 public:
@@ -74,16 +74,10 @@ public:
      * @brief The Lorentz force's x contribution at one cell, added to
      * RHSx. Port of EM_force's first loop.
      *
-     * Verified directly against EM_forcing.f90's EM_force:
-     *   Coef = DGr * (Hartmann * WidRa)**2
-     *   RHSx(i,j,k) = RHSx(i,j,k) + Coef * ( DFi_dz + VMx(i,j,k) )
-     * Both terms inside the parentheses are positive. A previous revision
-     * of this file flipped the velocity term to a minus sign on a damping
-     * ("Hartmann braking") argument that sounded physically reasonable but
-     * does not match the reference Fortran -- that flip was the actual bug:
-     * it is what caused the Hartmann=1000 blow-up this function was
-     * (incorrectly) blamed for during diagnosis. Restored to match the
-     * Fortran exactly.
+     * Potential, velocity, and RHS views all use physical (x,y,z)
+     * coordinates. GpuSolverSetup maps these axes to the solver's roles;
+     * that mapping does not change FieldView indexing or boundary order.
+     * Matches RHSx += Coef * (DFi_dz + VMx) in EM_forcing.f90.
      *
      * @tparam Real Floating-point type.
      * @param i 1-based x index in [1, Nx].
@@ -91,8 +85,9 @@ public:
      * @param k 1-based z index in [1, Nz1].
      * @param rhsX RHSx, mutated in place.
      * @param velocityX Current VMx.
-     * @param potential The solved, mean-subtracted potential field.
-     * @param potentialBc Potential's per-axis boundary condition.
+     * @param potential The solved potential after reference subtraction.
+     * @param potentialBc Potential's per-axis boundary condition, in
+     * physical (x,y,z) order -- same as every caller has always passed.
      * @param spacing Mesh spacing.
      * @param coefficient DGr * (Hartmann * widthRatio)^2.
      */
@@ -110,10 +105,8 @@ public:
      * @brief The Lorentz force's z contribution at one cell, subtracted
      * from RHSz. Port of EM_force's second loop.
      *
-     * Verified directly against EM_forcing.f90's EM_force:
-     *   RHSz(i,j,k) = RHSz(i,j,k) - Coef * ( DFi_dx - VMz(i,j,k) )
-     * i.e. RHSz -= Coef*DFi_dx; RHSz += Coef*VMz. Same restoration as
-     * applyForceX above, for the same reason.
+     * All accesses and boundary flags use physical (x,y,z) order.
+     * Matches RHSz -= Coef * (DFi_dx - VMz) in EM_forcing.f90.
      *
      * @tparam Real Floating-point type.
      * @param i 1-based x index in [1, Nx1].
@@ -121,8 +114,9 @@ public:
      * @param k 1-based z index in [1, Nz].
      * @param rhsZ RHSz, mutated in place.
      * @param velocityZ Current VMz.
-     * @param potential The solved, mean-subtracted potential field.
-     * @param potentialBc Potential's per-axis boundary condition.
+     * @param potential The solved potential after reference subtraction.
+     * @param potentialBc Potential's per-axis boundary condition, in
+     * physical (x,y,z) order -- same as every caller has always passed.
      * @param spacing Mesh spacing.
      * @param coefficient DGr * (Hartmann * widthRatio)^2.
      */

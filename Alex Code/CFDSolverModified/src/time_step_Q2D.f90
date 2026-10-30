@@ -97,7 +97,6 @@
          ! in isolation, is already proven correct to 9-10 significant
          ! figures.
          If (Istp == 1) Then
-             Write (*,*) ' EM: Sum|RHSy/DGr(pre-solve)|=', Sum(Abs(Vy_pinned))
          End If
          Call solve_eigen_decomp_d(VyHandle)
 
@@ -194,7 +193,6 @@
          ! checks whether that discrepancy is already present in the array
          ! going INTO solve_eigen_decomp_d(VxHandle), or only appears after.
          If (Istp == 1) Then
-             Write (*,*) ' EM: Sum|RHSx/DGr(pre-solve)|=', Sum(Abs(Vx_pinned))
          End If
          Call solve_eigen_decomp_d(VxHandle)
 
@@ -203,7 +201,6 @@
       ! GPU: was Call EVD_Thomas(..., 1.D0), same DGr scaling as Vx/Vy.
          Vz_pinned = RHSz(1:Nx1,1:Ny1,1:Nz) / DGr
          If (Istp == 1) Then
-             Write (*,*) ' EM: Sum|RHSz/DGr(pre-solve)|=', Sum(Abs(Vz_pinned))
          End If
          Call solve_eigen_decomp_d(VzHandle)
 
@@ -222,11 +219,6 @@
          End Do
 
          If (Istp == 1) Then
-             Write (*,*) ' EM: Sum|Vy(post-solve)|=', Sum(Abs(VMyNew(1:Nx1,1:Ny,1:Nz1)))
-             Write (*,*) ' EM: Vy(post-solve)(10,50,50)=', VMyNew(10,50,50)
-             Write (*,*) ' EM: Vy(post-solve)(90,50,50)=', VMyNew(90,50,50)
-             Write (*,*) ' EM: Vy(post-solve)(50,50,10)=', VMyNew(50,50,10)
-             Write (*,*) ' EM: Vy(post-solve)(50,50,90)=', VMyNew(50,50,90)
          End If
 
          Call synch_d(VxHandle)
@@ -265,16 +257,6 @@
          ! solve is innocent and the bug is in EVDbounds or the
          ! pressure-correction block that follows.
          If (Istp == 1) Then
-             Write (*,*) ' EM: Sum|Vx(post-solve,pre-correction)|=', Sum(Abs(VMxNew(1:Nx,1:Ny1,1:Nz1)))
-             Write (*,*) ' EM: Sum|Vz(post-solve,pre-correction)|=', Sum(Abs(VMzNew(1:Nx1,1:Ny1,1:Nz)))
-             Write (*,*) ' EM: Vx(post-solve,pre-correction)(10,50,50)=', VMxNew(10,50,50)
-             Write (*,*) ' EM: Vx(post-solve,pre-correction)(90,50,50)=', VMxNew(90,50,50)
-             Write (*,*) ' EM: Vx(post-solve,pre-correction)(50,50,10)=', VMxNew(50,50,10)
-             Write (*,*) ' EM: Vx(post-solve,pre-correction)(50,50,90)=', VMxNew(50,50,90)
-             Write (*,*) ' EM: Vz(post-solve,pre-correction)(10,50,50)=', VMzNew(10,50,50)
-             Write (*,*) ' EM: Vz(post-solve,pre-correction)(90,50,50)=', VMzNew(90,50,50)
-             Write (*,*) ' EM: Vz(post-solve,pre-correction)(50,50,10)=', VMzNew(50,50,10)
-             Write (*,*) ' EM: Vz(post-solve,pre-correction)(50,50,90)=', VMzNew(50,50,90)
          End If
 
       Call EVDbounds
@@ -315,20 +297,11 @@
          ! directly comparable, cell by cell, against the C++ port's
          ! labels 5/6/8/11/10.
          If (Istp == 1) Then
-             Write (*,*) ' EM: Sum|divergence(pre-scale)|=', Sum(Abs(FDRHP(1:Nx1,1:Ny1,1:Nz1)))
-             Write (*,*) ' EM: divergence(pre-scale)(10,50,50)=', FDRHP(10,50,50)
-             Write (*,*) ' EM: divergence(pre-scale)(90,50,50)=', FDRHP(90,50,50)
-             Write (*,*) ' EM: divergence(pre-scale)(50,50,10)=', FDRHP(50,50,10)
-             Write (*,*) ' EM: divergence(pre-scale)(50,50,90)=', FDRHP(50,50,90)
          End If
 
       FDRHP = FDRHP * Ckor / Htime
 
          If (Istp == 1) Then
-             Write (*,*) ' EM: pressure RHS(pre-solve)(10,50,50)=', FDRHP(10,50,50)
-             Write (*,*) ' EM: pressure RHS(pre-solve)(90,50,50)=', FDRHP(90,50,50)
-             Write (*,*) ' EM: pressure RHS(pre-solve)(50,50,10)=', FDRHP(50,50,10)
-             Write (*,*) ' EM: pressure RHS(pre-solve)(50,50,90)=', FDRHP(50,50,90)
          End If
 
   !    Write (*,*) ' FDRHP=', Sum(abs(FDRHP))
@@ -368,7 +341,6 @@
          ! the C++ port, the bug is upstream (FdDiv/the Ckor/Htime scale);
          ! if it matches, the bug is inside the solve itself.
          If (Istp == 1) Then
-             Write (*,*) ' EM: Sum|pressure RHS(pre-solve)|=', Sum(Abs(Pressure_pinned))
          End If
          Call solve_eigen_decomp_d(PressureHandle)
          Call synch_d(PressureHandle)
@@ -385,7 +357,6 @@
          ! wouldn't show up as a parameter mismatch, only as a numeric
          ! one here.
          If (Istp == 1) Then
-             Write (*,*) ' EM: Sum|Dprs(pressure-correction,post-solve)|=', Sum(Abs(Dprs(1:Nx1,1:Ny1,1:Nz1)))
          End If
 
 ! ++++++++++++ Calculate velocities ++++++++++++++++++++++++++++++
@@ -424,20 +395,10 @@
       ! into. Same four points, both fields, as the C++ port's mirrored
       ! diagnostic in correctVelocitiesAndPressure().
       If (Istp == 1) Then
-          Write (*,*) ' EM: Vx(10,50,50)=', VMxNew(10,50,50)
-          Write (*,*) ' EM: Vx(90,50,50)=', VMxNew(90,50,50)
-          Write (*,*) ' EM: Vx(50,50,10)=', VMxNew(50,50,10)
-          Write (*,*) ' EM: Vx(50,50,90)=', VMxNew(50,50,90)
-          Write (*,*) ' EM: Vz(10,50,50)=', VMzNew(10,50,50)
-          Write (*,*) ' EM: Vz(90,50,50)=', VMzNew(90,50,50)
-          Write (*,*) ' EM: Vz(50,50,10)=', VMzNew(50,50,10)
-          Write (*,*) ' EM: Vz(50,50,90)=', VMzNew(50,50,90)
           ! Robust tiebreaker: Sum(Abs(.)), not Sum(.) -- can't hide a real
           ! discrepancy behind positive/negative cancellation the way a
           ! plain Sum() (or a couple of point samples right at the
           ! quiescent-start noise floor) can.
-          Write (*,*) ' EM: Sum|Vx|=', Sum(Abs(VMxNew(1:Nx,1:Ny1,1:Nz1)))
-          Write (*,*) ' EM: Sum|Vz|=', Sum(Abs(VMzNew(1:Nx1,1:Ny1,1:Nz)))
       End If
 
       call EVDbounds

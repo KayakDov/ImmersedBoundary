@@ -6,7 +6,7 @@
   },
   "numerics": {
     "eps": 0.0000001, "eps_convergence": 0.000001, "max_iterations": 9000,
-    "time_step": 0.0001, "time_interval": 0.1, "print_every": 1
+    "time_step": 0.0001, "time_interval": 0.1, "print_every": 1000
   },
   "diagnostics": { "run_conservation_checks": false, "mode": "full" },
   "temperature": {
@@ -14,7 +14,7 @@
     "boundary_x": "dirichlet", "boundary_y": "neumann", "boundary_z": "neumann"
   },
   "potential": {
-    "boundary_x": "neumann", "boundary_y": "neumann", "boundary_z": "neumann"
+    "boundary_x": "dirichlet", "boundary_y": "neumann", "boundary_z": "neumann"
   },
   "time_averaging": { "enabled": false, "fourier_frequencies": [1.17114, 3.32] },
   "gpu": {

@@ -8,6 +8,9 @@
 #ifndef CFDSOLVER_CFDSIMULATION_H
 #define CFDSOLVER_CFDSIMULATION_H
 
+#include <cstdio>
+#include <string>
+#include <memory>
 #include "setup/GpuSolverSetup.h"
 #include "physics/ElectromagneticForce.cuh"
 #include "physics/Diagnostics.cuh"
@@ -37,6 +40,15 @@
  *     divergence and conservation numbers -- never affects the simulation
  *     itself, and likewise confirmed disabled everywhere this project has
  *     run.
+ *
+ * run() also writes three of the original's own always-on output files,
+ * under cfg_.outputDirectory, alongside the existing checkpoint:
+ * Serie.dat and History.dat (every iteration, unconditionally -- port of
+ * Solution_time_Q2D.f90's Ek/Anu and point-probe Write(25,*)/Write(26,*))
+ * and Conv.out (mirrors printIterationReport()'s and printFinalReport()'s
+ * stdout text; its one-line header is a parameter echo, not a replica of
+ * the original's own header block, whose exact source wasn't available
+ * when this was written).
  *
  * SolveMode (Iexcl in the original) is parsed and stored, matching what
  * the original config accepted, but -- confirmed directly from time_step_
@@ -143,6 +155,50 @@ private:
     void printIterationReport(Real timeNow, Real rnsX, Real rnsY, Real rnsZ, Real rTmpr, Real rdp) const;
     void printFinalReport() const;
 
+    /**
+     * @brief Opens Serie.dat, History.dat, and Conv.out under
+     * cfg_.outputDirectory (append mode, matching the original's
+     * position='append' -- confirmed from the live project's own
+     * multi-run Serie.dat/History.dat, which hold several runs' data
+     * concatenated). Writes Conv.out's one-line parameter-echo header.
+     * Called once, at the top of run().
+     * @throws std::runtime_error if any of the three files can't be opened.
+     */
+    void openOutputFiles();
+
+    /**
+     * @brief Joins cfg_.outputDirectory and filename into one path,
+     * stripping outputDirectory's trailing slash (if any) so the result
+     * never has a doubled separator.
+     */
+    std::string outputPath(const char* filename) const;
+
+    /**
+     * @brief Computes the same global kinetic energy and Nusselt number
+     * printFinalReport() computes, plus History.dat's point probe (VMz
+     * and Tmpr at probeX_/probeY_/probeZ_) -- port of
+     * Solution_time_Q2D.f90's unconditional, every-iteration
+     * `Ek = Ekinem(); Anu = Nusselt()` / `VMz(i_x_write,...)` /
+     * `Tmpr(i_x_write,...)` calls that feed Serie.dat and History.dat.
+     *
+     * Explicitly synchs vx_/vy_/vz_/temperature_'s own solve handles
+     * before reading their "current" views from *hand_ -- the same
+     * synch-before-cross-handle-read rule synchTemperatureAndComputeResidual()
+     * and finishPotentialAndApplyForce() already follow. This matters
+     * more here: called every iteration, right after
+     * shiftAllTimeLevels()'s device-to-device copies (issued on each
+     * field's own handle, not waited on there before returning), and most
+     * iterations hit no other synchronization point that would have
+     * forced the wait incidentally (only ones that also land on
+     * printEvery additionally checkpoint, which downloads every field).
+     *
+     * @param kineticEnergy Set to the volume-integrated kinetic energy.
+     * @param nusselt Set to the (3D) Nusselt number.
+     * @param probeVz Set to Vz at the history point probe.
+     * @param probeTmpr Set to Tmpr at the history point probe.
+     */
+    void computeGlobalDiagnostics(Real& kineticEnergy, Real& nusselt, Real& probeVz, Real& probeTmpr);
+
     SimulationConfig cfg_;
     std::unique_ptr<Handle> hand_; ///< Heap-owned; see Ingredients::hand above for why.
     Mesh<Real> mesh_;
@@ -155,9 +211,21 @@ private:
     SolvedField<Real> pressureCorrection_;
 
     GpuField<Real> rhsXScratch_, rhsYScratch_, rhsZScratch_;
-    GpuField<Real> reductionScratch_;
+    GpuField<Real> reductionScratch_; ///< General 1-element scratch; was allocated but unused until computeGlobalDiagnostics() -- now also backs its two sum-reductions and its two point-probe reads, reused sequentially (each download synchronously completes before the buffer's next reuse).
     GpuField<unsigned long long> maxReductionScratch_;
     GpuField<Real> referenceValueScratch_;
+
+    int probeX_ = 0, probeY_ = 0, probeZ_ = 0; ///< History.dat's point-probe indices (Solution_time_Q2D.f90's i_x_write/j_y_write/k_z_write), computed once in the constructor from cfg_ and mesh_.
+
+    /// @brief Closes a FILE* on destruction (nullptr is a no-op, since a
+    /// unique_ptr with this deleter default-constructs to nullptr before
+    /// openOutputFiles() runs). Lets serieFile_/historyFile_/convOutFile_
+    /// use std::unique_ptr for automatic, move-safe cleanup -- the same
+    /// reasoning hand_ (above) already uses unique_ptr<Handle> for.
+    struct FileCloser { void operator()(FILE* f) const { if (f) std::fclose(f); } };
+    std::unique_ptr<FILE, FileCloser> serieFile_;   ///< Every-iteration TimCur/Ek/Anu, port of Serie.dat.
+    std::unique_ptr<FILE, FileCloser> historyFile_; ///< Every-iteration TimCur/probeVz/probeTmpr, port of History.dat.
+    std::unique_ptr<FILE, FileCloser> convOutFile_; ///< Mirrors printIterationReport()'s/printFinalReport()'s stdout text, port of Conv.out.
 
     Real elapsedTime_ = Real(0);
     int iteration_ = 0;
