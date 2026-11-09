@@ -2,7 +2,7 @@
 ! *   Calculate the kinematic energy                    *
 ! *******************************************************
 
-        Real(kind=8) Function Ekinem() 
+        Real(kind=8) Function Ekinem(Istp) 
 
         Use Numbers
         Use Grid
@@ -28,6 +28,25 @@
           End Do
          End Do
         End Do
+
+        If (Istp == 10) Then
+          i = 1    ; j = Ny1/2 ; k = Nz1/2
+          Write(*,*) ' DIAG EkCellLowX(',i,j,k,')=',                          &
+     &      0.125D0*((VMx(i,j,k)+VMx(i-1,j,k))**2+(VMy(i,j,k)+VMy(i,j-1,k))**2 &
+     &               +(VMz(i,j,k)+VMz(i,j,k-1))**2)*Hx12(i-1)*Hy12(j-1)*Hz12(k-1)
+          i = Nx1  ; j = Ny1/2 ; k = Nz1/2
+          Write(*,*) ' DIAG EkCellHighX(',i,j,k,')=',                         &
+     &      0.125D0*((VMx(i,j,k)+VMx(i-1,j,k))**2+(VMy(i,j,k)+VMy(i,j-1,k))**2 &
+     &               +(VMz(i,j,k)+VMz(i,j,k-1))**2)*Hx12(i-1)*Hy12(j-1)*Hz12(k-1)
+          i = Nx1/2; j = 1     ; k = Nz1/2
+          Write(*,*) ' DIAG EkCellLowY(',i,j,k,')=',                          &
+     &      0.125D0*((VMx(i,j,k)+VMx(i-1,j,k))**2+(VMy(i,j,k)+VMy(i,j-1,k))**2 &
+     &               +(VMz(i,j,k)+VMz(i,j,k-1))**2)*Hx12(i-1)*Hy12(j-1)*Hz12(k-1)
+          i = Nx1/2; j = Ny1/2 ; k = 1
+          Write(*,*) ' DIAG EkCellLowZ(',i,j,k,')=',                          &
+     &      0.125D0*((VMx(i,j,k)+VMx(i-1,j,k))**2+(VMy(i,j,k)+VMy(i,j-1,k))**2 &
+     &               +(VMz(i,j,k)+VMz(i,j,k-1))**2)*Hx12(i-1)*Hy12(j-1)*Hz12(k-1)
+        End If
 
         Ekinem = SS
 

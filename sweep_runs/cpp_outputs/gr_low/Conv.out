@@ -1,0 +1,9 @@
+cfdSolver run: Nx=40 Ny=40 Nz=40  AspRa=1 WidRa=1 Gr=9259259.2 Bi=0 Prandtl=0.054 Hartmann=1000
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.052e-05  RNSy=  1.357e-06  RNSz=  2.958e-05  RTmpr=  2.761e-06  RDP=  1.027e-05
+           Nusselt number  = 0.999930801476571
+  Midplane Nusselt number  = 0.999461810593141
+            kinetic energy = 0.000153629586893142
+      2D Nusselt number  = 0.9999913501965
+      2D kinetic energy  = 0.000306903084796026

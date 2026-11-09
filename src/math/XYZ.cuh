@@ -25,7 +25,7 @@ struct XYZ {
      * @param y The value in the y dimension.
      * @param z The value in the z dimension.
      */
-    XYZ(const T& x, const T& y, const T& z): x(x), y(y), z(z) {}
+    __host__ __device__ XYZ(const T& x, const T& y, const T& z): x(x), y(y), z(z) {}
 
     /**
      * 0 gets the x value, 1 gets the y value, and 2 gets the z value.

@@ -25,10 +25,15 @@
 #define CFDSOLVER_BOUNDARYCONDITIONS_CUH
 
 #include <cstddef>
+#include "math/XYZ.cuh"
 
 #ifdef __CUDACC__
 #include <cuda_runtime.h>
-#else
+#elif !defined(__host__)
+// math/XYZ.cuh above already pulls in <cuda_runtime.h> unconditionally,
+// which on some CUDA installations defines these even outside
+// __CUDACC__ -- guard on __host__ already being defined so this
+// fallback doesn't redefine them and warn.
 #define __host__
 #define __device__
 #define __forceinline__ inline
@@ -46,12 +51,15 @@ enum class BoundaryKind { Dirichlet, Neumann };
  * @ingroup cfd_solver
  * @brief Per-axis boundary conditions for a field whose boundary treatment
  * is configurable (Temperature, Potential).
+ *
+ * An XYZ<BoundaryKind> rather than its own hand-rolled struct: every call
+ * site already only ever constructs this via a 3-argument {x,y,z}-style
+ * initializer or copies one -- both of which XYZ<T>'s own 3-argument
+ * constructor and implicit copy constructor already support identically
+ * -- so the alias is a drop-in replacement. readTemperature() below also
+ * uses XYZ<T>::operator[] to index this by axis number.
  */
-struct AxisBoundaries {
-    BoundaryKind x; ///< Boundary condition on the x axis.
-    BoundaryKind y; ///< Boundary condition on the y axis.
-    BoundaryKind z; ///< Boundary condition on the z axis.
-};
+using AxisBoundaries = XYZ<BoundaryKind>;
 
 /**
  * @ingroup cfd_solver
@@ -181,16 +189,30 @@ public:
      * @param k 1-based z index; may be 0 or nz()+1.
      * @param bc This field's per-axis boundary condition.
      * @return The resolved value.
+     *
+     * @note Not __forceinline__, unlike every other function in this file:
+     * this function and boundaryValue() call each other (a true corner
+     * re-clamps one axis per recursive step, up to 3 levels, always
+     * terminating), and nvcc's host pass maps __forceinline__ to GCC's
+     * always_inline, which GCC refuses on any cycle in the static call
+     * graph regardless of actual depth -- "inlining failed ... function
+     * not inlinable". Plain (optional) inlining has no such restriction
+     * and changes no return value, only whether a boundary-cell read costs
+     * one real call instead of being flattened -- interior cells (the vast
+     * majority of any grid) never reach this function at all.
      */
     template<typename Real>
-    __host__ __device__ __forceinline__
+    __host__ __device__
     static Real readTemperature(const FieldView<Real>& field, int i, int j, int k, AxisBoundaries bc) {
-        if (i < 1)          return boundaryValue(bc.x, field, 1, j, k, bc);
-        if (i > field.nx()) return boundaryValue(bc.x, field, field.nx(), j, k, bc);
-        if (j < 1)          return boundaryValue(bc.y, field, i, 1, k, bc);
-        if (j > field.ny()) return boundaryValue(bc.y, field, i, field.ny(), k, bc);
-        if (k < 1)          return boundaryValue(bc.z, field, i, j, 1, bc);
-        if (k > field.nz()) return boundaryValue(bc.z, field, i, j, field.nz(), bc);
+        int idx[3] = {i, j, k};
+        int extent[3] = {field.nx(), field.ny(), field.nz()};
+        for (int axis = 0; axis < 3; ++axis) {
+            if (idx[axis] < 1 || idx[axis] > extent[axis]) {
+                int mirror[3] = {i, j, k};
+                mirror[axis] = (idx[axis] < 1) ? 1 : extent[axis];
+                return boundaryValue(bc[(size_t)axis], field, mirror[0], mirror[1], mirror[2], bc);
+            }
+        }
         return field.at(i, j, k);
     }
 
@@ -232,9 +254,13 @@ private:
      * @param bc This field's full per-axis boundary condition, needed in
      * case the mirrored read is itself at a corner.
      * @return The resolved boundary value.
+     *
+     * @note Not __forceinline__ -- see readTemperature()'s @note; the two
+     * are mutually recursive, which is incompatible with nvcc's host-side
+     * always_inline regardless of this recursion's bounded depth.
      */
     template<typename Real>
-    __host__ __device__ __forceinline__
+    __host__ __device__
     static Real boundaryValue(BoundaryKind kind, const FieldView<Real>& field,
                                int mirrorI, int mirrorJ, int mirrorK, AxisBoundaries bc) {
         if (kind == BoundaryKind::Dirichlet) return Real(0);

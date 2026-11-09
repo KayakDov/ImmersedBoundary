@@ -83,8 +83,8 @@ struct SimulationConfig {
     // physics -- Conv.dat's AspRa, WidRa, Gr, Bi, Prandtl, Hartmann
     // (read via ConvMain_3D_Q2D.f90's first Read(1,101,...) call)
     // ===================================================================
-    double aspectRatio = 1.0;   ///< AspRa
-    double widthRatio = 1.0;    ///< WidRa
+    double aspectRatio = 1.0;   ///< AspRa -- cavity's X-extent relative to its Z (height) extent (MeshStretch.f90 scales the X mesh by this)
+    double widthRatio = 1.0;    ///< WidRa -- cavity's Y-extent relative to its Z (height) extent (MeshStretch.f90 scales the Y mesh by this)
     double grashof = 0.0;       ///< Gr
     double biot = 0.0;          ///< Bi
     double prandtl = 0.0;       ///< Prandtl
@@ -97,7 +97,7 @@ struct SimulationConfig {
     double epsConvergence = 1e-6;    ///< EpsCnv -- the max(RNSx,RNSy,RNSz,RTmpr) < EpsCnv early-exit test in Solution_time_Q2D.f90
     int maxIterations = 9000;        ///< ItMax
     double timeStep = 1e-4;          ///< Htime
-    double timeInterval = 0.1;       ///< Time (Conv.dat's field is reused as both input and, internally, as Time+Tstart -- here it's just the requested interval)
+    double runDuration = 0.1;        ///< Conv.dat's Time field (reused internally as Time+Tstart). How much additional simulation time this run should advance by -- NOT a printing interval; printEvery/checkpointEvery below control that independently.
     int printEvery = 1000;           ///< Iprint's magnitude only -- see the restart/checkpoint split above
 
     // ===================================================================
@@ -154,6 +154,8 @@ struct SimulationConfig {
     // scattered through ConvMain_3D_Q2D.f90's Open statements
     // ===================================================================
     std::string outputDirectory = ".";
+    bool writeSerieAndHistory = true; ///< Serie.dat/History.dat are unconditional in the original (Solution_time_Q2D.f90's Write(25,*)/Write(26,*) have no Iprint gate), so this defaults to true to match. Unlike the original -- whose Ek/Anu were plain CPU arithmetic on already-resident memory -- producing them here costs a real per-iteration tax the CPU-resident source never had: an explicit per-field handle synch plus a full-volume kinetic-energy/Nusselt reduction over the whole grid, every single iteration (CfdSimulation::computeGlobalDiagnostics). Set false to skip that work entirely, not just the two files, when they aren't needed.
+    bool writeFieldSnapshots = false; ///< Tmpr.dat/Vx.dat/Vy.dat/Vz.dat/Pres.dat/Potential.dat -- a complete, working block in the original (Solution_time_Q2D.f90 lines 128-133: `Tmpr=Tmpr+Teta` plus six Point_Write calls) that Alex wrote and then commented out, not something never finished -- so this defaults to false to match his own current default, not because the feature is incomplete. Written once, at the very end of run(), same point the original's own (disabled) block sits: after the final checkpoint, before time-averaging's own finalization if that's also enabled.
 
     /**
      * @brief Loads and validates a SimulationConfig from a JSON file.

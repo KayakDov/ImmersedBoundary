@@ -22,6 +22,7 @@
 #define CFDSOLVER_OPERATORS_CUH
 
 #include "../fields/BoundaryConditions.cuh"
+#include "ThreadIndex.cuh"
 
 /**
  * @ingroup cfd_solver
@@ -338,9 +339,8 @@ template<typename Real>
 __global__ void temperatureAdvectionKernel(FieldView<Real> rhs, FieldView<Real> temperature, const Real* buoyancyByX,
                                             FieldView<Real> velocityX, FieldView<Real> velocityY, FieldView<Real> velocityZ,
                                             Spacing<Real> spacing, AxisBoundaries bc) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > rhs.nx() || j > rhs.ny() || k > rhs.nz()) return;
     rhs.at(i,j,k) += FiniteDifferenceOperators::temperatureAdvection(i, j, k, temperature, buoyancyByX, velocityX, velocityY, velocityZ, spacing, bc);
 }
@@ -348,9 +348,8 @@ __global__ void temperatureAdvectionKernel(FieldView<Real> rhs, FieldView<Real> 
 /// @copydoc FiniteDifferenceOperators::buoyancyForceZ
 template<typename Real>
 __global__ void buoyancyForceZKernel(FieldView<Real> rhsZ, FieldView<Real> newTemperature, const Real* buoyancyByX, Real buGr) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > rhsZ.nx() || j > rhsZ.ny() || k > rhsZ.nz()) return;
     FiniteDifferenceOperators::buoyancyForceZ(i, j, k, rhsZ, newTemperature, buoyancyByX, buGr);
 }
@@ -358,9 +357,8 @@ __global__ void buoyancyForceZKernel(FieldView<Real> rhsZ, FieldView<Real> newTe
 /// @copydoc temperatureAdvectionKernel
 template<typename Real>
 __global__ void velocityXAdvectionKernel(FieldView<Real> rhs, FieldView<Real> velocityX, FieldView<Real> velocityY, FieldView<Real> velocityZ, Spacing<Real> spacing) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > velocityX.nx() || j > velocityX.ny() || k > velocityX.nz()) return;
     rhs.at(i,j,k) += FiniteDifferenceOperators::velocityXAdvection(i, j, k, velocityX, velocityY, velocityZ, spacing);
 }
@@ -368,9 +366,8 @@ __global__ void velocityXAdvectionKernel(FieldView<Real> rhs, FieldView<Real> ve
 /// @copydoc temperatureAdvectionKernel
 template<typename Real>
 __global__ void velocityYAdvectionKernel(FieldView<Real> rhs, FieldView<Real> velocityX, FieldView<Real> velocityY, FieldView<Real> velocityZ, Spacing<Real> spacing) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > velocityY.nx() || j > velocityY.ny() || k > velocityY.nz()) return;
     rhs.at(i,j,k) += FiniteDifferenceOperators::velocityYAdvection(i, j, k, velocityX, velocityY, velocityZ, spacing);
 }
@@ -378,9 +375,8 @@ __global__ void velocityYAdvectionKernel(FieldView<Real> rhs, FieldView<Real> ve
 /// @copydoc temperatureAdvectionKernel
 template<typename Real>
 __global__ void velocityZAdvectionKernel(FieldView<Real> rhs, FieldView<Real> velocityX, FieldView<Real> velocityY, FieldView<Real> velocityZ, Spacing<Real> spacing) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > velocityZ.nx() || j > velocityZ.ny() || k > velocityZ.nz()) return;
     rhs.at(i,j,k) += FiniteDifferenceOperators::velocityZAdvection(i, j, k, velocityX, velocityY, velocityZ, spacing);
 }
@@ -388,9 +384,8 @@ __global__ void velocityZAdvectionKernel(FieldView<Real> rhs, FieldView<Real> ve
 /// @copydoc temperatureAdvectionKernel
 template<typename Real>
 __global__ void pressureGradientXKernel(FieldView<Real> result, FieldView<Real> pressure, Spacing<Real> spacing) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > result.nx() || j > result.ny() || k > result.nz()) return;
     result.at(i,j,k) = FiniteDifferenceOperators::pressureGradientX(i, j, k, pressure, spacing);
 }
@@ -398,9 +393,8 @@ __global__ void pressureGradientXKernel(FieldView<Real> result, FieldView<Real> 
 /// @copydoc temperatureAdvectionKernel
 template<typename Real>
 __global__ void pressureGradientYKernel(FieldView<Real> result, FieldView<Real> pressure, Spacing<Real> spacing) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > result.nx() || j > result.ny() || k > result.nz()) return;
     result.at(i,j,k) = FiniteDifferenceOperators::pressureGradientY(i, j, k, pressure, spacing);
 }
@@ -408,9 +402,8 @@ __global__ void pressureGradientYKernel(FieldView<Real> result, FieldView<Real> 
 /// @copydoc temperatureAdvectionKernel
 template<typename Real>
 __global__ void pressureGradientZKernel(FieldView<Real> result, FieldView<Real> pressure, Spacing<Real> spacing) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > result.nx() || j > result.ny() || k > result.nz()) return;
     result.at(i,j,k) = FiniteDifferenceOperators::pressureGradientZ(i, j, k, pressure, spacing);
 }
@@ -418,9 +411,8 @@ __global__ void pressureGradientZKernel(FieldView<Real> result, FieldView<Real> 
 /// @copydoc temperatureAdvectionKernel
 template<typename Real>
 __global__ void divergenceKernel(FieldView<Real> rhs, FieldView<Real> velocityXNew, FieldView<Real> velocityYNew, FieldView<Real> velocityZNew, Spacing<Real> spacing) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > rhs.nx() || j > rhs.ny() || k > rhs.nz()) return;
     rhs.at(i,j,k) = FiniteDifferenceOperators::divergence(i, j, k, velocityXNew, velocityYNew, velocityZNew, spacing);
 }

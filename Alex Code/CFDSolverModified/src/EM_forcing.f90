@@ -2,7 +2,7 @@
 !
 !   This potential is defined in the points X, Yp, Z
 
-Subroutine Get_Potential_Launch
+Subroutine Get_Potential_Launch(Istp)
     Use Grid
     Use Numbers
     Use Numerica
@@ -45,12 +45,24 @@ Subroutine Get_Potential_Launch
         ! just without the extra copy that used to sit between this array
         ! and the library's own pinned buffer.
         Potential_pinned = FDRHP(1:Nx,1:Ny1,1:Nz)
+        If (Istp == 10) Then
+            Write(*,*) ' DIAG PotRHS(2,Ny1/2,2)=', FDRHP(2,Ny1/2,2)
+            Write(*,*) ' DIAG PotRHS(Nx-1,Ny1/2,2)=', FDRHP(Nx-1,Ny1/2,2)
+            Write(*,*) ' DIAG PotRHS(2,Ny1/2,Nz-1)=', FDRHP(2,Ny1/2,Nz-1)
+            Write(*,*) ' DIAG PotRHS(Nx/2,Ny1/2,Nz/2)=', FDRHP(Nx/2,Ny1/2,Nz/2)
+        End If
+        If (Istp == 1) Then
+            Write(*,*) ' DIAG PotRHS_1(2,Ny1/2,2)=', FDRHP(2,Ny1/2,2)
+            Write(*,*) ' DIAG PotRHS_1(Nx-1,Ny1/2,2)=', FDRHP(Nx-1,Ny1/2,2)
+            Write(*,*) ' DIAG PotRHS_1(2,Ny1/2,Nz-1)=', FDRHP(2,Ny1/2,Nz-1)
+            Write(*,*) ' DIAG PotRHS_1(Nx/2,Ny1/2,Nz/2)=', FDRHP(Nx/2,Ny1/2,Nz/2)
+        End If
         Call solve_eigen_decomp_d(PotentialHandle)
 
   Return
 End Subroutine Get_Potential_Launch
 
-Subroutine Get_Potential_Finish
+Subroutine Get_Potential_Finish(Istp)
     Use Grid
     Use Numbers
     Use Numerica
@@ -113,6 +125,19 @@ Subroutine Get_Potential_Finish
         End Do
       End Do
     End Do
+
+        If (Istp == 10) Then
+            Write(*,*) ' DIAG PotSolved(2,Ny1/2,2)=', Potential(2,Ny1/2,2)
+            Write(*,*) ' DIAG PotSolved(Nx-1,Ny1/2,2)=', Potential(Nx-1,Ny1/2,2)
+            Write(*,*) ' DIAG PotSolved(2,Ny1/2,Nz-1)=', Potential(2,Ny1/2,Nz-1)
+            Write(*,*) ' DIAG PotSolved(Nx/2,Ny1/2,Nz/2)=', Potential(Nx/2,Ny1/2,Nz/2)
+        End If
+        If (Istp == 1) Then
+            Write(*,*) ' DIAG PotSolved_1(2,Ny1/2,2)=', Potential(2,Ny1/2,2)
+            Write(*,*) ' DIAG PotSolved_1(Nx-1,Ny1/2,2)=', Potential(Nx-1,Ny1/2,2)
+            Write(*,*) ' DIAG PotSolved_1(2,Ny1/2,Nz-1)=', Potential(2,Ny1/2,Nz-1)
+            Write(*,*) ' DIAG PotSolved_1(Nx/2,Ny1/2,Nz/2)=', Potential(Nx/2,Ny1/2,Nz/2)
+        End If
 
     If(EVD_Pot_X == 1 ) then
         ! Was: Potential(0,:,:) = Potential(1,:,:);  Potential(Nx1,:,:) = Potential(Nx,:,:)

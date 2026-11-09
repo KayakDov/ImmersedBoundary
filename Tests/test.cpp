@@ -1169,17 +1169,37 @@ TEST(ThomasAxisAssignment, VyRealMeshUniformRhsStaysSymmetric) {
                     << " symmetric as built for this config; if this is large, solve() itself is failing here.";
             }
 
-            // Same flat layout FieldView::at(i,j,k) uses on these same solved
-            // buffers in the real simulation: x (dim.cols) fastest, then y
-            // (dim.rows), then z (dim.layers). 1-based, matching FieldView.
+            // GridDim's ACTUAL flat layout -- confirmed against GridDim's own
+            // operator() (GridDim.hpp) and KroneckerTriplet.h's own doc
+            // comment ("flat index = y + rows*(z + layers*x)"): y (dim.rows)
+            // fastest, then z (dim.layers), then x (dim.cols) slowest. The
+            // FieldView comment this used to cite is a DIFFERENT class in a
+            // DIFFERENT part of the codebase (cfdSolver), with its own,
+            // unrelated convention -- it never applied here. This was the
+            // actual bug behind every "x<->z symmetry" failure below: at()
+            // was reading mismatched points (confirmed by decoding the
+            // worst-reported violation, (37,64,101) vs (101,64,37), which
+            // under the correct layout turned out to be a Dirichlet-wall
+            // corner point compared against an unrelated interior point).
             auto at = [&](int xi, int yi, int zi) -> Real {
-                size_t idx = (size_t)(xi - 1)
-                    + (size_t)dim.cols * ((size_t)(yi - 1) + (size_t)dim.rows * (size_t)(zi - 1));
+                size_t idx = (size_t)(yi - 1)
+                    + (size_t)dim.rows * ((size_t)(zi - 1) + (size_t)dim.layers * (size_t)(xi - 1));
                 return xHost[idx];
             };
 
-            Real xVarying0 = at(10, 50, 50), xVarying1 = at(90, 50, 50);
-            Real zVarying0 = at(50, 50, 10), zVarying1 = at(50, 50, 90);
+            // (10, mirrorOfTen) is this axis's actual reflection pair about
+            // the stretched mesh's center -- NOT (10, 90). The mesh mapping
+            // is symmetric under p <-> 1-p (tanh is odd about its own
+            // center), so index i's true mirror on a 1-based axis of
+            // dim.cols points is (dim.cols + 1 - i), not a hand-picked
+            // nearby number. Confirmed the hard way: with the hardcoded 90,
+            // this failed at relDiff~0.093 while the exhaustive x<->z scan
+            // two blocks below passed at relDiff~1e-14 on the SAME data --
+            // the exchange symmetry was never broken, 10 and 90 just aren't
+            // mirror images of each other.
+            const int mirrorOfTen = (int)dim.cols + 1 - 10;
+            Real xVarying0 = at(10, 50, 50), xVarying1 = at(mirrorOfTen, 50, 50);
+            Real zVarying0 = at(50, 50, 10), zVarying1 = at(50, 50, mirrorOfTen);
 
             auto relDiff = [](Real a, Real b) {
                 Real absA = std::abs(a), absB = std::abs(b);
@@ -1190,10 +1210,10 @@ TEST(ThomasAxisAssignment, VyRealMeshUniformRhsStaysSymmetric) {
 
             EXPECT_LT(relDiff(xVarying0, xVarying1), 1e-6)
                 << "x<->z symmetry broken on the x-varying pair: at(10,50,50)=" << xVarying0
-                << " vs at(90,50,50)=" << xVarying1;
+                << " vs at(" << mirrorOfTen << ",50,50)=" << xVarying1;
             EXPECT_LT(relDiff(zVarying0, zVarying1), 1e-6)
                 << "x<->z symmetry broken on the z-varying pair: at(50,50,10)=" << zVarying0
-                << " vs at(50,50,90)=" << zVarying1;
+                << " vs at(50,50," << mirrorOfTen << ")=" << zVarying1;
             EXPECT_LT(relDiff(xVarying0, zVarying0), 1e-6)
                 << "x<->z exchange symmetry broken: at(10,50,50)=" << xVarying0
                 << " vs at(50,50,10)=" << zVarying0;
@@ -1267,8 +1287,8 @@ TEST(ThomasAxisAssignment, VyRealMeshUniformRhsStaysSymmetric) {
                 cudaDeviceSynchronize();
 
                 auto at3d = [&](int xi, int yi, int zi) -> Real {
-                    size_t idx = (size_t)(xi - 1)
-                        + (size_t)dim.cols * ((size_t)(yi - 1) + (size_t)dim.rows * (size_t)(zi - 1));
+                    size_t idx = (size_t)(yi - 1)
+                        + (size_t)dim.rows * ((size_t)(zi - 1) + (size_t)dim.layers * (size_t)(xi - 1));
                     return x3dHost[idx];
                 };
 
@@ -1791,13 +1811,13 @@ TEST(ThomasAxisAssignment, VyRealMeshYZRoleSwapMatchesTranspose) {
     for (Real v : xSwappedHost)  ASSERT_TRUE(std::isfinite(v)) << "swapped construction produced a non-finite value -- not a valid baseline.";
 
     auto atOriginal = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(xi - 1) + (size_t)dimOriginal.cols * ((size_t)(yi - 1) + (size_t)dimOriginal.rows * (size_t)(zi - 1));
+        size_t idx = (size_t)(yi - 1) + (size_t)dimOriginal.rows * ((size_t)(zi - 1) + (size_t)dimOriginal.layers * (size_t)(xi - 1));
         return xOriginalHost[idx];
     };
     // Swapped's 2nd argument is its Y-role index (native C/Z-index in
     // "original" terms), 3rd argument is its Z-role index (native B/Y-index).
     auto atSwapped = [&](int xi, int yRoleIdx, int zRoleIdx) -> Real {
-        size_t idx = (size_t)(xi - 1) + (size_t)dimSwapped.cols * ((size_t)(yRoleIdx - 1) + (size_t)dimSwapped.rows * (size_t)(zRoleIdx - 1));
+        size_t idx = (size_t)(yRoleIdx - 1) + (size_t)dimSwapped.rows * ((size_t)(zRoleIdx - 1) + (size_t)dimSwapped.layers * (size_t)(xi - 1));
         return xSwappedHost[idx];
     };
 
@@ -1928,13 +1948,13 @@ TEST(ThomasAxisAssignment, VyRealMeshXZRoleSwapMatchesTranspose) {
     for (Real v : xSwappedHost)  ASSERT_TRUE(std::isfinite(v)) << "swapped construction produced a non-finite value -- not a valid baseline.";
 
     auto atOriginal = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(xi - 1) + (size_t)dimOriginal.cols * ((size_t)(yi - 1) + (size_t)dimOriginal.rows * (size_t)(zi - 1));
+        size_t idx = (size_t)(yi - 1) + (size_t)dimOriginal.rows * ((size_t)(zi - 1) + (size_t)dimOriginal.layers * (size_t)(xi - 1));
         return xOriginalHost[idx];
     };
     // Swapped's 1st argument is its X-role index (native C/Z-index in
     // "original" terms), 3rd argument is its Z-role index (native A/X-index).
     auto atSwapped = [&](int xRoleIdx, int yi, int zRoleIdx) -> Real {
-        size_t idx = (size_t)(xRoleIdx - 1) + (size_t)dimSwapped.cols * ((size_t)(yi - 1) + (size_t)dimSwapped.rows * (size_t)(zRoleIdx - 1));
+        size_t idx = (size_t)(yi - 1) + (size_t)dimSwapped.rows * ((size_t)(zRoleIdx - 1) + (size_t)dimSwapped.layers * (size_t)(xRoleIdx - 1));
         return xSwappedHost[idx];
     };
 
@@ -2053,9 +2073,12 @@ TEST(ThomasAxisAssignment, VySquareDuctSmallNStaysSymmetric) {
                     << " (||residual||=" << normHost[0] << ") at small N=" << N;
             }
 
+            // Same GridDim-layout fix as VyRealMeshUniformRhsStaysSymmetric's
+            // at() above: y (dim.rows) fastest, z (dim.layers) middle, x
+            // (dim.cols) slowest -- not x-fastest as this used to assume.
             auto at = [&](int xi, int yi, int zi) -> Real {
-                size_t idx = (size_t)(xi - 1)
-                    + (size_t)dim.cols * ((size_t)(yi - 1) + (size_t)dim.rows * (size_t)(zi - 1));
+                size_t idx = (size_t)(yi - 1)
+                    + (size_t)dim.rows * ((size_t)(zi - 1) + (size_t)dim.layers * (size_t)(xi - 1));
                 return xHost[idx];
             };
 
@@ -2181,14 +2204,14 @@ TEST(ThomasAxisAssignment, VyFortranPermutationMatchesCppForSamePhysicalProblem)
     for (Real v : xFortranHost) ASSERT_TRUE(std::isfinite(v)) << "Fortran-permutation construction produced a non-finite value.";
 
     auto atCpp = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(xi - 1) + (size_t)dimCpp.cols * ((size_t)(yi - 1) + (size_t)dimCpp.rows * (size_t)(zi - 1));
+        size_t idx = (size_t)(yi - 1) + (size_t)dimCpp.rows * ((size_t)(zi - 1) + (size_t)dimCpp.layers * (size_t)(xi - 1));
         return xCppHost[idx];
     };
     // Fortran's cols(X-role) holds physical Z -> index zi; Fortran's
     // rows(Y-role) holds physical X -> index xi; Fortran's layers(Z-role)
     // holds physical Y -> index yi.
     auto atFortran = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(zi - 1) + (size_t)dimFortran.cols * ((size_t)(xi - 1) + (size_t)dimFortran.rows * (size_t)(yi - 1));
+        size_t idx = (size_t)(xi - 1) + (size_t)dimFortran.rows * ((size_t)(yi - 1) + (size_t)dimFortran.layers * (size_t)(zi - 1));
         return xFortranHost[idx];
     };
 
@@ -2319,11 +2342,11 @@ TEST(ThomasAxisAssignment, PotentialFortranPermutationMatchesCppForSamePhysicalP
     for (Real v : xFortranHost) ASSERT_TRUE(std::isfinite(v)) << "Fortran-permutation construction produced a non-finite value.";
 
     auto atCpp = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(xi - 1) + (size_t)dimCpp.cols * ((size_t)(yi - 1) + (size_t)dimCpp.rows * (size_t)(zi - 1));
+        size_t idx = (size_t)(yi - 1) + (size_t)dimCpp.rows * ((size_t)(zi - 1) + (size_t)dimCpp.layers * (size_t)(xi - 1));
         return xCppHost[idx];
     };
     auto atFortran = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(zi - 1) + (size_t)dimFortran.cols * ((size_t)(xi - 1) + (size_t)dimFortran.rows * (size_t)(yi - 1));
+        size_t idx = (size_t)(xi - 1) + (size_t)dimFortran.rows * ((size_t)(yi - 1) + (size_t)dimFortran.layers * (size_t)(zi - 1));
         return xFortranHost[idx];
     };
     auto relDiff = [](Real a, Real b) {
@@ -2444,11 +2467,11 @@ TEST(ThomasAxisAssignment, PotentialFortranPermutationMatchesCppWithAsymmetricBo
     for (Real v : xFortranHost) ASSERT_TRUE(std::isfinite(v)) << "Fortran-permutation construction produced a non-finite value.";
 
     auto atCpp = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(xi - 1) + (size_t)dimCpp.cols * ((size_t)(yi - 1) + (size_t)dimCpp.rows * (size_t)(zi - 1));
+        size_t idx = (size_t)(yi - 1) + (size_t)dimCpp.rows * ((size_t)(zi - 1) + (size_t)dimCpp.layers * (size_t)(xi - 1));
         return xCppHost[idx];
     };
     auto atFortran = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(zi - 1) + (size_t)dimFortran.cols * ((size_t)(xi - 1) + (size_t)dimFortran.rows * (size_t)(yi - 1));
+        size_t idx = (size_t)(xi - 1) + (size_t)dimFortran.rows * ((size_t)(yi - 1) + (size_t)dimFortran.layers * (size_t)(zi - 1));
         return xFortranHost[idx];
     };
     auto relDiff = [](Real a, Real b) {
@@ -2584,13 +2607,13 @@ TEST(ThomasAxisAssignment, PotentialYZRoleSwapMatchesTranspose) {
     for (Real v : xSwappedHost)  ASSERT_TRUE(std::isfinite(v)) << "swapped construction produced a non-finite value -- not a valid baseline.";
 
     auto atOriginal = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(xi - 1) + (size_t)dimOriginal.cols * ((size_t)(yi - 1) + (size_t)dimOriginal.rows * (size_t)(zi - 1));
+        size_t idx = (size_t)(yi - 1) + (size_t)dimOriginal.rows * ((size_t)(zi - 1) + (size_t)dimOriginal.layers * (size_t)(xi - 1));
         return xOriginalHost[idx];
     };
     // Swapped's 2nd argument is its Y-role index (native C/Z-index in
     // "original" terms), 3rd argument is its Z-role index (native B/Y-index).
     auto atSwapped = [&](int xi, int yRoleIdx, int zRoleIdx) -> Real {
-        size_t idx = (size_t)(xi - 1) + (size_t)dimSwapped.cols * ((size_t)(yRoleIdx - 1) + (size_t)dimSwapped.rows * (size_t)(zRoleIdx - 1));
+        size_t idx = (size_t)(yRoleIdx - 1) + (size_t)dimSwapped.rows * ((size_t)(zRoleIdx - 1) + (size_t)dimSwapped.layers * (size_t)(xi - 1));
         return xSwappedHost[idx];
     };
 
@@ -2741,13 +2764,13 @@ TEST(ThomasAxisAssignment, VxRealMeshXYRoleSwapMatchesTranspose) {
     for (Real v : xSwappedHost)  ASSERT_TRUE(std::isfinite(v)) << "swapped construction produced a non-finite value -- not a valid baseline.";
 
     auto atOriginal = [&](int xi, int yi, int zi) -> Real {
-        size_t idx = (size_t)(xi - 1) + (size_t)dimOriginal.cols * ((size_t)(yi - 1) + (size_t)dimOriginal.rows * (size_t)(zi - 1));
+        size_t idx = (size_t)(yi - 1) + (size_t)dimOriginal.rows * ((size_t)(zi - 1) + (size_t)dimOriginal.layers * (size_t)(xi - 1));
         return xOriginalHost[idx];
     };
     // Swapped's 1st argument is its X-role index (native B/Y-index in
     // "original" terms), 2nd argument is its Y-role index (native A/X-index).
     auto atSwapped = [&](int xRoleIdx, int yRoleIdx, int zi) -> Real {
-        size_t idx = (size_t)(xRoleIdx - 1) + (size_t)dimSwapped.cols * ((size_t)(yRoleIdx - 1) + (size_t)dimSwapped.rows * (size_t)(zi - 1));
+        size_t idx = (size_t)(yRoleIdx - 1) + (size_t)dimSwapped.rows * ((size_t)(zi - 1) + (size_t)dimSwapped.layers * (size_t)(xRoleIdx - 1));
         return xSwappedHost[idx];
     };
 

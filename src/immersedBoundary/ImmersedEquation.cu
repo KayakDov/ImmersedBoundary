@@ -283,7 +283,7 @@ void ImmersedEq<Real, Int>::setRHSFPrime(Handle &hand) {
 
     multSparse(R, velocities, RHSF, dT, GPUScalar<Real>::get(0, hand), true);
 
-    RHSF.subtract(lagrangeVec(LagrangeInd::UGamma), &dT, sparseMultBuffer->get(0), &hand);
+    RHSF.subtract(lagrangeVec(LagrangeInd::UGamma), &dT, GPUScalar<Real>::get(1, hand), &hand);
 }
 
 template<typename Real, typename Int>
@@ -315,10 +315,8 @@ void ImmersedEq<Real, Int>::solve(
 
     hands[0].synch();
 
-    hands.waitFor(0, 1);
-    lagrangeVec(LagrangeInd::UGamma).set(UGamma, hands[1]);
-    setRHSFPrime(hands[1]);
-    hands.waitFor(1, 0);
+    lagrangeVec(LagrangeInd::UGamma).set(UGamma, hands[0]);
+    setRHSFPrime(hands[0]);
 
     auto resultDevice = solve(nnzB, rowOffsetsB, colIndsB, valuesB, true);
     resultDevice.get(resultP, hands[0]);

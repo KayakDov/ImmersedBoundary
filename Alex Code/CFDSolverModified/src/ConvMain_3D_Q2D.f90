@@ -136,7 +136,7 @@
     Allocate( VMzOld(0:Nx2,0:Ny2,0:Nz1), VMz(0:Nx2,0:Ny2,0:Nz1),  VMzNew(0:Nx2,0:Ny2,0:Nz1), RHSz(0:Nx2,0:Ny2,0:Nz1) )
     Allocate( TmpOld(0:Nx2,0:Ny2,0:Nz2), Tmpr(0:Nx2,0:Ny2,0:Nz2), TmpNew(0:Nx2,0:Ny2,0:Nz2), Teta(0:Nx2,0:Ny2,0:Nz2) )
     Allocate( Prs(1:Nx1,1:Ny1,1:Nz1), Dprs(1:Nx1,1:Ny1,1:Nz1), FDRHP(0:Nx2,0:Ny2,0:Nz2), FDRHP1(0:Nx2,0:Ny2,0:Nz2) )
-    Allocate( Potential(0:Nxx1,0:Nyy2,0:Nzz1))
+    Allocate( Potential(0:Nx1,0:Ny2,0:Nz1))
     
     If(I_fourier == 0) then
         Allocate( Tmp_Amplitude(-N_fourier:N_fourier,0:Nx2,0:Ny2,0:Nz2), Omega(N_Fourier) )
@@ -170,7 +170,7 @@
 ! ******** Calculate Nusselt ********************
 
          If(I_Fourier == 0) then
-                Tmpr = Tmpr_Av;  VMx = VMx_Av;  VMy = VMy_Av;  VMz = VMx_Az
+                Tmpr = Tmp_Av;  VMx = VMx_Av;  VMy = VMy_Av;  VMz = VMz_Av
          End If
 
          Write (*,*) '          Nusselt number  = ', Nusselt() 

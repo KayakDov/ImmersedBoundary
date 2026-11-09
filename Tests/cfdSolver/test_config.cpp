@@ -38,7 +38,7 @@ constexpr const char* kRealSettingsJson = R"({
   },
   "numerics": {
     "eps": 0.0000001, "eps_convergence": 0.000001, "max_iterations": 9000,
-    "time_step": 0.0001, "time_interval": 0.1, "print_every": 1000
+    "time_step": 0.0001, "run_duration": 0.1, "print_every": 1000
   },
   "diagnostics": { "run_conservation_checks": false, "mode": "full" },
   "temperature": {
@@ -80,7 +80,7 @@ TEST(SimulationConfigTest, RoundTripsRealSettings) {
     EXPECT_EQ(cfg.epsConvergence, 0.000001);
     EXPECT_EQ(cfg.maxIterations, 9000);
     EXPECT_EQ(cfg.timeStep, 0.0001);
-    EXPECT_EQ(cfg.timeInterval, 0.1);
+    EXPECT_EQ(cfg.runDuration, 0.1);
     EXPECT_EQ(cfg.printEvery, 1000);
     EXPECT_FALSE(cfg.runConservationChecks);
     EXPECT_EQ(cfg.solveMode, SolveMode::Full);
@@ -118,7 +118,7 @@ TEST(SimulationConfigTest, MissingRequiredSectionThrowsClearError) {
         R"({"physics":{"aspect_ratio":1,"width_ratio":1,"grashof":1,"biot":0,"prandtl":0.05,"hartmann":1000},)"
         R"("temperature":{"boundary_x":"dirichlet","boundary_y":"dirichlet","boundary_z":"dirichlet"},)"
         R"("potential":{"boundary_x":"neumann","boundary_y":"neumann","boundary_z":"neumann"},)"
-        R"("numerics":{"time_interval":0.1}})");
+        R"("numerics":{"run_duration":0.1}})");
 
     try {
         SimulationConfig::loadFromFile(file.path());
@@ -132,7 +132,7 @@ TEST(SimulationConfigTest, BadBoundaryKindThrowsClearError) {
     TempJsonFile file("test_bad_bc.json",
         R"({"grid":{"Nx":10,"Ny":10,"Nz":10},)"
         R"("physics":{"aspect_ratio":1,"width_ratio":1,"grashof":1,"biot":0,"prandtl":0.05,"hartmann":1000},)"
-        R"("numerics":{"time_interval":0.1},)"
+        R"("numerics":{"run_duration":0.1},)"
         R"("temperature":{"boundary_x":"neuman","boundary_y":"dirichlet","boundary_z":"dirichlet"},)"
         R"("potential":{"boundary_x":"neumann","boundary_y":"neumann","boundary_z":"neumann"}})");
 
@@ -149,7 +149,7 @@ TEST(SimulationConfigTest, DefaultsApplyForMinimalConfig) {
     TempJsonFile file("test_minimal.json",
         R"({"grid":{"Nx":20,"Ny":20,"Nz":20},)"
         R"("physics":{"aspect_ratio":1,"width_ratio":1,"grashof":1e7,"biot":0,"prandtl":0.054,"hartmann":1000},)"
-        R"("numerics":{"time_interval":0.05},)"
+        R"("numerics":{"run_duration":0.05},)"
         R"("temperature":{"boundary_x":"dirichlet","boundary_y":"dirichlet","boundary_z":"dirichlet"},)"
         R"("potential":{"boundary_x":"neumann","boundary_y":"neumann","boundary_z":"neumann"}})");
 

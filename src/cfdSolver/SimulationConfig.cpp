@@ -88,16 +88,16 @@ SimulationConfig SimulationConfig::loadFromFile(const std::string& path) {
         cfg.hartmann    = requireField<double>(p, "hartmann", "physics");
     }
 
-    // --- numerics (has reasonable defaults except time_interval, which doesn't) ---
+    // --- numerics (has reasonable defaults except run_duration, which doesn't) ---
     {
         const auto& n = root.contains("numerics") ? root.at("numerics") : json::object();
         cfg.eps             = optionalField(n, "eps", cfg.eps);
         cfg.epsConvergence  = optionalField(n, "eps_convergence", cfg.epsConvergence);
         cfg.maxIterations   = optionalField(n, "max_iterations", cfg.maxIterations);
         cfg.timeStep        = optionalField(n, "time_step", cfg.timeStep);
-        if (!n.contains("time_interval"))
-            throw std::runtime_error("numerics.time_interval is required (how long, in simulation time, to run)");
-        cfg.timeInterval    = n.at("time_interval").get<double>();
+        if (!n.contains("run_duration"))
+            throw std::runtime_error("numerics.run_duration is required (how much simulation time this run should advance by -- unrelated to print_every/checkpoint_every, which only control how often progress is reported)");
+        cfg.runDuration     = n.at("run_duration").get<double>();
         cfg.printEvery      = optionalField(n, "print_every", cfg.printEvery);
         if (cfg.printEvery < 1)
             throw std::runtime_error("numerics.print_every must be at least 1");
@@ -183,6 +183,8 @@ SimulationConfig SimulationConfig::loadFromFile(const std::string& path) {
     {
         const auto& o = root.contains("output") ? root.at("output") : json::object();
         cfg.outputDirectory = optionalField(o, "directory", cfg.outputDirectory);
+        cfg.writeSerieAndHistory = optionalField(o, "write_serie_and_history", cfg.writeSerieAndHistory);
+        cfg.writeFieldSnapshots = optionalField(o, "write_field_snapshots", cfg.writeFieldSnapshots);
     }
 
     return cfg;

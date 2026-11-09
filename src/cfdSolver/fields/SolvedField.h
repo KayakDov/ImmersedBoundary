@@ -26,11 +26,11 @@
  * in FiniteDifferenceOperators already write their right-hand side
  * directly into device memory.
  *
- * SolvedField instead owns one GpuField and views it two ways: as a
- * FieldView for the stencil kernels (rhsView(), read before solve() and
- * written again after synch() for the next timestep), and as a
- * SimpleArray for EigenDecompSolver::solve() (asSimpleArray()) -- the same
- * bytes, no copy between the two.
+ * SolvedField exposes one GpuField for stencil access and owns a separate
+ * device buffer for the solver's right-hand side. Before each solve, a
+ * device-to-device copy preserves the RHS: the eigensolver's GEMM steps
+ * require distinct input and output allocations. Both buffers remain on
+ * the GPU and are allocated once for this field's lifetime.
  *
  * Owns its handles through a std::unique_ptr<Handles> rather than by
  * value. Handles (like Handle) is deliberately neither copyable nor
@@ -66,12 +66,14 @@ public:
      * itself, needs to move.
      */
     SolvedField(GpuField<Real> buffer, std::unique_ptr<EigenDecompSolver<Real>> solver, std::unique_ptr<Handles> hands)
-        : buffer_(std::move(buffer)), solver_(std::move(solver)), hands_(std::move(hands)) {}
+        : buffer_(std::move(buffer)), solver_(std::move(solver)), hands_(std::move(hands)),
+          rightHandSide_(GpuField<Real>::allocate(buffer_.nx(), buffer_.ny(), buffer_.nz(),
+                                                  buffer_.gpuIndex(), handle())) {}
 
     /**
      * @brief The view the stencil kernels read and write -- the field's
      * right-hand side before solve(), and its solution after synch().
-     * @return A FieldView over this field's single buffer.
+     * @return A FieldView over this field's externally visible buffer.
      */
     FieldView<Real> view() const { return buffer_.view(); }
 
@@ -110,6 +112,7 @@ private:
     GpuField<Real> buffer_;
     std::unique_ptr<EigenDecompSolver<Real>> solver_;
     std::unique_ptr<Handles> hands_;
+    GpuField<Real> rightHandSide_; ///< Persistent, disjoint solver input; never transferred to the host.
 };
 
 #endif //CFDSOLVER_SOLVEDFIELD_H

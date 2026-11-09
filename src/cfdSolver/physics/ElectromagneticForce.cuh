@@ -12,6 +12,7 @@
 #define CFDSOLVER_ELECTROMAGNETICFORCE_CUH
 
 #include "Operators.cuh"
+#include "ThreadIndex.cuh"
 
 /**
  * @ingroup cfd_solver
@@ -136,9 +137,8 @@ public:
 /// @copydoc ElectromagneticForce::potentialRightHandSide
 template<typename Real>
 __global__ void potentialRightHandSideKernel(FieldView<Real> rhs, FieldView<Real> velocityX, FieldView<Real> velocityZ, Spacing<Real> spacing) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > rhs.nx() || j > rhs.ny() || k > rhs.nz()) return;
     rhs.at(i, j, k) = ElectromagneticForce::potentialRightHandSide(i, j, k, velocityX, velocityZ, spacing);
 }
@@ -146,9 +146,8 @@ __global__ void potentialRightHandSideKernel(FieldView<Real> rhs, FieldView<Real
 /// @copydoc ElectromagneticForce::subtractReferenceValue
 template<typename Real>
 __global__ void subtractReferenceValueKernel(FieldView<Real> potential, const Real* referenceValue) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > potential.nx() || j > potential.ny() || k > potential.nz()) return;
     ElectromagneticForce::subtractReferenceValue(i, j, k, potential, referenceValue);
 }
@@ -157,9 +156,8 @@ __global__ void subtractReferenceValueKernel(FieldView<Real> potential, const Re
 template<typename Real>
 __global__ void applyForceXKernel(FieldView<Real> rhsX, FieldView<Real> velocityX, FieldView<Real> potential,
                                    AxisBoundaries potentialBc, Spacing<Real> spacing, Real coefficient) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > rhsX.nx() || j > rhsX.ny() || k > rhsX.nz()) return;
     ElectromagneticForce::applyForceX(i, j, k, rhsX, velocityX, potential, potentialBc, spacing, coefficient);
 }
@@ -168,9 +166,8 @@ __global__ void applyForceXKernel(FieldView<Real> rhsX, FieldView<Real> velocity
 template<typename Real>
 __global__ void applyForceZKernel(FieldView<Real> rhsZ, FieldView<Real> velocityZ, FieldView<Real> potential,
                                    AxisBoundaries potentialBc, Spacing<Real> spacing, Real coefficient) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > rhsZ.nx() || j > rhsZ.ny() || k > rhsZ.nz()) return;
     ElectromagneticForce::applyForceZ(i, j, k, rhsZ, velocityZ, potential, potentialBc, spacing, coefficient);
 }

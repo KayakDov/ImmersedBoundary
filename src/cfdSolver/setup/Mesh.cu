@@ -23,7 +23,8 @@ template<typename Real>
 struct AxisSpacing {
     std::vector<Real> hFull;     ///< Size n+1, index 0..n.
     std::vector<Real> hHalf;     ///< Size n+2, index 0..n+1.
-    std::vector<Real> nodeHalf;  ///< Size n+3, index 0..n+2 -- the node-half (cell-centre) positions hHalf was differenced from.
+    std::vector<Real> node;      ///< Size n+2, index 0..n+1 -- the plain (cell-corner) node positions hFull was differenced from. Fortran's plain X/Y/Z.
+    std::vector<Real> nodeHalf;  ///< Size n+3, index 0..n+2 -- the node-half (cell-centre) positions hHalf was differenced from. Fortran's X12/Y12/Z12.
 };
 
 /**
@@ -62,6 +63,7 @@ AxisSpacing<Real> computeAxisSpacing(int n, Real scale, Real stretchFactor) {
     result.hHalf.resize(n1 + 1);
     for (int i = 0; i <= n1; ++i) result.hHalf[i] = nodeHalf[i + 1] - nodeHalf[i];
 
+    result.node = std::move(node);
     result.nodeHalf = std::move(nodeHalf);
     return result;
 }
@@ -90,7 +92,10 @@ Mesh<Real> Mesh<Real>::generate(const SimulationConfig& cfg, GpuIndex gpuIndex, 
     GpuField<Real> deviceHpz = uploadSpacing(z.hHalf, gpuIndex, hand);
 
     return Mesh<Real>(
-        x.hFull, y.hFull, z.hFull, x.hHalf, y.hHalf, z.hHalf, x.nodeHalf,
+        XYZ<std::vector<Real>>(x.hFull, y.hFull, z.hFull),
+        XYZ<std::vector<Real>>(x.hHalf, y.hHalf, z.hHalf),
+        XYZ<std::vector<Real>>(x.nodeHalf, y.nodeHalf, z.nodeHalf),
+        XYZ<std::vector<Real>>(x.node, y.node, z.node),
         std::move(deviceHx12), std::move(deviceHy12), std::move(deviceHz12),
         std::move(deviceHpx), std::move(deviceHpy), std::move(deviceHpz));
 }

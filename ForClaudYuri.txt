@@ -1,0 +1,71 @@
+=== orig/ contents (top two levels) ===
+total 44
+drwxrwxr-x  7 usr usr 4096 Sep  9 12:47 .
+drwxrwxr-x  5 usr usr 4096 Aug 30 14:58 ..
+drwxr-xr-x  2 usr usr 4096 Aug 27 13:37 case
+drwxrwxr-x  5 usr usr 4096 Sep  9 12:47 cmake-build-debug
+-rw-rw-r--  1 usr usr 6168 Aug 27 13:35 CMakeLists.txt
+drwxrwxr-x  2 usr usr 4096 Aug 30 09:03 .idea
+-rw-rw-r--  1 usr usr  846 Jul 17 15:41 legacy-build-commands.txt
+drwxrwxr-x 12 usr usr 4096 Aug 25 15:10 MUMPS_5.9.1
+-rw-rw-r--  1 usr usr  904 Sep  9 12:29 orig_stage1_dump.patch
+drwxr-xr-x  2 usr usr 4096 Sep  9 12:47 Source
+total 72564
+drwxr-xr-x 2 usr usr     4096 Aug 27 13:37 .
+drwxrwxr-x 7 usr usr     4096 Sep  9 12:47 ..
+-rw-rw-r-- 1 usr usr        0 Aug 27 13:37 AllData.dat
+-rw-r--r-- 1 usr usr   294688 May 31 05:22 body.001.inp
+-rw-r--r-- 1 usr usr        0 May 31 05:22 Cpu.dat
+-rw-rw-r-- 1 usr usr  4523912 Aug 27 13:37 Div_Reg_Fx_Tag.ddd
+-rw-rw-r-- 1 usr usr  4523912 Aug 27 13:37 Div_Reg_Fy_Tag.ddd
+-rw-rw-r-- 1 usr usr  4523912 Aug 27 13:37 Div_Reg_Fz_Tag.ddd
+-rw-r--r-- 1 usr usr        0 May 31 05:22 History.dat
+-rw-r--r-- 1 usr usr        0 May 31 05:22 HistPoint.dat
+-rw-r--r-- 1 usr usr      297 May 31 05:22 interppoint.inp
+-rw-r--r-- 1 usr usr      677 May 31 05:27 Lid.dat
+-rw-rw-r-- 1 usr usr 60372648 Aug 27 19:00 Lid.ddd
+-rw-rw-r-- 1 usr usr    23891 Aug 27 13:49 Lid.out
+-rw-r--r-- 1 usr usr        0 May 31 05:22 Pres.dat
+-rw-r--r-- 1 usr usr     9459 May 31 05:22 report
+-rw-r--r-- 1 usr usr        0 May 31 05:22 Serie.dat
+-rw-r--r-- 1 usr usr        0 May 31 05:22 Vx.dat
+-rw-r--r-- 1 usr usr        0 May 31 05:22 Vy.dat
+-rw-r--r-- 1 usr usr        0 May 31 05:22 Vz.dat
+=== dump files anywhere under Yuri Fortran Code ===
+-rw-rw-r-- 1 usr usr 8242408 Nov  8 15:50 /home/usr/Documents/TelAvivU/Yuri Fortran Code/modified/case/dprs_dump.bin
+-rw-rw-r-- 1 usr usr  188496 Nov  8 15:50 /home/usr/Documents/TelAvivU/Yuri Fortran Code/modified/case/ftag_dump.bin
+=== orig executables ===
+/home/usr/Documents/TelAvivU/Yuri Fortran Code/orig/MUMPS_5.9.1/examples/dsimpletest_save_restore
+/home/usr/Documents/TelAvivU/Yuri Fortran Code/orig/MUMPS_5.9.1/examples/c_example
+/home/usr/Documents/TelAvivU/Yuri Fortran Code/orig/MUMPS_5.9.1/examples/dsimpletest
+/home/usr/Documents/TelAvivU/Yuri Fortran Code/orig/MUMPS_5.9.1/examples/c_example_save_restore
+=== does orig source have the Stage 1 dump? ===
+/home/usr/Documents/TelAvivU/Yuri Fortran Code/orig/Source/time_step_Lid3D_z.f90:158:          OPEN(919, FILE='dprs_dump.bin', FORM='unformatted', ACCESS='stream', STATUS='replace')
+/home/usr/Documents/TelAvivU/Yuri Fortran Code/orig/Source/time_step_Lid3D_z.f90:164:          STOP 'Stage 1 dump complete (orig)'
+=== Eps / ItMax values ===
+/home/usr/Documents/TelAvivU/Yuri Fortran Code/modified/Source/ConvMain_Lid3D.f90:151:     &               ' Precision                     =', G15.8,/)
+/home/usr/Documents/TelAvivU/Yuri Fortran Code/modified/Source/Mesh_Intrp.f90:381:      Double Precision Function Fint4()
+=== Lid.dat head ===
+1.0                   Aspect ratio                 
+1.0                   Width ratio                 
+100.0                Reynolds number 
+0.0                   angle
+100                    Nx
+100                    Ny
+100                    Ny
+1.e-10                Eps
+0.000001              EpsCnv 
+9000                  ItMax
+0.001                 Htime
+5.0                   Time  
+100                   Iprint (I5) (<0 - read initial data from file)
+10                   Iprint IBM
+0.01                  Delta Grid for Ib Method
+1                     Icheck (=0, if check)
+0                     SolverKind (0=Mumps, 1=BiCG)
+24                    NCPUs
+=== isSmall implementation ===
+/home/usr/Documents/TelAvivU/src/solvers/BiCGSTAB.cu:33:bool BiCGSTAB<T>::isSmall(const Vec<T> &v, Singleton<T> preAllocated, const size_t streamInd) {
+/home/usr/Documents/TelAvivU/src/solvers/BiCGSTAB.cu:123:        if (isSmall(s, temp[2], 2)) {
+/home/usr/Documents/TelAvivU/src/solvers/BiCGSTAB.cu:144:        if (isSmall(r, temp[2], 2)) break;
+/home/usr/Documents/TelAvivU/src/solvers/BiCGSTAB.cuh:89:    bool isSmall(const Vec<T> &v, Singleton<T> preAllocated, const size_t streamInd);

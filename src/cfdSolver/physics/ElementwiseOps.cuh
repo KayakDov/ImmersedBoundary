@@ -9,6 +9,7 @@
 #define CFDSOLVER_ELEMENTWISEOPS_CUH
 
 #include "../fields/BoundaryConditions.cuh"
+#include "ThreadIndex.cuh"
 
 /**
  * @ingroup cfd_solver
@@ -90,6 +91,31 @@ public:
     static void correctVelocity(int i, int j, int k, FieldView<Real>& velocity, const FieldView<Real>& gradient, Real coefficient) {
         velocity.at(i, j, k) -= gradient.at(i, j, k) * coefficient;
     }
+
+    /**
+     * @brief Accumulates a scaled copy of one field into another, in place:
+     * `target += source * factor`. Port of the running time-integral
+     * pattern shared by every term of Solution_time_Q2D.f90's Fourier_sum
+     * (`VMx_Av = VMx_Av + VMxNew * Htime`, and, for i=1..N_Fourier,
+     * `Tmp_Amplitude(i,:,:,:) = Tmp_Amplitude(i,:,:,:) + TmpNew(:,:,:) *
+     * Htime * cos(Omega(i)*TimCur)`) -- the per-cell operation is identical
+     * either way, only `factor` differs (plain `Htime` for the running
+     * mean, `Htime*cos(...)`/`Htime*sin(...)`, computed once on the host
+     * per call, for a Fourier term). See
+     * CfdSimulation::accumulateTimeAverage().
+     * @tparam Real Floating-point type.
+     * @param i 1-based x index.
+     * @param j 1-based y index.
+     * @param k 1-based z index.
+     * @param target The running accumulator, mutated in place.
+     * @param source The field being accumulated (this step's value).
+     * @param factor The scalar multiplying source before it's added.
+     */
+    template<typename Real>
+    __host__ __device__ __forceinline__
+    static void accumulateScaled(int i, int j, int k, FieldView<Real>& target, const FieldView<Real>& source, Real factor) {
+        target.at(i, j, k) += source.at(i, j, k) * factor;
+    }
 };
 
 #ifdef __CUDACC__
@@ -97,9 +123,8 @@ public:
 /// @copydoc ElementwiseOps::subtractTimeDerivative
 template<typename Real>
 __global__ void subtractTimeDerivativeKernel(FieldView<Real> rhs, FieldView<Real> current, FieldView<Real> old, Real coefficient) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > rhs.nx() || j > rhs.ny() || k > rhs.nz()) return;
     ElementwiseOps::subtractTimeDerivative(i, j, k, rhs, current, old, coefficient);
 }
@@ -107,9 +132,8 @@ __global__ void subtractTimeDerivativeKernel(FieldView<Real> rhs, FieldView<Real
 /// @copydoc ElementwiseOps::scale
 template<typename Real>
 __global__ void scaleKernel(FieldView<Real> field, Real factor) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > field.nx() || j > field.ny() || k > field.nz()) return;
     ElementwiseOps::scale(i, j, k, field, factor);
 }
@@ -117,9 +141,8 @@ __global__ void scaleKernel(FieldView<Real> field, Real factor) {
 /// @copydoc ElementwiseOps::addInto
 template<typename Real>
 __global__ void addIntoKernel(FieldView<Real> target, FieldView<Real> source) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > target.nx() || j > target.ny() || k > target.nz()) return;
     ElementwiseOps::addInto(i, j, k, target, source);
 }
@@ -127,11 +150,19 @@ __global__ void addIntoKernel(FieldView<Real> target, FieldView<Real> source) {
 /// @copydoc ElementwiseOps::correctVelocity
 template<typename Real>
 __global__ void correctVelocityKernel(FieldView<Real> velocity, FieldView<Real> gradient, Real coefficient) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > velocity.nx() || j > velocity.ny() || k > velocity.nz()) return;
     ElementwiseOps::correctVelocity(i, j, k, velocity, gradient, coefficient);
+}
+
+/// @copydoc ElementwiseOps::accumulateScaled
+template<typename Real>
+__global__ void accumulateScaledKernel(FieldView<Real> target, FieldView<Real> source, Real factor) {
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
+    if (i > target.nx() || j > target.ny() || k > target.nz()) return;
+    ElementwiseOps::accumulateScaled(i, j, k, target, source, factor);
 }
 
 #endif //__CUDACC__

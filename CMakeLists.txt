@@ -392,6 +392,7 @@ file(GLOB TEST_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cu"
         "${CMAKE_CURRENT_SOURCE_DIR}/Tests/cfdSolver/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Tests/cfdSolver/*.cu"
 )
 list(FILTER TEST_SOURCES EXCLUDE REGEX "BenchMark\\.cpp$")
 
@@ -417,6 +418,23 @@ target_include_directories(run_unit_tests
         PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src/cfdSolver"
 )
+
+# golden-value regression test (Tests/cfdSolver/test_golden_value.cpp) needs
+# to know, at runtime, where the real cfdSolver and Fortran binaries are and
+# where its own checked-in scenario configs live -- CFD_FORTRAN_EXE and
+# CFD_FORTRAN_BASE_CONV are CFDSolverModified's own paths (a separate CMake
+# project, so there's no in-build target to point at instead); CFD_CPP_EXE
+# uses cfdSolver's real build output via generator expression so it never
+# goes stale if the target is renamed or moved. add_dependencies ensures
+# `cfdSolver` is actually built before run_unit_tests runs, since nothing
+# else here makes that target a prerequisite of this one.
+target_compile_definitions(run_unit_tests PRIVATE
+        CFD_CPP_EXE="$<TARGET_FILE:cfdSolver>"
+        CFD_FORTRAN_EXE="/home/usr/Documents/TelAvivU/Alex Code/CFDSolverModified/cmake-build-debug/CFDSolver"
+        CFD_FORTRAN_BASE_CONV="/home/usr/Documents/TelAvivU/Alex Code/CFDSolverModified/Conv.dat"
+        CFD_GOLDEN_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Tests/cfdSolver/golden_configs"
+)
+add_dependencies(run_unit_tests cfdSolver)
 
 include(GoogleTest)
 option(SHOW_LORENZ_PORTRAIT "Show the Lorenz window during tests" OFF)

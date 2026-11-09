@@ -6,14 +6,16 @@
  * @warning Not compile-verified: see GpuSolverSetup.cu's file-level
  * warning for why. This file additionally depends on every other
  * not-compile-verified file in this project (GpuSolverSetup, SolvedField,
- * TimeDependentField, Mesh, CheckpointIO) -- it is the integration point
- * for all of them, and deserves the most scrutiny of anything here once a
- * real nvcc environment is available.
+ * TimeDependentField, Mesh, CheckpointIO, AverageFlow) -- it is the
+ * integration point for all of them, and deserves the most scrutiny of
+ * anything here once a real nvcc environment is available.
  */
 
 #include <cmath>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 #include <stdexcept>
 #include "CfdSimulation.h"
 #include "physics/ElementwiseOps.cuh"
@@ -136,9 +138,6 @@ void enablePeerAccessForConfiguredDevices(const SimulationConfig& cfg) {
 }
 
 void validateImplementedFeatures(const SimulationConfig& cfg) {
-    if (cfg.timeAveragingEnabled)
-        throw std::runtime_error("CfdSimulation: time_averaging.enabled is not yet implemented in this port "
-            "(see CfdSimulation.h's class comment) -- set it to false to proceed");
     if (cfg.runConservationChecks)
         throw std::runtime_error("CfdSimulation: diagnostics.run_conservation_checks is not yet implemented "
             "in this port (see CfdSimulation.h's class comment) -- set it to false to proceed");
@@ -170,6 +169,199 @@ AxisBoundaries temperatureBoundaries(const SimulationConfig& cfg) {
 template<typename Real>
 AxisBoundaries potentialBoundaries(const SimulationConfig& cfg) {
     return AxisBoundaries{cfg.potentialBoundaryX, cfg.potentialBoundaryY, cfg.potentialBoundaryZ};
+}
+
+/**
+ * @brief Writes one value per `%12.5E` field, wrapping to a new output
+ * line every `perLine` values -- Fortran's format-reversion rule for a
+ * WRITE statement whose item list outruns its FORMAT's edit-descriptor
+ * list: once the descriptors are used up, the format starts over on a new
+ * record, not a new column. Needed because Point_Write writes 4 items
+ * (X,Y,Z,value) through a 3-descriptor format (pointw.f90's format 310,
+ * `3(E12.5,1x)`), and Plot_Amplitude's Amplitudes.dat write puts
+ * `3 + (2*N_Fourier+1)` items through a 12-descriptor one (format 310
+ * there, `12(E12.5,1x)`) -- both exact, not approximate, reversion counts,
+ * confirmed directly from pointw.f90 and Solution_time_Q2D.f90.
+ * @tparam Real Floating-point type.
+ * @param out Already-open file.
+ * @param values The record's items, in Fortran WRITE-list order.
+ * @param perLine How many values fit one format cycle (3 for Point_Write,
+ * 12 for Amplitudes.dat).
+ */
+template<typename Real>
+void writeWrappedRecord(std::FILE* out, const std::vector<Real>& values, size_t perLine) {
+    for (size_t i = 0; i < values.size(); ++i) {
+        std::fprintf(out, "%12.5E ", (double)values[i]);
+        if ((i + 1) % perLine == 0 || i + 1 == values.size())
+            std::fprintf(out, "\n");
+    }
+}
+
+/**
+ * @brief Evaluates `read(i,j,k)` over a field's full ghost-inclusive
+ * extent (0..nxMax, 0..nyMax, 0..nzMax), in Fortran's own natural storage
+ * order (i fastest, k slowest) -- the same order AverageFlow.cu's Y-
+ * average loops already walk, and the order Fortran's own
+ * `(((expr,i=...),j=...),k=...)` implied-DO nesting produces. `read` must
+ * resolve any out-of-real-range (i,j,k) itself, same as every existing
+ * caller of BoundaryConditions::readTemperature/readVelocity in this
+ * codebase.
+ * @tparam Real Floating-point type.
+ * @tparam ReadFn A callable `Real(int i, int j, int k)`.
+ * @return (nxMax+1)*(nyMax+1)*(nzMax+1) values, i-fastest.
+ */
+template<typename Real, typename ReadFn>
+std::vector<Real> resolveGhostInclusive(int nxMax, int nyMax, int nzMax, ReadFn&& read) {
+    std::vector<Real> out((size_t)(nxMax + 1) * (size_t)(nyMax + 1) * (size_t)(nzMax + 1));
+    size_t idx = 0;
+    for (int k = 0; k <= nzMax; ++k)
+        for (int j = 0; j <= nyMax; ++j)
+            for (int i = 0; i <= nxMax; ++i)
+                out[idx++] = read(i, j, k);
+    return out;
+}
+
+/**
+ * @brief Direct port of pointw.f90's Point_Write: writes a ghost-inclusive
+ * 3D field as a TECPLOT point-format file. `values` must already be in
+ * resolveGhostInclusive()'s order over the same (nxMax,nyMax,nzMax).
+ *
+ * As with AverageFlow.cu's writeTecplot2D, the exact E12.5 mantissa
+ * convention is not reproduced (TECPLOT-visualization-only, never re-read
+ * by either program) -- but unlike that function's 3-items-into-3-
+ * descriptors case (no reversion), this one's 4-items-into-3-descriptors
+ * WRITE (X,Y,Z,value through format 310) really does split every grid
+ * point across two physical lines in the original, which a stock
+ * `diff`/`wc -l` would catch, so that part IS reproduced, via
+ * writeWrappedRecord().
+ * @tparam Real Floating-point type.
+ */
+template<typename Real>
+void writeTecplot3D(const std::string& path, int nxMax, int nyMax, int nzMax,
+                     const std::vector<Real>& x, const std::vector<Real>& y, const std::vector<Real>& z,
+                     const std::vector<Real>& values, const char* name) {
+    std::FILE* out = std::fopen(path.c_str(), "w");
+    if (!out)
+        throw std::runtime_error("CfdSimulation: could not open " + path + " for writing");
+
+    std::fprintf(out, " VARIABLES = \"X\",\"Y\",\"Z\",\"%s\"\n", name);
+    std::fprintf(out, "ZONE F=POINT, I=%4d, J=%4d, K=%4d\n", nxMax + 1, nyMax + 1, nzMax + 1);
+
+    size_t idx = 0;
+    std::vector<Real> record(4);
+    for (int k = 0; k <= nzMax; ++k) {
+        for (int j = 0; j <= nyMax; ++j) {
+            for (int i = 0; i <= nxMax; ++i) {
+                record[0] = x[i]; record[1] = y[j]; record[2] = z[k]; record[3] = values[idx++];
+                writeWrappedRecord(out, record, 3);
+            }
+        }
+    }
+    std::fclose(out);
+}
+
+/**
+ * @brief Direct port of Plot_Amplitude's Amplitudes.dat write: the same
+ * ghost-inclusive point format as writeTecplot3D(), but with one "Average"
+ * column (the time-mean temperature, Teta already added -- same values as
+ * Tmpr_av.dat) plus one cos/sin column pair per configured frequency, in
+ * Fortran's own L=-N_Fourier..N_Fourier column order (matching both the
+ * VARIABLES header and the data rows, since Fortran builds both from the
+ * same `i=-N_fourier,N_fourier`/`L=-N_fourier,N_fourier` loop). `mean`/
+ * `cosTerms`/`sinTerms` must already be in resolveGhostInclusive()'s order
+ * over (nxMax,nyMax,nzMax).
+ * @tparam Real Floating-point type.
+ */
+template<typename Real>
+void writeAmplitudes(const std::string& path, int nxMax, int nyMax, int nzMax,
+                      const std::vector<Real>& x, const std::vector<Real>& y, const std::vector<Real>& z,
+                      const std::vector<Real>& mean,
+                      const std::vector<std::vector<Real>>& cosTerms,
+                      const std::vector<std::vector<Real>>& sinTerms) {
+    std::FILE* out = std::fopen(path.c_str(), "w");
+    if (!out)
+        throw std::runtime_error("CfdSimulation: could not open " + path + " for writing");
+
+    int nFourier = (int)cosTerms.size();
+    std::fprintf(out, " VARIABLES = \"X\",\"Y\",\"Z\"");
+    for (int L = -nFourier; L <= nFourier; ++L) {
+        if (L == 0) std::fprintf(out, ",\"Average   \"");
+        else if (L < 0) std::fprintf(out, ",\"Omega%d_sin\"", -L);
+        else std::fprintf(out, ",\"Omega%d_cos\"", L);
+    }
+    std::fprintf(out, "\n");
+    std::fprintf(out, "ZONE F=POINT, I=%4d, J=%4d, K=%4d\n", nxMax + 1, nyMax + 1, nzMax + 1);
+
+    size_t idx = 0;
+    std::vector<Real> record;
+    record.reserve(3 + (size_t)(2 * nFourier + 1));
+    for (int k = 0; k <= nzMax; ++k) {
+        for (int j = 0; j <= nyMax; ++j) {
+            for (int i = 0; i <= nxMax; ++i) {
+                record.clear();
+                record.push_back(x[i]);
+                record.push_back(y[j]);
+                record.push_back(z[k]);
+                for (int L = -nFourier; L <= nFourier; ++L) {
+                    if (L == 0) record.push_back(mean[idx]);
+                    else if (L < 0) record.push_back(sinTerms[-L - 1][idx]);
+                    else record.push_back(cosTerms[L - 1][idx]);
+                }
+                writeWrappedRecord(out, record, 12);
+                ++idx;
+            }
+        }
+    }
+    std::fclose(out);
+}
+
+/**
+ * @brief Writes one sequential-unformatted Fortran record: a 4-byte
+ * byte count, the raw data, then the same byte count again -- gfortran's
+ * default record-marker convention (-frecord-marker=4) for Average_
+ * velocity.ddd's five Write(124) statements.
+ *
+ * @warning Best-effort and NOT verified against a real compiled run: the
+ * marker width/endianness is a build-flag/platform detail this project has
+ * no way to confirm without gfortran and the target machine both in hand.
+ * Unlike every other writer in this file, nothing cross-checks this one --
+ * Average_velocity.ddd is binary, never re-read by either program, and not
+ * something a stock `diff`/`tail` can meaningfully compare. Spot-check it
+ * (e.g. against gfortran's own record markers on a real build) before
+ * relying on it.
+ * @tparam Real Floating-point type.
+ */
+template<typename Real>
+void writeFortranUnformattedRecord(std::FILE* out, const std::vector<Real>& data) {
+    uint32_t bytes = (uint32_t)(data.size() * sizeof(Real));
+    std::fwrite(&bytes, sizeof(bytes), 1, out);
+    std::fwrite(data.data(), sizeof(Real), data.size(), out);
+    std::fwrite(&bytes, sizeof(bytes), 1, out);
+}
+
+/**
+ * @brief Creates an empty placeholder file, truncating if it already
+ * exists -- for the original's several Open-but-never-Write units:
+ * Tmpr.dat/Pres.dat/Vx.dat/Vy.dat/Vz.dat/Potential.dat (units 50/60/70/80/
+ * 90/100: their Point_Write calls are commented out in Solution_time_
+ * Q2D.f90), SteadyState.ddd (unit 4: its Write is commented out in
+ * ConvMain_3D_Q2D.f90), Cpu.dat (unit 77: opened but never written to,
+ * anywhere in the original source), and Pres_av.dat (unit 61: its
+ * Point_Write is commented out too, even when time-averaging runs). All
+ * of these are confirmed 0 bytes in every Fortran run this project has
+ * seen (the sweep's own output directories). Vx_av.dat/Vy_av.dat/
+ * Vz_av.dat/Tmpr_av.dat are ALSO touched empty by this at startup, for the
+ * same file-for-file reason, in case cfg.timeAveragingEnabled is false
+ * (matching every Conv.dat this project has actually seen) -- when it's
+ * true, finalizeTimeAverage() overwrites those four with real content
+ * later; when false, they stay exactly as this leaves them, matching the
+ * original's own Open-but-Plot_Amplitude-never-called behavior.
+ */
+void touchEmptyFile(const std::string& path) {
+    std::FILE* f = std::fopen(path.c_str(), "w");
+    if (!f)
+        throw std::runtime_error("CfdSimulation: could not create " + path);
+    std::fclose(f);
 }
 
 } // namespace
@@ -208,6 +400,29 @@ typename CfdSimulation<Real>::Ingredients CfdSimulation<Real>::prepare(Simulatio
     GpuField<unsigned long long> maxReductionScratch = GpuField<unsigned long long>::allocate(1, 1, 1, GpuIndex(0), *hand);
     GpuField<Real> referenceValueScratch = GpuField<Real>::allocate(1, 1, 1, GpuIndex(cfg.gpuPotential.device), *hand);
 
+    // Time-averaging accumulators -- always allocated (see Ingredients'
+    // own doc comment), same extent/device as each field's own solved
+    // buffer above.
+    GpuField<Real> vxTimeAverage = GpuField<Real>::allocate(cfg.Nx, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuVx.device), *hand);
+    GpuField<Real> vyTimeAverage = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny, cfg.Nz + 1, GpuIndex(cfg.gpuVy.device), *hand);
+    GpuField<Real> vzTimeAverage = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz, GpuIndex(cfg.gpuVz.device), *hand);
+    GpuField<Real> temperatureTimeAverage = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuTemperature.device), *hand);
+    GpuField<Real> pressureTimeAverage = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuPressure.device), *hand);
+
+    // Fourier-mode accumulators -- temperature only, one cos/sin pair per
+    // configured frequency. Empty when cfg.fourierFrequencies is empty
+    // (plain time-averaging, no decomposition -- every Conv.dat this
+    // project has seen actually has N_Fourier==1, but with I_Fourier==1,
+    // not 0, so it's never reached; this still has to be right for anyone
+    // who flips time_averaging.enabled on).
+    std::vector<GpuField<Real>> temperatureFourierCos, temperatureFourierSin;
+    temperatureFourierCos.reserve(cfg.fourierFrequencies.size());
+    temperatureFourierSin.reserve(cfg.fourierFrequencies.size());
+    for (size_t i = 0; i < cfg.fourierFrequencies.size(); ++i) {
+        temperatureFourierCos.push_back(GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuTemperature.device), *hand));
+        temperatureFourierSin.push_back(GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuTemperature.device), *hand));
+    }
+
     return Ingredients{
         std::move(cfg), std::move(hand), std::move(mesh), std::move(buoyancyByX),
         std::move(temperatureOld), std::move(temperatureCurrent),
@@ -217,7 +432,10 @@ typename CfdSimulation<Real>::Ingredients CfdSimulation<Real>::prepare(Simulatio
         std::move(solvers),
         std::move(pressure),
         std::move(rhsXScratch), std::move(rhsYScratch), std::move(rhsZScratch),
-        std::move(reductionScratch), std::move(maxReductionScratch), std::move(referenceValueScratch)
+        std::move(reductionScratch), std::move(maxReductionScratch), std::move(referenceValueScratch),
+        std::move(vxTimeAverage), std::move(vyTimeAverage), std::move(vzTimeAverage),
+        std::move(temperatureTimeAverage), std::move(pressureTimeAverage),
+        std::move(temperatureFourierCos), std::move(temperatureFourierSin)
     };
 }
 
@@ -242,7 +460,14 @@ CfdSimulation<Real>::CfdSimulation(Ingredients ingredients)
       rhsZScratch_(std::move(ingredients.rhsZScratch)),
       reductionScratch_(std::move(ingredients.reductionScratch)),
       maxReductionScratch_(std::move(ingredients.maxReductionScratch)),
-      referenceValueScratch_(std::move(ingredients.referenceValueScratch)) {
+      referenceValueScratch_(std::move(ingredients.referenceValueScratch)),
+      vxTimeAverage_(std::move(ingredients.vxTimeAverage)),
+      vyTimeAverage_(std::move(ingredients.vyTimeAverage)),
+      vzTimeAverage_(std::move(ingredients.vzTimeAverage)),
+      temperatureTimeAverage_(std::move(ingredients.temperatureTimeAverage)),
+      pressureTimeAverage_(std::move(ingredients.pressureTimeAverage)),
+      temperatureFourierCos_(std::move(ingredients.temperatureFourierCos)),
+      temperatureFourierSin_(std::move(ingredients.temperatureFourierSin)) {
     // History.dat's point-probe indices. Port of Solution_time_Q2D.f90:
     //   k_z_write = Nz2 / 2                     (Nz2 = Nz+2)
     //   j_y_write = Ny2 / 2                     (Ny2 = Ny+2)
@@ -263,6 +488,9 @@ CfdSimulation<Real>::CfdSimulation(Ingredients ingredients)
         Real distance = std::abs(x12[i] - Real(0.05));
         if (distance < bestDistance) { bestDistance = distance; probeX_ = i; }
     }
+    std::printf("DIAG ProbeIX=%d\n", probeX_);
+    std::printf("DIAG ProbeJY=%d\n", probeY_);
+    std::printf("DIAG ProbeKZ=%d\n", probeZ_);
 }
 
 template<typename Real>
@@ -274,8 +502,19 @@ std::string CfdSimulation<Real>::outputPath(const char* filename) const {
 
 template<typename Real>
 void CfdSimulation<Real>::openOutputFiles() {
-    std::string seriePath = outputPath("Serie.dat");
-    std::string historyPath = outputPath("History.dat");
+    // fopen (below) never creates a missing directory, only a missing file
+    // within one that already exists -- and unlike the original, which
+    // only ever ran against a directory Alex had already created by hand,
+    // cfg_.outputDirectory now comes from a JSON field anyone can repoint
+    // anywhere. create_directories is a safe no-op if the path already
+    // exists (including the "." default), and creates every missing
+    // parent, so a first run against a fresh path works instead of
+    // failing with an unhelpful fopen error.
+    std::error_code ec;
+    std::filesystem::create_directories(cfg_.outputDirectory, ec);
+    if (ec)
+        throw std::runtime_error("CfdSimulation: could not create output directory " + cfg_.outputDirectory + ": " + ec.message());
+
     std::string convOutPath = outputPath("Conv.out");
 
     // Append, not truncate: matches the original's position='append'
@@ -284,13 +523,25 @@ void CfdSimulation<Real>::openOutputFiles() {
     // in at least two different number formats from different compiler
     // eras) -- a restart's output keeps accumulating after earlier runs'
     // rather than erasing them.
-    serieFile_.reset(std::fopen(seriePath.c_str(), "a"));
-    if (!serieFile_)
-        throw std::runtime_error("CfdSimulation: could not open " + seriePath + " for writing");
+    //
+    // Only opened when writeSerieAndHistory is set -- see its doc comment
+    // in SimulationConfig.h for why skipping this isn't just "don't write
+    // the files," but "don't pay their per-iteration GPU cost either."
+    // Leaving serieFile_/historyFile_ null when off is what makes run()'s
+    // own `if (cfg_.writeSerieAndHistory)` guard safe to skip entirely:
+    // there's nothing here for it to leave half-initialized.
+    if (cfg_.writeSerieAndHistory) {
+        std::string seriePath = outputPath("Serie.dat");
+        std::string historyPath = outputPath("History.dat");
 
-    historyFile_.reset(std::fopen(historyPath.c_str(), "a"));
-    if (!historyFile_)
-        throw std::runtime_error("CfdSimulation: could not open " + historyPath + " for writing");
+        serieFile_.reset(std::fopen(seriePath.c_str(), "a"));
+        if (!serieFile_)
+            throw std::runtime_error("CfdSimulation: could not open " + seriePath + " for writing");
+
+        historyFile_.reset(std::fopen(historyPath.c_str(), "a"));
+        if (!historyFile_)
+            throw std::runtime_error("CfdSimulation: could not open " + historyPath + " for writing");
+    }
 
     convOutFile_.reset(std::fopen(convOutPath.c_str(), "a"));
     if (!convOutFile_)
@@ -305,6 +556,18 @@ void CfdSimulation<Real>::openOutputFiles() {
         "cfdSolver run: Nx=%d Ny=%d Nz=%d  AspRa=%.8g WidRa=%.8g Gr=%.8g Bi=%.8g Prandtl=%.8g Hartmann=%.8g\n",
         cfg_.Nx, cfg_.Ny, cfg_.Nz, cfg_.aspectRatio, cfg_.widthRatio, cfg_.grashof, cfg_.biot, cfg_.prandtl, cfg_.hartmann);
     std::fflush(convOutFile_.get());
+
+    // File-for-file parity with the original's own unconditional Opens
+    // (ConvMain_3D_Q2D.f90's top-of-program Open statements for units 4,
+    // 50/60/70/80/90/100, 51/61/71/81/91, and 77) -- see touchEmptyFile()'s
+    // doc comment for exactly which of these ever get written to (none of
+    // them, except the _av family above when time-averaging is enabled,
+    // handled by finalizeTimeAverage()).
+    for (const char* name : {"SteadyState.ddd", "Cpu.dat",
+                              "Tmpr.dat", "Pres.dat", "Vx.dat", "Vy.dat", "Vz.dat", "Potential.dat",
+                              "Tmpr_av.dat", "Pres_av.dat", "Vx_av.dat", "Vy_av.dat", "Vz_av.dat"}) {
+        touchEmptyFile(outputPath(name));
+    }
 }
 
 template<typename Real>
@@ -333,6 +596,37 @@ void CfdSimulation<Real>::computeGlobalDiagnostics(Real& kineticEnergy, Real& nu
         vx_.currentView(), vy_.currentView(), vz_.currentView(), spacing, nx1, ny1, nz1, reductionScratch_.view().data());
     kineticEnergy = reductionScratch_.downloadScalar(*hand_);
 
+    // TEMPORARY DIAGNOSTIC (remove once the Ek investigation concludes):
+    // kineticEnergyCell at 3 boundary-touching points this session's point
+    // samples never covered (all used i,j,k>=2; the energy sum's own loop
+    // runs i=1..nx1, so i==1 needs velocityX at i-1==0, a ghost read).
+    if (iteration_ == 10) {
+        int ny1Mid = ny1 / 2, nz1Mid = nz1 / 2, nx1Mid = nx1 / 2;
+        reductionScratch_.zero(*hand_);
+        diagKineticEnergyPointKernel<Real><<<1, 1, 0, *hand_>>>(
+            vx_.currentView(), vy_.currentView(), vz_.currentView(), spacing, 1, ny1Mid, nz1Mid, reductionScratch_.view().data());
+        Real diagLowX = reductionScratch_.downloadScalar(*hand_);
+        std::printf("DIAG EkCellLowX(%d,%d,%d)=%.15e\n", 1, ny1Mid, nz1Mid, (double)diagLowX);
+
+        reductionScratch_.zero(*hand_);
+        diagKineticEnergyPointKernel<Real><<<1, 1, 0, *hand_>>>(
+            vx_.currentView(), vy_.currentView(), vz_.currentView(), spacing, nx1, ny1Mid, nz1Mid, reductionScratch_.view().data());
+        Real diagHighX = reductionScratch_.downloadScalar(*hand_);
+        std::printf("DIAG EkCellHighX(%d,%d,%d)=%.15e\n", nx1, ny1Mid, nz1Mid, (double)diagHighX);
+
+        reductionScratch_.zero(*hand_);
+        diagKineticEnergyPointKernel<Real><<<1, 1, 0, *hand_>>>(
+            vx_.currentView(), vy_.currentView(), vz_.currentView(), spacing, nx1Mid, 1, nz1Mid, reductionScratch_.view().data());
+        Real diagLowY = reductionScratch_.downloadScalar(*hand_);
+        std::printf("DIAG EkCellLowY(%d,%d,%d)=%.15e\n", nx1Mid, 1, nz1Mid, (double)diagLowY);
+
+        reductionScratch_.zero(*hand_);
+        diagKineticEnergyPointKernel<Real><<<1, 1, 0, *hand_>>>(
+            vx_.currentView(), vy_.currentView(), vz_.currentView(), spacing, nx1Mid, ny1Mid, 1, reductionScratch_.view().data());
+        Real diagLowZ = reductionScratch_.downloadScalar(*hand_);
+        std::printf("DIAG EkCellLowZ(%d,%d,%d)=%.15e\n", nx1Mid, ny1Mid, 1, (double)diagLowZ);
+    }
+
     LaunchConfig3D wallCfg(1, ny1, nz1);
     reductionScratch_.zero(*hand_);
     nusseltKernel<Real><<<wallCfg.blocks, wallCfg.threads, wallCfg.reductionSharedBytes<Real>(), *hand_>>>(
@@ -344,6 +638,20 @@ void CfdSimulation<Real>::computeGlobalDiagnostics(Real& kineticEnergy, Real& nu
     probeVz = reductionScratch_.downloadScalar(*hand_);
     readPointKernel<Real><<<1, 1, 0, *hand_>>>(temperature_.currentView(), probeX_, probeY_, probeZ_, reductionScratch_.view().data());
     probeTmpr = reductionScratch_.downloadScalar(*hand_);
+
+    if (iteration_ == 1 || iteration_ == 10) {
+        reductionScratch_.zero(*hand_);
+        readPointKernel<Real><<<1, 1, 0, *hand_>>>(vz_.currentView(), 21, 21, 21, reductionScratch_.view().data());
+        Real vzCenter = reductionScratch_.downloadScalar(*hand_);
+        std::printf("DIAG VzCenterIstp=%d\n", iteration_);
+        std::printf("DIAG VzCenterVal=%.15e\n", (double)vzCenter);
+
+        reductionScratch_.zero(*hand_);
+        readPointKernel<Real><<<1, 1, 0, *hand_>>>(vz_.currentView(), 30, 10, 30, reductionScratch_.view().data());
+        Real vzOffCenter = reductionScratch_.downloadScalar(*hand_);
+        std::printf("DIAG VzOffCenterIstp=%d\n", iteration_);
+        std::printf("DIAG VzOffCenterVal=%.15e\n", (double)vzOffCenter);
+    }
 }
 
 template<typename Real>
@@ -429,6 +737,26 @@ void CfdSimulation<Real>::launchPotential() {
     potentialRightHandSideKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(
         rhs, vx_.currentView(), vz_.currentView(), mesh_.deviceSpacing());
 
+    if (iteration_ == 10) {
+        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
+        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
+        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        for (int p = 0; p < 4; ++p) {
+            readPointKernel<Real><<<1, 1, 0, hand>>>(rhs, px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real value = reductionScratch_.downloadScalar(hand);
+            std::printf("DIAG PotRHS(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)value);
+        }
+    }
+    if (iteration_ == 1) {
+        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
+        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
+        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        for (int p = 0; p < 4; ++p) {
+            readPointKernel<Real><<<1, 1, 0, hand>>>(rhs, px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real value = reductionScratch_.downloadScalar(hand);
+            std::printf("DIAG PotRHS_1(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)value);
+        }
+    }
     potential_.solve();
 }
 
@@ -500,6 +828,26 @@ void CfdSimulation<Real>::finishPotentialAndApplyForce() {
     // Both velocity streams consume the normalized potential. Waiting for
     // the solve above does not cover this subsequently queued subtraction.
     potentialHand.synch();
+    if (iteration_ == 10) {
+        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
+        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
+        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        for (int p = 0; p < 4; ++p) {
+            readPointKernel<Real><<<1, 1, 0, potentialHand>>>(potentialView, px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real value = reductionScratch_.downloadScalar(potentialHand);
+            std::printf("DIAG PotSolved(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)value);
+        }
+    }
+    if (iteration_ == 1) {
+        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
+        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
+        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        for (int p = 0; p < 4; ++p) {
+            readPointKernel<Real><<<1, 1, 0, potentialHand>>>(potentialView, px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real value = reductionScratch_.downloadScalar(potentialHand);
+            std::printf("DIAG PotSolved_1(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)value);
+        }
+    }
 
     Real coefficient = electromagneticCoefficient<Real>(cfg_);
 
@@ -553,15 +901,56 @@ void CfdSimulation<Real>::solvePressureCorrection() {
     Handle& hand = pressureCorrection_.handle();
     FieldView<Real> rhs = pressureCorrection_.view();
     LaunchConfig3D cfg3d(rhs.nx(), rhs.ny(), rhs.nz());
+    if (iteration_ == 10) {
+        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
+        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
+        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        for (int p = 0; p < 4; ++p) {
+            Handle& hX = vx_.solved().handle();
+            readPointKernel<Real><<<1, 1, 0, hX>>>(vx_.solved().view(), px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real vxv = reductionScratch_.downloadScalar(hX);
+            std::printf("DIAG VxSolved(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)vxv);
+
+            Handle& hY = vy_.solved().handle();
+            readPointKernel<Real><<<1, 1, 0, hY>>>(vy_.solved().view(), px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real vyv = reductionScratch_.downloadScalar(hY);
+            std::printf("DIAG VySolved(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)vyv);
+
+            Handle& hZ = vz_.solved().handle();
+            readPointKernel<Real><<<1, 1, 0, hZ>>>(vz_.solved().view(), px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real vzv = reductionScratch_.downloadScalar(hZ);
+            std::printf("DIAG VzSolved(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)vzv);
+        }
+    }
 
     divergenceKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(
         rhs, vx_.solved().view(), vy_.solved().view(), vz_.solved().view(), mesh_.deviceSpacing());
 
     Real correctionScale = Real(1.5) / (Real)cfg_.timeStep;
     scaleKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(rhs, correctionScale);
+    if (iteration_ == 10) {
+        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
+        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
+        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        for (int p = 0; p < 4; ++p) {
+            readPointKernel<Real><<<1, 1, 0, hand>>>(rhs, px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real value = reductionScratch_.downloadScalar(hand);
+            std::printf("DIAG PresRHS(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)value);
+        }
+    }
 
     pressureCorrection_.solve();
     pressureCorrection_.synch();
+    if (iteration_ == 10) {
+        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
+        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
+        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        for (int p = 0; p < 4; ++p) {
+            readPointKernel<Real><<<1, 1, 0, hand>>>(rhs, px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real value = reductionScratch_.downloadScalar(hand);
+            std::printf("DIAG PresSolved(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)value);
+        }
+    }
 
     // Keep the library's pressure gauge, as in time_step_Q2D.f90. An extra
     // reference subtraction changes Sum|Dprs| and RDP and would require a
@@ -593,6 +982,27 @@ void CfdSimulation<Real>::correctVelocitiesAndPressure() {
     pressureGradientZKernel<Real><<<cfgZ.blocks, cfgZ.threads, 0, handZ>>>(gradZ, correction, mesh_.deviceSpacing());
     FieldView<Real> newVz = vz_.solved().view();
     correctVelocityKernel<Real><<<cfgZ.blocks, cfgZ.threads, 0, handZ>>>(newVz, gradZ, coefficient);
+    if (iteration_ == 10) {
+        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
+        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
+        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        for (int p = 0; p < 4; ++p) {
+            Handle& hX = vx_.solved().handle();
+            readPointKernel<Real><<<1, 1, 0, hX>>>(vx_.solved().view(), px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real vxv = reductionScratch_.downloadScalar(hX);
+            std::printf("DIAG VxCorrected(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)vxv);
+
+            Handle& hY = vy_.solved().handle();
+            readPointKernel<Real><<<1, 1, 0, hY>>>(vy_.solved().view(), px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real vyv = reductionScratch_.downloadScalar(hY);
+            std::printf("DIAG VyCorrected(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)vyv);
+
+            Handle& hZ = vz_.solved().handle();
+            readPointKernel<Real><<<1, 1, 0, hZ>>>(vz_.solved().view(), px[p], py[p], pz[p], reductionScratch_.view().data());
+            Real vzv = reductionScratch_.downloadScalar(hZ);
+            std::printf("DIAG VzCorrected(%d,%d,%d)=%.15e\n", px[p], py[p], pz[p], (double)vzv);
+        }
+    }
 
     Handle& handP = pressureCorrection_.handle();
     FieldView<Real> pressureView = pressure_.view();
@@ -601,7 +1011,7 @@ void CfdSimulation<Real>::correctVelocitiesAndPressure() {
 }
 
 template<typename Real>
-void CfdSimulation<Real>::residuals(Real& rnsX, Real& rnsY, Real& rnsZ, Real& rdp) {
+void CfdSimulation<Real>::residuals(XYZ<Real>& residual, Real& rdp) {
     auto maxRelativeDifference = [&](FieldView<Real> newValue, FieldView<Real> oldValue, Handle& hand) -> Real {
         LaunchConfig3D cfg3d(newValue.nx(), newValue.ny(), newValue.nz());
         maxReductionScratch_.zero(hand);
@@ -613,9 +1023,9 @@ void CfdSimulation<Real>::residuals(Real& rnsX, Real& rnsY, Real& rnsZ, Real& rd
         return result;
     };
 
-    rnsX = maxRelativeDifference(vx_.solved().view(), vx_.currentView(), vx_.solved().handle());
-    rnsY = maxRelativeDifference(vy_.solved().view(), vy_.currentView(), vy_.solved().handle());
-    rnsZ = maxRelativeDifference(vz_.solved().view(), vz_.currentView(), vz_.solved().handle());
+    residual.x = maxRelativeDifference(vx_.solved().view(), vx_.currentView(), vx_.solved().handle());
+    residual.y = maxRelativeDifference(vy_.solved().view(), vy_.currentView(), vy_.solved().handle());
+    residual.z = maxRelativeDifference(vz_.solved().view(), vz_.currentView(), vz_.solved().handle());
 
     FieldView<Real> correction = pressureCorrection_.view();
     Handle& hand = pressureCorrection_.handle();
@@ -635,7 +1045,7 @@ void CfdSimulation<Real>::shiftAllTimeLevels() {
 }
 
 template<typename Real>
-void CfdSimulation<Real>::runOneTimeStep(Real& rnsX, Real& rnsY, Real& rnsZ, Real& rTmpr, Real& rdp) {
+void CfdSimulation<Real>::runOneTimeStep(XYZ<Real>& residual, Real& rTmpr, Real& rdp) {
     buildAndLaunchTemperature();
     buildAndLaunchVy();
     launchPotential();
@@ -650,16 +1060,274 @@ void CfdSimulation<Real>::runOneTimeStep(Real& rnsX, Real& rnsY, Real& rnsZ, Rea
 
     solvePressureCorrection();
     correctVelocitiesAndPressure();
-    residuals(rnsX, rnsY, rnsZ, rdp);
+    residuals(residual, rdp);
 
     shiftAllTimeLevels();
+}
+
+template<typename Real>
+void CfdSimulation<Real>::accumulateTimeAverage() {
+    // computeGlobalDiagnostics() may not have run this iteration (it's
+    // gated by the unrelated cfg_.writeSerieAndHistory), so every producer
+    // handle read here is synched explicitly, same rule as that function
+    // follows for vx_/vy_/vz_/temperature_. pressure_'s producer is
+    // pressureCorrection_ -- a plain GpuField has no handle of its own;
+    // correctVelocitiesAndPressure() writes pressure_'s memory via
+    // pressureCorrection_'s handle (its final addIntoKernel launch),
+    // confirmed directly from that function's body -- which
+    // computeGlobalDiagnostics() never needed to synch since it never
+    // reads pressure_ at all.
+    vx_.solved().handle().synch();
+    vy_.solved().handle().synch();
+    vz_.solved().handle().synch();
+    temperature_.solved().handle().synch();
+    pressureCorrection_.handle().synch();
+
+    Real htime = (Real)cfg_.timeStep;
+
+    auto accumulate = [&](GpuField<Real>& target, const FieldView<Real>& source, Real factor) {
+        LaunchConfig3D cfg3d(target.nx(), target.ny(), target.nz());
+        FieldView<Real> view = target.view();
+        accumulateScaledKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, *hand_>>>(view, source, factor);
+    };
+
+    // Fourier_sum's five unconditional lines: VMx_Av/VMy_Av/VMz_Av/Tmp_Av/
+    // Prs_Av each += their current value * Htime. (Tmp_Amplitude(0,...)'s
+    // identical accumulation is this same temperatureTimeAverage_ buffer
+    // -- see finalizeTimeAverage()'s doc comment for why keeping one
+    // buffer for both is exact, not an approximation.)
+    accumulate(vxTimeAverage_, vx_.currentView(), htime);
+    accumulate(vyTimeAverage_, vy_.currentView(), htime);
+    accumulate(vzTimeAverage_, vz_.currentView(), htime);
+    accumulate(temperatureTimeAverage_, temperature_.currentView(), htime);
+    accumulate(pressureTimeAverage_, pressure_.view(), htime);
+
+    // Fourier_sum's Do i=1,N_Fourier loop: temperature-only cos/sin terms.
+    // cos(omega*TimCur)/sin(omega*TimCur) are plain host scalars, computed
+    // once per call -- only the per-cell accumulate itself needs a kernel.
+    for (size_t i = 0; i < cfg_.fourierFrequencies.size(); ++i) {
+        Real angle = (Real)cfg_.fourierFrequencies[i] * elapsedTime_;
+        accumulate(temperatureFourierCos_[i], temperature_.currentView(), htime * std::cos(angle));
+        accumulate(temperatureFourierSin_[i], temperature_.currentView(), htime * std::sin(angle));
+    }
+}
+
+template<typename Real>
+void CfdSimulation<Real>::finalizeTimeAverage() {
+    int nx = cfg_.Nx, ny = cfg_.Ny, nz = cfg_.Nz;
+
+    // ---- Instantaneous (pre-substitution) velocity, needed below for
+    // Vx_av.dat/Vy_av.dat/Vz_av.dat specifically -- see this method's doc
+    // comment in CfdSimulation.h for why those three deliberately do NOT
+    // use the time-average. Must be downloaded before the in-place
+    // substitution at the end of this function overwrites vx_/vy_/vz_'s
+    // current data.
+    std::vector<Real> vxInstant = vx_.downloadCurrent(*hand_);
+    std::vector<Real> vyInstant = vy_.downloadCurrent(*hand_);
+    std::vector<Real> vzInstant = vz_.downloadCurrent(*hand_);
+
+    // ---- Normalize every accumulator by the run duration (Fourier
+    // terms by 2/runDuration) -- Plot_Amplitude's own division.
+    Real inverseInterval = Real(1) / (Real)cfg_.runDuration;
+    auto scale = [&](GpuField<Real>& field, Real factor) {
+        LaunchConfig3D cfg3d(field.nx(), field.ny(), field.nz());
+        FieldView<Real> view = field.view();
+        scaleKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, *hand_>>>(view, factor);
+    };
+    scale(vxTimeAverage_, inverseInterval);
+    scale(vyTimeAverage_, inverseInterval);
+    scale(vzTimeAverage_, inverseInterval);
+    scale(temperatureTimeAverage_, inverseInterval);
+    scale(pressureTimeAverage_, inverseInterval);
+    for (size_t i = 0; i < cfg_.fourierFrequencies.size(); ++i) {
+        scale(temperatureFourierCos_[i], Real(2) * inverseInterval);
+        scale(temperatureFourierSin_[i], Real(2) * inverseInterval);
+    }
+
+    // ---- Download every finalized time-average. downloadTo() synchs
+    // *hand_ itself, and every kernel above (scale(), and accumulate()
+    // throughout the run) also ran on *hand_, so these see each field's
+    // fully-normalized value with no further synch needed.
+    std::vector<Real> vxAvg = vxTimeAverage_.downloadTo(*hand_);
+    std::vector<Real> vyAvg = vyTimeAverage_.downloadTo(*hand_);
+    std::vector<Real> vzAvg = vzTimeAverage_.downloadTo(*hand_);
+    std::vector<Real> tmprAvg = temperatureTimeAverage_.downloadTo(*hand_); // Teta-free: Tmp_Av itself.
+    std::vector<Real> pressureAvg = pressureTimeAverage_.downloadTo(*hand_);
+
+    FieldView<Real> vxInstantView(vxInstant.data(), nx, ny + 1, nz + 1);
+    FieldView<Real> vyInstantView(vyInstant.data(), nx + 1, ny, nz + 1);
+    FieldView<Real> vzInstantView(vzInstant.data(), nx + 1, ny + 1, nz);
+    FieldView<Real> vxAvgView(vxAvg.data(), nx, ny + 1, nz + 1);
+    FieldView<Real> vyAvgView(vyAvg.data(), nx + 1, ny, nz + 1);
+    FieldView<Real> vzAvgView(vzAvg.data(), nx + 1, ny + 1, nz);
+    FieldView<Real> tmprAvgView(tmprAvg.data(), nx + 1, ny + 1, nz + 1);
+
+    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(cfg_);
+    std::vector<Real> buoyancyTable = computeBuoyancyTable<Real>(cfg_, mesh_);
+
+    // ---- Tmpr_av.dat / Amplitudes.dat's "Average" column: Tmp_Av, plus
+    // Teta broadcast over y/z (buoyancyTable is x-indexed only, 0..Nx+2,
+    // the same index as this loop's own i -- see computeBuoyancyTable()).
+    // Matches Solution_time_Q2D.f90's `Tmpr=Tmp_Av; Tmpr=Tmpr+Teta` right
+    // before its own Point_Write(Tmpr,...) call.
+    std::vector<Real> tmprTotal = resolveGhostInclusive<Real>(nx + 2, ny + 2, nz + 2,
+        [&](int i, int j, int k) { return BoundaryConditions::readTemperature(tmprAvgView, i, j, k, temperatureBc) + buoyancyTable[i]; });
+
+    std::vector<Real> vxFull = resolveGhostInclusive<Real>(nx + 1, ny + 2, nz + 2,
+        [&](int i, int j, int k) { return BoundaryConditions::readVelocity(vxInstantView, i, j, k); });
+    std::vector<Real> vyFull = resolveGhostInclusive<Real>(nx + 2, ny + 1, nz + 2,
+        [&](int i, int j, int k) { return BoundaryConditions::readVelocity(vyInstantView, i, j, k); });
+    std::vector<Real> vzFull = resolveGhostInclusive<Real>(nx + 2, ny + 2, nz + 1,
+        [&](int i, int j, int k) { return BoundaryConditions::readVelocity(vzInstantView, i, j, k); });
+
+    const std::vector<Real>& x12 = mesh_.hostNodeHalfX();
+    const std::vector<Real>& y12 = mesh_.hostNodeHalfY();
+    const std::vector<Real>& z12 = mesh_.hostNodeHalfZ();
+    const std::vector<Real>& xPlain = mesh_.hostX();
+    const std::vector<Real>& yPlain = mesh_.hostY();
+    const std::vector<Real>& zPlain = mesh_.hostZ();
+
+    writeTecplot3D(outputPath("Tmpr_av.dat"), nx + 2, ny + 2, nz + 2, x12, y12, z12, tmprTotal, "Tmpr      ");
+    writeTecplot3D(outputPath("Vx_av.dat"),   nx + 1, ny + 2, nz + 2, xPlain, y12, z12, vxFull, "Vx        ");
+    writeTecplot3D(outputPath("Vy_av.dat"),   nx + 2, ny + 1, nz + 2, x12, yPlain, z12, vyFull, "Vy        ");
+    writeTecplot3D(outputPath("Vz_av.dat"),   nx + 2, ny + 2, nz + 1, x12, y12, zPlain, vzFull, "Vz        ");
+    // Pres_av.dat: already created empty by openOutputFiles() and left
+    // untouched here -- its Point_Write is commented out in the original.
+
+    // ---- Amplitudes.dat: "Average" column is tmprTotal itself (Tmp_
+    // Amplitude(0,...) accumulates the exact same TmpNew*Htime every step
+    // as Tmp_Av does -- see accumulateTimeAverage() -- and gets the same
+    // +Teta, so there's nothing further to compute for it). cos/sin
+    // columns are Teta-free.
+    std::vector<std::vector<Real>> cosFull, sinFull;
+    cosFull.reserve(cfg_.fourierFrequencies.size());
+    sinFull.reserve(cfg_.fourierFrequencies.size());
+    for (size_t i = 0; i < cfg_.fourierFrequencies.size(); ++i) {
+        std::vector<Real> cosHost = temperatureFourierCos_[i].downloadTo(*hand_);
+        std::vector<Real> sinHost = temperatureFourierSin_[i].downloadTo(*hand_);
+        FieldView<Real> cosView(cosHost.data(), nx + 1, ny + 1, nz + 1);
+        FieldView<Real> sinView(sinHost.data(), nx + 1, ny + 1, nz + 1);
+        cosFull.push_back(resolveGhostInclusive<Real>(nx + 2, ny + 2, nz + 2,
+            [&](int i2, int j2, int k2) { return BoundaryConditions::readTemperature(cosView, i2, j2, k2, temperatureBc); }));
+        sinFull.push_back(resolveGhostInclusive<Real>(nx + 2, ny + 2, nz + 2,
+            [&](int i2, int j2, int k2) { return BoundaryConditions::readTemperature(sinView, i2, j2, k2, temperatureBc); }));
+    }
+    writeAmplitudes(outputPath("Amplitudes.dat"), nx + 2, ny + 2, nz + 2, x12, y12, z12, tmprTotal, cosFull, sinFull);
+
+    // ---- Average_velocity.ddd: the five _Av arrays verbatim (temperature
+    // Teta-free, matching Write(124)'s position BEFORE Tmpr=Tmpr+Teta --
+    // Solution_time_Q2D.f90 lines 204-212). Best-effort byte layout; see
+    // writeFortranUnformattedRecord()'s warning.
+    std::vector<Real> vxAvgFull = resolveGhostInclusive<Real>(nx + 1, ny + 2, nz + 2,
+        [&](int i, int j, int k) { return BoundaryConditions::readVelocity(vxAvgView, i, j, k); });
+    std::vector<Real> vyAvgFull = resolveGhostInclusive<Real>(nx + 2, ny + 1, nz + 2,
+        [&](int i, int j, int k) { return BoundaryConditions::readVelocity(vyAvgView, i, j, k); });
+    std::vector<Real> vzAvgFull = resolveGhostInclusive<Real>(nx + 2, ny + 2, nz + 1,
+        [&](int i, int j, int k) { return BoundaryConditions::readVelocity(vzAvgView, i, j, k); });
+    std::vector<Real> tmprAvgFull = resolveGhostInclusive<Real>(nx + 2, ny + 2, nz + 2,
+        [&](int i, int j, int k) { return BoundaryConditions::readTemperature(tmprAvgView, i, j, k, temperatureBc); });
+
+    std::string ddPath = outputPath("Average_velocity.ddd");
+    std::FILE* ddOut = std::fopen(ddPath.c_str(), "wb");
+    if (!ddOut)
+        throw std::runtime_error("CfdSimulation: could not open " + ddPath + " for writing");
+    writeFortranUnformattedRecord(ddOut, vxAvgFull);
+    writeFortranUnformattedRecord(ddOut, vyAvgFull);
+    writeFortranUnformattedRecord(ddOut, vzAvgFull);
+    writeFortranUnformattedRecord(ddOut, tmprAvgFull);
+    writeFortranUnformattedRecord(ddOut, pressureAvg);
+    std::fclose(ddOut);
+
+    // ---- Substitute the time-average over the live fields, in place --
+    // mirrors VMx=VMx_Av;...;Tmpr=Tmp_Av (Solution_time_Q2D.f90 line 210)
+    // exactly, deliberately WITHOUT line 212's Tmpr=Tmpr+Teta -- see this
+    // method's doc comment in CfdSimulation.h for why.
+    vx_.uploadCurrent(vxAvg, *hand_);
+    vy_.uploadCurrent(vyAvg, *hand_);
+    vz_.uploadCurrent(vzAvg, *hand_);
+    temperature_.uploadCurrent(tmprAvg, *hand_);
+    pressure_.uploadFrom(pressureAvg, *hand_);
+}
+
+template<typename Real>
+void CfdSimulation<Real>::writeFieldSnapshots() {
+    int nx = cfg_.Nx, ny = cfg_.Ny, nz = cfg_.Nz;
+
+    std::vector<Real> tmprHost = temperature_.downloadCurrent(*hand_);
+    std::vector<Real> vxHost = vx_.downloadCurrent(*hand_);
+    std::vector<Real> vyHost = vy_.downloadCurrent(*hand_);
+    std::vector<Real> vzHost = vz_.downloadCurrent(*hand_);
+    std::vector<Real> presHost = pressure_.downloadTo(*hand_);
+    std::vector<Real> potentialHost = potential_.buffer().downloadTo(*hand_);
+
+    FieldView<Real> tmprView(tmprHost.data(), nx + 1, ny + 1, nz + 1);
+    FieldView<Real> vxView(vxHost.data(), nx, ny + 1, nz + 1);
+    FieldView<Real> vyView(vyHost.data(), nx + 1, ny, nz + 1);
+    FieldView<Real> vzView(vzHost.data(), nx + 1, ny + 1, nz);
+    // Potential's own real extent is (Nx,Ny+1,Nz) -- GpuSolverSetup.cu's
+    // own comment at its construction -- not the same as any of the four
+    // views above.
+    FieldView<Real> potentialView(potentialHost.data(), nx, ny + 1, nz);
+
+    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(cfg_);
+    AxisBoundaries potentialBc = potentialBoundaries<Real>(cfg_);
+    std::vector<Real> buoyancyTable = computeBuoyancyTable<Real>(cfg_, mesh_);
+
+    // Tmpr.dat: Tmpr + Teta, matching the original's own `Tmpr = Tmpr +
+    // Teta` immediately before its Point_Write call (Solution_time_Q2D.f90
+    // line 128) -- same "total temperature" convention Tmpr_av.dat already
+    // uses, just from the instantaneous field instead of the time-average.
+    std::vector<Real> tmprFull = resolveGhostInclusive<Real>(nx + 2, ny + 2, nz + 2,
+        [&](int i, int j, int k) { return BoundaryConditions::readTemperature(tmprView, i, j, k, temperatureBc) + buoyancyTable[i]; });
+    std::vector<Real> vxFull = resolveGhostInclusive<Real>(nx + 1, ny + 2, nz + 2,
+        [&](int i, int j, int k) { return BoundaryConditions::readVelocity(vxView, i, j, k); });
+    std::vector<Real> vyFull = resolveGhostInclusive<Real>(nx + 2, ny + 1, nz + 2,
+        [&](int i, int j, int k) { return BoundaryConditions::readVelocity(vyView, i, j, k); });
+    std::vector<Real> vzFull = resolveGhostInclusive<Real>(nx + 2, ny + 2, nz + 1,
+        [&](int i, int j, int k) { return BoundaryConditions::readVelocity(vzView, i, j, k); });
+    // readTemperature(), not readVelocity(): field-agnostic despite the
+    // name (its own body is just FieldView+AxisBoundaries, nothing
+    // temperature-specific) -- the right one here since Potential, like
+    // Temperature, has a real configured Dirichlet/Neumann boundary kind,
+    // unlike velocity's unconditional no-slip zero. No buoyancy term:
+    // Teta is a temperature-only reference profile.
+    std::vector<Real> potentialFull = resolveGhostInclusive<Real>(nx + 1, ny + 2, nz + 1,
+        [&](int i, int j, int k) { return BoundaryConditions::readTemperature(potentialView, i, j, k, potentialBc); });
+
+    const std::vector<Real>& x12 = mesh_.hostNodeHalfX();
+    const std::vector<Real>& y12 = mesh_.hostNodeHalfY();
+    const std::vector<Real>& z12 = mesh_.hostNodeHalfZ();
+    const std::vector<Real>& xPlain = mesh_.hostX();
+    const std::vector<Real>& yPlain = mesh_.hostY();
+    const std::vector<Real>& zPlain = mesh_.hostZ();
+
+    writeTecplot3D(outputPath("Tmpr.dat"), nx + 2, ny + 2, nz + 2, x12, y12, z12, tmprFull, "Tmpr      ");
+    writeTecplot3D(outputPath("Vx.dat"),   nx + 1, ny + 2, nz + 2, xPlain, y12, z12, vxFull, "Vx        ");
+    writeTecplot3D(outputPath("Vy.dat"),   nx + 2, ny + 1, nz + 2, x12, yPlain, z12, vyFull, "Vy        ");
+    writeTecplot3D(outputPath("Vz.dat"),   nx + 2, ny + 2, nz + 1, x12, y12, zPlain, vzFull, "Vz        ");
+    writeTecplot3D(outputPath("Potential.dat"), nx + 1, ny + 2, nz + 1, xPlain, y12, zPlain, potentialFull, "Potential ");
+
+    // Pres.dat: pressure_'s own real extent, no ghost resolution at all --
+    // see this method's doc comment in CfdSimulation.h for why that's
+    // correct here, not an omission (confirmed against every real Fortran
+    // Prs usage, not just this one disabled call). presHost's layout (i
+    // fastest, from FieldView's own index formula) already matches
+    // writeTecplot3D's values[idx++] order exactly, so it's passed through
+    // unmodified -- no resolveGhostInclusive step for this one field. x12/
+    // y12/z12 sliced to the same real-extent range (dropping the ghost
+    // indices every other field's write needs), matching the original's
+    // own X12(1:Nx1)/Y12(1:Ny1)/Z12(1:Nz1) argument slice.
+    std::vector<Real> presX(x12.begin() + 1, x12.begin() + 1 + (nx + 1));
+    std::vector<Real> presY(y12.begin() + 1, y12.begin() + 1 + (ny + 1));
+    std::vector<Real> presZ(z12.begin() + 1, z12.begin() + 1 + (nz + 1));
+    writeTecplot3D(outputPath("Pres.dat"), nx, ny, nz, presX, presY, presZ, presHost, "Prs       ");
 }
 
 template<typename Real>
 void CfdSimulation<Real>::run() {
     openOutputFiles();
 
-    Real targetTime = elapsedTime_ + (Real)cfg_.timeInterval;
+    Real targetTime = elapsedTime_ + (Real)cfg_.runDuration;
     Real timeStep = (Real)cfg_.timeStep;
     std::string checkpointPath = outputPath("checkpoint.cfdc");
 
@@ -667,23 +1335,37 @@ void CfdSimulation<Real>::run() {
         ++iteration_;
         elapsedTime_ += timeStep;
 
-        Real rnsX, rnsY, rnsZ, rTmpr, rdp;
-        runOneTimeStep(rnsX, rnsY, rnsZ, rTmpr, rdp);
+        XYZ<Real> residual((Real)0, (Real)0, (Real)0);
+        Real rTmpr, rdp;
+        runOneTimeStep(residual, rTmpr, rdp);
 
-        // Serie.dat/History.dat: unconditional, every iteration -- port
-        // of Solution_time_Q2D.f90's Ek/Anu/Write(25,*)/Write(26,*),
-        // which have no Iprint (printEvery) gate, unlike the report block
-        // just below.
-        Real kineticEnergy, nusselt, probeVz, probeTmpr;
-        computeGlobalDiagnostics(kineticEnergy, nusselt, probeVz, probeTmpr);
-        std::fprintf(serieFile_.get(), "%.15g %.15g %.15g\n", (double)elapsedTime_, (double)kineticEnergy, (double)nusselt);
-        std::fflush(serieFile_.get());
-        std::fprintf(historyFile_.get(), "%.15g %.15g %.15g\n", (double)elapsedTime_, (double)probeVz, (double)probeTmpr);
-        std::fflush(historyFile_.get());
+        // Serie.dat/History.dat: unconditional in the original (no Iprint
+        // gate -- see cfg_.writeSerieAndHistory's doc comment), but unlike
+        // the original's plain CPU arithmetic on already-resident memory,
+        // computeGlobalDiagnostics() here costs a real per-iteration GPU
+        // tax (handle synchs plus full-volume reductions plus blocking
+        // downloads). Gated on cfg_.writeSerieAndHistory so that tax is
+        // skipped entirely -- not just the two files left unwritten --
+        // when the data isn't wanted. serieFile_/historyFile_ are only
+        // ever non-null when this flag is set (see openOutputFiles()).
+        if (cfg_.writeSerieAndHistory) {
+            Real kineticEnergy, nusselt, probeVz, probeTmpr;
+            computeGlobalDiagnostics(kineticEnergy, nusselt, probeVz, probeTmpr);
+            std::fprintf(serieFile_.get(), "%.15g %.15g %.15g\n", (double)elapsedTime_, (double)kineticEnergy, (double)nusselt);
+            std::fflush(serieFile_.get());
+            std::fprintf(historyFile_.get(), "%.15g %.15g %.15g\n", (double)elapsedTime_, (double)probeVz, (double)probeTmpr);
+            std::fflush(historyFile_.get());
+        }
+
+        // Fourier_sum: independent of cfg_.writeSerieAndHistory above --
+        // in the original, I_Fourier and the Serie.dat/History.dat writes
+        // are unrelated flags, so this is its own top-level guard, not
+        // nested in the block above.
+        if (cfg_.timeAveragingEnabled) accumulateTimeAverage();
 
         bool shouldPrint = (iteration_ % cfg_.printEvery) == 0;
         if (shouldPrint) {
-            printIterationReport(elapsedTime_, rnsX, rnsY, rnsZ, rTmpr, rdp);
+            printIterationReport(elapsedTime_, targetTime, residual, rTmpr, rdp);
         }
 
         // Independent of printEvery -- cfg_.checkpointEvery's own doc
@@ -699,22 +1381,86 @@ void CfdSimulation<Real>::run() {
                 temperature_, vx_, vy_, vz_, pressure_, elapsedTime_, *hand_);
         }
 
-        Real worstResidual = std::max(std::max(rnsX, rnsY), std::max(rnsZ, rTmpr));
+        Real worstResidual = std::max(std::max(residual.x, residual.y), std::max(residual.z, rTmpr));
         if (worstResidual < (Real)cfg_.epsConvergence) break;
         if (!(elapsedTime_ < targetTime) || iteration_ >= cfg_.maxIterations) break;
     }
 
     CheckpointIO::write(checkpointPath, cfg_.Nx, cfg_.Ny, cfg_.Nz,
         temperature_, vx_, vy_, vz_, pressure_, elapsedTime_, *hand_);
+
+    // Tmpr.dat/Vx.dat/Vy.dat/Vz.dat/Pres.dat/Potential.dat: the original's
+    // own disabled block sits right here too, between the final checkpoint
+    // and Plot_Amplitude (Solution_time_Q2D.f90 lines 128-133, right after
+    // label 880's Call Outp and before If(I_Fourier==0) Call Plot_
+    // Amplitude) -- same reasoning as the ordering note below: always the
+    // instantaneous state, the original's own Tmpr=Tmp_Av substitution
+    // (inside Plot_Amplitude) hasn't run yet at this point even when
+    // time-averaging is also enabled.
+    if (cfg_.writeFieldSnapshots) writeFieldSnapshots();
+
+    // Plot_Amplitude: called here, between the final checkpoint and the
+    // report, matching the original's exact ordering (Outp, then Plot_
+    // Amplitude, then the Nusselt/kinetic-energy report) -- the checkpoint
+    // is always the true instantaneous final state, never the time-
+    // average, in both the original and here.
+    if (cfg_.timeAveragingEnabled) finalizeTimeAverage();
+
     printFinalReport();
+
+    // Average_flow: unconditional in the original, called once right
+    // after the 3D Nusselt/kinetic-energy report (see AverageFlow.h's
+    // class comment for exactly where). Reads whatever vx_/vz_/
+    // temperature_ currently hold -- the time-average when
+    // cfg_.timeAveragingEnabled just substituted it in place above, the
+    // plain instantaneous field otherwise.
+    //
+    // No Teta addition here, in either case -- Yaverage.f90's own Teta
+    // addition (`Tr = Tr + Teta(...)`, inside Average_flow itself) is
+    // commented out in the original -- dead code. An earlier version of
+    // this comment argued Fortran's Tmpr_Yaverage.dat still comes out
+    // Teta-inclusive when I_Fourier==0, because Solution_time_Q2D.f90's own
+    // substitution, upstream of the Average_flow call, already does
+    // `Tmpr=Tmpr+Teta` (Plot_Amplitude, line 212) before Average_flow ever
+    // reads Tmpr. That's true of Solution_time_Q2D.f90 in isolation, but
+    // wrong about what Average_flow actually sees: ConvMain_3D_Q2D.f90's
+    // own `Tmpr=Tmp_Av` re-substitution runs immediately after
+    // Solution_time returns and immediately before this same Average_flow
+    // call -- one call frame up from line 212, in the file that actually
+    // calls Average_flow -- and it overwrites Tmpr with the plain
+    // (Teta-free) time-average again before Average_flow is reached. By
+    // the time Average_flow ever reads Tmpr, in every case where it's
+    // reached with I_Fourier==0, Plot_Amplitude's own addition has already
+    // been discarded. A prior port of this function replicated the
+    // addition anyway, via a temperatureBuoyancyTable parameter passed
+    // into AverageFlow::run() whenever cfg_.timeAveragingEnabled -- reasoning
+    // from line 212 alone, without tracing the re-substitution one frame up
+    // that undoes it. That made this call Teta-inclusive in a case where
+    // Fortran's actual Average_flow never is. The golden-value suite didn't
+    // catch it until ConvMain_3D_Q2D.f90's own VMx_Az/Tmpr_Av typos -- which
+    // had made that re-substitution read undefined memory instead of
+    // Tmp_Av, masking the discrepancy -- were fixed on the Fortran side.
+    // finalizeTimeAverage() deliberately does NOT bake Teta into the live
+    // temperature_ buffer either (correct for printFinalReport()'s Nusselt
+    // kernel just above, which adds Teta's contribution analytically and
+    // would double-count it) -- consistent with temperature_ never
+    // expecting Teta baked in, same as every other reader of it in this
+    // codebase, Average_flow included.
+    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(cfg_);
+    AverageFlow::run<Real>(cfg_.Nx, cfg_.Ny, cfg_.Nz,
+        vx_.downloadCurrent(*hand_), vz_.downloadCurrent(*hand_), temperature_.downloadCurrent(*hand_),
+        temperatureBc, mesh_.hostHx12(), mesh_.hostHy12(), mesh_.hostHz12(), mesh_.hostHpx(),
+        mesh_.hostNodeHalfX(), mesh_.hostNodeHalfZ(),
+        (Real)cfg_.aspectRatio, (Real)cfg_.widthRatio, gravitationalScale<Real>(cfg_),
+        outputPath("Psi_Yaverage.dat"), outputPath("Tmpr_Yaverage.dat"), convOutFile_.get());
 }
 
 template<typename Real>
-void CfdSimulation<Real>::printIterationReport(Real timeNow, Real rnsX, Real rnsY, Real rnsZ, Real rTmpr, Real rdp) const {
+void CfdSimulation<Real>::printIterationReport(Real timeNow, Real targetTime, XYZ<Real> residual, Real rTmpr, Real rdp) const {
     std::printf("\n  Istp=%6d   Time Step=%11.4g   Time=%15.8g   End Time=%15.8g\n",
-        iteration_, (double)cfg_.timeStep, (double)timeNow, (double)(elapsedTime_ + (Real)cfg_.timeInterval));
+        iteration_, (double)cfg_.timeStep, (double)timeNow, (double)targetTime);
     std::printf("  RNSx=%11.4g  RNSy=%11.4g  RNSz=%11.4g  RTmpr=%11.4g  RDP=%11.4g\n",
-        (double)rnsX, (double)rnsY, (double)rnsZ, (double)rTmpr, (double)rdp);
+        (double)residual.x, (double)residual.y, (double)residual.z, (double)rTmpr, (double)rdp);
 
     // Mirrors the two lines above into Conv.out -- same text, same
     // values, just a second destination. convOutFile_ is only null if
@@ -722,9 +1468,9 @@ void CfdSimulation<Real>::printIterationReport(Real timeNow, Real rnsX, Real rns
     // that), so the guard is defensive, not expected to trigger.
     if (convOutFile_) {
         std::fprintf(convOutFile_.get(), "\n  Istp=%6d   Time Step=%11.4g   Time=%15.8g   End Time=%15.8g\n",
-            iteration_, (double)cfg_.timeStep, (double)timeNow, (double)(elapsedTime_ + (Real)cfg_.timeInterval));
+            iteration_, (double)cfg_.timeStep, (double)timeNow, (double)targetTime);
         std::fprintf(convOutFile_.get(), "  RNSx=%11.4g  RNSy=%11.4g  RNSz=%11.4g  RTmpr=%11.4g  RDP=%11.4g\n",
-            (double)rnsX, (double)rnsY, (double)rnsZ, (double)rTmpr, (double)rdp);
+            (double)residual.x, (double)residual.y, (double)residual.z, (double)rTmpr, (double)rdp);
         std::fflush(convOutFile_.get());
     }
 }

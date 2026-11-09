@@ -27,6 +27,7 @@
 #define CFDSOLVER_DIAGNOSTICS_CUH
 
 #include "Operators.cuh"
+#include "ThreadIndex.cuh"
 
 /**
  * @ingroup cfd_solver
@@ -226,37 +227,93 @@ __device__ __forceinline__ void atomicMaxNonNegativeDouble(double value, unsigne
 template<typename Real>
 __global__ void kineticEnergyKernel(FieldView<Real> velocityX, FieldView<Real> velocityY, FieldView<Real> velocityZ,
                                      Spacing<Real> spacing, int nx1, int ny1, int nz1, Real* result) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     Real value = (i <= nx1 && j <= ny1 && k <= nz1)
         ? Diagnostics::kineticEnergyCell(i, j, k, velocityX, velocityY, velocityZ, spacing) : Real(0);
     blockSumInto(value, result);
 }
 
-/// @copydoc Diagnostics::nusseltCell
+/**
+ * @brief TEMPORARY DIAGNOSTIC (remove once the Ek investigation concludes):
+ * evaluates kineticEnergyCell at one arbitrary (i,j,k), including
+ * out-of-range indices, exercised through the same
+ * BoundaryConditions::readVelocity bounds-checked path kineticEnergyCell
+ * always uses internally. Added because every point sampled so far this
+ * session used i,j,k>=2 and never exercised the i==1/j==1/k==1 ghost read
+ * that readVelocity's unconditional `return Real(0)` branch handles.
+ * @tparam Real Floating-point type.
+ */
+template<typename Real>
+__global__ void diagKineticEnergyPointKernel(FieldView<Real> velocityX, FieldView<Real> velocityY, FieldView<Real> velocityZ,
+                                              Spacing<Real> spacing, int i, int j, int k, Real* result) {
+    *result = Diagnostics::kineticEnergyCell(i, j, k, velocityX, velocityY, velocityZ, spacing);
+}
+
+/**
+ * @copydoc Diagnostics::nusseltCell
+ *
+ * @bug (found and fixed by direct Fortran-vs-C++ Serie.dat comparison on
+ * the phys_baseline sweep case -- see CfdSimulation.h's class comment)
+ * This kernel is always launched with LaunchConfig3D(1, ny1, nz1): its x
+ * extent is degenerate (nusseltCell() has no x argument -- Nusselt is a
+ * sum over (j,k) only, at the fixed x=0/1/2 wall-adjacent indices).
+ * LaunchConfig3D always uses 8 threads per block on every axis regardless
+ * of the requested extent, so "nx=1" still runs 8 threads along x
+ * (threadIdx.x = 0..7, all within blockIdx.x's single block) for every
+ * (j,k) pair, and every one of those 8 threads computed the identical
+ * nusseltCell(j,k,...) value, since nothing here read threadIdx.x. Before
+ * the `threadIdx.x == 0` guard below was added, blockSumInto() summed all
+ * 8 identical copies per (j,k) into the block's partial sum -- an 8x-
+ * inflated Snu, confirmed against a real Fortran run: phys_baseline's
+ * iteration-1 Nusselt was 0.985097887296866 here vs Fortran's
+ * 0.998137215200290, and 1/AspRa + 8*(Fortran's own Snu) reproduces the
+ * buggy value to 5 significant figures (Fortran Snu=1/AspRa-0.998137...=
+ * -0.0018628 (AspRa=1); 8*-0.0018628=-0.0149024; 1-0.0149024=0.9850976,
+ * matching the bug's 0.985098 output). Restricting to threadIdx.x==0 keeps
+ * exactly one contribution per (j,k); every other x-thread now contributes
+ * the sum's identity value (0) instead.
+ *
+ * This bug is confined to this diagnostic reduction -- it never touched
+ * temperature_/vx_/vy_/vz_ themselves (every per-step kernel that builds
+ * or solves those fields launches over its field's own true 3D extent,
+ * never a degenerate one), so it explains Serie.dat's/Conv.out's wrong
+ * Nusselt numbers specifically, not the separate, still-open kinetic-
+ * energy drift seen later in a run.
+ */
 template<typename Real>
 __global__ void nusseltKernel(FieldView<Real> temperature, AxisBoundaries bc, Spacing<Real> spacing, int ny1, int nz1, Real* result) {
     int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
     int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
-    Real value = (j <= ny1 && k <= nz1) ? Diagnostics::nusseltCell(j, k, temperature, bc, spacing) : Real(0);
+    Real value = (j <= ny1 && k <= nz1 && threadIdx.x == 0) ? Diagnostics::nusseltCell(j, k, temperature, bc, spacing) : Real(0);
     blockSumInto(value, result);
 }
 
-/// @copydoc Diagnostics::nusseltMiddleCell
+/**
+ * @copydoc Diagnostics::nusseltMiddleCell
+ *
+ * @bug Same root cause as nusseltKernel's @bug above, but worse: this
+ * kernel is launched via LaunchConfig3D(nz1, 1, 1), so BOTH y and z are
+ * degenerate (nusseltMiddleCell() takes only k, at the fixed midplaneY).
+ * Without the threadIdx.y==0/threadIdx.z==0 guard below, all 8*8=64 (y,z)
+ * thread combinations per k each contributed the same value -- a 64x-
+ * inflated sum. Only reachable from printFinalReport()'s "Midplane
+ * Nusselt number" line (never written to Serie.dat), so it wasn't part of
+ * the Serie.dat comparison that caught nusseltKernel's 8x version above,
+ * but it is the exact same mistake and is fixed the same way.
+ */
 template<typename Real>
 __global__ void nusseltMiddleKernel(FieldView<Real> temperature, AxisBoundaries bc, Spacing<Real> spacing, int midplaneY, int nz1, Real* result) {
     int k = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    Real value = (k <= nz1) ? Diagnostics::nusseltMiddleCell(k, midplaneY, temperature, bc, spacing) : Real(0);
+    Real value = (k <= nz1 && threadIdx.y == 0 && threadIdx.z == 0) ? Diagnostics::nusseltMiddleCell(k, midplaneY, temperature, bc, spacing) : Real(0);
     blockSumInto(value, result);
 }
 
 /// @copydoc Diagnostics::absoluteValueCell
 template<typename Real>
 __global__ void maxAbsoluteValueKernel(FieldView<Real> field, unsigned long long* result) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > field.nx() || j > field.ny() || k > field.nz()) return;
     atomicMaxNonNegativeDouble((double)Diagnostics::absoluteValueCell(i, j, k, field), result);
 }
@@ -264,9 +321,8 @@ __global__ void maxAbsoluteValueKernel(FieldView<Real> field, unsigned long long
 /// @copydoc Diagnostics::relativeDifferenceCell
 template<typename Real>
 __global__ void maxRelativeDifferenceKernel(FieldView<Real> a, FieldView<Real> b, unsigned long long* result) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
-    int j = blockIdx.y * blockDim.y + threadIdx.y + 1;
-    int k = blockIdx.z * blockDim.z + threadIdx.z + 1;
+    XYZ<int> idx = threadGridIndex();
+    int i = idx.x, j = idx.y, k = idx.z;
     if (i > a.nx() || j > a.ny() || k > a.nz()) return;
     atomicMaxNonNegativeDouble((double)Diagnostics::relativeDifferenceCell(i, j, k, a, b), result);
 }

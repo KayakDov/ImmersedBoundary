@@ -1,0 +1,370 @@
+
+======================================================================
+FORTRAN  grid_030  exit=0  33.7s
+======================================================================
+  RNSx= 0.2788E-04  RNSy= 0.4953E-06  RNSz= 0.2788E-04  RTmpr= 0.2551E-05  RDP= 0.2200E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.2787E-04  RNSy= 0.4955E-06  RNSz= 0.2788E-04  RTmpr= 0.2553E-05  RDP= 0.2200E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.2787E-04  RNSy= 0.4956E-06  RNSz= 0.2787E-04  RTmpr= 0.2555E-05  RDP= 0.2201E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.2787E-04  RNSy= 0.4958E-06  RNSz= 0.2787E-04  RTmpr= 0.2558E-05  RDP= 0.2201E-05
+  Time integration lasted    31.1372900000000         seconds
+           Nusselt number  =   0.999988031887240     
+  Midplane Nusselt number  =   0.999988419857239     
+            kinetic energy =   1.355100285219261E-004
+       2D Nusselt number  =  0.999988031921724     
+       2D kinetic energy  =  2.706848500974260E-004
+  MaxPsi_average=   28.0321260220961     
+
+======================================================================
+C++      grid_030  exit=0  1.4s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.083e-05  RNSy=  1.111e-06  RNSz=  3.017e-05  RTmpr=  2.739e-06  RDP=  1.055e-05
+           Nusselt number  = 0.999917851237227
+  Midplane Nusselt number  = 0.999358171869411
+            kinetic energy = 0.000155645908516599
+      2D Nusselt number  = 0.999989731442792
+      2D kinetic energy  = 0.000310952132890436
+ MaxPsi_average= 30.046731775138
+
+======================================================================
+FORTRAN  grid_050  exit=0  53.7s
+======================================================================
+  RNSx= 0.2955E-04  RNSy= 0.5249E-06  RNSz= 0.2955E-04  RTmpr= 0.2751E-05  RDP= 0.2281E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.2955E-04  RNSy= 0.5251E-06  RNSz= 0.2955E-04  RTmpr= 0.2753E-05  RDP= 0.2282E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.2955E-04  RNSy= 0.5253E-06  RNSz= 0.2955E-04  RTmpr= 0.2756E-05  RDP= 0.2282E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.2955E-04  RNSy= 0.5254E-06  RNSz= 0.2955E-04  RTmpr= 0.2758E-05  RDP= 0.2283E-05
+  Time integration lasted    53.2623030000000         seconds
+           Nusselt number  =   0.999986199262755     
+  Midplane Nusselt number  =   0.999986561105410     
+            kinetic energy =   1.472460454101299E-004
+       2D Nusselt number  =  0.999986199272924     
+       2D kinetic energy  =  2.941200847266739E-004
+  MaxPsi_average=   29.1983993633458     
+
+======================================================================
+C++      grid_050  exit=0  7.1s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.119e-05  RNSy=  1.183e-06  RNSz=  3.048e-05  RTmpr=  2.862e-06  RDP=  7.599e-06
+           Nusselt number  = 0.999895931045293
+  Midplane Nusselt number  = 0.999180781451634
+            kinetic energy = 0.000158746205984957
+      2D Nusselt number  = 0.999986991391373
+      2D kinetic energy  = 0.000317138538676484
+ MaxPsi_average= 30.3221253130829
+
+======================================================================
+FORTRAN  grid_100  exit=0  337.5s
+======================================================================
+  RNSx= 0.3063E-04  RNSy= 0.5462E-06  RNSz= 0.3063E-04  RTmpr= 0.2854E-05  RDP= 0.2346E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.3063E-04  RNSy= 0.5464E-06  RNSz= 0.3063E-04  RTmpr= 0.2857E-05  RDP= 0.2347E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.3062E-04  RNSy= 0.5466E-06  RNSz= 0.3062E-04  RTmpr= 0.2859E-05  RDP= 0.2347E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.3062E-04  RNSy= 0.5468E-06  RNSz= 0.3062E-04  RTmpr= 0.2862E-05  RDP= 0.2348E-05
+  Time integration lasted    337.082778000000         seconds
+           Nusselt number  =   0.999985499631014     
+  Midplane Nusselt number  =   0.999985852645084     
+            kinetic energy =   1.547153088010269E-004
+       2D Nusselt number  =  0.999985499633247     
+       2D kinetic energy  =  3.090358897204582E-004
+  MaxPsi_average=   29.9228657489044     
+
+======================================================================
+C++      grid_100  exit=0  78.7s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.136e-05  RNSy=  1.197e-06  RNSz=  3.063e-05  RTmpr=  2.909e-06  RDP=  5.747e-06
+           Nusselt number  = 0.999886589710135
+  Midplane Nusselt number  = 0.999105168206048
+            kinetic energy = 0.000160132975005051
+      2D Nusselt number  = 0.99998582371605
+      2D kinetic energy  = 0.00031990548032642
+ MaxPsi_average= 30.4477950084659
+
+======================================================================
+FORTRAN  phys_baseline  exit=0  46.3s
+======================================================================
+  RNSx= 0.2895E-04  RNSy= 0.5255E-06  RNSz= 0.2895E-04  RTmpr= 0.2688E-05  RDP= 0.2252E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.2895E-04  RNSy= 0.5258E-06  RNSz= 0.2895E-04  RTmpr= 0.2691E-05  RDP= 0.2252E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.2895E-04  RNSy= 0.5260E-06  RNSz= 0.2895E-04  RTmpr= 0.2693E-05  RDP= 0.2252E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.2895E-04  RNSy= 0.5262E-06  RNSz= 0.2895E-04  RTmpr= 0.2696E-05  RDP= 0.2253E-05
+  Time integration lasted    45.7750300000000         seconds
+           Nusselt number  =   0.999986768542411     
+  Midplane Nusselt number  =   0.999987138592495     
+            kinetic energy =   1.430520638677257E-004
+       2D Nusselt number  =  0.999986768559487     
+       2D kinetic energy  =  2.857451990153855E-004
+  MaxPsi_average=   28.7855889857196     
+
+======================================================================
+C++      phys_baseline  exit=0  4.2s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.107e-05  RNSy=  1.179e-06  RNSz=  3.038e-05  RTmpr=  2.829e-06  RDP=  8.639e-06
+           Nusselt number  = 0.999902840911586
+  Midplane Nusselt number  = 0.999236711738872
+            kinetic energy = 0.00015774055907673
+      2D Nusselt number  = 0.999987855132243
+      2D kinetic energy  = 0.000315131909099543
+ MaxPsi_average= 30.2319269705827
+
+======================================================================
+FORTRAN  gr_low  exit=0  39.1s
+======================================================================
+  RNSx= 0.2808E-04  RNSy= 0.5896E-06  RNSz= 0.2808E-04  RTmpr= 0.2601E-05  RDP= 0.2644E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.2808E-04  RNSy= 0.5897E-06  RNSz= 0.2808E-04  RTmpr= 0.2603E-05  RDP= 0.2644E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.2808E-04  RNSy= 0.5899E-06  RNSz= 0.2808E-04  RTmpr= 0.2605E-05  RDP= 0.2644E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.2807E-04  RNSy= 0.5900E-06  RNSz= 0.2807E-04  RTmpr= 0.2608E-05  RDP= 0.2644E-05
+  Time integration lasted    38.6376510000000         seconds
+           Nusselt number  =   0.999990149551304     
+  Midplane Nusselt number  =   0.999990596108349     
+            kinetic energy =   1.369038966440168E-004
+       2D Nusselt number  =  0.999990149562288     
+       2D kinetic energy  =  2.734362278360419E-004
+  MaxPsi_average=   19.9311178522604     
+
+======================================================================
+C++      gr_low  exit=0  4.1s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.052e-05  RNSy=  1.357e-06  RNSz=  2.958e-05  RTmpr=  2.761e-06  RDP=  1.027e-05
+           Nusselt number  = 0.999930801476571
+  Midplane Nusselt number  = 0.999461810593141
+            kinetic energy = 0.000153629586893142
+      2D Nusselt number  = 0.9999913501965
+      2D kinetic energy  = 0.000306903084796026
+ MaxPsi_average= 21.1182360670629
+
+======================================================================
+FORTRAN  gr_high  exit=0  42.1s
+======================================================================
+  RNSx= 0.2952E-04  RNSy= 0.4415E-06  RNSz= 0.2952E-04  RTmpr= 0.2756E-05  RDP= 0.1931E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.2952E-04  RNSy= 0.4417E-06  RNSz= 0.2952E-04  RTmpr= 0.2759E-05  RDP= 0.1932E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.2952E-04  RNSy= 0.4419E-06  RNSz= 0.2952E-04  RTmpr= 0.2761E-05  RDP= 0.1932E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.2951E-04  RNSy= 0.4421E-06  RNSz= 0.2951E-04  RTmpr= 0.2764E-05  RDP= 0.1933E-05
+  Time integration lasted    41.6618250000000         seconds
+           Nusselt number  =   0.999982494623197     
+  Midplane Nusselt number  =   0.999982792589444     
+            kinetic energy =   1.481156272823190E-004
+       2D Nusselt number  =  0.999982494649540     
+       2D kinetic energy  =  2.958852436181681E-004
+  MaxPsi_average=   41.3893724931967     
+
+======================================================================
+C++      gr_high  exit=0  4.1s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.134e-05  RNSy=  9.793e-07  RNSz=  3.085e-05  RTmpr=  2.879e-06  RDP=  7.258e-06
+           Nusselt number  = 0.999867734353553
+  Midplane Nusselt number  = 0.998954219445602
+            kinetic energy = 0.000160896171131109
+      2D Nusselt number  = 0.999983466822088
+      2D kinetic energy  = 0.000321450869660899
+ MaxPsi_average= 43.142506024814
+
+======================================================================
+FORTRAN  pr_low  exit=0  39.7s
+======================================================================
+  RNSx= 0.2895E-04  RNSy= 0.5255E-06  RNSz= 0.2895E-04  RTmpr= 0.2625E-05  RDP= 0.2250E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.2895E-04  RNSy= 0.5257E-06  RNSz= 0.2895E-04  RTmpr= 0.2628E-05  RDP= 0.2250E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.2895E-04  RNSy= 0.5259E-06  RNSz= 0.2895E-04  RTmpr= 0.2630E-05  RDP= 0.2251E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.2895E-04  RNSy= 0.5262E-06  RNSz= 0.2895E-04  RTmpr= 0.2633E-05  RDP= 0.2251E-05
+  Time integration lasted    39.2392720000000         seconds
+           Nusselt number  =   0.999994545233549     
+  Midplane Nusselt number  =   0.999994910477516     
+            kinetic energy =   1.430520645345868E-004
+       2D Nusselt number  =  0.999994545241475     
+       2D kinetic energy  =  2.857452003467210E-004
+  MaxPsi_average=   28.7855889088168     
+
+======================================================================
+C++      pr_low  exit=0  4.1s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.107e-05  RNSy=  1.179e-06  RNSz=  3.038e-05  RTmpr=  2.763e-06  RDP=  8.638e-06
+           Nusselt number  = 0.999965084413046
+  Midplane Nusselt number  = 0.999734805824306
+            kinetic energy = 0.000157740559826047
+      2D Nusselt number  = 0.999995635560164
+      2D kinetic energy  = 0.000315131910596151
+ MaxPsi_average= 30.2319268967478
+
+======================================================================
+FORTRAN  pr_high  exit=0  45.9s
+======================================================================
+  RNSx= 0.2895E-04  RNSy= 0.5256E-06  RNSz= 0.2895E-04  RTmpr= 0.2742E-05  RDP= 0.2252E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.2895E-04  RNSy= 0.5258E-06  RNSz= 0.2895E-04  RTmpr= 0.2745E-05  RDP= 0.2253E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.2895E-04  RNSy= 0.5260E-06  RNSz= 0.2895E-04  RTmpr= 0.2748E-05  RDP= 0.2253E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.2895E-04  RNSy= 0.5262E-06  RNSz= 0.2895E-04  RTmpr= 0.2750E-05  RDP= 0.2253E-05
+  Time integration lasted    45.4427920000000         seconds
+           Nusselt number  =   0.999975125543517     
+  Midplane Nusselt number  =   0.999975478106345     
+            kinetic energy =   1.430520635094897E-004
+       2D Nusselt number  =  0.999975125579702     
+       2D kinetic energy  =  2.857451983007212E-004
+  MaxPsi_average=   28.7855890507871     
+
+======================================================================
+C++      pr_high  exit=0  4.1s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.107e-05  RNSy=  1.179e-06  RNSz=  3.038e-05  RTmpr=  2.885e-06  RDP=   8.64e-06
+           Nusselt number  = 0.999809281852163
+  Midplane Nusselt number  = 0.998487292020121
+            kinetic energy = 0.000157740558675389
+      2D Nusselt number  = 0.999976160270037
+      2D kinetic energy  = 0.000315131908298662
+ MaxPsi_average= 30.2319270341892
+
+======================================================================
+FORTRAN  ha_low  exit=0  40.6s
+======================================================================
+  RNSx= 0.3086E-04  RNSy= 0.3436E-06  RNSz= 0.3086E-04  RTmpr= 0.2804E-05  RDP= 0.1709E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.3086E-04  RNSy= 0.3439E-06  RNSz= 0.3086E-04  RTmpr= 0.2807E-05  RDP= 0.1710E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.3086E-04  RNSy= 0.3441E-06  RNSz= 0.3086E-04  RTmpr= 0.2810E-05  RDP= 0.1710E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.3086E-04  RNSy= 0.3444E-06  RNSz= 0.3086E-04  RTmpr= 0.2812E-05  RDP= 0.1711E-05
+  Time integration lasted    40.1635070000000         seconds
+           Nusselt number  =   0.999987756547978     
+  Midplane Nusselt number  =   0.999988009237482     
+            kinetic energy =   1.572066349800817E-004
+       2D Nusselt number  =  0.999987756566193     
+       2D kinetic energy  =  3.137741581668878E-004
+  MaxPsi_average=   30.1683902822126     
+
+======================================================================
+C++      ha_low  exit=0  4.2s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=   3.14e-05  RNSy=  6.804e-07  RNSz=   3.11e-05  RTmpr=  2.846e-06  RDP=  3.849e-06
+           Nusselt number  = 0.999904303866586
+  Midplane Nusselt number  = 0.999247411446335
+            kinetic energy = 0.000161123488069374
+      2D Nusselt number  = 0.999988038001854
+      2D kinetic energy  = 0.000321625446743337
+ MaxPsi_average= 30.5446309014285
+
+======================================================================
+FORTRAN  ha_high  exit=0  39.3s
+======================================================================
+  RNSx= 0.2298E-04  RNSy= 0.5827E-06  RNSz= 0.2298E-04  RTmpr= 0.2303E-05  RDP= 0.2626E-05
+
+
+  Istp=  998   Time Step= 0.1000E-03 Time= 0.99800000E-01   End Time= 0.10000000    
+  RNSx= 0.2297E-04  RNSy= 0.5828E-06  RNSz= 0.2297E-04  RTmpr= 0.2304E-05  RDP= 0.2626E-05
+
+
+  Istp=  999   Time Step= 0.1000E-03 Time= 0.99900000E-01   End Time= 0.10000000    
+  RNSx= 0.2297E-04  RNSy= 0.5829E-06  RNSz= 0.2297E-04  RTmpr= 0.2306E-05  RDP= 0.2625E-05
+
+
+  Istp= 1000   Time Step= 0.1000E-03 Time= 0.10000000       End Time= 0.10000000    
+  RNSx= 0.2296E-04  RNSy= 0.5830E-06  RNSz= 0.2296E-04  RTmpr= 0.2308E-05  RDP= 0.2625E-05
+  Time integration lasted    38.8786110000000         seconds
+           Nusselt number  =   0.999983789601419     
+  Midplane Nusselt number  =   0.999984232823752     
+            kinetic energy =   1.041760133033133E-004
+       2D Nusselt number  =  0.999983789615181     
+       2D kinetic energy  =  2.081825670844784E-004
+  MaxPsi_average=   24.5666972215142     
+
+======================================================================
+C++      ha_high  exit=0  4.1s
+======================================================================
+
+  Istp=  1000   Time Step=     0.0001   Time=            0.1   End Time=            0.2
+  RNSx=  3.016e-05  RNSy=  1.648e-06  RNSz=  2.905e-05  RTmpr=  2.779e-06  RDP=  2.359e-05
+           Nusselt number  = 0.999899714408959
+  Midplane Nusselt number  = 0.999210410439521
+            kinetic energy = 0.000150969344537752
+      2D Nusselt number  = 0.999987464318919
+      2D kinetic energy  = 0.000301744505400756
+ MaxPsi_average= 29.5792290781874

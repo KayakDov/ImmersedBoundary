@@ -5,8 +5,8 @@
     "biot": 0.0, "prandtl": 0.054, "hartmann": 1000.0
   },
   "numerics": {
-    "eps": 0.0000001, "eps_convergence": 0.000001, "max_iterations": 9000,
-    "time_step": 0.0001, "time_interval": 0.1, "print_every": 1000
+    "eps_convergence": 0.000001, "max_iterations": 9000,
+    "time_step": 0.0001, "run_duration": 0.1, "print_every": 1000
   },
   "diagnostics": { "run_conservation_checks": false, "mode": "full" },
   "temperature": {
@@ -27,5 +27,5 @@
   },
   "mesh": { "stretching_factor": 10.0 },
   "restart": { "read_from_file": null, "write_checkpoint_every": 1000 },
-  "output": { "directory": "." }
+  "output": { "directory": "./output", "write_serie_and_history": true, "write_field_snapshots": false }
 }

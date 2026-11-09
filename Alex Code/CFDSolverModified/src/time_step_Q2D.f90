@@ -104,7 +104,7 @@
 ! ========= start of this step, so it's independent of Temperature  =======
 ! ========= and Vy above too.                                       =======
 
-           Call Get_Potential_Launch
+           Call Get_Potential_Launch(Istp)
 
 ! ======== Build the parts of RHSx/RHSz that don't need Potential or =======
 ! ======== TmpNew yet -- moved up from after Temperature's sync so    =======
@@ -173,7 +173,7 @@
 
 ! ########### Potential is needed now: synch (via Finish) ##################
 
-           Call Get_Potential_Finish
+           Call Get_Potential_Finish(Istp)
 
 ! +++++++++ Electromagnetic force (needs Potential, just synched) ++++++++++
 
@@ -192,7 +192,11 @@
          ! C++ by 6-22% at Istp=1, well above GPU run-to-run noise, so this
          ! checks whether that discrepancy is already present in the array
          ! going INTO solve_eigen_decomp_d(VxHandle), or only appears after.
-         If (Istp == 1) Then
+         If (Istp == 10) Then
+             Write(*,*) ' DIAG VxRHS(2,Ny1/2,2)=', Vx_pinned(2,Ny1/2,2)
+             Write(*,*) ' DIAG VxRHS(Nx-1,Ny1/2,2)=', Vx_pinned(Nx-1,Ny1/2,2)
+             Write(*,*) ' DIAG VxRHS(2,Ny1/2,Nz-1)=', Vx_pinned(2,Ny1/2,Nz-1)
+             Write(*,*) ' DIAG VxRHS(Nx/2,Ny1/2,Nz/2)=', Vx_pinned(Nx/2,Ny1/2,Nz/2)
          End If
          Call solve_eigen_decomp_d(VxHandle)
 
@@ -200,7 +204,11 @@
 
       ! GPU: was Call EVD_Thomas(..., 1.D0), same DGr scaling as Vx/Vy.
          Vz_pinned = RHSz(1:Nx1,1:Ny1,1:Nz) / DGr
-         If (Istp == 1) Then
+         If (Istp == 10) Then
+             Write(*,*) ' DIAG VzRHS(2,Ny1/2,2)=', Vz_pinned(2,Ny1/2,2)
+             Write(*,*) ' DIAG VzRHS(Nx-1,Ny1/2,2)=', Vz_pinned(Nx-1,Ny1/2,2)
+             Write(*,*) ' DIAG VzRHS(2,Ny1/2,Nz-1)=', Vz_pinned(2,Ny1/2,Nz-1)
+             Write(*,*) ' DIAG VzRHS(Nx/2,Ny1/2,Nz/2)=', Vz_pinned(Nx/2,Ny1/2,Nz/2)
          End If
          Call solve_eigen_decomp_d(VzHandle)
 
@@ -256,7 +264,19 @@
          ! bug is inside the implicit solve itself. If they match, the
          ! solve is innocent and the bug is in EVDbounds or the
          ! pressure-correction block that follows.
-         If (Istp == 1) Then
+         If (Istp == 10) Then
+             Write(*,*) ' DIAG VxSolved(2,Ny1/2,2)=', VMxNew(2,Ny1/2,2)
+             Write(*,*) ' DIAG VxSolved(Nx-1,Ny1/2,2)=', VMxNew(Nx-1,Ny1/2,2)
+             Write(*,*) ' DIAG VxSolved(2,Ny1/2,Nz-1)=', VMxNew(2,Ny1/2,Nz-1)
+             Write(*,*) ' DIAG VxSolved(Nx/2,Ny1/2,Nz/2)=', VMxNew(Nx/2,Ny1/2,Nz/2)
+             Write(*,*) ' DIAG VySolved(2,Ny1/2,2)=', VMyNew(2,Ny1/2,2)
+             Write(*,*) ' DIAG VySolved(Nx-1,Ny1/2,2)=', VMyNew(Nx-1,Ny1/2,2)
+             Write(*,*) ' DIAG VySolved(2,Ny1/2,Nz-1)=', VMyNew(2,Ny1/2,Nz-1)
+             Write(*,*) ' DIAG VySolved(Nx/2,Ny1/2,Nz/2)=', VMyNew(Nx/2,Ny1/2,Nz/2)
+             Write(*,*) ' DIAG VzSolved(2,Ny1/2,2)=', VMzNew(2,Ny1/2,2)
+             Write(*,*) ' DIAG VzSolved(Nx-1,Ny1/2,2)=', VMzNew(Nx-1,Ny1/2,2)
+             Write(*,*) ' DIAG VzSolved(2,Ny1/2,Nz-1)=', VMzNew(2,Ny1/2,Nz-1)
+             Write(*,*) ' DIAG VzSolved(Nx/2,Ny1/2,Nz/2)=', VMzNew(Nx/2,Ny1/2,Nz/2)
          End If
 
       Call EVDbounds
@@ -301,7 +321,11 @@
 
       FDRHP = FDRHP * Ckor / Htime
 
-         If (Istp == 1) Then
+         If (Istp == 10) Then
+             Write(*,*) ' DIAG PresRHS(2,Ny1/2,2)=', FDRHP(2,Ny1/2,2)
+             Write(*,*) ' DIAG PresRHS(Nx-1,Ny1/2,2)=', FDRHP(Nx-1,Ny1/2,2)
+             Write(*,*) ' DIAG PresRHS(2,Ny1/2,Nz-1)=', FDRHP(2,Ny1/2,Nz-1)
+             Write(*,*) ' DIAG PresRHS(Nx/2,Ny1/2,Nz/2)=', FDRHP(Nx/2,Ny1/2,Nz/2)
          End If
 
   !    Write (*,*) ' FDRHP=', Sum(abs(FDRHP))
@@ -345,6 +369,12 @@
          Call solve_eigen_decomp_d(PressureHandle)
          Call synch_d(PressureHandle)
          Dprs(1:Nx1,1:Ny1,1:Nz1) = Pressure_pinned
+         If (Istp == 10) Then
+             Write(*,*) ' DIAG PresSolved(2,Ny1/2,2)=', Dprs(2,Ny1/2,2)
+             Write(*,*) ' DIAG PresSolved(Nx-1,Ny1/2,2)=', Dprs(Nx-1,Ny1/2,2)
+             Write(*,*) ' DIAG PresSolved(2,Ny1/2,Nz-1)=', Dprs(2,Ny1/2,Nz-1)
+             Write(*,*) ' DIAG PresSolved(Nx/2,Ny1/2,Nz/2)=', Dprs(Nx/2,Ny1/2,Nz/2)
+         End If
  !   Write (*,*) ' Dprs=', Sum(abs(Dprs))
 
          ! TEMPORARY DIAGNOSTIC (Hartmann=1000 investigation): Dprs has
@@ -394,11 +424,19 @@
       ! near-zero/decaying bulk region that was too noisy to read anything
       ! into. Same four points, both fields, as the C++ port's mirrored
       ! diagnostic in correctVelocitiesAndPressure().
-      If (Istp == 1) Then
-          ! Robust tiebreaker: Sum(Abs(.)), not Sum(.) -- can't hide a real
-          ! discrepancy behind positive/negative cancellation the way a
-          ! plain Sum() (or a couple of point samples right at the
-          ! quiescent-start noise floor) can.
+      If (Istp == 10) Then
+          Write(*,*) ' DIAG VxCorrected(2,Ny1/2,2)=', VMxNew(2,Ny1/2,2)
+          Write(*,*) ' DIAG VxCorrected(Nx-1,Ny1/2,2)=', VMxNew(Nx-1,Ny1/2,2)
+          Write(*,*) ' DIAG VxCorrected(2,Ny1/2,Nz-1)=', VMxNew(2,Ny1/2,Nz-1)
+          Write(*,*) ' DIAG VxCorrected(Nx/2,Ny1/2,Nz/2)=', VMxNew(Nx/2,Ny1/2,Nz/2)
+          Write(*,*) ' DIAG VyCorrected(2,Ny1/2,2)=', VMyNew(2,Ny1/2,2)
+          Write(*,*) ' DIAG VyCorrected(Nx-1,Ny1/2,2)=', VMyNew(Nx-1,Ny1/2,2)
+          Write(*,*) ' DIAG VyCorrected(2,Ny1/2,Nz-1)=', VMyNew(2,Ny1/2,Nz-1)
+          Write(*,*) ' DIAG VyCorrected(Nx/2,Ny1/2,Nz/2)=', VMyNew(Nx/2,Ny1/2,Nz/2)
+          Write(*,*) ' DIAG VzCorrected(2,Ny1/2,2)=', VMzNew(2,Ny1/2,2)
+          Write(*,*) ' DIAG VzCorrected(Nx-1,Ny1/2,2)=', VMzNew(Nx-1,Ny1/2,2)
+          Write(*,*) ' DIAG VzCorrected(2,Ny1/2,Nz-1)=', VMzNew(2,Ny1/2,Nz-1)
+          Write(*,*) ' DIAG VzCorrected(Nx/2,Ny1/2,Nz/2)=', VMzNew(Nx/2,Ny1/2,Nz/2)
       End If
 
       call EVDbounds
