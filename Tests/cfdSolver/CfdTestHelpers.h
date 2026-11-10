@@ -75,6 +75,37 @@ private:
     std::vector<std::string> examples_;
 };
 
+/**
+ * @brief A ghost-padded 3D array: 1-indexed over [0, N+1] with one ghost
+ * layer on every face. Shared by every host-only test that checks a
+ * production finite-difference operator against a hand-written,
+ * ghost-padded reference (test_operators_host.cpp,
+ * test_electromagnetic_force.cpp).
+ */
+struct PaddedField {
+    int nx, ny, nz;
+    std::vector<double> data;
+    PaddedField(int x, int y, int z) : nx(x), ny(y), nz(z), data((size_t)(x + 1) * (y + 1) * (z + 1), 0.0) {}
+    double& at(int i, int j, int k) { return data[(size_t)i + (size_t)(nx + 1) * ((size_t)j + (size_t)(ny + 1) * (size_t)k)]; }
+    double at(int i, int j, int k) const { return data[(size_t)i + (size_t)(nx + 1) * ((size_t)j + (size_t)(ny + 1) * (size_t)k)]; }
+};
+
+/// @brief Zeroes a PaddedField's velocity ghosts on every face (velocity is always Dirichlet-zero).
+inline void FillVelGhostsZero(PaddedField& v) {
+    for (int j = 0; j <= v.ny; ++j) for (int k = 0; k <= v.nz; ++k) { v.at(0, j, k) = 0.0; v.at(v.nx, j, k) = 0.0; }
+    for (int i = 0; i <= v.nx; ++i) for (int k = 0; k <= v.nz; ++k) { v.at(i, 0, k) = 0.0; v.at(i, v.ny, k) = 0.0; }
+    for (int i = 0; i <= v.nx; ++i) for (int j = 0; j <= v.ny; ++j) { v.at(i, j, 0) = 0.0; v.at(i, j, v.nz) = 0.0; }
+}
+
+/// @brief Flattens a 1-indexed (i,j,k) triple into an unpadded array offset.
+inline size_t Uidx(int i, int j, int k, int nx, int ny) { return (size_t)(i - 1) + (size_t)nx * ((size_t)(j - 1) + (size_t)ny * (size_t)(k - 1)); }
+
+/// @brief The grid sizes exercised by every test that sweeps grid size in this suite.
+inline const std::vector<int>& TestGridSizes() {
+    static const std::vector<int> sizes = {5, 8, 13};
+    return sizes;
+}
+
 } // namespace cfdtest
 
 #endif //CFDSOLVER_TESTS_CFDTESTHELPERS_H

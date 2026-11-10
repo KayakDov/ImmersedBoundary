@@ -140,7 +140,7 @@ TEST(SimulationConfigTest, BadBoundaryKindThrowsClearError) {
         SimulationConfig::loadFromFile(file.path());
         FAIL() << "expected loadFromFile to throw for an invalid boundary-kind string";
     } catch (const std::exception& e) {
-        // The actual typo should be quoted back in the error message.
+        /* The actual typo should be quoted back in the error message. */
         EXPECT_NE(std::string(e.what()).find("neuman"), std::string::npos) << "error message was: " << e.what();
     }
 }

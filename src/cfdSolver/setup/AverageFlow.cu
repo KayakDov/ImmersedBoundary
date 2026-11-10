@@ -3,11 +3,12 @@
  * @ingroup cfd_solver
  * @brief Implements AverageFlow::run().
  *
- * @warning Not compile-verified: see CheckpointIO.cu's file-level warning
- * for why. Pure host arithmetic and file I/O -- no device code, no kernel
- * launches -- checked by hand against modfv_3D_Q2D.f90's Average_flow/
- * PsiInt/Nusselt_2D/Ekinem_2D and Point_Write_2D, line by line, including
- * every array's exact index range.
+ * Pure host arithmetic and file I/O -- no device code, no kernel
+ * launches. Compile-verified, linked, and run directly by
+ * test_average_flow.cpp (3/3 passing) and as part of the combined
+ * host-only suite; also checked by hand against modfv_3D_Q2D.f90's
+ * Average_flow/PsiInt/Nusselt_2D/Ekinem_2D and Point_Write_2D, line by
+ * line, including every array's exact index range.
  */
 
 #include "AverageFlow.h"
@@ -85,24 +86,21 @@ void AverageFlow::run(int nx, int ny, int nz,
     int ny1 = ny + 1;
     int nz1 = nz + 1, nz2 = nz + 2;
 
-    // Host views over already-downloaded data -- FieldView is just
-    // pointer arithmetic, so it works identically whether the pointer it
-    // wraps is device or host memory; here it's host.
+    /* Host views over already-downloaded data -- FieldView is just
+     * pointer arithmetic, so it works identically whether the pointer it
+     * wraps is device or host memory; here it's host. */
     FieldView<Real> vxView(const_cast<Real*>(vxCurrent.data()), nx, ny1, nz1);
     FieldView<Real> vzView(const_cast<Real*>(vzCurrent.data()), nx1, ny1, nz);
     FieldView<Real> tView(const_cast<Real*>(temperatureCurrent.data()), nx1, ny1, nz1);
 
-    // -----------------------------------------------------------------
-    // Average_flow's Y-average: Ux/Uz/Tr, each a Hy12-weighted sum over
-    // VMx/VMz/Tmpr's full y-range (j=1..Ny1, each source field's own real
-    // y-extent exactly -- no boundary resolution needed on y), normalized
-    // by widthRatio. The i/k ranges below are each output array's own
-    // (wider) extent, so most i/k combinations fall outside the source
-    // field's own real range and resolve through the same
-    // BoundaryConditions functions the solve itself uses to read a ghost
-    // cell -- velocity unconditionally 0 (no-slip), temperature 0
-    // (Dirichlet) or mirrored (Neumann) per temperatureBc.
-    // -----------------------------------------------------------------
+    /* Ux/Uz/Tr are each a Hy12-weighted sum over the source field's full
+     * y-range (j=1..Ny1 -- no boundary resolution needed on y),
+     * normalized by widthRatio. The i/k ranges below are each output
+     * array's own (wider) extent, so most i/k combinations fall outside
+     * the source field's own real range and resolve through the same
+     * BoundaryConditions functions the solve itself uses to read a ghost
+     * cell -- velocity unconditionally 0 (no-slip), temperature 0
+     * (Dirichlet) or mirrored (Neumann) per temperatureBc. */
     Array2D<Real> ux(nx1, nz2), uz(nx2, nz1), tr(nx2, nz2);
 
     for (int i = 0; i <= nx1; ++i) {
@@ -132,12 +130,9 @@ void AverageFlow::run(int nx, int ny, int nz,
         }
     }
 
-    // -----------------------------------------------------------------
-    // PsiInt: stream function from the Y-averaged Uz, by trapezoidal
-    // integration in x. Zero on all four domain edges by construction.
-    // Every Uz(...) read below is within Uz's own just-computed
-    // (0:Nx2,0:Nz1) extent -- no further boundary resolution needed.
-    // -----------------------------------------------------------------
+    /* Zero on all four domain edges by construction. Every Uz(...) read
+     * below is within Uz's own just-computed (0:Nx2,0:Nz1) extent -- no
+     * further boundary resolution needed. */
     Array2D<Real> psi(nx2, nz2);
 
     for (int i = 0; i <= nx2; ++i) {
@@ -153,10 +148,8 @@ void AverageFlow::run(int nx, int ny, int nz,
         }
     }
 
-    // -----------------------------------------------------------------
-    // Nusselt_2D: wall heat flux at x=0 (a one-sided finite difference
-    // using Tr's own Dirichlet-resolved wall row), integrated over z.
-    // -----------------------------------------------------------------
+    /* A one-sided finite difference at x=0, using Tr's own
+     * Dirichlet-resolved wall row, integrated over z. */
     Real snu = Real(0);
     for (int j = 1; j <= nz1; ++j) {
         Real dt = (tr(0, j) - tr(1, j)) / hpx[0];
@@ -164,9 +157,6 @@ void AverageFlow::run(int nx, int ny, int nz,
     }
     Real nusselt2D = Real(1) / aspectRatio + snu;
 
-    // -----------------------------------------------------------------
-    // Ekinem_2D: kinetic energy of the Y-averaged flow.
-    // -----------------------------------------------------------------
     Real ekinem2D = Real(0);
     for (int i = 1; i <= nx1; ++i) {
         for (int k = 1; k <= nz1; ++k) {
@@ -184,8 +174,6 @@ void AverageFlow::run(int nx, int ny, int nz,
         std::fflush(convOut);
     }
 
-    // MaxPsi_average -- console-only in the original (Write(*,*), not
-    // mirrored to unit 2/Conv.out).
     Real maxAbsPsi = Real(0);
     for (int i = 0; i <= nx2; ++i)
         for (int k = 0; k <= nz2; ++k)

@@ -3,8 +3,12 @@
  * @ingroup cfd_solver
  * @brief Implements SolvedField.
  *
- * @warning Not compile-verified: see GpuSolverSetup.cu's file-level
- * warning for why.
+ * Compile-verified with nvcc (zero warnings); not run, since no physical
+ * GPU is available in the environment this was checked in. Every method
+ * here either calls the CUDA runtime/solver directly or allocates a
+ * GpuField, so there is no device-independent remainder to extract and
+ * test the way Mesh's computeAxisSpacing() or CheckpointIO's
+ * writeBuffers()/readBuffers() were.
  */
 
 #include "SolvedField.h"

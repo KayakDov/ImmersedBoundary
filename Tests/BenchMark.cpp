@@ -186,7 +186,7 @@ double runEigenDecompThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>& bo
     cudaDeviceSynchronize();
 
     auto t0 = std::chrono::high_resolution_clock::now();
-    EigenDecompThomas<Real, SegX> ed(boundary, hands, sizeOfBX3);
+    EigenDecompThomas<Real, SegZ> ed(boundary, hands, sizeOfBX3);
     ed.solve(x, rhs, hands[0]);
     cudaDeviceSynchronize();
 

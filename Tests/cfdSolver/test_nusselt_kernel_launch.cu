@@ -32,6 +32,7 @@
 #include <cuda_runtime.h>
 #include "physics/Diagnostics.cuh"
 #include "CfdTestHelpers.h"
+#include "CfdTestCudaHelpers.cuh"
 #include <random>
 #include <vector>
 
@@ -65,15 +66,6 @@ struct KernelLaunchGeometry {
         return KernelLaunchGeometry{blocks, threads, sharedBytes};
     }
 };
-
-/// Allocates device memory, copies `hostData` into it, and returns the
-/// device pointer. Caller owns the returned pointer (cudaFree it).
-double* ToDevice(const std::vector<double>& hostData) {
-    double* devicePtr = nullptr;
-    if (cudaMalloc(&devicePtr, hostData.size() * sizeof(double)) != cudaSuccess) return nullptr;
-    if (cudaMemcpy(devicePtr, hostData.data(), hostData.size() * sizeof(double), cudaMemcpyHostToDevice) != cudaSuccess) return nullptr;
-    return devicePtr;
-}
 
 std::mt19937 rng(20261030);
 std::uniform_real_distribution<double> dist(-1.0, 1.0);
@@ -110,9 +102,9 @@ protected:
         temperatureHost.resize((size_t)nx1 * ny1 * nz1);
         for (auto& v : temperatureHost) v = R();
 
-        temperatureDevice = ToDevice(temperatureHost);
-        hx12D = ToDevice(hx12); hy12D = ToDevice(hy12); hz12D = ToDevice(hz12);
-        hpxD = ToDevice(hpx); hpyD = ToDevice(hpy); hpzD = ToDevice(hpz);
+        temperatureDevice = cfdtest::ToDevice(temperatureHost);
+        hx12D = cfdtest::ToDevice(hx12); hy12D = cfdtest::ToDevice(hy12); hz12D = cfdtest::ToDevice(hz12);
+        hpxD = cfdtest::ToDevice(hpx); hpyD = cfdtest::ToDevice(hpy); hpzD = cfdtest::ToDevice(hpz);
         ASSERT_NE(temperatureDevice, nullptr);
         ASSERT_NE(hx12D, nullptr); ASSERT_NE(hy12D, nullptr); ASSERT_NE(hz12D, nullptr);
         ASSERT_NE(hpxD, nullptr); ASSERT_NE(hpyD, nullptr); ASSERT_NE(hpzD, nullptr);

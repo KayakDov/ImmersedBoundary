@@ -203,7 +203,12 @@ __device__ __forceinline__ void blockSumInto(Real value, Real* result) {
 }
 
 /// @return The bits of a non-negative double, reinterpreted as an
-/// unsigned 64-bit integer whose ordering matches the double's.
+/// unsigned 64-bit integer. For a non-negative IEEE-754 double, this
+/// reinterpretation preserves ordering -- the sign bit is 0, and the
+/// exponent and mantissa are both stored high-to-low, exactly like an
+/// unsigned integer's digits -- which is what lets
+/// atomicMaxNonNegativeDouble() below use the integer atomicMax CUDA
+/// provides natively.
 __device__ __forceinline__ unsigned long long nonNegativeDoubleBits(double value) {
     return __double_as_longlong(value);
 }
@@ -211,10 +216,8 @@ __device__ __forceinline__ unsigned long long nonNegativeDoubleBits(double value
 /**
  * @brief Raises *result to value if value is larger, via the standard
  * atomicMax-on-reinterpreted-bits pattern (CUDA has no native atomicMax
- * for double). Valid only for non-negative values -- see this file's
- * verify_bitcast_ordering.cpp companion for the proof that non-negative
- * IEEE-754 double ordering matches unsigned 64-bit integer ordering of
- * the same bits.
+ * for double). Valid only for non-negative values -- see
+ * nonNegativeDoubleBits() above for why that reinterpretation is safe.
  * @param value This thread's non-negative candidate maximum.
  * @param result Device accumulator (as its bit pattern), must be zeroed
  * before the kernel launches.
@@ -235,13 +238,12 @@ __global__ void kineticEnergyKernel(FieldView<Real> velocityX, FieldView<Real> v
 }
 
 /**
- * @brief TEMPORARY DIAGNOSTIC (remove once the Ek investigation concludes):
- * evaluates kineticEnergyCell at one arbitrary (i,j,k), including
- * out-of-range indices, exercised through the same
- * BoundaryConditions::readVelocity bounds-checked path kineticEnergyCell
- * always uses internally. Added because every point sampled so far this
- * session used i,j,k>=2 and never exercised the i==1/j==1/k==1 ghost read
- * that readVelocity's unconditional `return Real(0)` branch handles.
+ * @brief Evaluates kineticEnergyCell at one arbitrary (i,j,k), including
+ * out-of-range indices, through the same bounds-checked
+ * BoundaryConditions::readVelocity path kineticEnergyCell always uses
+ * internally -- so a ghost-read index behaves exactly as it would inside
+ * a full-volume kernel. Used for the single-point boundary diagnostic
+ * reads in CfdSimulation.cu's computeGlobalDiagnostics().
  * @tparam Real Floating-point type.
  */
 template<typename Real>
@@ -253,33 +255,18 @@ __global__ void diagKineticEnergyPointKernel(FieldView<Real> velocityX, FieldVie
 /**
  * @copydoc Diagnostics::nusseltCell
  *
- * @bug (found and fixed by direct Fortran-vs-C++ Serie.dat comparison on
- * the phys_baseline sweep case -- see CfdSimulation.h's class comment)
- * This kernel is always launched with LaunchConfig3D(1, ny1, nz1): its x
- * extent is degenerate (nusseltCell() has no x argument -- Nusselt is a
- * sum over (j,k) only, at the fixed x=0/1/2 wall-adjacent indices).
- * LaunchConfig3D always uses 8 threads per block on every axis regardless
- * of the requested extent, so "nx=1" still runs 8 threads along x
- * (threadIdx.x = 0..7, all within blockIdx.x's single block) for every
- * (j,k) pair, and every one of those 8 threads computed the identical
- * nusseltCell(j,k,...) value, since nothing here read threadIdx.x. Before
- * the `threadIdx.x == 0` guard below was added, blockSumInto() summed all
- * 8 identical copies per (j,k) into the block's partial sum -- an 8x-
- * inflated Snu, confirmed against a real Fortran run: phys_baseline's
- * iteration-1 Nusselt was 0.985097887296866 here vs Fortran's
- * 0.998137215200290, and 1/AspRa + 8*(Fortran's own Snu) reproduces the
- * buggy value to 5 significant figures (Fortran Snu=1/AspRa-0.998137...=
- * -0.0018628 (AspRa=1); 8*-0.0018628=-0.0149024; 1-0.0149024=0.9850976,
- * matching the bug's 0.985098 output). Restricting to threadIdx.x==0 keeps
- * exactly one contribution per (j,k); every other x-thread now contributes
- * the sum's identity value (0) instead.
- *
- * This bug is confined to this diagnostic reduction -- it never touched
- * temperature_/vx_/vy_/vz_ themselves (every per-step kernel that builds
- * or solves those fields launches over its field's own true 3D extent,
- * never a degenerate one), so it explains Serie.dat's/Conv.out's wrong
- * Nusselt numbers specifically, not the separate, still-open kinetic-
- * energy drift seen later in a run.
+ * @note Always launched via LaunchConfig3D(1, ny1, nz1): nusseltCell()
+ * has no x argument (Nusselt sums over (j,k) only, at the fixed
+ * x=0/1/2 wall-adjacent indices), but LaunchConfig3D always uses 8
+ * threads per block on every axis regardless of the requested extent --
+ * so without a guard, all 8 x-threads per (j,k) would compute the
+ * identical nusseltCell(j,k,...) value and blockSumInto() would sum 8
+ * identical copies into the block's partial sum, an 8x-inflated total.
+ * The `threadIdx.x == 0` guard below keeps exactly one contribution per
+ * (j,k); every other x-thread contributes the sum's identity value (0)
+ * instead. This reduction is independent of temperature_/vx_/vy_/vz_
+ * themselves -- every per-step kernel that builds or solves those fields
+ * launches over its field's own true 3D extent, never a degenerate one.
  */
 template<typename Real>
 __global__ void nusseltKernel(FieldView<Real> temperature, AxisBoundaries bc, Spacing<Real> spacing, int ny1, int nz1, Real* result) {
@@ -292,15 +279,13 @@ __global__ void nusseltKernel(FieldView<Real> temperature, AxisBoundaries bc, Sp
 /**
  * @copydoc Diagnostics::nusseltMiddleCell
  *
- * @bug Same root cause as nusseltKernel's @bug above, but worse: this
- * kernel is launched via LaunchConfig3D(nz1, 1, 1), so BOTH y and z are
- * degenerate (nusseltMiddleCell() takes only k, at the fixed midplaneY).
- * Without the threadIdx.y==0/threadIdx.z==0 guard below, all 8*8=64 (y,z)
- * thread combinations per k each contributed the same value -- a 64x-
- * inflated sum. Only reachable from printFinalReport()'s "Midplane
- * Nusselt number" line (never written to Serie.dat), so it wasn't part of
- * the Serie.dat comparison that caught nusseltKernel's 8x version above,
- * but it is the exact same mistake and is fixed the same way.
+ * @note Same reasoning as nusseltKernel's note above, but launched via
+ * LaunchConfig3D(nz1, 1, 1), so both y and z are degenerate here
+ * (nusseltMiddleCell() takes only k, at the fixed midplaneY). Without the
+ * threadIdx.y==0/threadIdx.z==0 guard below, all 8*8=64 (y,z) thread
+ * combinations per k would each contribute the same value -- a
+ * 64x-inflated sum. Only reachable from printFinalReport()'s "Midplane
+ * Nusselt number" line (never written to Serie.dat).
  */
 template<typename Real>
 __global__ void nusseltMiddleKernel(FieldView<Real> temperature, AxisBoundaries bc, Spacing<Real> spacing, int midplaneY, int nz1, Real* result) {

@@ -85,7 +85,7 @@ public:
  *        VariableDeltaLapl, or
  *        FluxLapl.
  * @param thomas True to use the Thomas algorithm in the transformed dim3 systems;
- *        false to use the general banded solver.
+ *        false to use the 3d eigen decomposition fast poisson solver.
  * @param helmholtzShift Solves
  *        \f$(L - \sigma I)x = b\f$,
  *        where this parameter is \f$\sigma\f$.

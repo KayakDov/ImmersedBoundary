@@ -3,9 +3,12 @@
  * @ingroup cfd_solver
  * @brief Implements GpuField.
  *
- * @warning Not compile-verified: written against the confirmed real
- * signatures of GpuPointer, Handle, and GpuIndex, but there is no CUDA
- * toolchain available in the environment this was written in.
+ * Compile-verified with nvcc (zero warnings); not run, since no physical
+ * GPU is available in the environment this was checked in -- every method
+ * here calls the CUDA runtime directly (cudaMalloc/cudaMemsetAsync/
+ * cudaMemcpyAsync), so there is no device-independent remainder to
+ * exercise with a host-only test the way Mesh's computeAxisSpacing() or
+ * CheckpointIO's writeBuffers()/readBuffers() have.
  */
 
 #include "GpuField.h"

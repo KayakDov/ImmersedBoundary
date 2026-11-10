@@ -5,8 +5,8 @@
  * statement at the top of ConvMain_3D_Q2D.f90 with a single master
  * config file, named on the command line.
  *
- * @warning Not compile-verified: see CfdSimulation.cu's file-level
- * warning.
+ * Compile-verified with nvcc (-arch=sm_60 or higher; see CfdSimulation.cu's
+ * file-level comment for why that flag is needed), zero warnings.
  */
 
 #include <cstdio>

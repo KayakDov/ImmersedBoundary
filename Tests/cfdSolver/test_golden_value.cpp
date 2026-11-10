@@ -1,4 +1,12 @@
-// Fresh Fortran/C++ runs with matching inputs and format-aware comparisons.
+/**
+ * @file test_golden_value.cpp
+ * @brief GoogleTest golden-value comparison: runs the real Fortran and C++
+ * executables against each discovered golden_configs scenario (*.cpp.json),
+ * with matching inputs, and compares every output file format-aware
+ * (Conv.out, History.dat, Serie.dat, Psi_Yaverage.dat/Tmpr_Yaverage.dat,
+ * plus the _av family and field-snapshot family when a scenario enables
+ * them).
+ */
 #include <gtest/gtest.h>
 #include "GoldenSupport.h"
 #include <chrono>
@@ -21,6 +29,15 @@ namespace {
 using namespace cfd_golden;
 struct GoldenScenario { std::string name, cppConfigFileName; bool timeAveraging = false; bool writeFieldSnapshots = false; };
 
+/**
+ * @brief Finds every golden_configs scenario (*.cpp.json) and records, per
+ * scenario, whether its own time_averaging.enabled and
+ * output.write_field_snapshots flags are on -- both are written only when
+ * their flag is on, so the test body below knows which extra file
+ * families to compare without failing on scenarios that legitimately
+ * never produce them.
+ * @return Every discovered scenario, sorted by name.
+ */
 std::vector<GoldenScenario> discoverGoldenScenarios() {
     std::vector<GoldenScenario> scenarios;
     const fs::path dir(CFD_GOLDEN_CONFIG_DIR);
@@ -30,12 +47,6 @@ std::vector<GoldenScenario> discoverGoldenScenarios() {
         const auto name = entry.path().filename().string();
         if (entry.is_regular_file() && name.size() > suffix.size() &&
             name.compare(name.size() - suffix.size(), suffix.size(), suffix) == 0) {
-            // Read each scenario's own time_averaging.enabled and
-            // output.write_field_snapshots so the test body below knows,
-            // per scenario, whether to also check the _av family and the
-            // snapshot family -- both are written only when their flag is
-            // on, so comparing them unconditionally would fail on the
-            // scenarios that legitimately never produce them.
             const Json cfg = readJson(entry.path());
             const bool ta = cfg.value("time_averaging", Json::object()).value("enabled", false);
             const bool snap = cfg.value("output", Json::object()).value("write_field_snapshots", false);
@@ -69,7 +80,7 @@ TEST_P(GoldenValueTest, MatchesFortranReference) {
     config["output"]["directory"] = cppDir.string();
     const auto cppConfig = cppDir / "config.json";
     writeText(cppConfig, config.dump(2) + "\n");
-    // Render and validate ALL inputs before either expensive solver starts.
+    /* Render and validate ALL inputs before either expensive solver starts. */
     writeText(fortranDir / "Conv.dat", renderConvDat(config, CFD_FORTRAN_BASE_CONV));
     const auto fortranStart = std::chrono::steady_clock::now();
     ASSERT_EQ(0, runCommand(shellQuote(fs::absolute(CFD_FORTRAN_EXE)) + " > " +
@@ -84,12 +95,12 @@ TEST_P(GoldenValueTest, MatchesFortranReference) {
         shellQuote(cppDir / "run.log") + " 2>&1", cppDir)) << "C++ failed; inspect run.log";
     const double cppSeconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - cppStart).count();
 
-    // The GPU port's entire reason to exist is speed, not just correctness
-    // (data stays resident on the GPU across iterations, every physics/
-    // solver step runs as a kernel, instead of Fortran's per-step CPU work)
-    // -- so a slower cfdSolver is a regression worth failing the build over,
-    // same as a wrong number would be. EXPECT, not ASSERT: a timing miss
-    // shouldn't hide whether the output was also still correct.
+    /* The GPU port's entire reason to exist is speed, not just correctness
+     * (data stays resident on the GPU across iterations, every physics/
+     * solver step runs as a kernel, instead of Fortran's per-step CPU work)
+     * -- so a slower cfdSolver is a regression worth failing the build over,
+     * same as a wrong number would be. EXPECT, not ASSERT: a timing miss
+     * shouldn't hide whether the output was also still correct. */
     std::cout << "Timing (" << scenario.name << "): Fortran=" << fortranSeconds << "s  cfdSolver="
         << cppSeconds << "s  speedup=" << (fortranSeconds / cppSeconds) << "x" << std::endl;
     EXPECT_LE(cppSeconds, fortranSeconds) << "cfdSolver (" << cppSeconds << "s) was slower than Fortran ("
@@ -97,24 +108,24 @@ TEST_P(GoldenValueTest, MatchesFortranReference) {
 
     std::vector<std::string> files = {"Conv.out", "History.dat", "Serie.dat", "Psi_Yaverage.dat", "Tmpr_Yaverage.dat"};
     if (scenario.timeAveraging) {
-        // finalizeTimeAverage()'s in-place substitution already means the
-        // five files above reflect the time-averaged state when this flag
-        // is on (that path gets exercised either way) -- these four add
-        // direct coverage of the _av family's own writers. Deliberately
-        // NOT included: Amplitudes.dat (a different column count per
-        // configured frequency; compareTables assumes exactly 3 columns)
-        // and Average_velocity.ddd (gfortran unformatted-binary, not
-        // Tecplot text at all) -- both need their own comparator, not
-        // written yet.
+        /* finalizeTimeAverage()'s in-place substitution already means the
+         * five files above reflect the time-averaged state when this flag
+         * is on (that path gets exercised either way) -- these four add
+         * direct coverage of the _av family's own writers. Deliberately
+         * NOT included: Amplitudes.dat (a different column count per
+         * configured frequency; compareTables assumes exactly 3 columns)
+         * and Average_velocity.ddd (gfortran unformatted-binary, not
+         * Tecplot text at all) -- both need their own comparator, not
+         * written yet. */
         for (const char* f : {"Tmpr_av.dat", "Vx_av.dat", "Vy_av.dat", "Vz_av.dat"}) files.push_back(f);
     }
     if (scenario.writeFieldSnapshots) {
-        // Alex's own disabled Point_Write block (now re-enabled in
-        // Solution_time_Q2D.f90) and cfdSolver's writeFieldSnapshots() both
-        // write these six fields as one final, ghost-inclusive snapshot at
-        // the end of the run, in the same 4-column X,Y,Z,value Tecplot
-        // format as the _av family above -- so compareTables3D handles
-        // them too (see the dispatch below).
+        /* Alex's own disabled Point_Write block (now re-enabled in
+         * Solution_time_Q2D.f90) and cfdSolver's writeFieldSnapshots() both
+         * write these six fields as one final, ghost-inclusive snapshot at
+         * the end of the run, in the same 4-column X,Y,Z,value Tecplot
+         * format as the _av family above -- so compareTables3D handles
+         * them too (see the dispatch below). */
         for (const char* f : {"Tmpr.dat", "Vx.dat", "Vy.dat", "Vz.dat", "Pres.dat", "Potential.dat"}) files.push_back(f);
     }
     for (const std::string& file : files) {
@@ -124,13 +135,13 @@ TEST_P(GoldenValueTest, MatchesFortranReference) {
             const bool snapshotFamily = file == "Tmpr.dat" || file == "Vx.dat" || file == "Vy.dat" ||
                 file == "Vz.dat" || file == "Pres.dat" || file == "Potential.dat";
             if (file == "Conv.out") {
-                // See compareReports()'s own skipLabels doc comment: when
-                // averaging is on, Fortran double-counts Teta's
-                // contribution to exactly these two numbers (its own
-                // substitution runs before they're computed, and they
-                // already have their own analytic Teta term); cfdSolver's
-                // number is the internally-consistent one here, not
-                // Fortran's.
+                /* See compareReports()'s own skipLabels doc comment: when
+                 * averaging is on, Fortran double-counts Teta's
+                 * contribution to exactly these two numbers (its own
+                 * substitution runs before they're computed, and they
+                 * already have their own analytic Teta term); cfdSolver's
+                 * number is the internally-consistent one here, not
+                 * Fortran's. */
                 std::vector<std::string> skip;
                 if (scenario.timeAveraging) skip = {"Nusselt number", "Midplane Nusselt number"};
                 result = compareReports(fortranDir / file, cppDir / file, skip);
@@ -147,4 +158,13 @@ TEST_P(GoldenValueTest, MatchesFortranReference) {
 INSTANTIATE_TEST_SUITE_P(
     NonRedundantConfigurations, GoldenValueTest, ::testing::ValuesIn(discoverGoldenScenarios()),
     [](const ::testing::TestParamInfo<GoldenScenario>& info) { return info.param.name; });
+
+/* discoverGoldenScenarios() already treats a missing/empty
+ * CFD_GOLDEN_CONFIG_DIR as "zero scenarios" rather than an error (see its
+ * own early return above) -- true on any machine without the Fortran
+ * executable and golden config fixtures set up, this sandbox included.
+ * Without this line, GoogleTest treats that zero-instantiation outcome as
+ * a suite-level failure in its own right, independent of whether any
+ * actual golden scenario failed. */
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(GoldenValueTest);
 } // namespace

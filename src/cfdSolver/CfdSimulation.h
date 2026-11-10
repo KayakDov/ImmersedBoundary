@@ -36,23 +36,17 @@
  *
  * time_averaging.enabled (I_Fourier==0 in the original) -- a separate
  * running time-average and Fourier-mode decomposition -- IS implemented:
- * see accumulateTimeAverage()/finalizeTimeAverage(). An earlier note here
- * claimed Alex's own Conv.dat ran with I_Fourier==0 (time-averaging "on")
- * the whole time, and that every prior Fortran-vs-C++ comparison was
- * therefore comparing Fortran's time-averaged state against this port's
- * instantaneous one. That claim was checked directly against the live
- * Conv.dat these comparisons actually used and is WRONG: I_Fourier is 1
- * there (confirmed both by its literal value and by Tmpr_av.dat/Vx_av.dat/
- * Vy_av.dat/Vz_av.dat all being 0 bytes in every Fortran run so far --
- * Plot_Amplitude, the only thing that writes them, is itself gated by
- * `If(I_Fourier==0)`). Time-averaging has never actually been engaged on
- * either side of any comparison this project has run; it does not explain
- * the kinetic-energy/MaxPsi_average gap the sweep found. This feature is
- * still implemented, because Alex's source offers it as a real, working
- * toggle (so this port needs the same toggle for parity, and example_
- * config.json's time_averaging.enabled=false already matches Alex's
- * actual, demonstrated default) -- just not as a fix for that gap, whose
- * real cause is still open.
+ * see accumulateTimeAverage()/finalizeTimeAverage(). Alex's own Conv.dat
+ * runs with I_Fourier==1 (time-averaging off), confirmed both by its
+ * literal value and by Tmpr_av.dat/Vx_av.dat/Vy_av.dat/Vz_av.dat all
+ * being 0 bytes in every Fortran run so far (Plot_Amplitude, the only
+ * thing that writes them, is itself gated by `If(I_Fourier==0)`) -- so
+ * time-averaging has never actually been engaged on either side of any
+ * Fortran-vs-C++ comparison this project has run. This feature is still
+ * implemented, because Alex's source offers it as a real, working
+ * toggle: this port needs the same toggle for parity, and example_
+ * config.json's time_averaging.enabled=false matches Alex's actual,
+ * demonstrated default.
  *
  * run() also writes three of the original's own always-on output files,
  * under cfg_.outputDirectory, alongside the existing checkpoint:
@@ -137,11 +131,11 @@ private:
      */
     struct Ingredients {
         SimulationConfig cfg;
-        // Owned via unique_ptr, not by value: Handle is deliberately
-        // neither copyable nor movable (see handle.h) -- every caller in
-        // the codebase takes a Handle&/Handle*. prepare() heap-allocates
-        // this once with std::make_unique<Handle>(...) and only the
-        // pointer travels from here into CfdSimulation's hand_ member.
+        /* Owned via unique_ptr, not by value: Handle is deliberately
+         * neither copyable nor movable (see handle.h) -- every caller in
+         * the codebase takes a Handle&/Handle*. prepare() heap-allocates
+         * this once with std::make_unique<Handle>(...) and only the
+         * pointer travels from here into CfdSimulation's hand_ member. */
         std::unique_ptr<Handle> hand;
         Mesh<Real> mesh;
         GpuField<Real> buoyancyByX;
@@ -156,42 +150,81 @@ private:
         GpuField<unsigned long long> maxReductionScratch;
         GpuField<Real> referenceValueScratch;
 
-        // Time-averaging accumulators (Solution_time_Q2D.f90's VMx_Av/
-        // VMy_Av/VMz_Av/Tmp_Av/Prs_Av) -- see accumulateTimeAverage().
-        // Always allocated, regardless of cfg.timeAveragingEnabled: each
-        // is one more full field (trivial next to the six solved fields
-        // already allocated), and allocating unconditionally avoids ever
-        // needing an optional/null GpuField. Only the accumulation calls
-        // are conditional, in run().
+        /* Time-averaging accumulators (Solution_time_Q2D.f90's VMx_Av/
+         * VMy_Av/VMz_Av/Tmp_Av/Prs_Av) -- see accumulateTimeAverage().
+         * Always allocated, regardless of cfg.timeAveragingEnabled: each
+         * is one more full field (trivial next to the six solved fields
+         * already allocated), and allocating unconditionally avoids ever
+         * needing an optional/null GpuField. Only the accumulation calls
+         * are conditional, in run(). */
         GpuField<Real> vxTimeAverage, vyTimeAverage, vzTimeAverage, temperatureTimeAverage, pressureTimeAverage;
 
-        // Fourier-mode accumulators (Tmp_Amplitude's i>0/i<0 halves in the
-        // original) -- temperature only, one pair of fields per configured
-        // frequency. Empty vectors when cfg.fourierFrequencies is empty
-        // (the common case: plain time-averaging with no decomposition).
+        /* Fourier-mode accumulators (Tmp_Amplitude's i>0/i<0 halves in the
+         * original) -- temperature only, one pair of fields per configured
+         * frequency. Empty vectors when cfg.fourierFrequencies is empty
+         * (the common case: plain time-averaging with no decomposition). */
         std::vector<GpuField<Real>> temperatureFourierCos, temperatureFourierSin;
     };
 
     static Ingredients prepare(SimulationConfig cfg);
     explicit CfdSimulation(Ingredients ingredients);
 
+    /// @brief Builds temperature's RHS (advection, buoyancy reference
+    /// profile, time-derivative term) and launches its solve.
     void buildAndLaunchTemperature();
+    /// @brief Builds vy's RHS (pressure gradient, advection,
+    /// time-derivative term) and launches its solve.
     void buildAndLaunchVy();
+    /// @brief Builds potential's RHS and launches its solve.
     void launchPotential();
+    /// @brief Builds vx's and vz's RHS scratch (pressure gradient,
+    /// advection, time-derivative term). Their solves launch later, in
+    /// launchVxAndVz(), after applyBuoyancyToRhsZ() and
+    /// finishPotentialAndApplyForce() add their remaining terms.
     void buildVxVzStencilTerms();
+    /// @brief Synchs temperature's solve and returns RTmpr, the max
+    /// relative difference between its new and current values.
     Real synchTemperatureAndComputeResidual();
+    /// @brief Adds the buoyancy force into vz's RHS scratch, using the
+    /// newly-solved temperature.
     void applyBuoyancyToRhsZ();
+    /// @brief Synchs potential's solve, subtracts its reference value
+    /// (gauge), then adds the electromagnetic force into vx's and vz's
+    /// RHS scratch.
     void finishPotentialAndApplyForce();
+    /// @brief Scales vx's and vz's RHS scratch, adds it into their solve
+    /// targets, and launches their solves.
     void launchVxAndVz();
+    /// @brief Synchs vy's, vx's, and vz's solves.
     void synchVelocities();
+    /// @brief Builds the pressure-correction Poisson equation's RHS from
+    /// the new velocities' divergence, and solves it.
     void solvePressureCorrection();
+    /// @brief Applies the pressure-correction gradient to correct vx,
+    /// vy, and vz, and adds the correction into pressure_.
     void correctVelocitiesAndPressure();
+    /// @brief Computes the velocity residuals (max relative difference,
+    /// new vs. current) and rdp (the pressure correction's max absolute
+    /// value).
     void residuals(XYZ<Real>& residual, Real& rdp);
+    /// @brief Advances temperature, vx, vy, and vz by one timestep: each
+    /// field's old becomes the value current held, and current becomes
+    /// the newly-solved value (see TimeDependentField::shiftTimeLevel).
+    /// Does not touch pressure_, which has no old/current split.
     void shiftAllTimeLevels();
+    /// @brief Advances the simulation by one timestep: builds and solves
+    /// every field in sequence, computes this step's residuals, then
+    /// shifts every field's time levels.
     void runOneTimeStep(XYZ<Real>& residual, Real& rTmpr, Real& rdp);
 
+    /// @brief Sets every field to init_3D.f90's small-constant fresh-start
+    /// state (not a checkpoint's contents).
     void initializeFreshStart();
+    /// @brief Prints one iteration's residual report, mirrored into
+    /// Conv.out if open.
     void printIterationReport(Real timeNow, Real targetTime, XYZ<Real> residual, Real rTmpr, Real rdp) const;
+    /// @brief Prints the final Nusselt-number/kinetic-energy report,
+    /// mirrored into Conv.out if open.
     void printFinalReport() const;
 
     /**
@@ -342,6 +375,23 @@ private:
      * file that should open can't be.
      */
     void openOutputFiles();
+
+    /// @brief Creates cfg_.outputDirectory (and any missing parent); a no-op if it already exists.
+    void createOutputDirectory();
+
+    /// @brief Opens Serie.dat and History.dat in append mode, only when cfg_.writeSerieAndHistory is true.
+    void openSerieAndHistoryFiles();
+
+    /// @brief Opens Conv.out in append mode and writes its one-line parameter-echo header.
+    void openConvOutAndWriteHeader();
+
+    /**
+     * @brief Touches every legacy output file the original Fortran
+     * unconditionally opened but this port never writes to (except the
+     * _av family, written by finalizeTimeAverage() when time-averaging is
+     * enabled) -- see touchEmptyFile()'s own doc comment.
+     */
+    void touchUnusedLegacyFiles();
 
     /**
      * @brief Joins cfg_.outputDirectory and filename into one path,

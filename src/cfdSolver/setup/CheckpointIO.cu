@@ -3,70 +3,29 @@
  * @ingroup cfd_solver
  * @brief Implements CheckpointIO::write() and CheckpointIO::read().
  *
- * @warning Not compile-verified: see GpuSolverSetup.cu's file-level
- * warning for why. This file's actual device interaction is limited to
- * the GpuField::downloadTo()/uploadFrom() calls it makes, both already
- * implemented and documented elsewhere; the file I/O itself is ordinary
- * C++ and was additionally checked by hand against init_3D.f90/
- * outp_3D.f90's read/write order.
+ * Compile-verified with nvcc (zero warnings); not run, since no physical
+ * GPU is available in the environment this was checked in. This file's
+ * actual device interaction is limited to the GpuField/TimeDependentField
+ * download/upload calls it makes, both implemented and documented
+ * elsewhere; the on-disk format itself (writeBuffers()/readBuffers(),
+ * declared and defined in CheckpointIO.h so test_checkpoint_io.cpp can
+ * round-trip it without a GPU) is ordinary C++ checked by hand against
+ * init_3D.f90/outp_3D.f90's read/write order, and now by that direct
+ * test too.
  */
 
 #include "CheckpointIO.h"
-#include <fstream>
-#include <stdexcept>
-
-namespace {
-
-constexpr uint32_t kCheckpointMagic = 0x43464443; // "CFDC"
-
-struct CheckpointHeader {
-    uint32_t magic;
-    int32_t nx, ny, nz;
-};
-
-template<typename Real>
-void writeArray(std::ofstream& out, const std::vector<Real>& data) {
-    out.write(reinterpret_cast<const char*>(data.data()), (std::streamsize)(data.size() * sizeof(Real)));
-}
-
-template<typename Real>
-std::vector<Real> readArray(std::ifstream& in, size_t count, const std::string& path, const char* label) {
-    std::vector<Real> data(count);
-    in.read(reinterpret_cast<char*>(data.data()), (std::streamsize)(count * sizeof(Real)));
-    if (!in)
-        throw std::runtime_error("CheckpointIO: failed reading '" + std::string(label) + "' from " + path + " -- file truncated or corrupt");
-    return data;
-}
-
-} // namespace
 
 template<typename Real>
 void CheckpointIO::write(const std::string& path, int nx, int ny, int nz,
                           const TimeDependentField<Real>& temperature, const TimeDependentField<Real>& vx,
                           const TimeDependentField<Real>& vy, const TimeDependentField<Real>& vz,
                           const GpuField<Real>& pressure, Real elapsedTime, Handle& hand) {
-    std::ofstream out(path, std::ios::binary);
-    if (!out)
-        throw std::runtime_error("CheckpointIO: could not open " + path + " for writing");
-
-    CheckpointHeader header{kCheckpointMagic, nx, ny, nz};
-    out.write(reinterpret_cast<const char*>(&header), sizeof(header));
-
-    writeArray(out, temperature.downloadCurrent(hand));
-    writeArray(out, vx.downloadCurrent(hand));
-    writeArray(out, vy.downloadCurrent(hand));
-    writeArray(out, vz.downloadCurrent(hand));
-    writeArray(out, pressure.downloadTo(hand));
-
-    writeArray(out, temperature.downloadOld(hand));
-    writeArray(out, vx.downloadOld(hand));
-    writeArray(out, vy.downloadOld(hand));
-    writeArray(out, vz.downloadOld(hand));
-
-    out.write(reinterpret_cast<const char*>(&elapsedTime), sizeof(elapsedTime));
-
-    if (!out)
-        throw std::runtime_error("CheckpointIO: write to " + path + " failed partway through");
+    writeBuffers<Real>(path, nx, ny, nz,
+        temperature.downloadCurrent(hand), vx.downloadCurrent(hand), vy.downloadCurrent(hand), vz.downloadCurrent(hand),
+        pressure.downloadTo(hand),
+        temperature.downloadOld(hand), vx.downloadOld(hand), vy.downloadOld(hand), vz.downloadOld(hand),
+        elapsedTime);
 }
 
 template<typename Real>
@@ -74,41 +33,22 @@ Real CheckpointIO::read(const std::string& path, int expectedNx, int expectedNy,
                          TimeDependentField<Real>& temperature, TimeDependentField<Real>& vx,
                          TimeDependentField<Real>& vy, TimeDependentField<Real>& vz,
                          GpuField<Real>& pressure, Handle& hand) {
-    std::ifstream in(path, std::ios::binary);
-    if (!in)
-        throw std::runtime_error("CheckpointIO: could not open " + path + " for reading");
+    std::vector<Real> temperatureCurrent, vxCurrent, vyCurrent, vzCurrent, pressureCurrent;
+    std::vector<Real> temperatureOld, vxOld, vyOld, vzOld;
+    Real elapsedTime = readBuffers<Real>(path, expectedNx, expectedNy, expectedNz,
+        temperatureCurrent, vxCurrent, vyCurrent, vzCurrent, pressureCurrent,
+        temperatureOld, vxOld, vyOld, vzOld);
 
-    CheckpointHeader header{};
-    in.read(reinterpret_cast<char*>(&header), sizeof(header));
-    if (!in || header.magic != kCheckpointMagic)
-        throw std::runtime_error("CheckpointIO: " + path + " is not a valid checkpoint file");
-    if (header.nx != expectedNx || header.ny != expectedNy || header.nz != expectedNz)
-        throw std::runtime_error("CheckpointIO: " + path + " was written for a " +
-            std::to_string(header.nx) + "x" + std::to_string(header.ny) + "x" + std::to_string(header.nz) +
-            " grid, but this simulation is configured for " +
-            std::to_string(expectedNx) + "x" + std::to_string(expectedNy) + "x" + std::to_string(expectedNz));
+    temperature.uploadCurrent(temperatureCurrent, hand);
+    vx.uploadCurrent(vxCurrent, hand);
+    vy.uploadCurrent(vyCurrent, hand);
+    vz.uploadCurrent(vzCurrent, hand);
+    pressure.uploadFrom(pressureCurrent, hand);
 
-    int nx1 = expectedNx + 1, ny1 = expectedNy + 1, nz1 = expectedNz + 1;
-    size_t temperatureSize = (size_t)nx1 * ny1 * nz1;
-    size_t vxSize = (size_t)expectedNx * ny1 * nz1;
-    size_t vySize = (size_t)nx1 * expectedNy * nz1;
-    size_t vzSize = (size_t)nx1 * ny1 * expectedNz;
-
-    temperature.uploadCurrent(readArray<Real>(in, temperatureSize, path, "Temperature (current)"), hand);
-    vx.uploadCurrent(readArray<Real>(in, vxSize, path, "Vx (current)"), hand);
-    vy.uploadCurrent(readArray<Real>(in, vySize, path, "Vy (current)"), hand);
-    vz.uploadCurrent(readArray<Real>(in, vzSize, path, "Vz (current)"), hand);
-    pressure.uploadFrom(readArray<Real>(in, temperatureSize, path, "Pressure"), hand);
-
-    temperature.uploadOld(readArray<Real>(in, temperatureSize, path, "Temperature (old)"), hand);
-    vx.uploadOld(readArray<Real>(in, vxSize, path, "Vx (old)"), hand);
-    vy.uploadOld(readArray<Real>(in, vySize, path, "Vy (old)"), hand);
-    vz.uploadOld(readArray<Real>(in, vzSize, path, "Vz (old)"), hand);
-
-    Real elapsedTime = Real(0);
-    in.read(reinterpret_cast<char*>(&elapsedTime), sizeof(elapsedTime));
-    if (!in)
-        throw std::runtime_error("CheckpointIO: failed reading elapsed time from " + path);
+    temperature.uploadOld(temperatureOld, hand);
+    vx.uploadOld(vxOld, hand);
+    vy.uploadOld(vyOld, hand);
+    vz.uploadOld(vzOld, hand);
 
     return elapsedTime;
 }

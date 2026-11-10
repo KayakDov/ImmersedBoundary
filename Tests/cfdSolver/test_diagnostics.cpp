@@ -18,6 +18,7 @@ std::mt19937 rng(42);
 std::uniform_real_distribution<double> dist(-1.0, 1.0);
 double R() { return dist(rng); }
 
+/// @brief Reads a velocity component, returning 0 for any index outside [1,nx]x[1,ny]x[1,nz] (velocity's always-Dirichlet-zero boundary).
 double VelocityAt(const std::vector<double>& d, int i, int j, int k, int nx, int ny, int nz) {
     if (i < 1 || i > nx || j < 1 || j > ny || k < 1 || k > nz) return 0.0;
     return d[(size_t)(i - 1) + (size_t)nx * ((size_t)(j - 1) + (size_t)ny * (size_t)(k - 1))];

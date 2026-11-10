@@ -884,7 +884,7 @@ void verifyShiftedEigenSolverIdentity(
 
     for (size_t i = 0; i < dim.size(); ++i) ASSERT_NEAR(x0Host[i], x1Host[i], tolerance);
 
-    EigenDecompThomas<Real, segX> edThomas(boundary, hands, shift);
+    EigenDecompThomas<Real, segZ> edThomas(boundary, hands, shift);
     edThomas.solve(x, b, hands[0]);
     x.get(x1Host.data(), hands[0]);
 

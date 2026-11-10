@@ -30,10 +30,10 @@
 #ifdef __CUDACC__
 #include <cuda_runtime.h>
 #elif !defined(__host__)
-// math/XYZ.cuh above already pulls in <cuda_runtime.h> unconditionally,
-// which on some CUDA installations defines these even outside
-// __CUDACC__ -- guard on __host__ already being defined so this
-// fallback doesn't redefine them and warn.
+/* math/XYZ.cuh above already pulls in <cuda_runtime.h> unconditionally,
+ * which on some CUDA installations defines these even outside
+ * __CUDACC__ -- guard on __host__ already being defined so this
+ * fallback doesn't redefine them and warn. */
 #define __host__
 #define __device__
 #define __forceinline__ inline

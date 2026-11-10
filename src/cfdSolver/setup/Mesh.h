@@ -7,11 +7,76 @@
 #ifndef CFDSOLVER_MESH_H
 #define CFDSOLVER_MESH_H
 
+#include <cmath>
 #include <vector>
 #include "../fields/GpuField.h"
 #include "../physics/Operators.cuh"
 #include "../SimulationConfig.h"
 #include "math/XYZ.cuh"
+
+/**
+ * @ingroup cfd_solver
+ * @brief One axis's cell spacing (hFull) and control-volume spacing
+ * (hHalf), computed by the same algorithm for every axis.
+ *
+ * Defined here rather than file-local to Mesh.cu (where every other
+ * Mesh<Real>::generate() helper lives) specifically so test code can call
+ * computeAxisSpacing() directly: it is plain host arithmetic with no CUDA
+ * dependency, but Mesh<Real>::generate() itself cannot be called without a
+ * real GPU (GpuIndex's constructor calls cudaSetDevice()), which would
+ * otherwise put this formula out of direct reach of a host-only test.
+ *
+ * @tparam Real Floating-point type.
+ */
+template<typename Real>
+struct AxisSpacing {
+    std::vector<Real> hFull;     ///< Size n+1, index 0..n.
+    std::vector<Real> hHalf;     ///< Size n+2, index 0..n+1.
+    std::vector<Real> node;      ///< Size n+2, index 0..n+1 -- the plain (cell-corner) node positions hFull was differenced from. Fortran's plain X/Y/Z.
+    std::vector<Real> nodeHalf;  ///< Size n+3, index 0..n+2 -- the node-half (cell-centre) positions hHalf was differenced from. Fortran's X12/Y12/Z12.
+};
+
+/**
+ * @ingroup cfd_solver
+ * @brief Generates one axis's tanh-stretched node positions, cell
+ * spacing, and control-volume spacing. Direct port of MeshStretch.f90's
+ * per-axis block (identical for X, Y, and Z up to the scale factor).
+ * @tparam Real Floating-point type.
+ * @param n The axis's Nx/Ny/Nz (the solved-field interior count, not n1).
+ * @param scale Physical extent to scale the [0,1] stretched grid to
+ * (aspectRatio for x, widthRatio for y, 1 for z).
+ * @param stretchFactor MeshStretch.f90's `s`.
+ * @return This axis's spacing arrays.
+ */
+template<typename Real>
+AxisSpacing<Real> computeAxisSpacing(int n, Real scale, Real stretchFactor) {
+    int n1 = n + 1;
+    int n2 = n1 + 1;
+    std::vector<Real> node(n1 + 1);
+    std::vector<Real> nodeHalf(n2 + 1);
+
+    Real h = Real(1) / Real(n1);
+    node[0] = Real(0);
+    for (int i = 1; i <= n1; ++i) node[i] = node[i - 1] + h;
+    Real tanhHalfStretch = std::tanh(Real(0.5) * stretchFactor);
+    for (int i = 0; i <= n1; ++i)
+        node[i] = scale * (Real(0.5) + Real(0.5) * std::tanh(stretchFactor * (node[i] - Real(0.5))) / tanhHalfStretch);
+
+    nodeHalf[0] = Real(0);
+    nodeHalf[n2] = scale;
+    for (int i = 1; i <= n1; ++i) nodeHalf[i] = Real(0.5) * (node[i] + node[i - 1]);
+
+    AxisSpacing<Real> result;
+    result.hFull.resize(n + 1);
+    for (int i = 0; i <= n; ++i) result.hFull[i] = node[i + 1] - node[i];
+
+    result.hHalf.resize(n1 + 1);
+    for (int i = 0; i <= n1; ++i) result.hHalf[i] = nodeHalf[i + 1] - nodeHalf[i];
+
+    result.node = std::move(node);
+    result.nodeHalf = std::move(nodeHalf);
+    return result;
+}
 
 /**
  * @ingroup cfd_solver

@@ -21,6 +21,7 @@ using std::vector;
 
 namespace {
 
+/// @brief A ghost-padded 3D array: 1-indexed over [0, N+1] with one ghost layer on every face.
 struct PaddedField {
     int Nx, Ny, Nz;
     vector<double> data;
@@ -29,6 +30,7 @@ struct PaddedField {
     double at(int i, int j, int k) const { return data[(size_t)i + (size_t)(Nx + 1) * ((size_t)j + (size_t)(Ny + 1) * (size_t)k)]; }
 };
 
+/// @brief A ghost-free 3D array: 1-indexed over the real interior [1, N] only.
 struct UnpaddedField {
     int Nx, Ny, Nz;
     vector<double> data;
@@ -91,14 +93,11 @@ struct Spacing2 {
     }
 };
 
-const std::vector<int>& TestGridSizes() {
-    static const std::vector<int> sizes = {5, 8, 13};
-    return sizes;
-}
-
-// Exercises Temperature ghosts (BC-dependent, both ends, all 3 axes) AND
-// velocity ghosts (always-zero, both ends, all 3 axes) simultaneously --
-// the most complex access pattern in the whole codebase.
+/**
+ * @brief Exercises Temperature ghosts (BC-dependent, both ends, all 3 axes)
+ * AND velocity ghosts (always-zero, both ends, all 3 axes) simultaneously --
+ * the most complex access pattern in the whole codebase.
+ */
 void CheckVgrTmp(int nx1, int ny1, int nz1, const TempBC& bc, const Spacing2& sp, cfdtest::MismatchCollector& mismatches) {
     int nx = nx1 - 1, ny = ny1 - 1, nz = nz1 - 1;
     int nx2 = nx1 + 1, ny2 = ny1 + 1, nz2 = nz1 + 1;
@@ -148,9 +147,11 @@ void CheckVgrTmp(int nx1, int ny1, int nz1, const TempBC& bc, const Spacing2& sp
         mismatches.Check(fdrhp.at(i, j, k), fdrhpU.at(i, j, k));
 }
 
-// VMy/VMz read at i+1 (may or may not be a ghost depending on i); VMx read
-// at both its own ghosts. Pure velocity -- always-zero boundary, no
-// BC-switch dependence.
+/**
+ * @brief VMy/VMz read at i+1 (may or may not be a ghost depending on i); VMx
+ * read at both its own ghosts. Pure velocity -- always-zero boundary, no
+ * BC-switch dependence.
+ */
 void CheckVgrdVx(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::MismatchCollector& mismatches) {
     int nx = nx1 - 1, ny = ny1 - 1, nz = nz1 - 1, ny2 = ny1 + 1, nz2 = nz1 + 1;
     PaddedField vmx(nx1, ny2, nz2), vmy(nx1 + 1, ny1, nz2), vmz(nx1 + 1, ny2, nz1), fdrhp(nx1, ny2, nz2);
@@ -189,6 +190,7 @@ void CheckVgrdVx(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::Mismatc
         mismatches.Check(fdrhp.at(i, j, k), fdrhpU.at(i, j, k));
 }
 
+/// @brief Same access-pattern class as CheckVgrdVx, for the Vy component.
 void CheckVgrdVy(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::MismatchCollector& mismatches) {
     int nx = nx1 - 1, ny = ny1 - 1, nz = nz1 - 1, ny2 = ny1 + 1, nz2 = nz1 + 1;
     PaddedField vmx(nx1, ny2, nz2), vmy(nx1 + 1, ny1, nz2), vmz(nx1 + 1, ny2, nz1), fdrhp(nx1 + 1, ny1, nz2);
@@ -222,6 +224,7 @@ void CheckVgrdVy(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::Mismatc
         mismatches.Check(fdrhp.at(i, j, k), fdrhpU.at(i, j, k));
 }
 
+/// @brief Same access-pattern class as CheckVgrdVx, for the Vz component.
 void CheckVgrdVz(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::MismatchCollector& mismatches) {
     int nx = nx1 - 1, ny = ny1 - 1, nz = nz1 - 1, ny2 = ny1 + 1, nz2 = nz1 + 1;
     PaddedField vmx(nx1, ny2, nz2), vmy(nx1 + 1, ny1, nz2), vmz(nx1 + 1, ny2, nz1), fdrhp(nx1 + 1, ny2, nz1);
@@ -255,8 +258,7 @@ void CheckVgrdVz(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::Mismatc
         mismatches.Check(fdrhp.at(i, j, k), fdrhpU.at(i, j, k));
 }
 
-// Simplest pattern: each component read at its own lower ghost only
-// (i-1/j-1/k-1 at the loop's lower bound).
+/// @brief Simplest pattern: each component read at its own lower ghost only (i-1/j-1/k-1 at the loop's lower bound).
 void CheckFdDiv(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::MismatchCollector& mismatches) {
     int nx = nx1 - 1, ny = ny1 - 1, nz = nz1 - 1, ny2 = ny1 + 1, nz2 = nz1 + 1;
     PaddedField vmx(nx1, ny2, nz2), vmy(nx1 + 1, ny1, nz2), vmz(nx1 + 1, ny2, nz1), fdrhp(nx1, ny1, nz1);
@@ -278,9 +280,11 @@ void CheckFdDiv(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::Mismatch
         mismatches.Check(fdrhp.at(i, j, k), fdrhpU.at(i, j, k));
 }
 
-// Temperature ONE-SIDED wall stencil, reads Tmpr(0,j,k) [ghost] AND
-// Tmpr(2,j,k) [real interior, 2 cells in] -- the case where a ghost read is
-// combined with a non-adjacent real read in the SAME formula.
+/**
+ * @brief Temperature ONE-SIDED wall stencil, reads Tmpr(0,j,k) [ghost] AND
+ * Tmpr(2,j,k) [real interior, 2 cells in] -- the case where a ghost read is
+ * combined with a non-adjacent real read in the SAME formula.
+ */
 void CheckNusselt(int nx1, int ny1, int nz1, const TempBC& bc, const Spacing2& sp, cfdtest::MismatchCollector& mismatches) {
     PaddedField tmpr(nx1 + 1, ny1 + 1, nz1 + 1);
     UnpaddedField tmprU(nx1, ny1, nz1);
@@ -302,6 +306,7 @@ void CheckNusselt(int nx1, int ny1, int nz1, const TempBC& bc, const Spacing2& s
     mismatches.Check(snuP, snuU);
 }
 
+/// @brief Kinetic-energy integrand: each velocity component read at its own lower ghost, face-averaged and squared.
 void CheckEkinem(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::MismatchCollector& mismatches) {
     int nx = nx1 - 1, ny = ny1 - 1, nz = nz1 - 1, ny2 = ny1 + 1, nz2 = nz1 + 1;
     PaddedField vmx(nx1, ny2, nz2), vmy(nx1 + 1, ny1, nz2), vmz(nx1 + 1, ny2, nz1);
@@ -331,7 +336,7 @@ void CheckEkinem(int nx1, int ny1, int nz1, const Spacing2& sp, cfdtest::Mismatc
 TEST(PaddingEquivalenceTest, VgrTmp) {
     cfdtest::MismatchCollector mismatches("VgrTmp");
     bool bcVals[] = {false, true};
-    for (int nx1 : TestGridSizes()) for (int ny1 : TestGridSizes()) for (int nz1 : TestGridSizes()) {
+    for (int nx1 : cfdtest::TestGridSizes()) for (int ny1 : cfdtest::TestGridSizes()) for (int nz1 : cfdtest::TestGridSizes()) {
         Spacing2 sp(std::max({nx1, ny1, nz1}) + 2);
         for (bool bx : bcVals) for (bool by : bcVals) for (bool bz : bcVals)
             CheckVgrTmp(nx1, ny1, nz1, TempBC{bx, by, bz}, sp, mismatches);
@@ -342,7 +347,7 @@ TEST(PaddingEquivalenceTest, VgrTmp) {
 TEST(PaddingEquivalenceTest, Nusselt) {
     cfdtest::MismatchCollector mismatches("Nusselt");
     bool bcVals[] = {false, true};
-    for (int nx1 : TestGridSizes()) for (int ny1 : TestGridSizes()) for (int nz1 : TestGridSizes()) {
+    for (int nx1 : cfdtest::TestGridSizes()) for (int ny1 : cfdtest::TestGridSizes()) for (int nz1 : cfdtest::TestGridSizes()) {
         Spacing2 sp(std::max({nx1, ny1, nz1}) + 2);
         for (bool bx : bcVals) for (bool by : bcVals) for (bool bz : bcVals)
             CheckNusselt(nx1, ny1, nz1, TempBC{bx, by, bz}, sp, mismatches);
@@ -352,7 +357,7 @@ TEST(PaddingEquivalenceTest, Nusselt) {
 
 TEST(PaddingEquivalenceTest, VgrdVx) {
     cfdtest::MismatchCollector mismatches("VgrdVx");
-    for (int nx1 : TestGridSizes()) for (int ny1 : TestGridSizes()) for (int nz1 : TestGridSizes()) {
+    for (int nx1 : cfdtest::TestGridSizes()) for (int ny1 : cfdtest::TestGridSizes()) for (int nz1 : cfdtest::TestGridSizes()) {
         Spacing2 sp(std::max({nx1, ny1, nz1}) + 2);
         CheckVgrdVx(nx1, ny1, nz1, sp, mismatches);
     }
@@ -361,7 +366,7 @@ TEST(PaddingEquivalenceTest, VgrdVx) {
 
 TEST(PaddingEquivalenceTest, VgrdVy) {
     cfdtest::MismatchCollector mismatches("VgrdVy");
-    for (int nx1 : TestGridSizes()) for (int ny1 : TestGridSizes()) for (int nz1 : TestGridSizes()) {
+    for (int nx1 : cfdtest::TestGridSizes()) for (int ny1 : cfdtest::TestGridSizes()) for (int nz1 : cfdtest::TestGridSizes()) {
         Spacing2 sp(std::max({nx1, ny1, nz1}) + 2);
         CheckVgrdVy(nx1, ny1, nz1, sp, mismatches);
     }
@@ -370,7 +375,7 @@ TEST(PaddingEquivalenceTest, VgrdVy) {
 
 TEST(PaddingEquivalenceTest, VgrdVz) {
     cfdtest::MismatchCollector mismatches("VgrdVz");
-    for (int nx1 : TestGridSizes()) for (int ny1 : TestGridSizes()) for (int nz1 : TestGridSizes()) {
+    for (int nx1 : cfdtest::TestGridSizes()) for (int ny1 : cfdtest::TestGridSizes()) for (int nz1 : cfdtest::TestGridSizes()) {
         Spacing2 sp(std::max({nx1, ny1, nz1}) + 2);
         CheckVgrdVz(nx1, ny1, nz1, sp, mismatches);
     }
@@ -379,7 +384,7 @@ TEST(PaddingEquivalenceTest, VgrdVz) {
 
 TEST(PaddingEquivalenceTest, FdDiv) {
     cfdtest::MismatchCollector mismatches("FdDiv");
-    for (int nx1 : TestGridSizes()) for (int ny1 : TestGridSizes()) for (int nz1 : TestGridSizes()) {
+    for (int nx1 : cfdtest::TestGridSizes()) for (int ny1 : cfdtest::TestGridSizes()) for (int nz1 : cfdtest::TestGridSizes()) {
         Spacing2 sp(std::max({nx1, ny1, nz1}) + 2);
         CheckFdDiv(nx1, ny1, nz1, sp, mismatches);
     }
@@ -388,7 +393,7 @@ TEST(PaddingEquivalenceTest, FdDiv) {
 
 TEST(PaddingEquivalenceTest, Ekinem) {
     cfdtest::MismatchCollector mismatches("Ekinem");
-    for (int nx1 : TestGridSizes()) for (int ny1 : TestGridSizes()) for (int nz1 : TestGridSizes()) {
+    for (int nx1 : cfdtest::TestGridSizes()) for (int ny1 : cfdtest::TestGridSizes()) for (int nz1 : cfdtest::TestGridSizes()) {
         Spacing2 sp(std::max({nx1, ny1, nz1}) + 2);
         CheckEkinem(nx1, ny1, nz1, sp, mismatches);
     }
