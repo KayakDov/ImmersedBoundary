@@ -6,6 +6,11 @@
 #include "solvers/EigenDecomp/EigenDecomp3d.cuh"
 #include <cmath>
 #include <random>
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <optional>
+#include <cuda_runtime.h>
 
 #include "deviceArrays/headers/DeviceMemory.h"
 #include "immersedBoundary/ImmersedEquation.h"
@@ -285,5 +290,242 @@ TEST(Benchmark, SolverRuntimes) {
         }
 
         printBenchmarkRow(n, total, timing);
+    }
+}
+
+// ─── Thomas-only benchmark ───────────────────────────────────────────────────
+
+/**
+ * @brief Times of one Thomas solver at one grid size.
+ */
+struct ThomasTiming {
+    double buildAndSolveMs = -1; ///< Construction plus one solve, measured the way SolverRuntimes measures it.
+    double solveMs         = -1; ///< Average time of one solve on the already-built solver.
+};
+
+/**
+ * @brief Builds a Thomas solver and times it two ways.
+ *
+ * buildAndSolveMs is measured exactly as runEigenDecompThomas measures it, so it can be pasted next
+ * to earlier SolverRuntimes results. solveMs leaves construction out: in the CFD each solver is
+ * built once and then solved every time step, so that is the number that matters there. The solve
+ * inside buildAndSolveMs doubles as the warm-up for the timed solves.
+ *
+ * @param boundary  The boundary conditions.
+ * @param x         Receives the solution; N^3 values.
+ * @param rhs       The right-hand side; N^3 values, not modified.
+ * @param sizeOfBX3 Solver workspace: N^3 rows, 3 columns.
+ * @param hands     At least 3 handles; the solves run on hands[0].
+ * @param repeats   Number of timed solves averaged into solveMs; at least 1.
+ * @return Both times, in milliseconds.
+ */
+template <typename Real, typename SegX, typename SegY, typename SegZ>
+ThomasTiming timeThomas(const BoundaryConfigHost<Real, SegX, SegY, SegZ>& boundary,
+                        SimpleArray<Real>& x,
+                        const SimpleArray<Real>& rhs,
+                        Mat<Real>& sizeOfBX3,
+                        Handles& hands,
+                        size_t repeats) {
+    ThomasTiming timing;
+    x.fill(0, hands[0]);
+    cudaDeviceSynchronize();
+
+    auto t0 = std::chrono::high_resolution_clock::now();
+    EigenDecompThomas<Real, SegZ> ed(boundary, hands, sizeOfBX3);
+    ed.solve(x, rhs, hands[0]);
+    cudaDeviceSynchronize();
+    timing.buildAndSolveMs = std::chrono::duration<double, std::milli>(
+        std::chrono::high_resolution_clock::now() - t0).count();
+
+    t0 = std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < repeats; ++i) ed.solve(x, rhs, hands[0]);
+    cudaDeviceSynchronize();
+    timing.solveMs = std::chrono::duration<double, std::milli>(
+        std::chrono::high_resolution_clock::now() - t0).count() / static_cast<double>(repeats);
+
+    return timing;
+}
+
+/**
+ * @brief The largest cube side N whose Thomas benchmark buffers fit in the GPU's free memory.
+ *
+ * The benchmark keeps five arrays of N^3 values on the GPU: the right-hand side, the solution, and
+ * the solver's three-column workspace. reserveBytes stays free for everything else the solver
+ * allocates while it runs (the per-axis eigenvector matrices and their inverses, cuBLAS workspace)
+ * and for allocation padding.
+ *
+ * @param reserveBytes Bytes of free memory to leave unclaimed.
+ * @return The largest N that fits, or 0 if none does.
+ */
+template <typename Real>
+size_t largestThomasGrid(size_t reserveBytes) {
+    size_t freeBytes = 0, totalBytes = 0;
+    cudaMemGetInfo(&freeBytes, &totalBytes);
+    if (freeBytes <= reserveBytes) return 0;
+
+    const size_t maxTotal = (freeBytes - reserveBytes) / (5 * sizeof(Real));
+    size_t n = static_cast<size_t>(std::cbrt(static_cast<double>(maxTotal)));
+    while ((n + 1) * (n + 1) * (n + 1) <= maxTotal) ++n;
+    while (n > 0 && n * n * n > maxTotal) --n;
+    return n;
+}
+
+/**
+ * @brief The all-Neumann, variable-segment boundary of SolverRuntimes' "Var" case, with every
+ *        spacing set to 1, built on caller-supplied spacing buffers.
+ * @param dx   At least n + 1 values; the first n + 1 are overwritten with 1.
+ * @param dy   As dx.
+ * @param dz   As dx.
+ * @param n    Grid side length.
+ * @param hand Handle for the fills.
+ * @return The boundary configuration.
+ */
+template <typename Real>
+auto makeVariableUnitSpacingOn(SimpleArray<Real>& dx, SimpleArray<Real>& dy, SimpleArray<Real>& dz, size_t n, Handle& hand) {
+    auto dxSub = dx.subArray(0, n + 1); dxSub.fill(1.0, hand);
+    auto dySub = dy.subArray(0, n + 1); dySub.fill(1.0, hand);
+    auto dzSub = dz.subArray(0, n + 1); dzSub.fill(1.0, hand);
+
+    AxisSegmentHost<VariableSegment<Real>> varX({0, true}, {0, true}, dxSub);
+    AxisSegmentHost<VariableSegment<Real>> varY({0, true}, {0, true}, dySub);
+    AxisSegmentHost<VariableSegment<Real>> varZ({0, true}, {0, true}, dzSub);
+
+    return BoundaryConfigHost<Real,
+                              VariableSegment<Real>,
+                              VariableSegment<Real>,
+                              VariableSegment<Real>>(varX, varY, varZ);
+}
+
+/**
+ * @brief Prints one ThomasOnly row; a negative residual prints as "skipped".
+ * @param n        Grid side length.
+ * @param unif     Uniform-segment, all-Dirichlet times.
+ * @param residual ||L*x_unif - b||, or negative if it was not computed.
+ * @param var      Variable-segment, all-Neumann times.
+ */
+void printThomasRow(size_t n, const ThomasTiming& unif, double residual, const ThomasTiming& var) {
+    std::cout << std::setw(8)  << n
+              << std::setw(14) << n * n * n
+              << std::setw(22) << std::fixed << std::setprecision(3) << unif.buildAndSolveMs
+              << std::setw(18) << std::fixed << std::setprecision(3) << unif.solveMs;
+    if (residual < 0) std::cout << std::setw(20) << "skipped";
+    else std::cout << std::setw(20) << std::scientific << std::setprecision(3) << residual;
+    std::cout << std::setw(22) << std::fixed << std::setprecision(3) << var.buildAndSolveMs
+              << std::setw(18) << std::fixed << std::setprecision(3) << var.solveMs
+              << std::endl;
+}
+
+/**
+ * @brief Times only the Thomas solver, on cubic grids up to the largest that fits in GPU memory.
+ *
+ * Unlike SolverRuntimes, this allocates its buffers once, sized from the free memory at launch,
+ * and spends that memory on the Thomas solver alone: no EigenDecomp3d run, and no separate
+ * solution buffer per case. The grid sizes follow SolverRuntimes (steps of 2 up to 200, then 1),
+ * so rows line up with earlier results.
+ *
+ * Columns:
+ * - Unif: uniform segments, all Dirichlet (makeUniformNeumann, whose name is out of date). Same
+ *   setup as SolverRuntimes' "Thomas Unif".
+ * - Var: variable segments with unit spacing, all Neumann. Same setup as SolverRuntimes'
+ *   "Thomas Var".
+ * - "build+solve" is timed as SolverRuntimes times it; "solve" is the average of `repeats` solves
+ *   on the built solver.
+ *
+ * The residual check needs a banded Laplacian of seven diagonals plus a result vector, about eight
+ * times N^3 values, far more than the solver itself. Before each check the free memory is compared
+ * with that need plus 64 MB; once it no longer fits, the check is skipped for the rest of the run
+ * and the timings continue. It is not left to fail: a failed allocation there has caused an
+ * illegal memory access rather than a catchable error. Var gets no residual: its right-hand side is random
+ * and not zero-mean, so the singular all-Neumann system has no exact solution to check against,
+ * and the timing does not depend on it.
+ */
+TEST(Benchmark, ThomasOnly) {
+    using Real = double;
+
+    Handles hands(3);
+    const Real3d delta(1, 1, 1);
+    const size_t repeats = 3;
+    const size_t reserveBytes = size_t{256} << 20;
+
+    std::cout << DeviceMemory() << std::endl;
+
+    const size_t maxN = largestThomasGrid<Real>(reserveBytes);
+    ASSERT_GE(maxN, size_t{2}) << "Not enough free GPU memory for even a 2x2x2 grid.";
+    const size_t maxTotal = maxN * maxN * maxN;
+    std::cout << "Buffers sized for N up to " << maxN << " (" << maxTotal << " points)" << std::endl;
+
+    auto rhs        = SimpleArray<Real>::create(maxTotal, hands[0]);
+    auto x          = SimpleArray<Real>::create(maxTotal, hands[0]);
+    auto sizeOfBX3  = Mat<Real>::create(maxTotal, 3, hands[0]);
+    auto dx         = SimpleArray<Real>::create(maxN + 1, hands[0]);
+    auto dy         = SimpleArray<Real>::create(maxN + 1, hands[0]);
+    auto dz         = SimpleArray<Real>::create(maxN + 1, hands[0]);
+    auto normResult = Singleton<Real>::create(hands[0]);
+
+    {
+        std::mt19937 rng(42);
+        std::uniform_real_distribution<Real> dist(-1, 1);
+        std::vector<Real> host(maxTotal);
+        for (Real& v : host) v = dist(rng);
+        rhs.set(host.data(), hands[0]);
+        hands[0].synch();
+    }
+
+    std::cout << std::setw(8)  << "N"
+              << std::setw(14) << "N^3"
+              << std::setw(22) << "Unif build+solve"
+              << std::setw(18) << "Unif solve"
+              << std::setw(20) << "||L*x_unif - b||"
+              << std::setw(22) << "Var build+solve"
+              << std::setw(18) << "Var solve"
+              << "   (ms)" << std::endl;
+    std::cout << std::string(125, '-') << std::endl;
+
+    bool residualFits = true;
+
+    for (size_t n = 2; n <= maxN; n += (n < 200 ? 2 : 1)) {
+        const size_t total = n * n * n;
+        const GridDim dim(n, n, n);
+
+        auto rhsSub       = rhs.subArray(0, total);
+        auto xSub         = x.subArray(0, total);
+        auto sizeOfBX3Sub = sizeOfBX3.subMat(0, 0, total, 3);
+
+        const auto uniformBoundary  = makeUniformNeumann<Real>(delta, dim);
+        const auto variableBoundary = makeVariableUnitSpacingOn<Real>(dx, dy, dz, n, hands[0]);
+
+        ThomasTiming unif, var;
+        double residual = -1;
+
+        try {
+            unif = timeThomas(uniformBoundary, xSub, rhsSub, sizeOfBX3Sub, hands, repeats);
+        } catch (...) {
+            cudaGetLastError();
+            std::cout << "OOM in EigenDecompThomas (Uniform) at N=" << n << std::endl;
+            break;
+        }
+
+        if (residualFits) {
+            size_t freeBytes = 0, totalBytes = 0;
+            cudaMemGetInfo(&freeBytes, &totalBytes);
+            const size_t residualBytes = 8 * total * sizeof(Real) + (size_t{64} << 20);
+            if (residualBytes > freeBytes) {
+                residualFits = false;
+                std::cout << "Residual check no longer fits in memory from N=" << n
+                          << "; timings continue without it." << std::endl;
+            } else {
+                residual = computeResidualNorm(uniformBoundary.forDevice(), xSub, rhsSub, normResult, hands);
+            }
+        }
+
+        try {
+            var = timeThomas(variableBoundary, xSub, rhsSub, sizeOfBX3Sub, hands, repeats);
+        } catch (...) {
+            cudaGetLastError();
+            std::cout << "OOM in EigenDecompThomas (Variable) at N=" << n << std::endl;
+            break;
+        }
+
+        printThomasRow(n, unif, residual, var);
     }
 }

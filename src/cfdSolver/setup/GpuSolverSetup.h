@@ -39,13 +39,13 @@ public:
     /**
      * @brief Builds all six solvers.
      * @tparam Real Floating-point type.
-     * @param cfg The simulation configuration.
+     * @param config The simulation configuration.
      * @param mesh The already-generated mesh (its host spacing arrays are
      * read once, here, to construct each solver's boundary configuration).
      * @return The constructed solvers.
      */
     template<typename Real>
-    static BuiltSolvers<Real> build(const SimulationConfig& cfg, const Mesh<Real>& mesh);
+    static BuiltSolvers<Real> build(const SimulationConfig& config, const Mesh<Real>& mesh);
 };
 
 #endif //CFDSOLVER_GPUSOLVERSETUP_H

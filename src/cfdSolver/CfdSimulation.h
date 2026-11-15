@@ -49,7 +49,7 @@
  * demonstrated default.
  *
  * run() also writes three of the original's own always-on output files,
- * under cfg_.outputDirectory, alongside the existing checkpoint:
+ * under config_.outputDirectory, alongside the existing checkpoint:
  * Serie.dat and History.dat (every iteration -- port of Solution_time_
  * Q2D.f90's Ek/Anu and point-probe Write(25,*)/Write(26,*), which have no
  * Iprint gate in the original) and Conv.out (mirrors printIterationReport()'s
@@ -58,12 +58,12 @@
  * source wasn't available when this was written).
  *
  * Serie.dat/History.dat are unconditional *in the original*, and default
- * to on here too (cfg_.writeSerieAndHistory), but are made optional in
+ * to on here too (config_.writeSerieAndHistory), but are made optional in
  * this port specifically because producing them costs something the
  * original never paid: the original's Ek/Anu were plain CPU arithmetic on
  * already-resident memory, while here computeGlobalDiagnostics() must
  * synch several device handles and run full-volume reduction kernels
- * every single iteration. Setting cfg_.writeSerieAndHistory to false skips
+ * every single iteration. Setting config_.writeSerieAndHistory to false skips
  * that GPU cost entirely, not just the two files -- see its doc comment in
  * SimulationConfig.h. Conv.out has no such cost (it only ever mirrors
  * values already computed for stdout) and stays unconditional.
@@ -91,11 +91,11 @@ public:
     /**
      * @brief Constructs a simulation: generates the mesh, builds the six
      * solvers, and allocates every scratch buffer.
-     * @param cfg The simulation configuration.
-     * @throws std::runtime_error if cfg requests an unimplemented feature
+     * @param config The simulation configuration.
+     * @throws std::runtime_error if config requests an unimplemented feature
      * (see class comment).
      */
-    explicit CfdSimulation(SimulationConfig cfg);
+    explicit CfdSimulation(SimulationConfig config);
 
     CfdSimulation(const CfdSimulation&) = delete;             ///< Not copyable: owns unique device allocations.
     CfdSimulation& operator=(const CfdSimulation&) = delete;   ///< Not copyable: owns unique device allocations.
@@ -105,16 +105,16 @@ public:
     /**
      * @brief Sets every field to its starting state: either the small
      * constants init_3D.f90 used for a fresh start, or a checkpoint's
-     * contents if cfg.restartFile is set. Must be called once, before
+     * contents if config.restartFile is set. Must be called once, before
      * run().
      */
     void initialize();
 
     /**
      * @brief Runs the simulation to completion: advances timesteps until
-     * cfg.runDuration or cfg.maxIterations is reached, or the
+     * config.runDuration or config.maxIterations is reached, or the
      * convergence criterion is met, printing and checkpointing at
-     * cfg.printEvery, then prints the final diagnostic report.
+     * config.printEvery, then prints the final diagnostic report.
      */
     void run();
 
@@ -130,7 +130,7 @@ private:
      * delegating constructor below.
      */
     struct Ingredients {
-        SimulationConfig cfg;
+        SimulationConfig config;
         /* Owned via unique_ptr, not by value: Handle is deliberately
          * neither copyable nor movable (see handle.h) -- every caller in
          * the codebase takes a Handle&/Handle*. prepare() heap-allocates
@@ -152,7 +152,7 @@ private:
 
         /* Time-averaging accumulators (Solution_time_Q2D.f90's VMx_Av/
          * VMy_Av/VMz_Av/Tmp_Av/Prs_Av) -- see accumulateTimeAverage().
-         * Always allocated, regardless of cfg.timeAveragingEnabled: each
+         * Always allocated, regardless of config.timeAveragingEnabled: each
          * is one more full field (trivial next to the six solved fields
          * already allocated), and allocating unconditionally avoids ever
          * needing an optional/null GpuField. Only the accumulation calls
@@ -161,12 +161,12 @@ private:
 
         /* Fourier-mode accumulators (Tmp_Amplitude's i>0/i<0 halves in the
          * original) -- temperature only, one pair of fields per configured
-         * frequency. Empty vectors when cfg.fourierFrequencies is empty
+         * frequency. Empty vectors when config.fourierFrequencies is empty
          * (the common case: plain time-averaging with no decomposition). */
         std::vector<GpuField<Real>> temperatureFourierCos, temperatureFourierSin;
     };
 
-    static Ingredients prepare(SimulationConfig cfg);
+    static Ingredients prepare(SimulationConfig config);
     explicit CfdSimulation(Ingredients ingredients);
 
     /// @brief Builds temperature's RHS (advection, buoyancy reference
@@ -240,11 +240,11 @@ private:
      * Synchs vx_/vy_/vz_/temperature_'s own solve handles before reading
      * their "current" views from *hand_, same rule and same reason as
      * computeGlobalDiagnostics() -- this is an entirely separate call
-     * (cfg_.timeAveragingEnabled is independent of
-     * cfg_.writeSerieAndHistory), so it cannot rely on that function
+     * (config_.timeAveragingEnabled is independent of
+     * config_.writeSerieAndHistory), so it cannot rely on that function
      * having already synched them.
      *
-     * Called from run()'s loop only when cfg_.timeAveragingEnabled is
+     * Called from run()'s loop only when config_.timeAveragingEnabled is
      * true, at the same point the original calls Fourier_sum: right after
      * Serie.dat/History.dat's per-iteration write (if any), using the same
      * now-current elapsedTime_ as Fortran's TimCur.
@@ -253,7 +253,7 @@ private:
 
     /**
      * @brief Finishes the time-average: divides every accumulator by
-     * cfg_.runDuration (Fourier terms by `2/cfg_.runDuration`, matching
+     * config_.runDuration (Fourier terms by `2/config_.runDuration`, matching
      * Plot_Amplitude's extra factor of 2), writes Vx_av.dat/Vy_av.dat/
      * Vz_av.dat from the INSTANTANEOUS (pre-substitution) velocity --
      * not a typo: Solution_time_Q2D.f90's own Point_Write calls for these
@@ -265,7 +265,7 @@ private:
      * Point_Write call is commented out in the original too). Always also
      * writes Amplitudes.dat and Average_velocity.ddd (both unconditional
      * inside Plot_Amplitude whenever it runs at all, regardless of how
-     * many frequencies are configured -- an empty cfg_.fourierFrequencies
+     * many frequencies are configured -- an empty config_.fourierFrequencies
      * just means Amplitudes.dat has only its "Average" column, matching
      * N_Fourier==0's degenerate case in the original). Finally uploads the
      * finalized time-averages over vx_/vy_/vz_/temperature_/pressure_'s
@@ -297,14 +297,14 @@ private:
      * of those -- they simply read whatever vx_/vy_/vz_/temperature_
      * currently hold, same as always.
      *
-     * Called once, from run(), only when cfg_.timeAveragingEnabled is
+     * Called once, from run(), only when config_.timeAveragingEnabled is
      * true -- after the final checkpoint write and before
      * printFinalReport(), matching the original's exact ordering (Outp,
      * then Plot_Amplitude, then the Nusselt/kinetic-energy report): the
      * checkpoint is always the true instantaneous final state, never the
      * time-average, in both the original and here.
      *
-     * @note Uses cfg_.runDuration, not the actual elapsedTime_ reached,
+     * @note Uses config_.runDuration, not the actual elapsedTime_ reached,
      * matching the original's own division by Time_Interval rather than
      * TimCur. For a fresh start (the only case this project has run) these
      * are the same to within one timeStep; a restarted run spanning less
@@ -349,25 +349,25 @@ private:
      * ghost-inclusive X12) is the same real-extent-only reasoning, just
      * applied to the coordinate arrays instead of the field.
      *
-     * Called once, from run(), only when cfg_.writeFieldSnapshots is true
+     * Called once, from run(), only when config_.writeFieldSnapshots is true
      * -- after the final checkpoint, before finalizeTimeAverage(), the
      * same relative position the original's own (disabled) block sits in.
      */
     void writeFieldSnapshots();
 
     /**
-     * @brief Creates cfg_.outputDirectory (and any missing parent, a no-op
+     * @brief Creates config_.outputDirectory (and any missing parent, a no-op
      * if it already exists -- unlike the original, which only ever ran
      * against a directory Alex had created by hand, this directory now
      * comes from a JSON field anyone can repoint anywhere), then opens
-     * Conv.out, and -- only when cfg_.writeSerieAndHistory is true --
+     * Conv.out, and -- only when config_.writeSerieAndHistory is true --
      * Serie.dat and History.dat too, all under that directory (append
      * mode, matching the original's position='append' -- confirmed from
      * the live project's own multi-run Serie.dat/History.dat, which hold
      * several runs' data concatenated). Writes Conv.out's one-line
      * parameter-echo header. Called once, at the top of run().
      *
-     * When cfg_.writeSerieAndHistory is false, serieFile_/historyFile_ are
+     * When config_.writeSerieAndHistory is false, serieFile_/historyFile_ are
      * left null (never opened) -- the signal run()'s loop uses to skip
      * computeGlobalDiagnostics() and its GPU cost entirely, not just the
      * file writes.
@@ -376,10 +376,10 @@ private:
      */
     void openOutputFiles();
 
-    /// @brief Creates cfg_.outputDirectory (and any missing parent); a no-op if it already exists.
+    /// @brief Creates config_.outputDirectory (and any missing parent); a no-op if it already exists.
     void createOutputDirectory();
 
-    /// @brief Opens Serie.dat and History.dat in append mode, only when cfg_.writeSerieAndHistory is true.
+    /// @brief Opens Serie.dat and History.dat in append mode, only when config_.writeSerieAndHistory is true.
     void openSerieAndHistoryFiles();
 
     /// @brief Opens Conv.out in append mode and writes its one-line parameter-echo header.
@@ -394,7 +394,7 @@ private:
     void touchUnusedLegacyFiles();
 
     /**
-     * @brief Joins cfg_.outputDirectory and filename into one path,
+     * @brief Joins config_.outputDirectory and filename into one path,
      * stripping outputDirectory's trailing slash (if any) so the result
      * never has a doubled separator.
      */
@@ -419,7 +419,7 @@ private:
      * forced the wait incidentally (only ones that also land on
      * printEvery additionally checkpoint, which downloads every field).
      *
-     * Called from run()'s loop only when cfg_.writeSerieAndHistory is
+     * Called from run()'s loop only when config_.writeSerieAndHistory is
      * true -- unlike the original, where the equivalent computation was
      * free (plain CPU arithmetic, no transfer or synch), this function's
      * cost is real and recurring, so skipping the call is how that cost
@@ -432,7 +432,7 @@ private:
      */
     void computeGlobalDiagnostics(Real& kineticEnergy, Real& nusselt, Real& probeVz, Real& probeTmpr);
 
-    SimulationConfig cfg_;
+    SimulationConfig config_;
     std::unique_ptr<Handle> hand_; ///< Heap-owned; see Ingredients::hand above for why.
     Mesh<Real> mesh_;
     GpuField<Real> buoyancyByX_;
@@ -452,13 +452,13 @@ private:
     /// Accumulators during run()'s loop, time-averages after
     /// finalizeTimeAverage() divides them -- same buffer plays both roles,
     /// matching the original's VMx_Av/.../Prs_Av exactly. Always
-    /// allocated; only touched when cfg_.timeAveragingEnabled is true.
+    /// allocated; only touched when config_.timeAveragingEnabled is true.
     ///@{
     GpuField<Real> vxTimeAverage_, vyTimeAverage_, vzTimeAverage_, temperatureTimeAverage_, pressureTimeAverage_;
-    std::vector<GpuField<Real>> temperatureFourierCos_, temperatureFourierSin_; ///< One pair per cfg_.fourierFrequencies entry (empty if none configured).
+    std::vector<GpuField<Real>> temperatureFourierCos_, temperatureFourierSin_; ///< One pair per config_.fourierFrequencies entry (empty if none configured).
     ///@}
 
-    int probeX_ = 0, probeY_ = 0, probeZ_ = 0; ///< History.dat's point-probe indices (Solution_time_Q2D.f90's i_x_write/j_y_write/k_z_write), computed once in the constructor from cfg_ and mesh_.
+    int probeX_ = 0, probeY_ = 0, probeZ_ = 0; ///< History.dat's point-probe indices (Solution_time_Q2D.f90's i_x_write/j_y_write/k_z_write), computed once in the constructor from config_ and mesh_.
 
     /// @brief Closes a FILE* on destruction (nullptr is a no-op, since a
     /// unique_ptr with this deleter default-constructs to nullptr before
@@ -466,8 +466,8 @@ private:
     /// use std::unique_ptr for automatic, move-safe cleanup -- the same
     /// reasoning hand_ (above) already uses unique_ptr<Handle> for.
     struct FileCloser { void operator()(FILE* f) const { if (f) std::fclose(f); } };
-    std::unique_ptr<FILE, FileCloser> serieFile_;   ///< Every-iteration TimCur/Ek/Anu, port of Serie.dat. Null when cfg_.writeSerieAndHistory is false (never opened).
-    std::unique_ptr<FILE, FileCloser> historyFile_; ///< Every-iteration TimCur/probeVz/probeTmpr, port of History.dat. Null when cfg_.writeSerieAndHistory is false (never opened).
+    std::unique_ptr<FILE, FileCloser> serieFile_;   ///< Every-iteration TimCur/Ek/Anu, port of Serie.dat. Null when config_.writeSerieAndHistory is false (never opened).
+    std::unique_ptr<FILE, FileCloser> historyFile_; ///< Every-iteration TimCur/probeVz/probeTmpr, port of History.dat. Null when config_.writeSerieAndHistory is false (never opened).
     std::unique_ptr<FILE, FileCloser> convOutFile_; ///< Mirrors printIterationReport()'s/printFinalReport()'s stdout text, port of Conv.out.
 
     Real elapsedTime_ = Real(0);

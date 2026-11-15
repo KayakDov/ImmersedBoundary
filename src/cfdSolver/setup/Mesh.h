@@ -112,13 +112,13 @@ class Mesh {
 public:
     /**
      * @brief Generates and uploads the mesh for one simulation.
-     * @param cfg The simulation configuration (grid extents, aspect/width
+     * @param config The simulation configuration (grid extents, aspect/width
      * ratio, stretching factor).
      * @param gpuIndex Which device to upload the spacing arrays to.
      * @param hand Handle to perform the upload on.
      * @return The generated mesh.
      */
-    static Mesh generate(const SimulationConfig& cfg, GpuIndex gpuIndex, Handle& hand);
+    static Mesh generate(const SimulationConfig& config, GpuIndex gpuIndex, Handle& hand);
 
     /// @return Device-resident spacing, for kernel launches.
     Spacing<Real> deviceSpacing() const;

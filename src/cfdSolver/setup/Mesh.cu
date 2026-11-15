@@ -35,11 +35,11 @@ GpuField<Real> uploadSpacing(const std::vector<Real>& host, GpuIndex gpuIndex, H
 } // namespace
 
 template<typename Real>
-Mesh<Real> Mesh<Real>::generate(const SimulationConfig& cfg, GpuIndex gpuIndex, Handle& hand) {
-    Real stretch = (Real)cfg.meshStretchingFactor;
-    AxisSpacing<Real> x = computeAxisSpacing<Real>(cfg.Nx, (Real)cfg.aspectRatio, stretch);
-    AxisSpacing<Real> y = computeAxisSpacing<Real>(cfg.Ny, (Real)cfg.widthRatio, stretch);
-    AxisSpacing<Real> z = computeAxisSpacing<Real>(cfg.Nz, Real(1), stretch);
+Mesh<Real> Mesh<Real>::generate(const SimulationConfig& config, GpuIndex gpuIndex, Handle& hand) {
+    Real stretch = (Real)config.meshStretchingFactor;
+    AxisSpacing<Real> x = computeAxisSpacing<Real>(config.Nx, (Real)config.aspectRatio, stretch);
+    AxisSpacing<Real> y = computeAxisSpacing<Real>(config.Ny, (Real)config.widthRatio, stretch);
+    AxisSpacing<Real> z = computeAxisSpacing<Real>(config.Nz, Real(1), stretch);
 
     GpuField<Real> deviceHx12 = uploadSpacing(x.hFull, gpuIndex, hand);
     GpuField<Real> deviceHy12 = uploadSpacing(y.hFull, gpuIndex, hand);

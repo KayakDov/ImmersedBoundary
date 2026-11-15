@@ -23,18 +23,68 @@
 │   │   │   │   │       ├── a.out
 │   │   │   │   │       ├── CMakeFortranCompilerId.F
 │   │   │   │   │       └── tmp
+│   │   │   │   ├── 4.4.2
+│   │   │   │   │   ├── CMakeCXXCompiler.cmake
+│   │   │   │   │   ├── CMakeDetermineCompilerABI_CXX.bin
+│   │   │   │   │   ├── CMakeDetermineCompilerABI_Fortran.bin
+│   │   │   │   │   ├── CMakeFortranCompiler.cmake
+│   │   │   │   │   ├── CMakeSystem.cmake
+│   │   │   │   │   ├── CompilerIdCXX
+│   │   │   │   │   │   ├── a.out
+│   │   │   │   │   │   ├── CMakeCXXCompilerId.cpp
+│   │   │   │   │   │   └── tmp
+│   │   │   │   │   └── CompilerIdFortran
+│   │   │   │   │       ├── a.out
+│   │   │   │   │       ├── CMakeFortranCompilerId.F
+│   │   │   │   │       └── tmp
 │   │   │   │   ├── BinaryToTxt.dir
+│   │   │   │   │   ├── alexcudacompatibility.mod.stamp
 │   │   │   │   │   ├── Auxilery
+│   │   │   │   │   │   └── BinaryToTxt.f90.o
 │   │   │   │   │   ├── build.make
 │   │   │   │   │   ├── cmake_clean.cmake
+│   │   │   │   │   ├── cmake_clean_Fortran.cmake
+│   │   │   │   │   ├── compiler_depend.internal
 │   │   │   │   │   ├── compiler_depend.make
 │   │   │   │   │   ├── compiler_depend.ts
 │   │   │   │   │   ├── DependInfo.cmake
+│   │   │   │   │   ├── depend.internal
 │   │   │   │   │   ├── depend.make
+│   │   │   │   │   ├── evd_operators.mod.stamp
 │   │   │   │   │   ├── flags.make
+│   │   │   │   │   ├── fortran.internal
+│   │   │   │   │   ├── grid.mod.stamp
+│   │   │   │   │   ├── link.d
 │   │   │   │   │   ├── link.txt
+│   │   │   │   │   ├── numbers.mod.stamp
+│   │   │   │   │   ├── numerica.mod.stamp
+│   │   │   │   │   ├── operators.mod.stamp
+│   │   │   │   │   ├── parameters.mod.stamp
 │   │   │   │   │   ├── progress.make
-│   │   │   │   │   └── src
+│   │   │   │   │   ├── size.mod.stamp
+│   │   │   │   │   ├── src
+│   │   │   │   │   │   ├── AlexCudaCompatibility.f90.o
+│   │   │   │   │   │   ├── AlexCudaCompatibility.f90.o.provides.build
+│   │   │   │   │   │   ├── bounds_3D.f90.o
+│   │   │   │   │   │   ├── check_3D.f90.o
+│   │   │   │   │   │   ├── divvel_3D_alloc.f90.o
+│   │   │   │   │   │   ├── ekinem_3D.f90.o
+│   │   │   │   │   │   ├── EM_forcing.f90.o
+│   │   │   │   │   │   ├── gradp_3D.f90.o
+│   │   │   │   │   │   ├── init_3D.f90.o
+│   │   │   │   │   │   ├── MeshStretch.f90.o
+│   │   │   │   │   │   ├── modfv_3D_Q2D.f90.o
+│   │   │   │   │   │   ├── modfv_3D_Q2D.f90.o.provides.build
+│   │   │   │   │   │   ├── outp_3D.f90.o
+│   │   │   │   │   │   ├── pointw.f90.o
+│   │   │   │   │   │   ├── prmesh.f90.o
+│   │   │   │   │   │   ├── Solution_time_Q2D.f90.o
+│   │   │   │   │   │   ├── sublid_3D.f90.o
+│   │   │   │   │   │   ├── time_step_Q2D.f90.o
+│   │   │   │   │   │   ├── vgradf_3D.f90.o
+│   │   │   │   │   │   └── Yaverage.f90.o
+│   │   │   │   │   ├── thomas_coefficients.mod.stamp
+│   │   │   │   │   └── variables.mod.stamp
 │   │   │   │   ├── CFDSolver.dir
 │   │   │   │   │   ├── alexcudacompatibility.mod.stamp
 │   │   │   │   │   ├── build.make
@@ -88,6 +138,7 @@
 │   │   │   │   ├── cmake.check_cache
 │   │   │   │   ├── CMakeConfigureLog.yaml
 │   │   │   │   ├── CMakeDirectoryInformation.cmake
+│   │   │   │   ├── CMakeScratch
 │   │   │   │   ├── cmake.verify_globs
 │   │   │   │   ├── InstallScripts.json
 │   │   │   │   ├── Makefile2
@@ -120,15 +171,35 @@
 │   │   ├── Conv.ddd
 │   │   ├── Conv.out
 │   │   ├── Cpu.dat
-│   │   ├── Fortransrc.zip
+│   │   ├── FortranVersion
+│   │   │   └── src
+│   │   │       ├── AlexCudaCompatibility.f90
+│   │   │       ├── bounds_3D.f90
+│   │   │       ├── check_3D.f90
+│   │   │       ├── ConvMain_3D_Q2D.f90
+│   │   │       ├── divvel_3D_alloc.f90
+│   │   │       ├── ekinem_3D.f90
+│   │   │       ├── EM_forcing.f90
+│   │   │       ├── gradp_3D.f90
+│   │   │       ├── init_3D.f90
+│   │   │       ├── MeshStretch.f90
+│   │   │       ├── modfv_3D_Q2D.f90
+│   │   │       ├── outp_3D.f90
+│   │   │       ├── pointw.f90
+│   │   │       ├── prmesh.f90
+│   │   │       ├── Solution_time_Q2D.f90
+│   │   │       ├── sublid_3D.f90
+│   │   │       ├── time_step_Q2D.f90
+│   │   │       ├── vgradf_3D.f90
+│   │   │       └── Yaverage.f90
 │   │   ├── History.dat
-│   │   ├── perf_singlegpu.data
 │   │   ├── Potential.dat
 │   │   ├── Pres_av.dat
 │   │   ├── Pres_converted.txt
 │   │   ├── Pres.dat
 │   │   ├── Psi_Yaverage.dat
 │   │   ├── Q2D_time.lnk
+│   │   ├── run_sweep.py
 │   │   ├── Serie.dat
 │   │   ├── singlegpu.collapsed
 │   │   ├── src
@@ -136,9 +207,14 @@
 │   │   │   ├── bounds_3D.f90
 │   │   │   ├── check_3D.f90
 │   │   │   ├── ConvMain_3D_Q2D.f90
+│   │   │   ├── ConvMain_3D_Q2D.f90.before_bug1_typo_fix.bak
+│   │   │   ├── ConvMain_3D_Q2D.f90.before_potential_alloc_fix.bak
 │   │   │   ├── divvel_3D_alloc.f90
 │   │   │   ├── ekinem_3D.f90
+│   │   │   ├── ekinem_3D.f90.before_boundary_diag.bak
 │   │   │   ├── EM_forcing.f90
+│   │   │   ├── EM_forcing.f90.before_potential_diag.bak
+│   │   │   ├── EM_forcing.f90.before_potential_diag_v2.bak
 │   │   │   ├── gradp_3D.f90
 │   │   │   ├── init_3D.f90
 │   │   │   ├── MeshStretch.f90
@@ -147,10 +223,21 @@
 │   │   │   ├── pointw.f90
 │   │   │   ├── prmesh.f90
 │   │   │   ├── Solution_time_Q2D.f90
+│   │   │   ├── Solution_time_Q2D.f90.before_boundary_diag.bak
+│   │   │   ├── Solution_time_Q2D.f90.before_history_fix.bak
+│   │   │   ├── Solution_time_Q2D.f90.before_pointwrite_fix.bak
+│   │   │   ├── Solution_time_Q2D.f90.before_residual_diagnostic.bak
+│   │   │   ├── Solution_time_Q2D.f90.before_snapshot_uncomment.bak
+│   │   │   ├── Solution_time_Q2D.f90.before_teta_axis_fix.bak
+│   │   │   ├── Solution_time_Q2D.f90.before_tmpr_mutation_fix.bak
 │   │   │   ├── sublid_3D.f90
 │   │   │   ├── time_step_Q2D.f90
+│   │   │   ├── time_step_Q2D.f90.before_corrected_diag.bak
+│   │   │   ├── time_step_Q2D.f90.before_potential_diag_v2.bak
+│   │   │   ├── time_step_Q2D.f90.before_pressure_diag.bak
 │   │   │   ├── vgradf_3D.f90
 │   │   │   └── Yaverage.f90
+│   │   ├── src.zip
 │   │   ├── SteadyState.ddd
 │   │   ├── timing_patch.py
 │   │   ├── Tmpr_av.dat
@@ -575,10 +662,7 @@
 │           ├── modfv_3D.f90
 │           ├── TestMain_3D.f90
 │           └── Test_TPF.link_file
-├── benchmark_backup_20261015_101724
-│   └── BenchMark.cpp
 ├── BiCGSTAB_stream_dependency (6).pdf
-├── checkpoint.cfdc
 ├── cmake
 │   └── CudaBandedLibConfig.cmake.in
 ├── cmake-build-debug
@@ -588,7 +672,7 @@
 │   ├── checkpoint.cfdc
 │   ├── CMakeCache.txt
 │   ├── CMakeFiles
-│   │   ├── 4.3.1
+│   │   ├── 4.4.2
 │   │   │   ├── CMakeCCompiler.cmake
 │   │   │   ├── CMakeCUDACompiler.cmake
 │   │   │   ├── CMakeCXXCompiler.cmake
@@ -634,7 +718,6 @@
 │   │   ├── cfdSolver.dir
 │   │   │   └── src
 │   │   │       └── cfdSolver
-│   │   │           └── main.cu.o
 │   │   ├── clion-Debug-log.txt
 │   │   ├── clion-environment.txt
 │   │   ├── cmake.check_cache
@@ -642,82 +725,23 @@
 │   │   ├── CMakeScratch
 │   │   ├── cmake.verify_globs
 │   │   ├── CudaBandedLib.dir
-│   │   │   ├── Fortran.dd
 │   │   │   ├── FortranDependInfo.json
-│   │   │   ├── FortranModules.json
 │   │   │   ├── shroud_project
-│   │   │   │   ├── utilEigenBCGSolver.cpp.o
-│   │   │   │   ├── wrapEigenBCGSolver_eigen.cpp.o
-│   │   │   │   ├── wrapEigenBCGSolver_ImEq.cpp.o
-│   │   │   │   ├── wrapfEigenBCGSolver_eigen.f90.o
-│   │   │   │   ├── wrapfEigenBCGSolver_eigen.f90.o.ddi
-│   │   │   │   ├── wrapfEigenBCGSolver_eigen.f90-pp.f90
-│   │   │   │   ├── wrapfEigenBCGSolver_eigen.f90-pp.f90.d
-│   │   │   │   ├── wrapfeigenbcgsolver.f90.o
-│   │   │   │   ├── wrapfeigenbcgsolver.f90.o.ddi
-│   │   │   │   ├── wrapfeigenbcgsolver.f90-pp.f90
-│   │   │   │   ├── wrapfeigenbcgsolver.f90-pp.f90.d
-│   │   │   │   ├── wrapfEigenBCGSolver_ImEq.f90.o
-│   │   │   │   ├── wrapfEigenBCGSolver_ImEq.f90.o.ddi
-│   │   │   │   ├── wrapfEigenBCGSolver_ImEq.f90-pp.f90
-│   │   │   │   └── wrapfEigenBCGSolver_ImEq.f90-pp.f90.d
 │   │   │   └── src
 │   │   │       ├── cfdSolver
-│   │   │       │   ├── CfdSimulation.cu.o
 │   │   │       │   ├── fields
-│   │   │       │   │   ├── GpuField.cu.o
-│   │   │       │   │   ├── SolvedField.cu.o
-│   │   │       │   │   └── TimeDependentField.cu.o
-│   │   │       │   ├── setup
-│   │   │       │   │   ├── CheckpointIO.cu.o
-│   │   │       │   │   ├── GpuSolverSetup.cu.o
-│   │   │       │   │   └── Mesh.cu.o
-│   │   │       │   └── SimulationConfig.cpp.o
+│   │   │       │   └── setup
 │   │   │       ├── deviceArrays
 │   │   │       │   └── defFiles
-│   │   │       │       ├── DeviceMemory.cu.o
-│   │   │       │       ├── Event.cu.o
-│   │   │       │       ├── GpuArray.cu.o
-│   │   │       │       ├── GpuIndex.cu.o
-│   │   │       │       ├── handle.cu.o
-│   │   │       │       ├── KernelPrep.cu.o
-│   │   │       │       ├── Mat.cu.o
-│   │   │       │       ├── SimpleArray.cu.o
-│   │   │       │       ├── Singleton.cu.o
-│   │   │       │       ├── sparse
-│   │   │       │       │   ├── BandedMatrix.cu.o
-│   │   │       │       │   ├── Diagonal.cpp.o
-│   │   │       │       │   ├── SparseCOO.cpp.o
-│   │   │       │       │   ├── SparseCSC.cu.o
-│   │   │       │       │   ├── SparseCSR.cpp.o
-│   │   │       │       │   ├── SparseMat.cu.o
-│   │   │       │       │   └── TriDiagonal.cu.o
-│   │   │       │       ├── SquareMat.cu.o
-│   │   │       │       ├── Streamable.cpp.o
-│   │   │       │       ├── streamHelper.cpp.o
-│   │   │       │       ├── Tensor.cu.o
-│   │   │       │       └── Vec.cu.o
+│   │   │       │       └── sparse
 │   │   │       ├── immersedBoundary
-│   │   │       │   └── ImmersedEquation.cu.o
 │   │   │       ├── kronecker
-│   │   │       │   └── KroneckerTriplet.cpp.o
 │   │   │       ├── math
-│   │   │       │   └── Real3d.cpp.o
 │   │   │       ├── ODE
-│   │   │       │   └── ODE.cpp.o
 │   │   │       ├── poisson
-│   │   │       │   ├── Eigen.cu.o
-│   │   │       │   ├── Laplacian1d.cu.o
-│   │   │       │   └── Poisson.cu.o
 │   │   │       ├── solvers
-│   │   │       │   ├── BiCGSTAB.cu.o
 │   │   │       │   └── EigenDecomp
-│   │   │       │       ├── EigenDecomp2d.cu.o
-│   │   │       │       ├── EigenDecomp3d.cu.o
-│   │   │       │       ├── EigenDecompSolver.cu.o
-│   │   │       │       └── EigenDecompThomas.cu.o
 │   │   │       └── wrapper
-│   │   │           └── EigenDecompForFortran.cpp.o
 │   │   ├── Export
 │   │   │   └── 55f6890c3c758fcfe5656cd56eeb95da
 │   │   │       ├── CudaBandedLibTargets.cmake
@@ -872,31 +896,22 @@
 │   │   │       ├── output.txt
 │   │   │       ├── VerifyFortranC
 │   │   │       └── VerifyFortran.h
+│   │   ├── googletest_discovery_6d1843757b.json
 │   │   ├── InstallScripts.json
 │   │   ├── pkgRedirects
 │   │   ├── rules.ninja
 │   │   ├── run_benchmarks.dir
 │   │   │   └── Tests
-│   │   │       └── BenchMark.cpp.o
 │   │   ├── run_unit_tests.dir
 │   │   │   └── Tests
-│   │   │       ├── cfdSolver
-│   │   │       │   ├── test_buoyancy.cpp.o
-│   │   │       │   ├── test_config.cpp.o
-│   │   │       │   ├── test_diagnostics.cpp.o
-│   │   │       │   ├── test_operators_host.cpp.o
-│   │   │       │   └── verify_padding_equivalence.cpp.o
-│   │   │       ├── GramSchmidtTest.cu.o
-│   │   │       ├── HandlesTest.cu.o
-│   │   │       ├── ODETest.cu.o
-│   │   │       ├── TestBandedMatrix.cpp.o
-│   │   │       └── test.cpp.o
+│   │   │       └── cfdSolver
 │   │   ├── TargetDirectories.txt
 │   │   ├── VerifyGlobs.cmake
 │   │   └── vtkModuleAutoInit_be7301261a49b13d6a9b1d9e110eacd8.h
 │   ├── cmake_install.cmake
 │   ├── cmake_test_discovery_e3b0c44298.json
 │   ├── compile_commands.json
+│   ├── Conv.out
 │   ├── CTestTestfile.cmake
 │   ├── CudaBandedLibConfig.cmake
 │   ├── CudaBandedLibConfigVersion.cmake
@@ -1213,9 +1228,13 @@
 │   │       ├── build.ninja
 │   │       ├── CMakeCache.txt
 │   │       ├── CMakeFiles
+│   │       │   ├── 3.28.3
+│   │       │   │   └── CMakeSystem.cmake
 │   │       │   ├── 4.2.2
 │   │       │   │   └── CMakeSystem.cmake
 │   │       │   ├── 4.3.1
+│   │       │   │   └── CMakeSystem.cmake
+│   │       │   ├── 4.4.2
 │   │       │   │   └── CMakeSystem.cmake
 │   │       │   ├── cmake.check_cache
 │   │       │   ├── CMakeConfigureLog.yaml
@@ -1249,6 +1268,7 @@
 │   │               ├── googletest-populate-gitclone.cmake
 │   │               ├── googletest-populate-gitupdate.cmake
 │   │               └── googletest-populate-mkdirs.cmake
+│   ├── History.dat
 │   ├── install_manifest.txt
 │   ├── lib
 │   │   ├── libgmock.a
@@ -1260,12 +1280,56 @@
 │   │   ├── eigenbcgsolver_eigen_mod.mod
 │   │   ├── eigenbcgsolver_imeq_mod.mod
 │   │   └── eigenbcgsolver_mod.mod
+│   ├── output
+│   │   ├── checkpoint.cfdc
+│   │   ├── Conv.out
+│   │   ├── Cpu.dat
+│   │   ├── History.dat
+│   │   ├── Potential.dat
+│   │   ├── Pres_av.dat
+│   │   ├── Pres.dat
+│   │   ├── Psi_Yaverage.dat
+│   │   ├── Serie.dat
+│   │   ├── SteadyState.ddd
+│   │   ├── Tmpr_av.dat
+│   │   ├── Tmpr.dat
+│   │   ├── Tmpr_Yaverage.dat
+│   │   ├── Vx_av.dat
+│   │   ├── Vx.dat
+│   │   ├── Vy_av.dat
+│   │   ├── Vy.dat
+│   │   ├── Vz_av.dat
+│   │   └── Vz.dat
 │   ├── run_benchmarks
 │   ├── run_benchmarks[1]_include.cmake
 │   ├── run_benchmarks[1]_tests.cmake
 │   ├── run_unit_tests
 │   ├── run_unit_tests[1]_include.cmake
 │   ├── run_unit_tests[1]_tests.cmake
+│   ├── run_unit_tests_76bbe736_include.cmake
+│   ├── sanitizerResults.txt
+│   ├── Serie.dat
+│   ├── snapshot_test_output
+│   │   ├── checkpoint.cfdc
+│   │   ├── Conv.out
+│   │   ├── Cpu.dat
+│   │   ├── History.dat
+│   │   ├── Potential.dat
+│   │   ├── Pres_av.dat
+│   │   ├── Pres.dat
+│   │   ├── Psi_Yaverage.dat
+│   │   ├── Serie.dat
+│   │   ├── SteadyState.ddd
+│   │   ├── Tmpr_av.dat
+│   │   ├── Tmpr.dat
+│   │   ├── Tmpr_Yaverage.dat
+│   │   ├── Vx_av.dat
+│   │   ├── Vx.dat
+│   │   ├── Vy_av.dat
+│   │   ├── Vy.dat
+│   │   ├── Vz_av.dat
+│   │   └── Vz.dat
+│   ├── sys
 │   ├── Testing
 │   │   └── Temporary
 │   │       ├── CTestCostData.txt
@@ -1334,6 +1398,7 @@
 │   │       ├── LastTest.log.tmp6d0b7
 │   │       ├── LastTest.log.tmp6e776
 │   │       ├── LastTest.log.tmp6e787
+│   │       ├── LastTest.log.tmp725d9
 │   │       ├── LastTest.log.tmp74c54
 │   │       ├── LastTest.log.tmp791b2
 │   │       ├── LastTest.log.tmp7e9e1
@@ -1361,7 +1426,6 @@
 │   │       ├── LastTest.log.tmpaf242
 │   │       ├── LastTest.log.tmpb0ada
 │   │       ├── LastTest.log.tmpb1fbc
-│   │       ├── LastTest.log.tmpb2df8
 │   │       ├── LastTest.log.tmpb35af
 │   │       ├── LastTest.log.tmpb7331
 │   │       ├── LastTest.log.tmpb74e0
@@ -1390,6 +1454,7 @@
 │   │       ├── LastTest.log.tmpd862c
 │   │       ├── LastTest.log.tmpda4fa
 │   │       ├── LastTest.log.tmpdc8ac
+│   │       ├── LastTest.log.tmpdd751
 │   │       ├── LastTest.log.tmpdecc3
 │   │       ├── LastTest.log.tmpdf1a9
 │   │       ├── LastTest.log.tmpdf645
@@ -1517,7 +1582,7 @@
 │   │   │       │       ├── Tensor.cu.o
 │   │   │       │       └── Vec.cu.o
 │   │   │       ├── immersedBoundary
-│   │   │       │   ├── ImmersedEquation.cu.o
+│   │   │       │   ├── ImerssedEquation.cu.o
 │   │   │       │   └── YuriWork.cu.o
 │   │   │       ├── math
 │   │   │       │   ├── Real3d.cpp.gcda
@@ -2093,312 +2158,12 @@
 │           └── LastTest.log
 ├── cmake-build-release
 │   ├── bin
-│   ├── CMakeCache.txt
 │   ├── CMakeFiles
-│   │   ├── 3.28.3
-│   │   │   ├── CMakeCCompiler.cmake
-│   │   │   ├── CMakeCUDACompiler.cmake
-│   │   │   ├── CMakeCXXCompiler.cmake
-│   │   │   ├── CMakeDetermineCompilerABI_C.bin
-│   │   │   ├── CMakeDetermineCompilerABI_CUDA.bin
-│   │   │   ├── CMakeDetermineCompilerABI_CXX.bin
-│   │   │   ├── CMakeDetermineCompilerABI_Fortran.bin
-│   │   │   ├── CMakeFortranCompiler.cmake
-│   │   │   ├── CMakeSystem.cmake
-│   │   │   ├── CompilerIdC
-│   │   │   │   ├── a.out
-│   │   │   │   ├── CMakeCCompilerId.c
-│   │   │   │   └── tmp
-│   │   │   ├── CompilerIdCUDA
-│   │   │   │   ├── a.out
-│   │   │   │   ├── CMakeCUDACompilerId.cu
-│   │   │   │   └── tmp
-│   │   │   │       ├── a_dlink.fatbin
-│   │   │   │       ├── a_dlink.fatbin.c
-│   │   │   │       ├── a_dlink.o
-│   │   │   │       ├── a_dlink.reg.c
-│   │   │   │       ├── a_dlink.sm_75.cubin
-│   │   │   │       ├── CMakeCUDACompilerId.cpp1.ii
-│   │   │   │       ├── CMakeCUDACompilerId.cpp4.ii
-│   │   │   │       ├── CMakeCUDACompilerId.cudafe1.c
-│   │   │   │       ├── CMakeCUDACompilerId.cudafe1.cpp
-│   │   │   │       ├── CMakeCUDACompilerId.cudafe1.gpu
-│   │   │   │       ├── CMakeCUDACompilerId.cudafe1.stub.c
-│   │   │   │       ├── CMakeCUDACompilerId.fatbin
-│   │   │   │       ├── CMakeCUDACompilerId.fatbin.c
-│   │   │   │       ├── CMakeCUDACompilerId.module_id
-│   │   │   │       ├── CMakeCUDACompilerId.o
-│   │   │   │       ├── CMakeCUDACompilerId.ptx
-│   │   │   │       └── CMakeCUDACompilerId.sm_75.cubin
-│   │   │   ├── CompilerIdCXX
-│   │   │   │   ├── a.out
-│   │   │   │   ├── CMakeCXXCompilerId.cpp
-│   │   │   │   └── tmp
-│   │   │   └── CompilerIdFortran
-│   │   │       ├── a.out
-│   │   │       ├── CMakeFortranCompilerId.F
-│   │   │       └── tmp
-│   │   ├── cmake.check_cache
-│   │   ├── CMakeConfigureLog.yaml
 │   │   ├── CMakeDirectoryInformation.cmake
-│   │   ├── CMakeScratch
-│   │   ├── cmake.verify_globs
-│   │   ├── CudaBandedLib.dir
-│   │   │   ├── build.make
-│   │   │   ├── cmake_clean.cmake
-│   │   │   ├── cmake_clean_target.cmake
-│   │   │   ├── compiler_depend.make
-│   │   │   ├── compiler_depend.ts
-│   │   │   ├── DependInfo.cmake
-│   │   │   ├── depend.make
-│   │   │   ├── flags.make
-│   │   │   ├── includes_CUDA.rsp
-│   │   │   ├── link.txt
-│   │   │   ├── progress.make
-│   │   │   ├── shroud_project
-│   │   │   └── src
-│   │   │       ├── deviceArrays
-│   │   │       │   └── defFiles
-│   │   │       │       └── sparse
-│   │   │       ├── immersedBoundary
-│   │   │       ├── kronecker
-│   │   │       ├── math
-│   │   │       ├── poisson
-│   │   │       ├── solvers
-│   │   │       │   └── EigenDecomp
-│   │   │       └── wrapper
-│   │   ├── Export
-│   │   │   └── 55f6890c3c758fcfe5656cd56eeb95da
-│   │   │       ├── CudaBandedLibTargets.cmake
-│   │   │       └── CudaBandedLibTargets-debug.cmake
-│   │   ├── FortranCInterface
-│   │   │   ├── CMakeCache.txt
-│   │   │   ├── CMakeFiles
-│   │   │   │   ├── cmake.check_cache
-│   │   │   │   ├── CMakeDirectoryInformation.cmake
-│   │   │   │   ├── CMakeScratch
-│   │   │   │   ├── FortranCInterface.dir
-│   │   │   │   │   ├── build.make
-│   │   │   │   │   ├── call_mod.f90.o
-│   │   │   │   │   ├── call_sub.f.o
-│   │   │   │   │   ├── cmake_clean.cmake
-│   │   │   │   │   ├── compiler_depend.make
-│   │   │   │   │   ├── compiler_depend.ts
-│   │   │   │   │   ├── DependInfo.cmake
-│   │   │   │   │   ├── depend.internal
-│   │   │   │   │   ├── depend.make
-│   │   │   │   │   ├── flags.make
-│   │   │   │   │   ├── fortran.internal
-│   │   │   │   │   ├── link.txt
-│   │   │   │   │   ├── main.F.o
-│   │   │   │   │   └── progress.make
-│   │   │   │   ├── Makefile2
-│   │   │   │   ├── Makefile.cmake
-│   │   │   │   ├── myfort.dir
-│   │   │   │   │   ├── build.make
-│   │   │   │   │   ├── cmake_clean.cmake
-│   │   │   │   │   ├── cmake_clean_Fortran.cmake
-│   │   │   │   │   ├── cmake_clean_target.cmake
-│   │   │   │   │   ├── compiler_depend.make
-│   │   │   │   │   ├── compiler_depend.ts
-│   │   │   │   │   ├── DependInfo.cmake
-│   │   │   │   │   ├── depend.internal
-│   │   │   │   │   ├── depend.make
-│   │   │   │   │   ├── flags.make
-│   │   │   │   │   ├── fortran.internal
-│   │   │   │   │   ├── link.txt
-│   │   │   │   │   ├── my_module.f90.o
-│   │   │   │   │   ├── mymodule.f90.o
-│   │   │   │   │   ├── my_module.f90.o.provides.build
-│   │   │   │   │   ├── mymodule.f90.o.provides.build
-│   │   │   │   │   ├── my_module.mod.stamp
-│   │   │   │   │   ├── mymodule.mod.stamp
-│   │   │   │   │   ├── my_sub.f.o
-│   │   │   │   │   ├── mysub.f.o
-│   │   │   │   │   └── progress.make
-│   │   │   │   ├── pkgRedirects
-│   │   │   │   ├── progress.marks
-│   │   │   │   ├── symbols.dir
-│   │   │   │   │   ├── build.make
-│   │   │   │   │   ├── cmake_clean.cmake
-│   │   │   │   │   ├── cmake_clean_target.cmake
-│   │   │   │   │   ├── compiler_depend.make
-│   │   │   │   │   ├── compiler_depend.ts
-│   │   │   │   │   ├── DependInfo.cmake
-│   │   │   │   │   ├── depend.make
-│   │   │   │   │   ├── flags.make
-│   │   │   │   │   ├── link.txt
-│   │   │   │   │   ├── my_module_.c.o
-│   │   │   │   │   ├── mymodule_.c.o
-│   │   │   │   │   ├── MY_MODULE.c.o
-│   │   │   │   │   ├── MYMODULE.c.o
-│   │   │   │   │   ├── my_module_.c.o.d
-│   │   │   │   │   ├── mymodule_.c.o.d
-│   │   │   │   │   ├── MY_MODULE.c.o.d
-│   │   │   │   │   ├── MYMODULE.c.o.d
-│   │   │   │   │   ├── progress.make
-│   │   │   │   │   └── symbols
-│   │   │   │   │       ├── __my_module_MOD_my_sub.c.o
-│   │   │   │   │       ├── __mymodule_MOD_mysub.c.o
-│   │   │   │   │       ├── __my_module_MOD_my_sub.c.o.d
-│   │   │   │   │       ├── __mymodule_MOD_mysub.c.o.d
-│   │   │   │   │       ├── my_module_mp_my_sub_.c.o
-│   │   │   │   │       ├── mymodule_mp_mysub_.c.o
-│   │   │   │   │       ├── my_module_MP_my_sub.c.o
-│   │   │   │   │       ├── mymodule_MP_mysub.c.o
-│   │   │   │   │       ├── my_module_mp_my_sub_.c.o.d
-│   │   │   │   │       ├── mymodule_mp_mysub_.c.o.d
-│   │   │   │   │       ├── my_module_MP_my_sub.c.o.d
-│   │   │   │   │       ├── mymodule_MP_mysub.c.o.d
-│   │   │   │   │       ├── MY_MODULE_mp_MY_SUB-UPPER.c.o
-│   │   │   │   │       ├── MYMODULE_mp_MYSUB-UPPER.c.o
-│   │   │   │   │       ├── MY_MODULE_mp_MY_SUB-UPPER.c.o.d
-│   │   │   │   │       ├── MYMODULE_mp_MYSUB-UPPER.c.o.d
-│   │   │   │   │       ├── __my_module__my_sub.c.o
-│   │   │   │   │       ├── __mymodule__mysub.c.o
-│   │   │   │   │       ├── my_module_my_sub_.c.o
-│   │   │   │   │       ├── mymodule_mysub_.c.o
-│   │   │   │   │       ├── __my_module__my_sub.c.o.d
-│   │   │   │   │       ├── __mymodule__mysub.c.o.d
-│   │   │   │   │       ├── my_module_my_sub_.c.o.d
-│   │   │   │   │       ├── mymodule_mysub_.c.o.d
-│   │   │   │   │       ├── __my_module_NMOD_my_sub.c.o
-│   │   │   │   │       ├── __mymodule_NMOD_mysub.c.o
-│   │   │   │   │       ├── __my_module_NMOD_my_sub.c.o.d
-│   │   │   │   │       ├── __mymodule_NMOD_mysub.c.o.d
-│   │   │   │   │       ├── my_moduleSmy_sub.c.o
-│   │   │   │   │       ├── mymoduleSmysub.c.o
-│   │   │   │   │       ├── my_moduleSmy_sub.c.o.d
-│   │   │   │   │       ├── mymoduleSmysub.c.o.d
-│   │   │   │   │       ├── my_sub.c.o
-│   │   │   │   │       ├── my_sub_.c.o
-│   │   │   │   │       ├── my_sub__.c.o
-│   │   │   │   │       ├── mysub.c.o
-│   │   │   │   │       ├── mysub_.c.o
-│   │   │   │   │       ├── my_sub.c.o.d
-│   │   │   │   │       ├── my_sub_.c.o.d
-│   │   │   │   │       ├── my_sub__.c.o.d
-│   │   │   │   │       ├── mysub.c.o.d
-│   │   │   │   │       ├── mysub_.c.o.d
-│   │   │   │   │       ├── MY_SUB-UPPER.c.o
-│   │   │   │   │       ├── MYSUB-UPPER.c.o
-│   │   │   │   │       ├── MY_SUB-UPPER.c.o.d
-│   │   │   │   │       ├── MYSUB-UPPER.c.o.d
-│   │   │   │   │       ├── _QMmy_modulePmy_sub.c.o
-│   │   │   │   │       ├── _QMmymodulePmysub.c.o
-│   │   │   │   │       ├── _QMmy_modulePmy_sub.c.o.d
-│   │   │   │   │       └── _QMmymodulePmysub.c.o.d
-│   │   │   │   └── TargetDirectories.txt
-│   │   │   ├── cmake_install.cmake
-│   │   │   ├── exe-Release.cmake
-│   │   │   ├── FortranCInterface
-│   │   │   ├── Input.cmake
-│   │   │   ├── libmyfort.a
-│   │   │   ├── libsymbols.a
-│   │   │   ├── Makefile
-│   │   │   ├── my_module.mod
-│   │   │   ├── mymodule.mod
-│   │   │   ├── Output.cmake
-│   │   │   ├── symbols
-│   │   │   │   ├── __my_module_MOD_my_sub.c
-│   │   │   │   ├── __mymodule_MOD_mysub.c
-│   │   │   │   ├── my_module_mp_my_sub_.c
-│   │   │   │   ├── mymodule_mp_mysub_.c
-│   │   │   │   ├── my_module_MP_my_sub.c
-│   │   │   │   ├── mymodule_MP_mysub.c
-│   │   │   │   ├── MY_MODULE_mp_MY_SUB-UPPER.c
-│   │   │   │   ├── MYMODULE_mp_MYSUB-UPPER.c
-│   │   │   │   ├── __my_module__my_sub.c
-│   │   │   │   ├── __mymodule__mysub.c
-│   │   │   │   ├── my_module_my_sub_.c
-│   │   │   │   ├── mymodule_mysub_.c
-│   │   │   │   ├── __my_module_NMOD_my_sub.c
-│   │   │   │   ├── __mymodule_NMOD_mysub.c
-│   │   │   │   ├── my_moduleSmy_sub.c
-│   │   │   │   ├── mymoduleSmysub.c
-│   │   │   │   ├── my_sub.c
-│   │   │   │   ├── my_sub_.c
-│   │   │   │   ├── my_sub__.c
-│   │   │   │   ├── mysub.c
-│   │   │   │   ├── mysub_.c
-│   │   │   │   ├── MY_SUB-UPPER.c
-│   │   │   │   ├── MYSUB-UPPER.c
-│   │   │   │   ├── _QMmy_modulePmy_sub.c
-│   │   │   │   └── _QMmymodulePmysub.c
-│   │   │   └── VerifyCXX
-│   │   │       ├── CMakeCache.txt
-│   │   │       ├── CMakeFiles
-│   │   │       │   ├── cmake.check_cache
-│   │   │       │   ├── CMakeDirectoryInformation.cmake
-│   │   │       │   ├── Makefile2
-│   │   │       │   ├── Makefile.cmake
-│   │   │       │   ├── pkgRedirects
-│   │   │       │   ├── progress.marks
-│   │   │       │   ├── TargetDirectories.txt
-│   │   │       │   ├── VerifyFortranC.dir
-│   │   │       │   │   ├── build.make
-│   │   │       │   │   ├── cmake_clean.cmake
-│   │   │       │   │   ├── compiler_depend.make
-│   │   │       │   │   ├── compiler_depend.ts
-│   │   │       │   │   ├── DependInfo.cmake
-│   │   │       │   │   ├── depend.make
-│   │   │       │   │   ├── flags.make
-│   │   │       │   │   ├── link.txt
-│   │   │       │   │   ├── main.c.o
-│   │   │       │   │   ├── main.c.o.d
-│   │   │       │   │   ├── progress.make
-│   │   │       │   │   ├── VerifyC.c.o
-│   │   │       │   │   ├── VerifyC.c.o.d
-│   │   │       │   │   ├── VerifyCXX.cxx.o
-│   │   │       │   │   └── VerifyCXX.cxx.o.d
-│   │   │       │   └── VerifyFortran.dir
-│   │   │       │       ├── build.make
-│   │   │       │       ├── cmake_clean.cmake
-│   │   │       │       ├── cmake_clean_target.cmake
-│   │   │       │       ├── compiler_depend.make
-│   │   │       │       ├── compiler_depend.ts
-│   │   │       │       ├── DependInfo.cmake
-│   │   │       │       ├── depend.internal
-│   │   │       │       ├── depend.make
-│   │   │       │       ├── flags.make
-│   │   │       │       ├── fortran.internal
-│   │   │       │       ├── link.txt
-│   │   │       │       ├── progress.make
-│   │   │       │       └── VerifyFortran.f.o
-│   │   │       ├── cmake_install.cmake
-│   │   │       ├── libVerifyFortran.a
-│   │   │       ├── Makefile
-│   │   │       ├── output.txt
-│   │   │       ├── VerifyFortranC
-│   │   │       └── VerifyFortran.h
 │   │   ├── Makefile2
 │   │   ├── Makefile.cmake
-│   │   ├── pkgRedirects
 │   │   ├── progress.marks
-│   │   ├── run_benchmarks.dir
-│   │   │   ├── build.make
-│   │   │   ├── cmake_clean.cmake
-│   │   │   ├── compiler_depend.make
-│   │   │   ├── compiler_depend.ts
-│   │   │   ├── DependInfo.cmake
-│   │   │   ├── depend.make
-│   │   │   ├── flags.make
-│   │   │   ├── link.txt
-│   │   │   ├── progress.make
-│   │   │   └── Tests
-│   │   ├── run_unit_tests.dir
-│   │   │   ├── build.make
-│   │   │   ├── cmake_clean.cmake
-│   │   │   ├── compiler_depend.make
-│   │   │   ├── compiler_depend.ts
-│   │   │   ├── DependInfo.cmake
-│   │   │   ├── depend.make
-│   │   │   ├── flags.make
-│   │   │   ├── link.txt
-│   │   │   ├── progress.make
-│   │   │   └── Tests
-│   │   ├── TargetDirectories.txt
-│   │   └── VerifyGlobs.cmake
+│   │   └── TargetDirectories.txt
 │   ├── cmake_install.cmake
 │   ├── CTestTestfile.cmake
 │   ├── CudaBandedLibConfig.cmake
@@ -2818,12 +2583,25 @@
 │       ├── GpuWrapper.svg
 │       ├── test.png
 │       └── test.svg
-├── eigenbcgsolver_eigen_mod.mod
 ├── FortranTest
 │   ├── cmake-build-debug
 │   │   ├── build.ninja
 │   │   ├── CMakeCache.txt
 │   │   ├── CMakeFiles
+│   │   │   ├── 3.28.3
+│   │   │   │   ├── CMakeCXXCompiler.cmake
+│   │   │   │   ├── CMakeDetermineCompilerABI_CXX.bin
+│   │   │   │   ├── CMakeDetermineCompilerABI_Fortran.bin
+│   │   │   │   ├── CMakeFortranCompiler.cmake
+│   │   │   │   ├── CMakeSystem.cmake
+│   │   │   │   ├── CompilerIdCXX
+│   │   │   │   │   ├── a.out
+│   │   │   │   │   ├── CMakeCXXCompilerId.cpp
+│   │   │   │   │   └── tmp
+│   │   │   │   └── CompilerIdFortran
+│   │   │   │       ├── a.out
+│   │   │   │       ├── CMakeFortranCompilerId.F
+│   │   │   │       └── tmp
 │   │   │   ├── 4.2.2
 │   │   │   │   ├── CMakeCXXCompiler.cmake
 │   │   │   │   ├── CMakeDetermineCompilerABI_CXX.bin
@@ -2842,11 +2620,11 @@
 │   │   │   ├── clion-environment.txt
 │   │   │   ├── cmake.check_cache
 │   │   │   ├── CMakeConfigureLog.yaml
+│   │   │   ├── CMakeScratch
 │   │   │   ├── fortran_app.dir
 │   │   │   │   ├── Fortran.dd
 │   │   │   │   ├── FortranDependInfo.json
 │   │   │   │   ├── FortranModules.json
-│   │   │   │   ├── main.f90.o
 │   │   │   │   ├── main.f90.o.ddi
 │   │   │   │   ├── main.f90-pp.f90
 │   │   │   │   └── main.f90-pp.f90.d
@@ -2864,9 +2642,33 @@
 │   └── main.f90
 ├── guiLauncher.py
 ├── includes.txt
+├── main.cu
 ├── ODEReadMe.md
+├── output
+│   ├── checkpoint.cfdc
+│   ├── Conv.out
+│   ├── Cpu.dat
+│   ├── History.dat
+│   ├── Potential.dat
+│   ├── Pres_av.dat
+│   ├── Pres.dat
+│   ├── Psi_Yaverage.dat
+│   ├── Serie.dat
+│   ├── SteadyState.ddd
+│   ├── Tmpr_av.dat
+│   ├── Tmpr.dat
+│   ├── Tmpr_Yaverage.dat
+│   ├── Vx_av.dat
+│   ├── Vx.dat
+│   ├── Vy_av.dat
+│   ├── Vy.dat
+│   ├── Vz_av.dat
+│   └── Vz.dat
+├── patches
+│   ├── patch_thread_index.py
+│   └── patch_xyz_ctor.py
+├── README_Alex_CFD_ENGINE.md
 ├── README.md
-├── sanitizer_output.txt
 ├── shroud_project
 │   ├── eigenbcgsolver_imeq_mod.mod
 │   ├── solverToFortran.json
@@ -2901,8 +2703,11 @@
 │   │   │   ├── Diagnostics.cuh
 │   │   │   ├── ElectromagneticForce.cuh
 │   │   │   ├── ElementwiseOps.cuh
-│   │   │   └── Operators.cuh
+│   │   │   ├── Operators.cuh
+│   │   │   └── ThreadIndex.cuh
 │   │   ├── setup
+│   │   │   ├── AverageFlow.cu
+│   │   │   ├── AverageFlow.h
 │   │   │   ├── CheckpointIO.cu
 │   │   │   ├── CheckpointIO.h
 │   │   │   ├── GpuSolverSetup.cu
@@ -2911,7 +2716,7 @@
 │   │   │   └── Mesh.h
 │   │   ├── SimulationConfig.cpp
 │   │   ├── SimulationConfig.h
-│   │   ├── temp
+│   │   ├── snapshot_test_config.json
 │   │   └── third_party
 │   │       └── json.hpp
 │   ├── deviceArrays
@@ -2976,7 +2781,6 @@
 │   ├── kronecker
 │   │   ├── KroneckerTriplet.cpp
 │   │   └── KroneckerTriplet.h
-│   ├── main.cu
 │   ├── math
 │   │   ├── Real3d.cpp
 │   │   ├── Real3d.h
@@ -3018,25 +2822,365 @@
 │       ├── EigenDecompForFortran.h
 │       ├── FortranBindings.hpp
 │       └── LaplOperatorType.h
+├── sweep_runs
+│   ├── cpp_configs
+│   │   ├── gr_high.json
+│   │   ├── grid_030.json
+│   │   ├── grid_050.json
+│   │   ├── grid_100.json
+│   │   ├── gr_low.json
+│   │   ├── ha_high.json
+│   │   ├── ha_low.json
+│   │   ├── phys_baseline.json
+│   │   ├── pr_high.json
+│   │   └── pr_low.json
+│   ├── cpp_outputs
+│   │   ├── gr_high
+│   │   │   ├── checkpoint.cfdc
+│   │   │   ├── Conv.out
+│   │   │   ├── History.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   └── Tmpr_Yaverage.dat
+│   │   ├── grid_030
+│   │   │   ├── checkpoint.cfdc
+│   │   │   ├── Conv.out
+│   │   │   ├── History.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   └── Tmpr_Yaverage.dat
+│   │   ├── grid_050
+│   │   │   ├── checkpoint.cfdc
+│   │   │   ├── Conv.out
+│   │   │   ├── History.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   └── Tmpr_Yaverage.dat
+│   │   ├── grid_100
+│   │   │   ├── checkpoint.cfdc
+│   │   │   ├── Conv.out
+│   │   │   ├── History.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   └── Tmpr_Yaverage.dat
+│   │   ├── gr_low
+│   │   │   ├── checkpoint.cfdc
+│   │   │   ├── Conv.out
+│   │   │   ├── History.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   └── Tmpr_Yaverage.dat
+│   │   ├── ha_high
+│   │   │   ├── checkpoint.cfdc
+│   │   │   ├── Conv.out
+│   │   │   ├── History.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   └── Tmpr_Yaverage.dat
+│   │   ├── ha_low
+│   │   │   ├── checkpoint.cfdc
+│   │   │   ├── Conv.out
+│   │   │   ├── History.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   └── Tmpr_Yaverage.dat
+│   │   ├── phys_baseline
+│   │   │   ├── checkpoint.cfdc
+│   │   │   ├── Conv.out
+│   │   │   ├── History.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   └── Tmpr_Yaverage.dat
+│   │   ├── pr_high
+│   │   │   ├── checkpoint.cfdc
+│   │   │   ├── Conv.out
+│   │   │   ├── History.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   └── Tmpr_Yaverage.dat
+│   │   └── pr_low
+│   │       ├── checkpoint.cfdc
+│   │       ├── Conv.out
+│   │       ├── History.dat
+│   │       ├── Psi_Yaverage.dat
+│   │       ├── Serie.dat
+│   │       └── Tmpr_Yaverage.dat
+│   ├── fortran_runs
+│   │   ├── gr_high
+│   │   │   ├── Conv.dat
+│   │   │   ├── Conv.ddd
+│   │   │   ├── Conv.out
+│   │   │   ├── Cpu.dat
+│   │   │   ├── History.dat
+│   │   │   ├── Potential.dat
+│   │   │   ├── Pres_av.dat
+│   │   │   ├── Pres.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   ├── SteadyState.ddd
+│   │   │   ├── Tmpr_av.dat
+│   │   │   ├── Tmpr.dat
+│   │   │   ├── Tmpr_Yaverage.dat
+│   │   │   ├── Vx_av.dat
+│   │   │   ├── Vx.dat
+│   │   │   ├── Vy_av.dat
+│   │   │   ├── Vy.dat
+│   │   │   ├── Vz_av.dat
+│   │   │   └── Vz.dat
+│   │   ├── grid_030
+│   │   │   ├── Conv.dat
+│   │   │   ├── Conv.ddd
+│   │   │   ├── Conv.out
+│   │   │   ├── Cpu.dat
+│   │   │   ├── History.dat
+│   │   │   ├── Potential.dat
+│   │   │   ├── Pres_av.dat
+│   │   │   ├── Pres.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   ├── SteadyState.ddd
+│   │   │   ├── Tmpr_av.dat
+│   │   │   ├── Tmpr.dat
+│   │   │   ├── Tmpr_Yaverage.dat
+│   │   │   ├── Vx_av.dat
+│   │   │   ├── Vx.dat
+│   │   │   ├── Vy_av.dat
+│   │   │   ├── Vy.dat
+│   │   │   ├── Vz_av.dat
+│   │   │   └── Vz.dat
+│   │   ├── grid_050
+│   │   │   ├── Conv.dat
+│   │   │   ├── Conv.ddd
+│   │   │   ├── Conv.out
+│   │   │   ├── Cpu.dat
+│   │   │   ├── History.dat
+│   │   │   ├── Potential.dat
+│   │   │   ├── Pres_av.dat
+│   │   │   ├── Pres.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   ├── SteadyState.ddd
+│   │   │   ├── Tmpr_av.dat
+│   │   │   ├── Tmpr.dat
+│   │   │   ├── Tmpr_Yaverage.dat
+│   │   │   ├── Vx_av.dat
+│   │   │   ├── Vx.dat
+│   │   │   ├── Vy_av.dat
+│   │   │   ├── Vy.dat
+│   │   │   ├── Vz_av.dat
+│   │   │   └── Vz.dat
+│   │   ├── grid_100
+│   │   │   ├── Conv.dat
+│   │   │   ├── Conv.ddd
+│   │   │   ├── Conv.out
+│   │   │   ├── Cpu.dat
+│   │   │   ├── History.dat
+│   │   │   ├── Potential.dat
+│   │   │   ├── Pres_av.dat
+│   │   │   ├── Pres.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   ├── SteadyState.ddd
+│   │   │   ├── Tmpr_av.dat
+│   │   │   ├── Tmpr.dat
+│   │   │   ├── Tmpr_Yaverage.dat
+│   │   │   ├── Vx_av.dat
+│   │   │   ├── Vx.dat
+│   │   │   ├── Vy_av.dat
+│   │   │   ├── Vy.dat
+│   │   │   ├── Vz_av.dat
+│   │   │   └── Vz.dat
+│   │   ├── gr_low
+│   │   │   ├── Conv.dat
+│   │   │   ├── Conv.ddd
+│   │   │   ├── Conv.out
+│   │   │   ├── Cpu.dat
+│   │   │   ├── History.dat
+│   │   │   ├── Potential.dat
+│   │   │   ├── Pres_av.dat
+│   │   │   ├── Pres.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   ├── SteadyState.ddd
+│   │   │   ├── Tmpr_av.dat
+│   │   │   ├── Tmpr.dat
+│   │   │   ├── Tmpr_Yaverage.dat
+│   │   │   ├── Vx_av.dat
+│   │   │   ├── Vx.dat
+│   │   │   ├── Vy_av.dat
+│   │   │   ├── Vy.dat
+│   │   │   ├── Vz_av.dat
+│   │   │   └── Vz.dat
+│   │   ├── ha_high
+│   │   │   ├── Conv.dat
+│   │   │   ├── Conv.ddd
+│   │   │   ├── Conv.out
+│   │   │   ├── Cpu.dat
+│   │   │   ├── History.dat
+│   │   │   ├── Potential.dat
+│   │   │   ├── Pres_av.dat
+│   │   │   ├── Pres.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   ├── SteadyState.ddd
+│   │   │   ├── Tmpr_av.dat
+│   │   │   ├── Tmpr.dat
+│   │   │   ├── Tmpr_Yaverage.dat
+│   │   │   ├── Vx_av.dat
+│   │   │   ├── Vx.dat
+│   │   │   ├── Vy_av.dat
+│   │   │   ├── Vy.dat
+│   │   │   ├── Vz_av.dat
+│   │   │   └── Vz.dat
+│   │   ├── ha_low
+│   │   │   ├── Conv.dat
+│   │   │   ├── Conv.ddd
+│   │   │   ├── Conv.out
+│   │   │   ├── Cpu.dat
+│   │   │   ├── History.dat
+│   │   │   ├── Potential.dat
+│   │   │   ├── Pres_av.dat
+│   │   │   ├── Pres.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   ├── SteadyState.ddd
+│   │   │   ├── Tmpr_av.dat
+│   │   │   ├── Tmpr.dat
+│   │   │   ├── Tmpr_Yaverage.dat
+│   │   │   ├── Vx_av.dat
+│   │   │   ├── Vx.dat
+│   │   │   ├── Vy_av.dat
+│   │   │   ├── Vy.dat
+│   │   │   ├── Vz_av.dat
+│   │   │   └── Vz.dat
+│   │   ├── phys_baseline
+│   │   │   ├── Conv.dat
+│   │   │   ├── Conv.ddd
+│   │   │   ├── Conv.out
+│   │   │   ├── Cpu.dat
+│   │   │   ├── History.dat
+│   │   │   ├── Potential.dat
+│   │   │   ├── Pres_av.dat
+│   │   │   ├── Pres.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   ├── SteadyState.ddd
+│   │   │   ├── Tmpr_av.dat
+│   │   │   ├── Tmpr.dat
+│   │   │   ├── Tmpr_Yaverage.dat
+│   │   │   ├── Vx_av.dat
+│   │   │   ├── Vx.dat
+│   │   │   ├── Vy_av.dat
+│   │   │   ├── Vy.dat
+│   │   │   ├── Vz_av.dat
+│   │   │   └── Vz.dat
+│   │   ├── pr_high
+│   │   │   ├── Conv.dat
+│   │   │   ├── Conv.ddd
+│   │   │   ├── Conv.out
+│   │   │   ├── Cpu.dat
+│   │   │   ├── History.dat
+│   │   │   ├── Potential.dat
+│   │   │   ├── Pres_av.dat
+│   │   │   ├── Pres.dat
+│   │   │   ├── Psi_Yaverage.dat
+│   │   │   ├── Serie.dat
+│   │   │   ├── SteadyState.ddd
+│   │   │   ├── Tmpr_av.dat
+│   │   │   ├── Tmpr.dat
+│   │   │   ├── Tmpr_Yaverage.dat
+│   │   │   ├── Vx_av.dat
+│   │   │   ├── Vx.dat
+│   │   │   ├── Vy_av.dat
+│   │   │   ├── Vy.dat
+│   │   │   ├── Vz_av.dat
+│   │   │   └── Vz.dat
+│   │   └── pr_low
+│   │       ├── Conv.dat
+│   │       ├── Conv.ddd
+│   │       ├── Conv.out
+│   │       ├── Cpu.dat
+│   │       ├── History.dat
+│   │       ├── Potential.dat
+│   │       ├── Pres_av.dat
+│   │       ├── Pres.dat
+│   │       ├── Psi_Yaverage.dat
+│   │       ├── Serie.dat
+│   │       ├── SteadyState.ddd
+│   │       ├── Tmpr_av.dat
+│   │       ├── Tmpr.dat
+│   │       ├── Tmpr_Yaverage.dat
+│   │       ├── Vx_av.dat
+│   │       ├── Vx.dat
+│   │       ├── Vy_av.dat
+│   │       ├── Vy.dat
+│   │       ├── Vz_av.dat
+│   │       └── Vz.dat
+│   ├── logs
+│   │   ├── cpp_gr_high.log
+│   │   ├── cpp_grid_030.log
+│   │   ├── cpp_grid_050.log
+│   │   ├── cpp_grid_100.log
+│   │   ├── cpp_gr_low.log
+│   │   ├── cpp_ha_high.log
+│   │   ├── cpp_ha_low.log
+│   │   ├── cpp_phys_baseline.log
+│   │   ├── cpp_pr_high.log
+│   │   ├── cpp_pr_low.log
+│   │   ├── fortran_gr_high.log
+│   │   ├── fortran_grid_030.log
+│   │   ├── fortran_grid_050.log
+│   │   ├── fortran_grid_100.log
+│   │   ├── fortran_gr_low.log
+│   │   ├── fortran_ha_high.log
+│   │   ├── fortran_ha_low.log
+│   │   ├── fortran_phys_baseline.log
+│   │   ├── fortran_pr_high.log
+│   │   └── fortran_pr_low.log
+│   └── SUMMARY.txt
 ├── Tests
 │   ├── BenchMark.cpp
 │   ├── cfdSolver
+│   │   ├── CfdTestCudaHelpers.cuh
 │   │   ├── CfdTestHelpers.h
+│   │   ├── CfdTestPhysicsHelpers.h
+│   │   ├── golden_configs
+│   │   │   ├── base_example_config.json
+│   │   │   ├── field_snapshots.cpp.json
+│   │   │   ├── gr_high.cpp.json
+│   │   │   ├── grid_030.cpp.json
+│   │   │   ├── grid_050.cpp.json
+│   │   │   ├── grid_100.cpp.json
+│   │   │   ├── gr_low.cpp.json
+│   │   │   ├── ha_high.cpp.json
+│   │   │   ├── ha_low.cpp.json
+│   │   │   ├── phys_baseline.cpp.json
+│   │   │   ├── pr_high.cpp.json
+│   │   │   ├── pr_low.cpp.json
+│   │   │   └── time_averaging.cpp.json
+│   │   ├── GoldenSupport.h
+│   │   ├── test_average_flow.cpp
 │   │   ├── test_buoyancy.cpp
+│   │   ├── test_checkpoint_io.cpp
 │   │   ├── test_config.cpp
 │   │   ├── test_diagnostics.cpp
+│   │   ├── test_electromagnetic_force.cpp
+│   │   ├── test_electromagnetic_force_kernel_launch.cu
+│   │   ├── test_elementwise_ops.cpp
+│   │   ├── test_elementwise_ops_kernel_launch.cu
+│   │   ├── test_golden_value.cpp
+│   │   ├── test_mesh.cpp
+│   │   ├── test_nusselt_kernel_launch.cu
 │   │   ├── test_operators_host.cpp
 │   │   └── verify_padding_equivalence.cpp
+│   ├── GPUScalarCorruptionTest.cpp
+│   ├── GPUScalarIntegrityEnvironment.cpp
 │   ├── GramSchmidtTest.cu
 │   ├── HandlesTest.cu
 │   ├── ODETest.cu
 │   ├── TestBandedMatrix.cpp
-│   ├── test.cpp
-│   └── testResults.txt
+│   └── test.cpp
 ├── tree.txt
-├── verify_hardware
-├── verify_hardware.cpp
-├── wrapfEigenBCGSolver_eigen.o
 └── Yuri Fortran Code
     ├── modified
     │   ├── axis_assignment_fix.patch
@@ -3071,6 +3215,14 @@
     │   │   ├── CMakeCache.txt
     │   │   ├── CMakeFiles
     │   │   │   ├── 4.3.1
+    │   │   │   │   ├── CMakeDetermineCompilerABI_Fortran.bin
+    │   │   │   │   ├── CMakeFortranCompiler.cmake
+    │   │   │   │   ├── CMakeSystem.cmake
+    │   │   │   │   └── CompilerIdFortran
+    │   │   │   │       ├── a.out
+    │   │   │   │       ├── CMakeFortranCompilerId.F
+    │   │   │   │       └── tmp
+    │   │   │   ├── 4.4.2
     │   │   │   │   ├── CMakeDetermineCompilerABI_Fortran.bin
     │   │   │   │   ├── CMakeFortranCompiler.cmake
     │   │   │   │   ├── CMakeSystem.cmake
@@ -5414,4 +5566,4 @@
             ├── time_step_Lid3D_z.f90.orig
             └── vgradf_Lid3D.f90
 
-503 directories, 4912 files
+506 directories, 5061 files

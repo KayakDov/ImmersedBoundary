@@ -1,1 +1,115 @@
-Error: /home/usr/Documents/TelAvivU/build is not a directory
+== /usr/local/cuda points to ==
+/usr/local/cuda-13.1
+/usr/local/cuda-13.1
+== nvcc present? ==
+-rwxr-xr-x 1 root root 23095720 Jun 14  2024 /usr/local/cuda-12.6/bin/nvcc
+-rwxr-xr-x 1 root root 33379768 Nov  7  2025 /usr/local/cuda-13.1/bin/nvcc
+== nvcc runs? ==
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2025 NVIDIA Corporation
+Built on Fri_Nov__7_07:23:37_PM_PST_2025
+Cuda compilation tools, release 13.1, V13.1.80
+Build cuda_13.1.r13.1/compiler.36836380_0
+== CUDA entries in the cache ==
+36://Default GPU architectures for CUDA compilation
+37:CMAKE_CUDA_ARCHITECTURES:UNINITIALIZED=89
+39://CUDA compiler
+40:CMAKE_CUDA_COMPILER:STRING=/usr/local/cuda-13.1/bin/nvcc
+42://Flags used by the CUDA compiler during all build types.
+43:CMAKE_CUDA_FLAGS:STRING=
+45://Flags used by the CUDA compiler during DEBUG builds.
+46:CMAKE_CUDA_FLAGS_DEBUG:STRING=-g
+48://Flags used by the CUDA compiler during MINSIZEREL builds.
+49:CMAKE_CUDA_FLAGS_MINSIZEREL:STRING=-O1 -DNDEBUG
+51://Flags used by the CUDA compiler during RELEASE builds.
+52:CMAKE_CUDA_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
+54://Flags used by the CUDA compiler during RELWITHDEBINFO builds.
+55:CMAKE_CUDA_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
+249:CMAKE_PROJECT_NAME:STATIC=CudaBanded
+335:CUDAToolkit_CUPTI_INCLUDE_DIR:PATH=/usr/local/cuda-13.1/targets/x86_64-linux/include
+338:CUDAToolkit_rt_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/librt.a
+341:CUDA_CUDART:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcudart.so
+344:CUDA_OpenCL_LIBRARY:FILEPATH=CUDA_OpenCL_LIBRARY-NOTFOUND
+347:CUDA_bin2c_EXECUTABLE:FILEPATH=/usr/local/cuda-13.1/bin/bin2c
+350:CUDA_cuFile_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufile.so
+353:CUDA_cuFile_rdma_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufile_rdma.so
+356:CUDA_cuFile_rdma_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufile_rdma_static.a
+359:CUDA_cuFile_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufile_static.a
+362:CUDA_cublasLt_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcublasLt.so
+365:CUDA_cublasLt_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcublasLt_static.a
+368:CUDA_cublas_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcublas.so
+371:CUDA_cublas_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcublas_static.a
+374:CUDA_cuda_driver_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/stubs/libcuda.so
+377:CUDA_cudart_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcudart.so
+380:CUDA_cudart_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcudart_static.a
+383:CUDA_cudla_LIBRARY:FILEPATH=CUDA_cudla_LIBRARY-NOTFOUND
+386:CUDA_cufft_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufft.so
+389:CUDA_cufft_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufft_static.a
+392:CUDA_cufft_static_nocallback_LIBRARY:FILEPATH=CUDA_cufft_static_nocallback_LIBRARY-NOTFOUND
+395:CUDA_cufftw_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufftw.so
+398:CUDA_cufftw_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufftw_static.a
+401:CUDA_cufilt_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufilt.a
+404:CUDA_culibos_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libculibos.a
+407:CUDA_cupti_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcupti.so
+== clean configure ==
+-- Using user-provided CUDAToolkit_ROOT: /usr/local/cuda-13.1
+-- The C compiler identification is IntelLLVM 2026.0.0
+-- The CXX compiler identification is IntelLLVM 2026.0.0
+-- The CUDA compiler identification is NVIDIA 13.1.80
+-- The Fortran compiler identification is IntelLLVM 2026.0.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /opt/intel/oneapi/compiler/latest/bin/icx - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /opt/intel/oneapi/compiler/latest/bin/icpx - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /usr/local/cuda-13.1/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Detecting Fortran compiler ABI info
+-- Detecting Fortran compiler ABI info - done
+-- Check for working Fortran compiler: /opt/intel/oneapi/compiler/latest/bin/ifx - skipped
+-- Detecting Fortran/C Interface
+-- Detecting Fortran/C Interface - Found GLOBAL and MODULE mangling
+-- Verifying Fortran/CXX Compiler Compatibility
+-- Verifying Fortran/CXX Compiler Compatibility - Success
+-- Found CUDAToolkit: /usr/local/cuda-13.1/targets/x86_64-linux/include (found version "13.1.80") 
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- cusolverDn.h already provided by CUDAToolkit_INCLUDE_DIRS; skipping HPC SDK math_libs fallback
+-- Found libintlc: /opt/intel/oneapi/compiler/2026.0/lib/libintlc.so
+-- Found GLEW: /usr/lib/x86_64-linux-gnu/libGLEW.so  
+-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so  found components: OpenGL GLX 
+-- Found MPI_C: /usr/lib/x86_64-linux-gnu/libmpi.so (found version "3.1") 
+-- Found MPI: TRUE (found version "3.1") found components: C 
+-- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.3")  
+-- Found Eigen3: /usr/include/eigen3 (found version "3.4.0") 
+-- Found X11: /usr/include   
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so - found
+-- Looking for gethostbyname
+-- Looking for gethostbyname - found
+-- Looking for connect
+-- Looking for connect - found
+-- Looking for remove
+-- Looking for remove - found
+-- Looking for shmat
+-- Looking for shmat - found
+-- Looking for IceConnectionNumber in ICE
+-- Looking for IceConnectionNumber in ICE - found
+-- Found EXPAT: /usr/lib/x86_64-linux-gnu/libexpat.so (found version "2.6.1") 
+-- Found double-conversion: /usr/lib/x86_64-linux-gnu/libdouble-conversion.so  
+-- Found LZ4: /usr/lib/x86_64-linux-gnu/liblz4.so (found version "1.9.4") 
+-- Found LZMA: /usr/lib/x86_64-linux-gnu/liblzma.so (found version "5.4.5") 
+-- Found utf8cpp: /usr/include/utf8cpp  
+-- Phase-portrait support: found VTK 9.1.0
+-- Configuring done (14.4s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/usr/Documents/TelAvivU/cmake-build-debug

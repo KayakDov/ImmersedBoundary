@@ -37,19 +37,19 @@ struct ShiftCoefficients {
 /**
  * @brief Computes both fields' Helmholtz shift from the configuration.
  * @tparam Real Floating-point type.
- * @param cfg The simulation configuration.
+ * @param config The simulation configuration.
  * @return Temperature's and every velocity component's shift.
  */
 template<typename Real>
-ShiftCoefficients<Real> computeShiftCoefficients(const SimulationConfig& cfg) {
-    Real gravitationalScale = Real(1) / std::sqrt((Real)cfg.grashof);
-    Real temperatureDiffusivityScale = cfg.prandtl == 0.0 ? Real(1) : (Real)cfg.prandtl / gravitationalScale;
+ShiftCoefficients<Real> computeShiftCoefficients(const SimulationConfig& config) {
+    Real gravitationalScale = Real(1) / std::sqrt((Real)config.grashof);
+    Real temperatureDiffusivityScale = config.prandtl == 0.0 ? Real(1) : (Real)config.prandtl / gravitationalScale;
     Real correctionCoefficient = Real(1.5);
-    Real timeDerivativeFlag = cfg.temperatureStationary ? Real(0) : Real(1);
+    Real timeDerivativeFlag = config.temperatureStationary ? Real(0) : Real(1);
 
     ShiftCoefficients<Real> shift;
-    shift.temperature = correctionCoefficient * timeDerivativeFlag * temperatureDiffusivityScale / (Real)cfg.timeStep;
-    shift.velocity = correctionCoefficient / ((Real)cfg.timeStep * gravitationalScale);
+    shift.temperature = correctionCoefficient * timeDerivativeFlag * temperatureDiffusivityScale / (Real)config.timeStep;
+    shift.velocity = correctionCoefficient / ((Real)config.timeStep * gravitationalScale);
     return shift;
 }
 
@@ -140,7 +140,7 @@ SolvedField<Real> buildFieldSolver(
  * @brief Builds every field's eigendecomposition solver and GPU buffer for
  * one simulation.
  * @tparam Real Floating-point type.
- * @param cfg The simulation configuration.
+ * @param config The simulation configuration.
  * @param mesh The mesh providing each axis's spacing.
  * @return The temperature, vx, vy, vz, pressure, and potential solvers,
  * ready to use.
@@ -158,10 +158,10 @@ SolvedField<Real> buildFieldSolver(
  * (HPy, FluxLapl).
  */
 template<typename Real>
-BuiltSolvers<Real> GpuSolverBuilder::build(const SimulationConfig& cfg, const Mesh<Real>& mesh) {
-    int nx = cfg.Nx, ny = cfg.Ny, nz = cfg.Nz;
+BuiltSolvers<Real> GpuSolverBuilder::build(const SimulationConfig& config, const Mesh<Real>& mesh) {
+    int nx = config.Nx, ny = config.Ny, nz = config.Nz;
     int nx1 = nx + 1, ny1 = ny + 1, nz1 = nz + 1;
-    ShiftCoefficients<Real> shift = computeShiftCoefficients<Real>(cfg);
+    ShiftCoefficients<Real> shift = computeShiftCoefficients<Real>(config);
 
     XYZ<std::vector<Real>> deltaForCellCentred(mesh.hostHpz(), mesh.hostHpx(), mesh.hostHpy());
     XYZ<std::vector<Real>> deltaForVx(mesh.hostHpz(), mesh.hostHx12(), mesh.hostHpy());
@@ -172,41 +172,41 @@ BuiltSolvers<Real> GpuSolverBuilder::build(const SimulationConfig& cfg, const Me
 
     SolvedField<Real> temperature = buildFieldSolver<Real>(
         GridDim(nx1, nz1, ny1), nx1, ny1, nz1, deltaForCellCentred,
-        XYZ<bool>(isNeumann(cfg.temperatureBoundaryZ), isNeumann(cfg.temperatureBoundaryX), isNeumann(cfg.temperatureBoundaryY)),
-        XYZ<bool>(isNeumann(cfg.temperatureBoundaryZ), isNeumann(cfg.temperatureBoundaryX), isNeumann(cfg.temperatureBoundaryY)),
+        XYZ<bool>(isNeumann(config.temperatureBoundaryZ), isNeumann(config.temperatureBoundaryX), isNeumann(config.temperatureBoundaryY)),
+        XYZ<bool>(isNeumann(config.temperatureBoundaryZ), isNeumann(config.temperatureBoundaryX), isNeumann(config.temperatureBoundaryY)),
         XYZ<eigen::LaplOperatorT>(FluxLapl, FluxLapl, FluxLapl),
-        cfg.gpuTemperature.useThomasAlgorithm, shift.temperature, cfg.gpuTemperature.device);
+        config.gpuTemperature.useThomasAlgorithm, shift.temperature, config.gpuTemperature.device);
 
     SolvedField<Real> vx = buildFieldSolver<Real>(
         GridDim(nx, nz1, ny1), nx, ny1, nz1, deltaForVx,
         XYZ<bool>(false, false, false), XYZ<bool>(false, false, false),
         XYZ<eigen::LaplOperatorT>(FluxLapl, VariableDeltaLapl, FluxLapl),
-        cfg.gpuVx.useThomasAlgorithm, shift.velocity, cfg.gpuVx.device);
+        config.gpuVx.useThomasAlgorithm, shift.velocity, config.gpuVx.device);
 
     SolvedField<Real> vy = buildFieldSolver<Real>(
         GridDim(nx1, nz1, ny), nx1, ny, nz1, deltaForVy,
         XYZ<bool>(false, false, false), XYZ<bool>(false, false, false),
         XYZ<eigen::LaplOperatorT>(FluxLapl, FluxLapl, VariableDeltaLapl),
-        cfg.gpuVy.useThomasAlgorithm, shift.velocity, cfg.gpuVy.device);
+        config.gpuVy.useThomasAlgorithm, shift.velocity, config.gpuVy.device);
 
     SolvedField<Real> vz = buildFieldSolver<Real>(
         GridDim(nx1, nz, ny1), nx1, ny1, nz, deltaForVz,
         XYZ<bool>(false, false, false), XYZ<bool>(false, false, false),
         XYZ<eigen::LaplOperatorT>(VariableDeltaLapl, FluxLapl, FluxLapl),
-        cfg.gpuVz.useThomasAlgorithm, shift.velocity, cfg.gpuVz.device);
+        config.gpuVz.useThomasAlgorithm, shift.velocity, config.gpuVz.device);
 
     SolvedField<Real> pressure = buildFieldSolver<Real>(
         GridDim(nx1, nz1, ny1), nx1, ny1, nz1, deltaForCellCentred,
         XYZ<bool>(true, true, true), XYZ<bool>(true, true, true),
         XYZ<eigen::LaplOperatorT>(FluxLapl, FluxLapl, FluxLapl),
-        cfg.gpuPressure.useThomasAlgorithm, Real(0), cfg.gpuPressure.device);
+        config.gpuPressure.useThomasAlgorithm, Real(0), config.gpuPressure.device);
 
     SolvedField<Real> potential = buildFieldSolver<Real>(
         GridDim(nx, nz, ny1), nx, ny1, nz, deltaForPotential,
-        XYZ<bool>(isNeumann(cfg.potentialBoundaryZ), isNeumann(cfg.potentialBoundaryX), isNeumann(cfg.potentialBoundaryY)),
-        XYZ<bool>(isNeumann(cfg.potentialBoundaryZ), isNeumann(cfg.potentialBoundaryX), isNeumann(cfg.potentialBoundaryY)),
+        XYZ<bool>(isNeumann(config.potentialBoundaryZ), isNeumann(config.potentialBoundaryX), isNeumann(config.potentialBoundaryY)),
+        XYZ<bool>(isNeumann(config.potentialBoundaryZ), isNeumann(config.potentialBoundaryX), isNeumann(config.potentialBoundaryY)),
         XYZ<eigen::LaplOperatorT>(VariableDeltaLapl, VariableDeltaLapl, FluxLapl),
-        cfg.gpuPotential.useThomasAlgorithm, Real(0), cfg.gpuPotential.device);
+        config.gpuPotential.useThomasAlgorithm, Real(0), config.gpuPotential.device);
 
     return BuiltSolvers<Real>{std::move(temperature), std::move(vx), std::move(vy),
                                std::move(vz), std::move(pressure), std::move(potential)};

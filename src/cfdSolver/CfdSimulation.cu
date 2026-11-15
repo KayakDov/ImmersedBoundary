@@ -80,23 +80,23 @@ struct LaunchConfig3D {
 };
 
 template<typename Real>
-Real gravitationalScale(const SimulationConfig& cfg) { return Real(1) / std::sqrt((Real)cfg.grashof); }
+Real gravitationalScale(const SimulationConfig& config) { return Real(1) / std::sqrt((Real)config.grashof); }
 
 template<typename Real>
-Real temperatureDiffusivityScale(const SimulationConfig& cfg) {
-    Real g = gravitationalScale<Real>(cfg);
-    return (Real)cfg.prandtl / g;
+Real temperatureDiffusivityScale(const SimulationConfig& config) {
+    Real g = gravitationalScale<Real>(config);
+    return (Real)config.prandtl / g;
 }
 
 template<typename Real>
-Real buoyancyCoefficient(const SimulationConfig& cfg) {
-    Real g = gravitationalScale<Real>(cfg);
-    return (Real)cfg.grashof * g * g;
+Real buoyancyCoefficient(const SimulationConfig& config) {
+    Real g = gravitationalScale<Real>(config);
+    return (Real)config.grashof * g * g;
 }
 
 template<typename Real>
-Real electromagneticCoefficient(const SimulationConfig& cfg) {
-    return gravitationalScale<Real>(cfg) * (Real)(cfg.hartmann * cfg.widthRatio) * (Real)(cfg.hartmann * cfg.widthRatio);
+Real electromagneticCoefficient(const SimulationConfig& config) {
+    return gravitationalScale<Real>(config) * (Real)(config.hartmann * config.widthRatio) * (Real)(config.hartmann * config.widthRatio);
 }
 
 /**
@@ -114,12 +114,12 @@ Real electromagneticCoefficient(const SimulationConfig& cfg) {
  * device 0 unconditionally, and reduction kernels launched from there
  * read field memory the same way any cross-field kernel does.
  *
- * @param cfg The simulation configuration.
+ * @param config The simulation configuration.
  */
-void enablePeerAccessForConfiguredDevices(const SimulationConfig& cfg) {
+void enablePeerAccessForConfiguredDevices(const SimulationConfig& config) {
     int devices[7] = {
-        0, cfg.gpuTemperature.device, cfg.gpuVx.device, cfg.gpuVy.device,
-        cfg.gpuVz.device, cfg.gpuPressure.device, cfg.gpuPotential.device
+        0, config.gpuTemperature.device, config.gpuVx.device, config.gpuVy.device,
+        config.gpuVz.device, config.gpuPressure.device, config.gpuPotential.device
     };
     for (int a = 0; a < 7; ++a) {
         for (int b = 0; b < 7; ++b) {
@@ -138,9 +138,9 @@ void enablePeerAccessForConfiguredDevices(const SimulationConfig& cfg) {
     }
 }
 
-/// @brief Throws if cfg selects a feature this port doesn't yet implement.
-void validateImplementedFeatures(const SimulationConfig& cfg) {
-    if (cfg.runConservationChecks)
+/// @brief Throws if config selects a feature this port doesn't yet implement.
+void validateImplementedFeatures(const SimulationConfig& config) {
+    if (config.runConservationChecks)
         throw std::runtime_error("CfdSimulation: diagnostics.run_conservation_checks is not yet implemented "
             "in this port (see CfdSimulation.h's class comment) -- set it to false to proceed");
 }
@@ -150,29 +150,29 @@ void validateImplementedFeatures(const SimulationConfig& cfg) {
  * temperatureAdvection for why this bypasses the usual boundary-condition
  * machinery). Port of ConvMain_3D_Q2D.f90's `Teta(i,...) = 1 - X12(i)/AspRa`.
  * @tparam Real Floating-point type.
- * @param cfg The simulation configuration.
+ * @param config The simulation configuration.
  * @param mesh The already-generated mesh.
  * @return Teta's value at x index 0 through nx+2 inclusive.
  */
 template<typename Real>
-std::vector<Real> computeBuoyancyTable(const SimulationConfig& cfg, const Mesh<Real>& mesh) {
+std::vector<Real> computeBuoyancyTable(const SimulationConfig& config, const Mesh<Real>& mesh) {
     const std::vector<Real>& nodeHalfX = mesh.hostNodeHalfX();
-    std::vector<Real> table((size_t)cfg.Nx + 3);
+    std::vector<Real> table((size_t)config.Nx + 3);
     for (size_t i = 0; i < table.size(); ++i)
-        table[i] = Real(1) - nodeHalfX[i] / (Real)cfg.aspectRatio;
+        table[i] = Real(1) - nodeHalfX[i] / (Real)config.aspectRatio;
     return table;
 }
 
-/// @brief Temperature's per-axis boundary kinds, from cfg.
+/// @brief Temperature's per-axis boundary kinds, from config.
 template<typename Real>
-AxisBoundaries temperatureBoundaries(const SimulationConfig& cfg) {
-    return AxisBoundaries{cfg.temperatureBoundaryX, cfg.temperatureBoundaryY, cfg.temperatureBoundaryZ};
+AxisBoundaries temperatureBoundaries(const SimulationConfig& config) {
+    return AxisBoundaries{config.temperatureBoundaryX, config.temperatureBoundaryY, config.temperatureBoundaryZ};
 }
 
-/// @brief Potential's per-axis boundary kinds, from cfg.
+/// @brief Potential's per-axis boundary kinds, from config.
 template<typename Real>
-AxisBoundaries potentialBoundaries(const SimulationConfig& cfg) {
-    return AxisBoundaries{cfg.potentialBoundaryX, cfg.potentialBoundaryY, cfg.potentialBoundaryZ};
+AxisBoundaries potentialBoundaries(const SimulationConfig& config) {
+    return AxisBoundaries{config.potentialBoundaryX, config.potentialBoundaryY, config.potentialBoundaryZ};
 }
 
 /**
@@ -355,7 +355,7 @@ void writeFortranUnformattedRecord(std::FILE* out, const std::vector<Real>& data
  * of these are confirmed 0 bytes in every Fortran run this project has
  * seen (the sweep's own output directories). Vx_av.dat/Vy_av.dat/
  * Vz_av.dat/Tmpr_av.dat are ALSO touched empty by this at startup, for the
- * same file-for-file reason, in case cfg.timeAveragingEnabled is false
+ * same file-for-file reason, in case config.timeAveragingEnabled is false
  * (matching every Conv.dat this project has actually seen) -- when it's
  * true, finalizeTimeAverage() overwrites those four with real content
  * later; when false, they stay exactly as this leaves them, matching the
@@ -371,64 +371,64 @@ void touchEmptyFile(const std::string& path) {
 } // namespace
 
 template<typename Real>
-typename CfdSimulation<Real>::Ingredients CfdSimulation<Real>::prepare(SimulationConfig cfg) {
-    validateImplementedFeatures(cfg);
+typename CfdSimulation<Real>::Ingredients CfdSimulation<Real>::prepare(SimulationConfig config) {
+    validateImplementedFeatures(config);
 
     /* Heap-allocated via unique_ptr, not a stack value: Handle is
      * deliberately neither copyable nor movable (see handle.h), so it is
      * constructed once, here, and only the owning pointer ever moves --
      * into Ingredients below, and from there into CfdSimulation::hand_. */
     std::unique_ptr<Handle> hand = std::make_unique<Handle>(GpuIndex(0));
-    Mesh<Real> mesh = Mesh<Real>::generate(cfg, GpuIndex(0), *hand);
-    enablePeerAccessForConfiguredDevices(cfg);
+    Mesh<Real> mesh = Mesh<Real>::generate(config, GpuIndex(0), *hand);
+    enablePeerAccessForConfiguredDevices(config);
 
-    GpuField<Real> buoyancyByX = GpuField<Real>::allocate(cfg.Nx + 3, 1, 1, GpuIndex(0), *hand);
-    buoyancyByX.uploadFrom(computeBuoyancyTable<Real>(cfg, mesh), *hand);
+    GpuField<Real> buoyancyByX = GpuField<Real>::allocate(config.Nx + 3, 1, 1, GpuIndex(0), *hand);
+    buoyancyByX.uploadFrom(computeBuoyancyTable<Real>(config, mesh), *hand);
 
-    GpuField<Real> temperatureOld = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuTemperature.device), *hand);
-    GpuField<Real> temperatureCurrent = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuTemperature.device), *hand);
-    GpuField<Real> vxOld = GpuField<Real>::allocate(cfg.Nx, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuVx.device), *hand);
-    GpuField<Real> vxCurrent = GpuField<Real>::allocate(cfg.Nx, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuVx.device), *hand);
-    GpuField<Real> vyOld = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny, cfg.Nz + 1, GpuIndex(cfg.gpuVy.device), *hand);
-    GpuField<Real> vyCurrent = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny, cfg.Nz + 1, GpuIndex(cfg.gpuVy.device), *hand);
-    GpuField<Real> vzOld = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz, GpuIndex(cfg.gpuVz.device), *hand);
-    GpuField<Real> vzCurrent = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz, GpuIndex(cfg.gpuVz.device), *hand);
+    GpuField<Real> temperatureOld = GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuTemperature.device), *hand);
+    GpuField<Real> temperatureCurrent = GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuTemperature.device), *hand);
+    GpuField<Real> vxOld = GpuField<Real>::allocate(config.Nx, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuVx.device), *hand);
+    GpuField<Real> vxCurrent = GpuField<Real>::allocate(config.Nx, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuVx.device), *hand);
+    GpuField<Real> vyOld = GpuField<Real>::allocate(config.Nx + 1, config.Ny, config.Nz + 1, GpuIndex(config.gpuVy.device), *hand);
+    GpuField<Real> vyCurrent = GpuField<Real>::allocate(config.Nx + 1, config.Ny, config.Nz + 1, GpuIndex(config.gpuVy.device), *hand);
+    GpuField<Real> vzOld = GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz, GpuIndex(config.gpuVz.device), *hand);
+    GpuField<Real> vzCurrent = GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz, GpuIndex(config.gpuVz.device), *hand);
 
-    BuiltSolvers<Real> solvers = GpuSolverBuilder::build<Real>(cfg, mesh);
+    BuiltSolvers<Real> solvers = GpuSolverBuilder::build<Real>(config, mesh);
 
-    GpuField<Real> pressure = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuPressure.device), *hand);
-    GpuField<Real> rhsXScratch = GpuField<Real>::allocate(cfg.Nx, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuVx.device), *hand);
-    GpuField<Real> rhsYScratch = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny, cfg.Nz + 1, GpuIndex(cfg.gpuVy.device), *hand);
-    GpuField<Real> rhsZScratch = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz, GpuIndex(cfg.gpuVz.device), *hand);
+    GpuField<Real> pressure = GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuPressure.device), *hand);
+    GpuField<Real> rhsXScratch = GpuField<Real>::allocate(config.Nx, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuVx.device), *hand);
+    GpuField<Real> rhsYScratch = GpuField<Real>::allocate(config.Nx + 1, config.Ny, config.Nz + 1, GpuIndex(config.gpuVy.device), *hand);
+    GpuField<Real> rhsZScratch = GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz, GpuIndex(config.gpuVz.device), *hand);
     GpuField<Real> reductionScratch = GpuField<Real>::allocate(1, 1, 1, GpuIndex(0), *hand);
     GpuField<unsigned long long> maxReductionScratch = GpuField<unsigned long long>::allocate(1, 1, 1, GpuIndex(0), *hand);
-    GpuField<Real> referenceValueScratch = GpuField<Real>::allocate(1, 1, 1, GpuIndex(cfg.gpuPotential.device), *hand);
+    GpuField<Real> referenceValueScratch = GpuField<Real>::allocate(1, 1, 1, GpuIndex(config.gpuPotential.device), *hand);
 
     /* Time-averaging accumulators -- always allocated (see Ingredients'
      * own doc comment), same extent/device as each field's own solved
      * buffer above. */
-    GpuField<Real> vxTimeAverage = GpuField<Real>::allocate(cfg.Nx, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuVx.device), *hand);
-    GpuField<Real> vyTimeAverage = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny, cfg.Nz + 1, GpuIndex(cfg.gpuVy.device), *hand);
-    GpuField<Real> vzTimeAverage = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz, GpuIndex(cfg.gpuVz.device), *hand);
-    GpuField<Real> temperatureTimeAverage = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuTemperature.device), *hand);
-    GpuField<Real> pressureTimeAverage = GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuPressure.device), *hand);
+    GpuField<Real> vxTimeAverage = GpuField<Real>::allocate(config.Nx, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuVx.device), *hand);
+    GpuField<Real> vyTimeAverage = GpuField<Real>::allocate(config.Nx + 1, config.Ny, config.Nz + 1, GpuIndex(config.gpuVy.device), *hand);
+    GpuField<Real> vzTimeAverage = GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz, GpuIndex(config.gpuVz.device), *hand);
+    GpuField<Real> temperatureTimeAverage = GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuTemperature.device), *hand);
+    GpuField<Real> pressureTimeAverage = GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuPressure.device), *hand);
 
     /* Fourier-mode accumulators -- temperature only, one cos/sin pair per
-     * configured frequency. Empty when cfg.fourierFrequencies is empty
+     * configured frequency. Empty when config.fourierFrequencies is empty
      * (plain time-averaging, no decomposition -- every Conv.dat this
      * project has seen actually has N_Fourier==1, but with I_Fourier==1,
      * not 0, so it's never reached; this still has to be right for anyone
      * who flips time_averaging.enabled on). */
     std::vector<GpuField<Real>> temperatureFourierCos, temperatureFourierSin;
-    temperatureFourierCos.reserve(cfg.fourierFrequencies.size());
-    temperatureFourierSin.reserve(cfg.fourierFrequencies.size());
-    for (size_t i = 0; i < cfg.fourierFrequencies.size(); ++i) {
-        temperatureFourierCos.push_back(GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuTemperature.device), *hand));
-        temperatureFourierSin.push_back(GpuField<Real>::allocate(cfg.Nx + 1, cfg.Ny + 1, cfg.Nz + 1, GpuIndex(cfg.gpuTemperature.device), *hand));
+    temperatureFourierCos.reserve(config.fourierFrequencies.size());
+    temperatureFourierSin.reserve(config.fourierFrequencies.size());
+    for (size_t i = 0; i < config.fourierFrequencies.size(); ++i) {
+        temperatureFourierCos.push_back(GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuTemperature.device), *hand));
+        temperatureFourierSin.push_back(GpuField<Real>::allocate(config.Nx + 1, config.Ny + 1, config.Nz + 1, GpuIndex(config.gpuTemperature.device), *hand));
     }
 
     return Ingredients{
-        std::move(cfg), std::move(hand), std::move(mesh), std::move(buoyancyByX),
+        std::move(config), std::move(hand), std::move(mesh), std::move(buoyancyByX),
         std::move(temperatureOld), std::move(temperatureCurrent),
         std::move(vxOld), std::move(vxCurrent),
         std::move(vyOld), std::move(vyCurrent),
@@ -444,11 +444,11 @@ typename CfdSimulation<Real>::Ingredients CfdSimulation<Real>::prepare(Simulatio
 }
 
 template<typename Real>
-CfdSimulation<Real>::CfdSimulation(SimulationConfig cfg) : CfdSimulation(prepare(std::move(cfg))) {}
+CfdSimulation<Real>::CfdSimulation(SimulationConfig config) : CfdSimulation(prepare(std::move(config))) {}
 
 template<typename Real>
 CfdSimulation<Real>::CfdSimulation(Ingredients ingredients)
-    : cfg_(std::move(ingredients.cfg)),
+    : config_(std::move(ingredients.config)),
       hand_(std::move(ingredients.hand)),
       mesh_(std::move(ingredients.mesh)),
       buoyancyByX_(std::move(ingredients.buoyancyByX)),
@@ -482,10 +482,10 @@ CfdSimulation<Real>::CfdSimulation(Ingredients ingredients)
      * the slice already IS subscript 1 in X12, so Loc(1) can be used
      * directly as an X12 index with no further offset. Ties go to the
      * first (lowest) index, matching MinLoc's own documented tie-breaking. */
-    probeY_ = (cfg_.Ny + 2) / 2;
-    probeZ_ = (cfg_.Nz + 2) / 2;
+    probeY_ = (config_.Ny + 2) / 2;
+    probeZ_ = (config_.Nz + 2) / 2;
     const std::vector<Real>& x12 = mesh_.hostNodeHalfX();
-    int nx1 = cfg_.Nx + 1;
+    int nx1 = config_.Nx + 1;
     probeX_ = 1;
     Real bestDistance = std::abs(x12[1] - Real(0.05));
     for (int i = 2; i <= nx1; ++i) {
@@ -499,7 +499,7 @@ CfdSimulation<Real>::CfdSimulation(Ingredients ingredients)
 
 template<typename Real>
 std::string CfdSimulation<Real>::outputPath(const char* filename) const {
-    std::string dir = cfg_.outputDirectory;
+    std::string dir = config_.outputDirectory;
     if (!dir.empty() && dir.back() == '/') dir.pop_back();
     return dir + "/" + filename;
 }
@@ -517,15 +517,15 @@ void CfdSimulation<Real>::createOutputDirectory() {
     /* fopen (below) never creates a missing directory, only a missing file
      * within one that already exists -- and unlike the original, which
      * only ever ran against a directory Alex had already created by hand,
-     * cfg_.outputDirectory now comes from a JSON field anyone can repoint
+     * config_.outputDirectory now comes from a JSON field anyone can repoint
      * anywhere. create_directories is a safe no-op if the path already
      * exists (including the "." default), and creates every missing
      * parent, so a first run against a fresh path works instead of
      * failing with an unhelpful fopen error. */
     std::error_code ec;
-    std::filesystem::create_directories(cfg_.outputDirectory, ec);
+    std::filesystem::create_directories(config_.outputDirectory, ec);
     if (ec)
-        throw std::runtime_error("CfdSimulation: could not create output directory " + cfg_.outputDirectory + ": " + ec.message());
+        throw std::runtime_error("CfdSimulation: could not create output directory " + config_.outputDirectory + ": " + ec.message());
 }
 
 template<typename Real>
@@ -541,9 +541,9 @@ void CfdSimulation<Real>::openSerieAndHistoryFiles() {
      * in SimulationConfig.h for why skipping this isn't just "don't write
      * the files," but "don't pay their per-iteration GPU cost either."
      * Leaving serieFile_/historyFile_ null when off is what makes run()'s
-     * own `if (cfg_.writeSerieAndHistory)` guard safe to skip entirely:
+     * own `if (config_.writeSerieAndHistory)` guard safe to skip entirely:
      * there's nothing here for it to leave half-initialized. */
-    if (!cfg_.writeSerieAndHistory) return;
+    if (!config_.writeSerieAndHistory) return;
 
     std::string seriePath = outputPath("Serie.dat");
     std::string historyPath = outputPath("History.dat");
@@ -571,7 +571,7 @@ void CfdSimulation<Real>::openConvOutAndWriteHeader() {
      * the original header is ever actually wanted. */
     std::fprintf(convOutFile_.get(),
         "cfdSolver run: Nx=%d Ny=%d Nz=%d  AspRa=%.8g WidRa=%.8g Gr=%.8g Bi=%.8g Prandtl=%.8g Hartmann=%.8g\n",
-        cfg_.Nx, cfg_.Ny, cfg_.Nz, cfg_.aspectRatio, cfg_.widthRatio, cfg_.grashof, cfg_.biot, cfg_.prandtl, cfg_.hartmann);
+        config_.Nx, config_.Ny, config_.Nz, config_.aspectRatio, config_.widthRatio, config_.grashof, config_.biot, config_.prandtl, config_.hartmann);
     std::fflush(convOutFile_.get());
 }
 
@@ -606,9 +606,9 @@ void CfdSimulation<Real>::computeGlobalDiagnostics(Real& kineticEnergy, Real& nu
     vz_.solved().handle().synch();
     temperature_.solved().handle().synch();
 
-    int nx1 = cfg_.Nx + 1, ny1 = cfg_.Ny + 1, nz1 = cfg_.Nz + 1;
+    int nx1 = config_.Nx + 1, ny1 = config_.Ny + 1, nz1 = config_.Nz + 1;
     Spacing<Real> spacing = mesh_.deviceSpacing();
-    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(cfg_);
+    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(config_);
 
     LaunchConfig3D volumeCfg(nx1, ny1, nz1);
     reductionScratch_.zero(*hand_);
@@ -652,7 +652,7 @@ void CfdSimulation<Real>::computeGlobalDiagnostics(Real& kineticEnergy, Real& nu
     nusseltKernel<Real><<<wallCfg.blocks, wallCfg.threads, wallCfg.reductionSharedBytes<Real>(), *hand_>>>(
         temperature_.currentView(), temperatureBc, spacing, ny1, nz1, reductionScratch_.view().data());
     Real nusseltSum = reductionScratch_.downloadScalar(*hand_);
-    nusselt = Diagnostics::nusseltFromSum(nusseltSum, (Real)cfg_.aspectRatio, (Real)cfg_.widthRatio);
+    nusselt = Diagnostics::nusseltFromSum(nusseltSum, (Real)config_.aspectRatio, (Real)config_.widthRatio);
 
     readPointKernel<Real><<<1, 1, 0, *hand_>>>(vz_.currentView(), probeX_, probeY_, probeZ_, reductionScratch_.view().data());
     probeVz = reductionScratch_.downloadScalar(*hand_);
@@ -676,8 +676,8 @@ void CfdSimulation<Real>::computeGlobalDiagnostics(Real& kineticEnergy, Real& nu
 
 template<typename Real>
 void CfdSimulation<Real>::initialize() {
-    if (cfg_.restartFile.has_value()) {
-        elapsedTime_ = CheckpointIO::read(*cfg_.restartFile, cfg_.Nx, cfg_.Ny, cfg_.Nz,
+    if (config_.restartFile.has_value()) {
+        elapsedTime_ = CheckpointIO::read(*config_.restartFile, config_.Nx, config_.Ny, config_.Nz,
             temperature_, vx_, vy_, vz_, pressure_, *hand_);
         return;
     }
@@ -690,7 +690,7 @@ void CfdSimulation<Real>::initializeFreshStart() {
     std::vector<Real> smallVx(vx_.oldView().size(), Real(10e-6));
     std::vector<Real> smallVy(vy_.oldView().size(), Real(1e-6));
     std::vector<Real> smallVz(vz_.oldView().size(), Real(1e-6));
-    std::vector<Real> smallPressure((size_t)(cfg_.Nx + 1) * (cfg_.Ny + 1) * (cfg_.Nz + 1), Real(1e-6));
+    std::vector<Real> smallPressure((size_t)(config_.Nx + 1) * (config_.Ny + 1) * (config_.Nz + 1), Real(1e-6));
 
     temperature_.uploadOld(smallTemperature, *hand_);
     temperature_.uploadCurrent(smallTemperature, *hand_);
@@ -709,7 +709,7 @@ template<typename Real>
 void CfdSimulation<Real>::buildAndLaunchTemperature() {
     Handle& hand = temperature_.solved().handle();
     FieldView<Real> rhs = temperature_.solved().view();
-    AxisBoundaries bc = temperatureBoundaries<Real>(cfg_);
+    AxisBoundaries bc = temperatureBoundaries<Real>(config_);
     LaunchConfig3D cfg3d(rhs.nx(), rhs.ny(), rhs.nz());
 
     temperature_.solved().zero(hand);
@@ -717,12 +717,12 @@ void CfdSimulation<Real>::buildAndLaunchTemperature() {
         rhs, temperature_.currentView(), buoyancyByX_.view().data(),
         vx_.currentView(), vy_.currentView(), vz_.currentView(), mesh_.deviceSpacing(), bc);
 
-    Real dtTemp = cfg_.temperatureStationary ? Real(0) : Real(1);
-    Real ht = Real(2) * (Real)cfg_.timeStep;
+    Real dtTemp = config_.temperatureStationary ? Real(0) : Real(1);
+    Real ht = Real(2) * (Real)config_.timeStep;
     subtractTimeDerivativeKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(
         rhs, temperature_.currentView(), temperature_.oldView(), dtTemp / ht);
 
-    scaleKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(rhs, temperatureDiffusivityScale<Real>(cfg_));
+    scaleKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(rhs, temperatureDiffusivityScale<Real>(config_));
 
     temperature_.solved().solve();
 }
@@ -737,11 +737,11 @@ void CfdSimulation<Real>::buildAndLaunchVy() {
     velocityYAdvectionKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(
         rhs, vx_.currentView(), vy_.currentView(), vz_.currentView(), mesh_.deviceSpacing());
 
-    Real ht = Real(2) * (Real)cfg_.timeStep;
+    Real ht = Real(2) * (Real)config_.timeStep;
     subtractTimeDerivativeKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(
         rhs, vy_.currentView(), vy_.oldView(), Real(1) / ht);
 
-    Real inverseDGr = Real(1) / gravitationalScale<Real>(cfg_);
+    Real inverseDGr = Real(1) / gravitationalScale<Real>(config_);
     scaleKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(rhs, inverseDGr);
 
     vy_.solved().solve();
@@ -758,9 +758,9 @@ void CfdSimulation<Real>::launchPotential() {
         rhs, vx_.currentView(), vz_.currentView(), mesh_.deviceSpacing());
 
     if (iteration_ == 10) {
-        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
-        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
-        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        int px[4] = {2, config_.Nx - 1, 2, config_.Nx / 2};
+        int py[4] = {(config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2};
+        int pz[4] = {2, 2, config_.Nz - 1, config_.Nz / 2};
         for (int p = 0; p < 4; ++p) {
             readPointKernel<Real><<<1, 1, 0, hand>>>(rhs, px[p], py[p], pz[p], reductionScratch_.view().data());
             Real value = reductionScratch_.downloadScalar(hand);
@@ -768,9 +768,9 @@ void CfdSimulation<Real>::launchPotential() {
         }
     }
     if (iteration_ == 1) {
-        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
-        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
-        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        int px[4] = {2, config_.Nx - 1, 2, config_.Nx / 2};
+        int py[4] = {(config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2};
+        int pz[4] = {2, 2, config_.Nz - 1, config_.Nz / 2};
         for (int p = 0; p < 4; ++p) {
             readPointKernel<Real><<<1, 1, 0, hand>>>(rhs, px[p], py[p], pz[p], reductionScratch_.view().data());
             Real value = reductionScratch_.downloadScalar(hand);
@@ -788,7 +788,7 @@ void CfdSimulation<Real>::buildVxVzStencilTerms() {
     pressureGradientXKernel<Real><<<cfgX.blocks, cfgX.threads, 0, handX>>>(rhsX, pressure_.view(), mesh_.deviceSpacing());
     velocityXAdvectionKernel<Real><<<cfgX.blocks, cfgX.threads, 0, handX>>>(
         rhsX, vx_.currentView(), vy_.currentView(), vz_.currentView(), mesh_.deviceSpacing());
-    Real ht = Real(2) * (Real)cfg_.timeStep;
+    Real ht = Real(2) * (Real)config_.timeStep;
     subtractTimeDerivativeKernel<Real><<<cfgX.blocks, cfgX.threads, 0, handX>>>(
         rhsX, vx_.currentView(), vx_.oldView(), Real(1) / ht);
 
@@ -828,7 +828,7 @@ void CfdSimulation<Real>::applyBuoyancyToRhsZ() {
     LaunchConfig3D cfg3d(rhsZ.nx(), rhsZ.ny(), rhsZ.nz());
 
     buoyancyForceZKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(
-        rhsZ, newTemperature, buoyancyByX_.view().data(), buoyancyCoefficient<Real>(cfg_));
+        rhsZ, newTemperature, buoyancyByX_.view().data(), buoyancyCoefficient<Real>(config_));
 }
 
 template<typename Real>
@@ -836,7 +836,7 @@ void CfdSimulation<Real>::finishPotentialAndApplyForce() {
     potential_.synch();
 
     FieldView<Real> potentialView = potential_.view();
-    AxisBoundaries potentialBc = potentialBoundaries<Real>(cfg_);
+    AxisBoundaries potentialBc = potentialBoundaries<Real>(config_);
     Handle& potentialHand = potential_.handle();
     LaunchConfig3D potentialCfg(potentialView.nx(), potentialView.ny(), potentialView.nz());
 
@@ -849,9 +849,9 @@ void CfdSimulation<Real>::finishPotentialAndApplyForce() {
      * the solve above does not cover this subsequently queued subtraction. */
     potentialHand.synch();
     if (iteration_ == 10) {
-        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
-        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
-        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        int px[4] = {2, config_.Nx - 1, 2, config_.Nx / 2};
+        int py[4] = {(config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2};
+        int pz[4] = {2, 2, config_.Nz - 1, config_.Nz / 2};
         for (int p = 0; p < 4; ++p) {
             readPointKernel<Real><<<1, 1, 0, potentialHand>>>(potentialView, px[p], py[p], pz[p], reductionScratch_.view().data());
             Real value = reductionScratch_.downloadScalar(potentialHand);
@@ -859,9 +859,9 @@ void CfdSimulation<Real>::finishPotentialAndApplyForce() {
         }
     }
     if (iteration_ == 1) {
-        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
-        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
-        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        int px[4] = {2, config_.Nx - 1, 2, config_.Nx / 2};
+        int py[4] = {(config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2};
+        int pz[4] = {2, 2, config_.Nz - 1, config_.Nz / 2};
         for (int p = 0; p < 4; ++p) {
             readPointKernel<Real><<<1, 1, 0, potentialHand>>>(potentialView, px[p], py[p], pz[p], reductionScratch_.view().data());
             Real value = reductionScratch_.downloadScalar(potentialHand);
@@ -869,7 +869,7 @@ void CfdSimulation<Real>::finishPotentialAndApplyForce() {
         }
     }
 
-    Real coefficient = electromagneticCoefficient<Real>(cfg_);
+    Real coefficient = electromagneticCoefficient<Real>(config_);
 
     Handle& handX = vx_.solved().handle();
     FieldView<Real> rhsX = rhsXScratch_.view();
@@ -886,7 +886,7 @@ void CfdSimulation<Real>::finishPotentialAndApplyForce() {
 
 template<typename Real>
 void CfdSimulation<Real>::launchVxAndVz() {
-    Real inverseDGr = Real(1) / gravitationalScale<Real>(cfg_);
+    Real inverseDGr = Real(1) / gravitationalScale<Real>(config_);
 
     Handle& handX = vx_.solved().handle();
     FieldView<Real> rhsX = rhsXScratch_.view();
@@ -922,9 +922,9 @@ void CfdSimulation<Real>::solvePressureCorrection() {
     FieldView<Real> rhs = pressureCorrection_.view();
     LaunchConfig3D cfg3d(rhs.nx(), rhs.ny(), rhs.nz());
     if (iteration_ == 10) {
-        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
-        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
-        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        int px[4] = {2, config_.Nx - 1, 2, config_.Nx / 2};
+        int py[4] = {(config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2};
+        int pz[4] = {2, 2, config_.Nz - 1, config_.Nz / 2};
         for (int p = 0; p < 4; ++p) {
             Handle& hX = vx_.solved().handle();
             readPointKernel<Real><<<1, 1, 0, hX>>>(vx_.solved().view(), px[p], py[p], pz[p], reductionScratch_.view().data());
@@ -946,12 +946,12 @@ void CfdSimulation<Real>::solvePressureCorrection() {
     divergenceKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(
         rhs, vx_.solved().view(), vy_.solved().view(), vz_.solved().view(), mesh_.deviceSpacing());
 
-    Real correctionScale = Real(1.5) / (Real)cfg_.timeStep;
+    Real correctionScale = Real(1.5) / (Real)config_.timeStep;
     scaleKernel<Real><<<cfg3d.blocks, cfg3d.threads, 0, hand>>>(rhs, correctionScale);
     if (iteration_ == 10) {
-        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
-        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
-        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        int px[4] = {2, config_.Nx - 1, 2, config_.Nx / 2};
+        int py[4] = {(config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2};
+        int pz[4] = {2, 2, config_.Nz - 1, config_.Nz / 2};
         for (int p = 0; p < 4; ++p) {
             readPointKernel<Real><<<1, 1, 0, hand>>>(rhs, px[p], py[p], pz[p], reductionScratch_.view().data());
             Real value = reductionScratch_.downloadScalar(hand);
@@ -962,9 +962,9 @@ void CfdSimulation<Real>::solvePressureCorrection() {
     pressureCorrection_.solve();
     pressureCorrection_.synch();
     if (iteration_ == 10) {
-        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
-        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
-        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        int px[4] = {2, config_.Nx - 1, 2, config_.Nx / 2};
+        int py[4] = {(config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2};
+        int pz[4] = {2, 2, config_.Nz - 1, config_.Nz / 2};
         for (int p = 0; p < 4; ++p) {
             readPointKernel<Real><<<1, 1, 0, hand>>>(rhs, px[p], py[p], pz[p], reductionScratch_.view().data());
             Real value = reductionScratch_.downloadScalar(hand);
@@ -979,7 +979,7 @@ void CfdSimulation<Real>::solvePressureCorrection() {
 
 template<typename Real>
 void CfdSimulation<Real>::correctVelocitiesAndPressure() {
-    Real coefficient = (Real)cfg_.timeStep / Real(1.5);
+    Real coefficient = (Real)config_.timeStep / Real(1.5);
     FieldView<Real> correction = pressureCorrection_.view();
 
     Handle& handX = vx_.solved().handle();
@@ -1003,9 +1003,9 @@ void CfdSimulation<Real>::correctVelocitiesAndPressure() {
     FieldView<Real> newVz = vz_.solved().view();
     correctVelocityKernel<Real><<<cfgZ.blocks, cfgZ.threads, 0, handZ>>>(newVz, gradZ, coefficient);
     if (iteration_ == 10) {
-        int px[4] = {2, cfg_.Nx - 1, 2, cfg_.Nx / 2};
-        int py[4] = {(cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2, (cfg_.Ny + 1) / 2};
-        int pz[4] = {2, 2, cfg_.Nz - 1, cfg_.Nz / 2};
+        int px[4] = {2, config_.Nx - 1, 2, config_.Nx / 2};
+        int py[4] = {(config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2, (config_.Ny + 1) / 2};
+        int pz[4] = {2, 2, config_.Nz - 1, config_.Nz / 2};
         for (int p = 0; p < 4; ++p) {
             Handle& hX = vx_.solved().handle();
             readPointKernel<Real><<<1, 1, 0, hX>>>(vx_.solved().view(), px[p], py[p], pz[p], reductionScratch_.view().data());
@@ -1067,8 +1067,8 @@ void CfdSimulation<Real>::shiftAllTimeLevels() {
 template<typename Real>
 void CfdSimulation<Real>::runOneTimeStep(XYZ<Real>& residual, Real& rTmpr, Real& rdp) {
     buildAndLaunchTemperature();
-    buildAndLaunchVy();
     launchPotential();
+    buildAndLaunchVy();
     buildVxVzStencilTerms();
 
     rTmpr = synchTemperatureAndComputeResidual();
@@ -1088,7 +1088,7 @@ void CfdSimulation<Real>::runOneTimeStep(XYZ<Real>& residual, Real& rTmpr, Real&
 template<typename Real>
 void CfdSimulation<Real>::accumulateTimeAverage() {
     /* computeGlobalDiagnostics() may not have run this iteration (it's
-     * gated by the unrelated cfg_.writeSerieAndHistory), so every producer
+     * gated by the unrelated config_.writeSerieAndHistory), so every producer
      * handle read here is synched explicitly, same rule as that function
      * follows for vx_/vy_/vz_/temperature_. pressure_'s producer is
      * pressureCorrection_ -- a plain GpuField has no handle of its own;
@@ -1103,7 +1103,7 @@ void CfdSimulation<Real>::accumulateTimeAverage() {
     temperature_.solved().handle().synch();
     pressureCorrection_.handle().synch();
 
-    Real htime = (Real)cfg_.timeStep;
+    Real htime = (Real)config_.timeStep;
 
     auto accumulate = [&](GpuField<Real>& target, const FieldView<Real>& source, Real factor) {
         LaunchConfig3D cfg3d(target.nx(), target.ny(), target.nz());
@@ -1125,8 +1125,8 @@ void CfdSimulation<Real>::accumulateTimeAverage() {
     /* Fourier_sum's Do i=1,N_Fourier loop: temperature-only cos/sin terms.
      * cos(omega*TimCur)/sin(omega*TimCur) are plain host scalars, computed
      * once per call -- only the per-cell accumulate itself needs a kernel. */
-    for (size_t i = 0; i < cfg_.fourierFrequencies.size(); ++i) {
-        Real angle = (Real)cfg_.fourierFrequencies[i] * elapsedTime_;
+    for (size_t i = 0; i < config_.fourierFrequencies.size(); ++i) {
+        Real angle = (Real)config_.fourierFrequencies[i] * elapsedTime_;
         accumulate(temperatureFourierCos_[i], temperature_.currentView(), htime * std::cos(angle));
         accumulate(temperatureFourierSin_[i], temperature_.currentView(), htime * std::sin(angle));
     }
@@ -1134,7 +1134,7 @@ void CfdSimulation<Real>::accumulateTimeAverage() {
 
 template<typename Real>
 void CfdSimulation<Real>::finalizeTimeAverage() {
-    int nx = cfg_.Nx, ny = cfg_.Ny, nz = cfg_.Nz;
+    int nx = config_.Nx, ny = config_.Ny, nz = config_.Nz;
 
     /* Instantaneous (pre-substitution) velocity, needed below for
      * Vx_av.dat/Vy_av.dat/Vz_av.dat specifically -- see this method's doc
@@ -1148,7 +1148,7 @@ void CfdSimulation<Real>::finalizeTimeAverage() {
 
     /* Normalize every accumulator by the run duration (Fourier terms by
      * 2/runDuration) -- Plot_Amplitude's own division. */
-    Real inverseInterval = Real(1) / (Real)cfg_.runDuration;
+    Real inverseInterval = Real(1) / (Real)config_.runDuration;
     auto scale = [&](GpuField<Real>& field, Real factor) {
         LaunchConfig3D cfg3d(field.nx(), field.ny(), field.nz());
         FieldView<Real> view = field.view();
@@ -1159,7 +1159,7 @@ void CfdSimulation<Real>::finalizeTimeAverage() {
     scale(vzTimeAverage_, inverseInterval);
     scale(temperatureTimeAverage_, inverseInterval);
     scale(pressureTimeAverage_, inverseInterval);
-    for (size_t i = 0; i < cfg_.fourierFrequencies.size(); ++i) {
+    for (size_t i = 0; i < config_.fourierFrequencies.size(); ++i) {
         scale(temperatureFourierCos_[i], Real(2) * inverseInterval);
         scale(temperatureFourierSin_[i], Real(2) * inverseInterval);
     }
@@ -1182,8 +1182,8 @@ void CfdSimulation<Real>::finalizeTimeAverage() {
     FieldView<Real> vzAvgView(vzAvg.data(), nx + 1, ny + 1, nz);
     FieldView<Real> tmprAvgView(tmprAvg.data(), nx + 1, ny + 1, nz + 1);
 
-    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(cfg_);
-    std::vector<Real> buoyancyTable = computeBuoyancyTable<Real>(cfg_, mesh_);
+    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(config_);
+    std::vector<Real> buoyancyTable = computeBuoyancyTable<Real>(config_, mesh_);
 
     /* Tmpr_av.dat / Amplitudes.dat's "Average" column: Tmp_Av, plus Teta
      * broadcast over y/z (buoyancyTable is x-indexed only, 0..Nx+2, the
@@ -1220,9 +1220,9 @@ void CfdSimulation<Real>::finalizeTimeAverage() {
      * +Teta, so there's nothing further to compute for it). cos/sin
      * columns are Teta-free. */
     std::vector<std::vector<Real>> cosFull, sinFull;
-    cosFull.reserve(cfg_.fourierFrequencies.size());
-    sinFull.reserve(cfg_.fourierFrequencies.size());
-    for (size_t i = 0; i < cfg_.fourierFrequencies.size(); ++i) {
+    cosFull.reserve(config_.fourierFrequencies.size());
+    sinFull.reserve(config_.fourierFrequencies.size());
+    for (size_t i = 0; i < config_.fourierFrequencies.size(); ++i) {
         std::vector<Real> cosHost = temperatureFourierCos_[i].downloadTo(*hand_);
         std::vector<Real> sinHost = temperatureFourierSin_[i].downloadTo(*hand_);
         FieldView<Real> cosView(cosHost.data(), nx + 1, ny + 1, nz + 1);
@@ -1271,7 +1271,7 @@ void CfdSimulation<Real>::finalizeTimeAverage() {
 
 template<typename Real>
 void CfdSimulation<Real>::writeFieldSnapshots() {
-    int nx = cfg_.Nx, ny = cfg_.Ny, nz = cfg_.Nz;
+    int nx = config_.Nx, ny = config_.Ny, nz = config_.Nz;
 
     std::vector<Real> tmprHost = temperature_.downloadCurrent(*hand_);
     std::vector<Real> vxHost = vx_.downloadCurrent(*hand_);
@@ -1289,9 +1289,9 @@ void CfdSimulation<Real>::writeFieldSnapshots() {
      * views above. */
     FieldView<Real> potentialView(potentialHost.data(), nx, ny + 1, nz);
 
-    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(cfg_);
-    AxisBoundaries potentialBc = potentialBoundaries<Real>(cfg_);
-    std::vector<Real> buoyancyTable = computeBuoyancyTable<Real>(cfg_, mesh_);
+    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(config_);
+    AxisBoundaries potentialBc = potentialBoundaries<Real>(config_);
+    std::vector<Real> buoyancyTable = computeBuoyancyTable<Real>(config_, mesh_);
 
     /* Tmpr.dat: Tmpr + Teta, matching the original's own `Tmpr = Tmpr +
      * Teta` immediately before its Point_Write call (Solution_time_Q2D.f90
@@ -1347,8 +1347,8 @@ template<typename Real>
 void CfdSimulation<Real>::run() {
     openOutputFiles();
 
-    Real targetTime = elapsedTime_ + (Real)cfg_.runDuration;
-    Real timeStep = (Real)cfg_.timeStep;
+    Real targetTime = elapsedTime_ + (Real)config_.runDuration;
+    Real timeStep = (Real)config_.timeStep;
     std::string checkpointPath = outputPath("checkpoint.cfdc");
 
     while (true) {
@@ -1360,15 +1360,15 @@ void CfdSimulation<Real>::run() {
         runOneTimeStep(residual, rTmpr, rdp);
 
         /* Serie.dat/History.dat: unconditional in the original (no Iprint
-         * gate -- see cfg_.writeSerieAndHistory's doc comment), but unlike
+         * gate -- see config_.writeSerieAndHistory's doc comment), but unlike
          * the original's plain CPU arithmetic on already-resident memory,
          * computeGlobalDiagnostics() here costs a real per-iteration GPU
          * tax (handle synchs plus full-volume reductions plus blocking
-         * downloads). Gated on cfg_.writeSerieAndHistory so that tax is
+         * downloads). Gated on config_.writeSerieAndHistory so that tax is
          * skipped entirely -- not just the two files left unwritten --
          * when the data isn't wanted. serieFile_/historyFile_ are only
          * ever non-null when this flag is set (see openOutputFiles()). */
-        if (cfg_.writeSerieAndHistory) {
+        if (config_.writeSerieAndHistory) {
             Real kineticEnergy, nusselt, probeVz, probeTmpr;
             computeGlobalDiagnostics(kineticEnergy, nusselt, probeVz, probeTmpr);
             std::fprintf(serieFile_.get(), "%.15g %.15g %.15g\n", (double)elapsedTime_, (double)kineticEnergy, (double)nusselt);
@@ -1377,31 +1377,31 @@ void CfdSimulation<Real>::run() {
             std::fflush(historyFile_.get());
         }
 
-        /* Fourier_sum: independent of cfg_.writeSerieAndHistory above --
+        /* Fourier_sum: independent of config_.writeSerieAndHistory above --
          * in the original, I_Fourier and the Serie.dat/History.dat writes
          * are unrelated flags, so this is its own top-level guard, not
          * nested in the block above. */
-        if (cfg_.timeAveragingEnabled) accumulateTimeAverage();
+        if (config_.timeAveragingEnabled) accumulateTimeAverage();
 
-        bool shouldPrint = (iteration_ % cfg_.printEvery) == 0;
+        bool shouldPrint = (iteration_ % config_.printEvery) == 0;
         if (shouldPrint) {
             printIterationReport(elapsedTime_, targetTime, residual, rTmpr, rdp);
         }
 
-        /* Independent of printEvery -- see cfg_.checkpointEvery's own doc
+        /* Independent of printEvery -- see config_.checkpointEvery's own doc
          * comment in SimulationConfig.h. */
-        bool shouldCheckpoint = (iteration_ % cfg_.checkpointEvery) == 0;
+        bool shouldCheckpoint = (iteration_ % config_.checkpointEvery) == 0;
         if (shouldCheckpoint) {
-            CheckpointIO::write(checkpointPath, cfg_.Nx, cfg_.Ny, cfg_.Nz,
+            CheckpointIO::write(checkpointPath, config_.Nx, config_.Ny, config_.Nz,
                 temperature_, vx_, vy_, vz_, pressure_, elapsedTime_, *hand_);
         }
 
         Real worstResidual = std::max(std::max(residual.x, residual.y), std::max(residual.z, rTmpr));
-        if (worstResidual < (Real)cfg_.epsConvergence) break;
-        if (!(elapsedTime_ < targetTime) || iteration_ >= cfg_.maxIterations) break;
+        if (worstResidual < (Real)config_.epsConvergence) break;
+        if (!(elapsedTime_ < targetTime) || iteration_ >= config_.maxIterations) break;
     }
 
-    CheckpointIO::write(checkpointPath, cfg_.Nx, cfg_.Ny, cfg_.Nz,
+    CheckpointIO::write(checkpointPath, config_.Nx, config_.Ny, config_.Nz,
         temperature_, vx_, vy_, vz_, pressure_, elapsedTime_, *hand_);
 
     /* Tmpr.dat/Vx.dat/Vy.dat/Vz.dat/Pres.dat/Potential.dat: the original's
@@ -1412,14 +1412,14 @@ void CfdSimulation<Real>::run() {
      * instantaneous state, the original's own Tmpr=Tmp_Av substitution
      * (inside Plot_Amplitude) hasn't run yet at this point even when
      * time-averaging is also enabled. */
-    if (cfg_.writeFieldSnapshots) writeFieldSnapshots();
+    if (config_.writeFieldSnapshots) writeFieldSnapshots();
 
     /* Plot_Amplitude: called here, between the final checkpoint and the
      * report, matching the original's exact ordering (Outp, then Plot_
      * Amplitude, then the Nusselt/kinetic-energy report) -- the checkpoint
      * is always the true instantaneous final state, never the time-
      * average, in both the original and here. */
-    if (cfg_.timeAveragingEnabled) finalizeTimeAverage();
+    if (config_.timeAveragingEnabled) finalizeTimeAverage();
 
     printFinalReport();
 
@@ -1427,7 +1427,7 @@ void CfdSimulation<Real>::run() {
      * after the 3D Nusselt/kinetic-energy report (see AverageFlow.h's
      * class comment for exactly where). Reads whatever vx_/vz_/
      * temperature_ currently hold -- the time-average when
-     * cfg_.timeAveragingEnabled just substituted it in place above, the
+     * config_.timeAveragingEnabled just substituted it in place above, the
      * plain instantaneous field otherwise.
      *
      * No Teta addition here, in either case. Yaverage.f90's own Teta
@@ -1448,19 +1448,19 @@ void CfdSimulation<Real>::run() {
      * would double-count it) -- consistent with temperature_ never
      * expecting Teta baked in, same as every other reader of it in this
      * codebase, Average_flow included. */
-    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(cfg_);
-    AverageFlow::run<Real>(cfg_.Nx, cfg_.Ny, cfg_.Nz,
+    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(config_);
+    AverageFlow::run<Real>(config_.Nx, config_.Ny, config_.Nz,
         vx_.downloadCurrent(*hand_), vz_.downloadCurrent(*hand_), temperature_.downloadCurrent(*hand_),
         temperatureBc, mesh_.hostHx12(), mesh_.hostHy12(), mesh_.hostHz12(), mesh_.hostHpx(),
         mesh_.hostNodeHalfX(), mesh_.hostNodeHalfZ(),
-        (Real)cfg_.aspectRatio, (Real)cfg_.widthRatio, gravitationalScale<Real>(cfg_),
+        (Real)config_.aspectRatio, (Real)config_.widthRatio, gravitationalScale<Real>(config_),
         outputPath("Psi_Yaverage.dat"), outputPath("Tmpr_Yaverage.dat"), convOutFile_.get());
 }
 
 template<typename Real>
 void CfdSimulation<Real>::printIterationReport(Real timeNow, Real targetTime, XYZ<Real> residual, Real rTmpr, Real rdp) const {
     std::printf("\n  Istp=%6d   Time Step=%11.4g   Time=%15.8g   End Time=%15.8g\n",
-        iteration_, (double)cfg_.timeStep, (double)timeNow, (double)targetTime);
+        iteration_, (double)config_.timeStep, (double)timeNow, (double)targetTime);
     std::printf("  RNSx=%11.4g  RNSy=%11.4g  RNSz=%11.4g  RTmpr=%11.4g  RDP=%11.4g\n",
         (double)residual.x, (double)residual.y, (double)residual.z, (double)rTmpr, (double)rdp);
 
@@ -1470,7 +1470,7 @@ void CfdSimulation<Real>::printIterationReport(Real timeNow, Real targetTime, XY
      * that), so the guard is defensive, not expected to trigger. */
     if (convOutFile_) {
         std::fprintf(convOutFile_.get(), "\n  Istp=%6d   Time Step=%11.4g   Time=%15.8g   End Time=%15.8g\n",
-            iteration_, (double)cfg_.timeStep, (double)timeNow, (double)targetTime);
+            iteration_, (double)config_.timeStep, (double)timeNow, (double)targetTime);
         std::fprintf(convOutFile_.get(), "  RNSx=%11.4g  RNSy=%11.4g  RNSz=%11.4g  RTmpr=%11.4g  RDP=%11.4g\n",
             (double)residual.x, (double)residual.y, (double)residual.z, (double)rTmpr, (double)rdp);
         std::fflush(convOutFile_.get());
@@ -1487,9 +1487,9 @@ void CfdSimulation<Real>::printFinalReport() const {
         return scratch.downloadScalar(hand);
     };
 
-    int nx1 = cfg_.Nx + 1, ny1 = cfg_.Ny + 1, nz1 = cfg_.Nz + 1;
+    int nx1 = config_.Nx + 1, ny1 = config_.Ny + 1, nz1 = config_.Nz + 1;
     Spacing<Real> spacing = mesh_.deviceSpacing();
-    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(cfg_);
+    AxisBoundaries temperatureBc = temperatureBoundaries<Real>(config_);
 
     LaunchConfig3D volumeCfg(nx1, ny1, nz1);
     Real kineticEnergySum = sumReduction([&](GpuField<Real>& scratch) {
@@ -1503,15 +1503,15 @@ void CfdSimulation<Real>::printFinalReport() const {
             temperature_.currentView(), temperatureBc, spacing, ny1, nz1, scratch.view().data());
     });
 
-    int midplaneY = (cfg_.Ny + 2) / 2;
+    int midplaneY = (config_.Ny + 2) / 2;
     LaunchConfig3D lineCfg(nz1, 1, 1);
     Real nusseltMiddleSum = sumReduction([&](GpuField<Real>& scratch) {
         nusseltMiddleKernel<Real><<<lineCfg.blocks, lineCfg.threads, lineCfg.reductionSharedBytes<Real>(), hand>>>(
             temperature_.currentView(), temperatureBc, spacing, midplaneY, nz1, scratch.view().data());
     });
 
-    Real nusselt = Diagnostics::nusseltFromSum(nusseltSum, (Real)cfg_.aspectRatio, (Real)cfg_.widthRatio);
-    Real nusseltMiddle = Diagnostics::nusseltMiddleFromSum(nusseltMiddleSum, (Real)cfg_.aspectRatio);
+    Real nusselt = Diagnostics::nusseltFromSum(nusseltSum, (Real)config_.aspectRatio, (Real)config_.widthRatio);
+    Real nusseltMiddle = Diagnostics::nusseltMiddleFromSum(nusseltMiddleSum, (Real)config_.aspectRatio);
 
     std::printf("           Nusselt number  = %.15g\n", (double)nusselt);
     std::printf("  Midplane Nusselt number  = %.15g\n", (double)nusseltMiddle);
