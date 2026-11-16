@@ -1,106 +1,108 @@
-
-
 #include "EigenDecompThomas.cuh"
+
+#include <stdexcept>
 
 #include "deviceArrays/headers/Support/Streamable.h"
 #include "poisson/BoundaryConfig.cuh"
 
 /**
- * @brief Core implementation of the Thomas Algorithm (TDMA) for a 1D tridiagonal system.
- * This device function performs the forward elimination and back-substitution required
- * to solve a tridiagonal system of the form:
- * \f[ a_i x_{i-1} + b_i x_i + c_i x_{i+1} = r_i \f]
+ * @brief The Thomas algorithm (TDMA) for one tridiagonal system.
+ *
+ * Solves \f[ a_i x_{i-1} + b_i x_i + c_i x_{i+1} = r_i \f], where seg supplies the off-diagonal and
+ * boundary coefficients and modifyMainDiag is added to the main diagonal (the sum of the eigenvalues
+ * of the diagonalized axes, minus the Helmholtz shift).
+ *
+ * Works in rhs and x alone:
+ * - superPrime is another name for rhs. Each modified super-diagonal coefficient is written over the
+ *   right-hand-side entry at the same index, just after that entry is used to compute x there.
+ * - x holds the modified right-hand side during elimination and is overwritten in place by back
+ *   substitution.
+ *
+ * Requires x.cols >= 2.
  *
  * @tparam Real Floating-point precision (float or double).
- * @param rhs Input Right-Hand Side vector.
- * @param x Output Solution vector.
- * @param superPrimeBuffer Workspace for the modified super-diagonal coefficients.
- * @param rhsPrimeBuffer Workspace for the modified intermediate RHS values.
+ * @param rhs The right-hand side. Overwritten with the modified super-diagonal coefficients.
+ * @param x Receives the solution; also holds the modified right-hand side during elimination. Must
+ * not be the same memory as rhs.
  * @param seg The interior and boundary values of the tridiagonal matrix.
+ * @param modifyMainDiag Added to the main diagonal.
+ * @param singular True for the one singular system (all Neumann, zero eigenvalue): x[0] is pinned to 0.
  */
 template<typename Real, typename SegmentT>
 __device__ void solveThomas3dLap(
-    DeviceData1d<Real> rhs,
-    DeviceData1d<Real> x,
-    DeviceData1d<Real>& superPrimeBuffer,
-    DeviceData1d<Real>& rhsPrimeBuffer,
+    DeviceData1d<Real>& rhs,
+    DeviceData1d<Real>& x,
     const SegmentT& seg,
     const Real modifyMainDiag,
     const bool singular
     ) {
 
+    DeviceData1d<Real>& superPrime = rhs;
     Real rowData[3];
     Real* row = rowData + 1;
 
     if (singular) {
-        superPrimeBuffer[0] = 0;
-        rhsPrimeBuffer[0] = 0;
-    }else {
+        x[0] = 0;
+        superPrime[0] = 0;
+    } else {
         row[0] = modifyMainDiag;
         seg.start.setL(row[0], row[1]);
-        superPrimeBuffer[0] = row[1] / row[0];
-        rhsPrimeBuffer[0] = rhs[0] / row[0];
+        x[0] = rhs[0] / row[0];
+        superPrime[0] = row[1] / row[0];
     }
 
-    size_t n = x.cols - 1;
+    const size_t n = x.cols - 1;
     for (size_t i = 1; i < n; i++) {
         row[0] = modifyMainDiag;
         seg.setInteriorL(row[0], row[-1], row[1], i);
-        Real denom = 1 / (row[0] - row[-1] * superPrimeBuffer[i - 1]);
-        superPrimeBuffer[i] = row[1] * denom;
-        rhsPrimeBuffer[i] = (rhs[i] - row[-1] * rhsPrimeBuffer[i - 1]) * denom;
+        const Real denom = 1 / (row[0] - row[-1] * superPrime[i - 1]);
+        x[i] = (rhs[i] - row[-1] * x[i - 1]) * denom;
+        superPrime[i] = row[1] * denom;
     }
     row[0] = modifyMainDiag;
     seg.end.setL(row[0], row[-1]);
-    Real denom = 1 / (row[0] - row[-1] * superPrimeBuffer[n - 1]);
-    rhsPrimeBuffer[n] = (rhs[n] - row[-1] * rhsPrimeBuffer[n - 1]) * denom;
+    const Real denom = 1 / (row[0] - row[-1] * superPrime[n - 1]);
+    x[n] = (rhs[n] - row[-1] * x[n - 1]) * denom;
 
-    x[n] = rhsPrimeBuffer[n];
-    for (int32_t i = n - 1; i >= 0; --i)
-        x[i] = rhsPrimeBuffer[i] - superPrimeBuffer[i] * x[i + 1];
+    for (size_t i = n; i-- > 0; )
+        x[i] -= superPrime[i] * x[i + 1];
 }
 
 /**
- * @brief CUDA kernel that solves independent tridiagonal systems along the z-axis (layers).
- * This kernel maps each (x, y) pair of the 3D grid, that is each row and layer, to a single
- * CUDA thread. Each thread solves a 1D tridiagonal system along the Z-dimension. This is the
- * "Semi-Direct" step where the main diagonal is modified by the eigenvalues of the Y and Z
- * operators to solve the 3D Helmholtz/Poisson equation in the partially transformed eigen-space.
+ * @brief CUDA kernel that solves the independent tridiagonal systems along Z (layers).
+ *
+ * One thread per (row, col) pair, that is per (y, x) pair. threadIdx.x runs along rows, the fastest
+ * index in memory, so at each step along z adjacent threads touch adjacent addresses. Each system's
+ * main diagonal is shifted by the X and Y eigenvalues of its (x, y) pair.
  *
  * @tparam Real Floating-point precision (float or double).
- * @param x Output 3D tensor for the solution.
- * @param b Input 3D tensor for the RHS (f-tilde).
- * @param eValsX Vector containing the eigenvalues of the X-direction Laplacian.
- * @param eValsY Vector containing the eigenvalues of the Y-direction Laplacian.
- * @param superPrime 3D workspace tensor for modified super-diagonals.
- * @param bPrime 3D workspace tensor for modified intermediate RHS.
+ * @param x Output tensor (u-tilde); also the modified right-hand side during elimination.
+ * @param b Input tensor (f-tilde). Overwritten with the modified super-diagonal coefficients.
+ * @param eValsX Eigenvalues of the X-direction Laplacian.
+ * @param eValsY Eigenvalues of the Y-direction Laplacian.
  * @param seg The boundary conditions for the z dimension.
+ * @param isSingular True if the Laplacian is singular.
+ * @param helmholtzShift The Helmholtz shift sigma.
  */
 template<typename Real, typename SegmentT>
-__global__ void solveThomas3dLaplacianKernel(//TODO: for the buffers, should I be using local shared memory instead of global memory?
+__global__ void solveThomas3dLaplacianKernel(
     DeviceData3d<Real> x,
     DeviceData3d<Real> b,
     DeviceData1d<Real> eValsX,
     DeviceData1d<Real> eValsY,
-    DeviceData3d<Real> superPrime,
-    DeviceData3d<Real> bPrime,
     SegmentT seg,
     bool isSingular,
     const Real helmholtzShift
-) {//width is rows and height is cols.
+) {
     GridInd3d system(idx(), idy(), 0);
     if (system.row >= x.rows || system.col >= x.cols) return;
 
     DeviceData1d<Real> depthX(x.layers, x, system, 0, 0, 1);
     DeviceData1d<Real> depthB(b.layers, b, system, 0, 0, 1);
-    DeviceData1d<Real> depthSuperPrime(superPrime.layers, superPrime, system, 0, 0, 1);
-    DeviceData1d<Real> depthRHSPrime(bPrime.layers, bPrime, system, 0, 0, 1);
 
     solveThomas3dLap(
         depthB,
         depthX,
-        depthSuperPrime,
-        depthRHSPrime,
         seg,
         eValsX[system.col] + eValsY[system.row] - helmholtzShift,
         isSingular && system.row == 0 && system.col == 0
@@ -112,62 +114,62 @@ void EigenDecompThomas<T, SegmentT>::solve(SimpleArray<T> &x, const SimpleArray<
 
     this->lapEigen.vecsInv.mult2d(b, this->sizeOfB, x, hand);
 
-    this->multLEigenValInverse(this->sizeOfB, x, hand);
+    solveTridiagonalSystems(this->sizeOfB, x, hand);
 
     this->lapEigen.vecs.mult2d(x, x, this->sizeOfB, hand);
 }
 
-
 template<typename T, typename SegmentT>
-void EigenDecompThomas<T, SegmentT>::multLEigenValInverse(const SimpleArray<T> &src, SimpleArray<T> &dst, Handle &hand) const {
-    KernelPrep kpVec( this->dim.rows, this->dim.cols);
+void EigenDecompThomas<T, SegmentT>::solveTridiagonalSystems(SimpleArray<T> &rhs, SimpleArray<T> &dst, Handle &hand) const {
+    if (dst.data() == rhs.data())
+        throw std::invalid_argument("EigenDecompThomas: the tridiagonal solve's output must be separate memory from its right-hand side, which it also uses as its workspace.");
+
+    KernelPrep kpVec(this->dim.rows, this->dim.cols);
     solveThomas3dLaplacianKernel<T><<<kpVec.numBlocks, kpVec.threadsPerBlock, 0, hand>>>(
         dst.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
-        src.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
+        rhs.tensor(this->dim.rows, this->dim.layers).toKernel3d(),
         this->lapEigen.vals.x.toKernel1d(),
         this->lapEigen.vals.y.toKernel1d(),
-        workSpaceSuperPrime.toKernel3d(),
-        workSpaceRHSPrime.toKernel3d(),
         boundaryZ.forDevice(),
         this->isSingular,
         this->helmholtzShift
     );
 }
+
 template<typename T, typename SegmentT>
-EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const AxisSegmentHost<SegmentT>& boundZ, Mat<T> &sizeOfBX3, bool isSingular, T helmholtzShift):
-    EigenDecomp3d<T>(
-        eigen,
-        sizeOfBX3.col(0),
-        isSingular,
-        helmholtzShift
-    ),
-    workSpaceSuperPrime(sizeOfBX3.col(1).tensor(eigen.dim().rows, eigen.dim().layers)),
-    workSpaceRHSPrime(sizeOfBX3.col(2).tensor(eigen.dim().rows, eigen.dim().layers)),
-    boundaryZ(boundZ)
-{
+void EigenDecompThomas<T, SegmentT>::requireTwoLayers() const {
+    if (this->dim.layers < 2)
+        throw std::invalid_argument("EigenDecompThomas needs at least 2 layers: it solves a tridiagonal system along z. Use EigenDecomp2d for a single layer.");
 }
 
+template<typename T, typename SegmentT>
+EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const Eigen<T>& eigen, const AxisSegmentHost<SegmentT>& boundZ, SimpleArray<T> sizeOfB, bool isSingular, T helmholtzShift):
+    EigenDecomp3d<T>(eigen, sizeOfB, isSingular, helmholtzShift),
+    boundaryZ(boundZ) {
+    requireTwoLayers();
+}
 
 template<typename T, typename SegmentT>
 template<typename SegX, typename SegY>
-    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegX, SegY, SegmentT>& boundary, Handles &hands, Mat<T> sizeOfBX3, T helmholtzShift):
-        EigenDecomp3d<T>(boundary.forDevice(), hands, sizeOfBX3.col(0), helmholtzShift),
-        workSpaceSuperPrime(sizeOfBX3.col(1).tensor(boundary.forDevice().dim().rows, boundary.forDevice().dim().layers)),
-        workSpaceRHSPrime(sizeOfBX3.col(2).tensor(boundary.forDevice().dim().rows, boundary.forDevice().dim().layers)),
-        boundaryZ(boundary.z)
-{}
+EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegX, SegY, SegmentT>& boundary, Handles &hands, SimpleArray<T> sizeOfB, T helmholtzShift):
+    EigenDecomp3d<T>(boundary.forDevice(), hands, sizeOfB, helmholtzShift),
+    boundaryZ(boundary.z) {
+    requireTwoLayers();
+}
 
 template<typename T, typename SegmentT>
 template<typename SegX, typename SegY>
-    EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegX, SegY, SegmentT>& boundary, Handles &hands, T helmholtzShift):
-        EigenDecompThomas(boundary, hands, Mat<T>::create(boundary.forDevice().dim().size(), 3, hands[0]), helmholtzShift)
-{
+EigenDecompThomas<T, SegmentT>::EigenDecompThomas(const BoundaryConfigHost<T, SegX, SegY, SegmentT>& boundary, Handles &hands, T helmholtzShift):
+    EigenDecomp3d<T>(boundary.forDevice(), hands, helmholtzShift),
+    boundaryZ(boundary.z) {
+    requireTwoLayers();
 }
+
 // ==============================================================================
 // EXPLICIT TEMPLATE INSTANTIATIONS
 // ==============================================================================
 
-// 1. Explicitly instantiate the class for all required segment types
+// 1. Explicitly instantiate the class for all required Z segment types
 template class EigenDecompThomas<double, FluxLaplacian<double>>;
 template class EigenDecompThomas<double, UniformSegment<double>>;
 template class EigenDecompThomas<double, VariableSegment<double>>;
@@ -176,8 +178,8 @@ template class EigenDecompThomas<float, FluxLaplacian<float>>;
 template class EigenDecompThomas<float, UniformSegment<float>>;
 template class EigenDecompThomas<float, VariableSegment<float>>;
 
-// 2. Macro for the Thomas constructor
-// SegY and SegZ are deduced from the BoundaryConfigHost parameter, so they are
+// 2. Macro for the templated constructors
+// SegX and SegY are deduced from the BoundaryConfigHost parameter, so they are
 // not repeated in the constructor name.
 #define INSTANTIATE_EIGEN_DECOMP_THOMAS_CONSTRUCTORS(Real, SegX, SegY, SegZ) \
 template EigenDecompThomas<Real, SegZ>::EigenDecompThomas(               \
@@ -188,7 +190,7 @@ template EigenDecompThomas<Real, SegZ>::EigenDecompThomas(               \
 template EigenDecompThomas<Real, SegZ>::EigenDecompThomas(               \
     const BoundaryConfigHost<Real, SegX, SegY, SegZ>& boundary,          \
     Handles& hands,                                                      \
-    Mat<Real> sizeOfBX3,                                                 \
+    SimpleArray<Real> sizeOfB,                                           \
     Real helmholtzShift                                                  \
 );
 

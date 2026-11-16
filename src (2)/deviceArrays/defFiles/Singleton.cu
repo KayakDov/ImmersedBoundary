@@ -1,0 +1,143 @@
+#include "../headers/Singleton.h"
+#include "deviceArrays/headers/Support/Event.h"
+
+#include <vector>
+
+
+template<typename T>
+Singleton<T>::Singleton(GpuPointer<T> ptr):SimpleArray<T>(1, ptr) {}
+
+template<typename T>
+Singleton<T> Singleton<T>::create(Handle& handle) {
+    Vec<T> preSing = Vec<T>::create(static_cast<size_t>(1), handle);
+    return preSing.get(0);
+}
+
+template<typename T>
+Singleton<T> Singleton<T>::create(T val, Handle& handle) {
+    Singleton<T> temp = create(handle);
+    temp.set(val, handle);
+    return temp;
+}
+
+template <typename T>
+T Singleton<T>::get(Handle& stream) const{
+    T cpuPointer[1];
+    this->Vec<T>::get(cpuPointer, 1, stream);
+    cudaStreamSynchronize(stream);
+    return cpuPointer[0];
+}
+template <typename T>
+void Singleton<T>::set(T val, Handle &stream){
+    T cpuPointer[1];
+    cpuPointer[0] = val;
+    this->Vec<T>::set(cpuPointer, stream);
+}
+
+
+
+template <typename T>
+__global__ void setProductOfQuotientsKernel(T* result, const T* numA, const T* denA, const T* numB, const T* denB) {
+    if (blockIdx.x * blockDim.x + threadIdx.x == 0)
+        *result = (*numA / *denA) * (*numB / *denB);
+}
+
+
+template<typename T>
+void Singleton<T>::setProductOfQuotients(const Singleton<T> &numA, const Singleton<T> &denA, const Singleton<T> &numB, const Singleton<T> &denB, Handle& stream) {
+
+    constexpr int THREADS_PER_BLOCK = 1;
+    int numBlocks = 1;
+
+    setProductOfQuotientsKernel<<<numBlocks, THREADS_PER_BLOCK, 0, stream>>>(
+        this->toKernel1d().data, // Destination: 'this' vector
+        numA.toKernel1d().data,     // Input 1: 'a' vector
+        denA.toKernel1d().data,     // Input 2: 'b' vector
+        numB.toKernel1d().data,            // Scalar alpha (passed by value)
+        denB.toKernel1d().data             // Scalar beta (passed by value)
+    );
+}
+
+template <typename T>
+Singleton<T>* Singleton<T>::_get_or_create_target(Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique, Handle& stream) {
+    if (result) return result;
+    else {
+        out_ptr_unique = std::make_unique<Singleton<T>>(Singleton<T>::create(stream));
+        return out_ptr_unique.get();
+    }
+}
+
+template <typename T>
+const Singleton<T>* Singleton<T>::_get_or_create_target(T defaultVal, Handle& hand, const Singleton<T>* result, std::unique_ptr<Singleton<T>>& out_ptr_unique) {
+    if (result) return result;
+    else {
+        out_ptr_unique = std::make_unique<Singleton<T>>(Singleton<T>::create(defaultVal, hand));
+        return out_ptr_unique.get();
+    }
+}
+
+template<typename T>
+const Singleton<T> & GPUScalar<T>::get(int32_t i, Handle& hand) {
+    size_t gpuIndex = hand.device();
+
+    auto it = instances.find(gpuIndex);
+    if (it == instances.end()) {
+        it = instances.emplace(gpuIndex, std::make_unique<GPUScalar<T>>(hand)).first;
+        ready[gpuIndex].record(hand);   // marks: "this device's cache is fully
+                                         // written as of this point on hand's stream"
+    }
+    ready[gpuIndex].hold(hand);         // make the CALLING stream wait for that point
+                                         // before it can read -- free/no-op for the
+                                         // stream that just built it (or any stream
+                                         // already past that point in the event's
+                                         // completion), a real but host-non-blocking
+                                         // GPU-side wait for a concurrent caller on a
+                                         // different stream
+
+    switch (i) {
+        case 0: return it->second->ZERO;
+        case 1: return it->second->ONE;
+        case 2: return it->second->TWO;
+        case -1: return it->second->MINUS_ONE;
+        case -2: return it->second->MINUS_TWO;
+        default: throw std::out_of_range("GPUScalar::get only supports integer values in [-2, 2].");
+    }
+}
+
+template<typename T>
+GPUScalar<T>::GPUScalar(Handle& hand):
+    base(SimpleArray<T>::create(5, hand)),
+    ZERO(base.get(0)),
+    ONE(base.get(2)),
+    MINUS_ONE(base.get(1)),
+    TWO(base.get(4)),
+    MINUS_TWO(base.get(3))
+{
+    std::vector<T> hostConsts = {
+        static_cast<T>(0),
+        static_cast<T>(-1),
+        static_cast<T>(1),
+        static_cast<T>(-2),
+        static_cast<T>(2)
+    };
+    base.set(hostConsts.data(), hand);
+}
+
+template <typename T> std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> GPUScalar<T>::instances;
+template <typename T> std::unordered_map<size_t, Event> GPUScalar<T>::ready;
+template class Singleton<int32_t>;
+template class Singleton<size_t>;
+template class Singleton<float>;
+template class Singleton<double>;
+template class Singleton<unsigned char>;
+template class Singleton<uint32_t>;
+template class Singleton<int64_t>;
+
+template class GPUScalar<int32_t>;
+template class GPUScalar<size_t>;
+template class GPUScalar<float>;
+template class GPUScalar<double>;
+template class GPUScalar<unsigned char>;
+template class GPUScalar<uint32_t>;
+template class GPUScalar<int64_t>;
+

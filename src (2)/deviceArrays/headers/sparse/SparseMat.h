@@ -1,0 +1,100 @@
+/**
+ * @file SparseMat.h
+ * @brief Defines the abstract sparse-matrix base class.
+ * @ingroup sparse_matrices
+ */
+
+
+#ifndef CUDABANDED_SPARSEMAT_H
+#define CUDABANDED_SPARSEMAT_H
+#include <cusparse.h>
+#include <memory>
+
+template<typename T> class SimpleArray;
+template<typename T> class Mat;
+template<typename T> class Singleton;
+class Handle;
+
+using SpMatDescrPtr = std::shared_ptr<std::remove_pointer<cusparseSpMatDescr_t>::type>;
+
+template <typename Real, typename Int>
+class SparseMat {
+
+
+protected:
+    SpMatDescrPtr descriptor;
+
+    /**
+     * Should be called in dependent class constructors.
+     */
+    virtual void setDescriptor() =0;
+
+public:
+    const size_t rows, cols;
+    SimpleArray<Real> values;
+    SimpleArray<Int> offsets, inds;
+
+    SparseMat(size_t rows, size_t cols, SimpleArray<Real> &values, SimpleArray<Int> &offsets, SimpleArray<Int> &inds);
+
+    [[nodiscard]] size_t nnz() const;
+
+    void changeStorageType(SparseMat<Real, Int> &dest, Handle &hand, std::shared_ptr<SimpleArray<Real>> &buffer) const;
+
+    /**
+     * The number of elements of size T needed for the workspace for mult;
+     * @param vec The dense vector being multiplied by.
+     * @param result The product will be placed here.
+     * @param multProduct A scalar that scales the product.
+     * @param preMultResult  A scalar that scales whatever is in the result before the product is added to itt
+     * @param transposeThis Should this be transposed.
+     * @param h The handle
+     * @return The number of T type elements in the workspace that mult will need.
+     */
+    virtual size_t multWorkspaceSize(const SimpleArray<Real> &vec, SimpleArray<Real> &result,
+                             const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult,
+                             bool transposeThis, Handle &h) const;
+
+
+    /**
+     * This version allocated memory.  If you'd like to preallocate the memory, call a different function.
+    * @param vec The dense vector being multiplied by.
+     * @param result The product will be added to whatever is here.
+     * @param multProduct A scalar that scales the product.
+     * @param preMultResult  A scalar that scales whatever is in the result before the product is added to itt
+     * @param transposeMat Should this be transposed.
+     * @param workSpace
+     * @param h The handle
+     */
+    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult,
+            bool transposeMat, SimpleArray<Real> &workSpace, Handle &h) const;
+
+    /**
+     * This method allocated memory.  To recycle memory, use the other sparse mult method.
+     * @param vec
+     * @param result
+     * @param multProduct
+     * @param preMultResult
+     * @param transposeMat
+     * @param h
+     */
+    void mult(const SimpleArray<Real> &vec, SimpleArray<Real> &result, const Singleton<Real> &multProduct, const Singleton<Real> &preMultResult, bool transposeMat, Handle &h) const;
+
+    /**
+     * Creates a dense copy of this matrix. Intended for debugging: it allocates a temporary
+     * buffer on every call, so it is not optimized for performance.
+     * @param dense Where the dense matrix will be put.
+     * @param h the handle.
+     */
+    void getDense(Mat<Real> &dense, Handle &h) const;
+
+    void set(Int* offsets, Int* inds, Real* vals, Handle& hand);
+
+    virtual std::unique_ptr<SparseMat<Real, Int>> createWithPointer(
+        SimpleArray<Real> vals,
+        SimpleArray<Int> offsets,
+        SimpleArray<Int> inds
+    ) const = 0;
+
+    virtual ~SparseMat() = default;
+};
+#endif //CUDABANDED_SPARSEMAT_H

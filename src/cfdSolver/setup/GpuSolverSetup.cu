@@ -60,6 +60,13 @@ bool isNeumann(BoundaryKind kind) { return kind == BoundaryKind::Neumann; }
  * @brief Builds one field's eigendecomposition solver and allocates its
  * buffer.
  *
+ * The field's right-hand-side buffer is allocated here, before the solver,
+ * so that it can also be given to the 3D and Thomas solvers as their
+ * workspace: SolvedField::solve() refills it before every solve, and nothing
+ * reads it afterwards. That saves each field one allocation the size of the
+ * field. EigenDecomp2d has no constructor that takes a workspace, so on a
+ * single-layer grid the solver still allocates its own.
+ *
  * @tparam Real Floating-point type.
  * @param solverDim The eigensolver's own (row, col, layer) role extents --
  * not necessarily in the same order as this field's physical x/y/z storage
@@ -100,6 +107,8 @@ SolvedField<Real> buildFieldSolver(
 ) {
     auto hands = std::make_unique<Handles>(SolvedField<Real>::numHandles, GpuIndex(gpuIndex));
     Handle& hand = (*hands)[SolvedField<Real>::workingHandle];
+    GpuField<Real> rightHandSide = GpuField<Real>::allocate(storageNx, storageNy, storageNz, GpuIndex(gpuIndex), hand);
+    SimpleArray<Real> workspace(rightHandSide.size(), rightHandSide.pointer());
     std::unique_ptr<EigenDecompSolver<Real>> solver;
 
     buildBoundaryConfigAndLaunch<Real>(
@@ -111,9 +120,9 @@ SolvedField<Real> buildFieldSolver(
             if (solverDim.layers <= 1) {
                 solver = std::make_unique<EigenDecomp2d<Real>>(boundaryHost.forDevice(), *hands, helmholtzShift);
             } else if (thomas) {
-                solver = std::make_unique<EigenDecompThomas<Real, SegZType>>(boundaryHost, *hands, helmholtzShift);
+                solver = std::make_unique<EigenDecompThomas<Real, SegZType>>(boundaryHost, *hands, workspace, helmholtzShift);
             } else {
-                solver = std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), *hands, helmholtzShift);
+                solver = std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), *hands, workspace, helmholtzShift);
             }
         }
     );
@@ -131,7 +140,7 @@ SolvedField<Real> buildFieldSolver(
     // the next field's.
     cudaDeviceSynchronize();
 
-    return SolvedField<Real>(std::move(buffer), std::move(solver), std::move(hands));
+    return SolvedField<Real>(std::move(buffer), std::move(rightHandSide), std::move(solver), std::move(hands));
 }
 
 } // namespace

@@ -1,115 +1,1001 @@
-== /usr/local/cuda points to ==
-/usr/local/cuda-13.1
-/usr/local/cuda-13.1
-== nvcc present? ==
--rwxr-xr-x 1 root root 23095720 Jun 14  2024 /usr/local/cuda-12.6/bin/nvcc
--rwxr-xr-x 1 root root 33379768 Nov  7  2025 /usr/local/cuda-13.1/bin/nvcc
-== nvcc runs? ==
-nvcc: NVIDIA (R) Cuda compiler driver
-Copyright (c) 2005-2025 NVIDIA Corporation
-Built on Fri_Nov__7_07:23:37_PM_PST_2025
-Cuda compilation tools, release 13.1, V13.1.80
-Build cuda_13.1.r13.1/compiler.36836380_0
-== CUDA entries in the cache ==
-36://Default GPU architectures for CUDA compilation
-37:CMAKE_CUDA_ARCHITECTURES:UNINITIALIZED=89
-39://CUDA compiler
-40:CMAKE_CUDA_COMPILER:STRING=/usr/local/cuda-13.1/bin/nvcc
-42://Flags used by the CUDA compiler during all build types.
-43:CMAKE_CUDA_FLAGS:STRING=
-45://Flags used by the CUDA compiler during DEBUG builds.
-46:CMAKE_CUDA_FLAGS_DEBUG:STRING=-g
-48://Flags used by the CUDA compiler during MINSIZEREL builds.
-49:CMAKE_CUDA_FLAGS_MINSIZEREL:STRING=-O1 -DNDEBUG
-51://Flags used by the CUDA compiler during RELEASE builds.
-52:CMAKE_CUDA_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
-54://Flags used by the CUDA compiler during RELWITHDEBINFO builds.
-55:CMAKE_CUDA_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
-249:CMAKE_PROJECT_NAME:STATIC=CudaBanded
-335:CUDAToolkit_CUPTI_INCLUDE_DIR:PATH=/usr/local/cuda-13.1/targets/x86_64-linux/include
-338:CUDAToolkit_rt_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/librt.a
-341:CUDA_CUDART:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcudart.so
-344:CUDA_OpenCL_LIBRARY:FILEPATH=CUDA_OpenCL_LIBRARY-NOTFOUND
-347:CUDA_bin2c_EXECUTABLE:FILEPATH=/usr/local/cuda-13.1/bin/bin2c
-350:CUDA_cuFile_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufile.so
-353:CUDA_cuFile_rdma_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufile_rdma.so
-356:CUDA_cuFile_rdma_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufile_rdma_static.a
-359:CUDA_cuFile_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufile_static.a
-362:CUDA_cublasLt_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcublasLt.so
-365:CUDA_cublasLt_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcublasLt_static.a
-368:CUDA_cublas_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcublas.so
-371:CUDA_cublas_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcublas_static.a
-374:CUDA_cuda_driver_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/stubs/libcuda.so
-377:CUDA_cudart_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcudart.so
-380:CUDA_cudart_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcudart_static.a
-383:CUDA_cudla_LIBRARY:FILEPATH=CUDA_cudla_LIBRARY-NOTFOUND
-386:CUDA_cufft_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufft.so
-389:CUDA_cufft_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufft_static.a
-392:CUDA_cufft_static_nocallback_LIBRARY:FILEPATH=CUDA_cufft_static_nocallback_LIBRARY-NOTFOUND
-395:CUDA_cufftw_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufftw.so
-398:CUDA_cufftw_static_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufftw_static.a
-401:CUDA_cufilt_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcufilt.a
-404:CUDA_culibos_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libculibos.a
-407:CUDA_cupti_LIBRARY:FILEPATH=/usr/local/cuda-13.1/targets/x86_64-linux/lib/libcupti.so
-== clean configure ==
+EigenDecompThomas (1).cuh  ->  src/solvers/EigenDecomp/EigenDecompThomas.cuh
+EigenDecompThomas (1).cu  ->  src/solvers/EigenDecomp/EigenDecompThomas.cu
+EigenDecompSolver.h  ->  src/solvers/EigenDecomp/EigenDecompSolver.h
+BenchMark (1).cpp  ->  Tests/BenchMark.cpp
+WorkspaceContractTest.cpp  ->  Tests/WorkspaceContractTest.cpp
+SolvedField.h  ->  src/cfdSolver/fields/SolvedField.h
+GpuSolverSetup (5).cu  ->  src/cfdSolver/setup/GpuSolverSetup.cu
+EigenDecompForFortran.cpp  ->  src/wrapper/EigenDecompForFortran.cpp
+Added the missing explicit instantiations  ->  src/deviceArrays/defFiles/Vec.cu
+The files this changed are backed up in /home/usr/Downloads/backup-before-dropins-20261115-203534
 -- Using user-provided CUDAToolkit_ROOT: /usr/local/cuda-13.1
--- The C compiler identification is IntelLLVM 2026.0.0
--- The CXX compiler identification is IntelLLVM 2026.0.0
--- The CUDA compiler identification is NVIDIA 13.1.80
--- The Fortran compiler identification is IntelLLVM 2026.0.0
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: /opt/intel/oneapi/compiler/latest/bin/icx - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: /opt/intel/oneapi/compiler/latest/bin/icpx - skipped
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Detecting CUDA compiler ABI info
--- Detecting CUDA compiler ABI info - done
--- Check for working CUDA compiler: /usr/local/cuda-13.1/bin/nvcc - skipped
--- Detecting CUDA compile features
--- Detecting CUDA compile features - done
--- Detecting Fortran compiler ABI info
--- Detecting Fortran compiler ABI info - done
--- Check for working Fortran compiler: /opt/intel/oneapi/compiler/latest/bin/ifx - skipped
--- Detecting Fortran/C Interface
--- Detecting Fortran/C Interface - Found GLOBAL and MODULE mangling
--- Verifying Fortran/CXX Compiler Compatibility
--- Verifying Fortran/CXX Compiler Compatibility - Success
--- Found CUDAToolkit: /usr/local/cuda-13.1/targets/x86_64-linux/include (found version "13.1.80") 
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
--- Found Threads: TRUE  
 -- cusolverDn.h already provided by CUDAToolkit_INCLUDE_DIRS; skipping HPC SDK math_libs fallback
 -- Found libintlc: /opt/intel/oneapi/compiler/2026.0/lib/libintlc.so
--- Found GLEW: /usr/lib/x86_64-linux-gnu/libGLEW.so  
--- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so  found components: OpenGL GLX 
--- Found MPI_C: /usr/lib/x86_64-linux-gnu/libmpi.so (found version "3.1") 
--- Found MPI: TRUE (found version "3.1") found components: C 
--- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.3")  
--- Found Eigen3: /usr/include/eigen3 (found version "3.4.0") 
--- Found X11: /usr/include   
--- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so
--- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so - found
--- Looking for gethostbyname
--- Looking for gethostbyname - found
--- Looking for connect
--- Looking for connect - found
--- Looking for remove
--- Looking for remove - found
--- Looking for shmat
--- Looking for shmat - found
--- Looking for IceConnectionNumber in ICE
--- Looking for IceConnectionNumber in ICE - found
--- Found EXPAT: /usr/lib/x86_64-linux-gnu/libexpat.so (found version "2.6.1") 
--- Found double-conversion: /usr/lib/x86_64-linux-gnu/libdouble-conversion.so  
--- Found LZ4: /usr/lib/x86_64-linux-gnu/liblz4.so (found version "1.9.4") 
--- Found LZMA: /usr/lib/x86_64-linux-gnu/liblzma.so (found version "5.4.5") 
--- Found utf8cpp: /usr/include/utf8cpp  
 -- Phase-portrait support: found VTK 9.1.0
--- Configuring done (14.4s)
+-- Configuring done (1.0s)
 -- Generating done (0.0s)
--- Build files have been written to: /home/usr/Documents/TelAvivU/cmake-build-debug
+-- Build files have been written to: /home/usr/Documents/TelAvivU/build-term
+[  2%] Built target gtest
+[  5%] Built target gtest_main
+[  6%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/cfdSolver/CfdSimulation.cu.o
+[  7%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/cfdSolver/setup/GpuSolverSetup.cu.o
+[  8%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/cfdSolver/fields/SolvedField.cu.o
+[ 10%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/cfdSolver/fields/TimeDependentField.cu.o
+[ 12%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/deviceArrays/defFiles/Vec.cu.o
+[ 12%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/cfdSolver/setup/CheckpointIO.cu.o
+[ 13%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/solvers/EigenDecomp/EigenDecomp3d.cu.o
+[ 15%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/solvers/EigenDecomp/EigenDecompSolver.cu.o
+[ 17%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/immersedBoundary/ImmersedEquation.cu.o
+[ 17%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/solvers/EigenDecomp/EigenDecomp2d.cu.o
+[ 18%] Building CXX object CMakeFiles/CudaBandedLib.dir/src/wrapper/EigenDecompForFortran.cpp.o
+[ 21%] Building CXX object CMakeFiles/CudaBandedLib.dir/shroud_project/wrapEigenBCGSolver_ImEq.cpp.o
+[ 20%] Building CUDA object CMakeFiles/CudaBandedLib.dir/src/solvers/EigenDecomp/EigenDecompThomas.cu.o
+[ 22%] Building CXX object CMakeFiles/CudaBandedLib.dir/shroud_project/wrapEigenBCGSolver_eigen.cpp.o
+In file included from /home/usr/Documents/TelAvivU/shroud_project/wrapEigenBCGSolver_ImEq.cpp:4:
+In file included from /home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:10:
+In file included from /home/usr/Documents/TelAvivU/src/immersedBoundary/ImmersedEquation.h:16:
+In file included from /home/usr/Documents/TelAvivU/src/solvers/BiCGSTAB.cuh:10:
+In file included from /home/usr/Documents/TelAvivU/src/solvers/../deviceArrays/headers/sparse/BandedMat.h:11:
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: warning: instantiation of variable 'GPUScalar<float>::instances' required here, but no definition is available [-Wundefined-var-template]
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:415:27: note: in instantiation of member function 'GPUScalar<float>::finalize' requested here
+  415 |         GPUScalar<float>::finalize();
+      |                           ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:133:70: note: forward declaration of template entity is here
+  133 |     static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
+      |                                                                      ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<float>::instances' is explicitly instantiated in another translation unit
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: warning: instantiation of variable 'GPUScalar<float>::ready' required here, but no definition is available [-Wundefined-var-template]
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:139:46: note: forward declaration of template entity is here
+  139 |     static std::unordered_map<size_t, Event> ready;
+      |                                              ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<float>::ready' is explicitly instantiated in another translation unit
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: warning: instantiation of variable 'GPUScalar<double>::instances' required here, but no definition is available [-Wundefined-var-template]
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:416:28: note: in instantiation of member function 'GPUScalar<double>::finalize' requested here
+  416 |         GPUScalar<double>::finalize();
+      |                            ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:133:70: note: forward declaration of template entity is here
+  133 |     static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
+      |                                                                      ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<double>::instances' is explicitly instantiated in another translation unit
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: warning: instantiation of variable 'GPUScalar<double>::ready' required here, but no definition is available [-Wundefined-var-template]
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:139:46: note: forward declaration of template entity is here
+  139 |     static std::unordered_map<size_t, Event> ready;
+      |                                              ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<double>::ready' is explicitly instantiated in another translation unit
+  176 |         ready.clear();
+      |         ^
+In file included from /home/usr/Documents/TelAvivU/shroud_project/wrapEigenBCGSolver_eigen.cpp:4:
+In file included from /home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:10:
+In file included from /home/usr/Documents/TelAvivU/src/immersedBoundary/ImmersedEquation.h:16:
+In file included from /home/usr/Documents/TelAvivU/src/solvers/BiCGSTAB.cuh:10:
+In file included from /home/usr/Documents/TelAvivU/src/solvers/../deviceArrays/headers/sparse/BandedMat.h:11:
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: warning: instantiation of variable 'GPUScalar<float>::instances' required here, but no definition is available [-Wundefined-var-template]
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:415:27: note: in instantiation of member function 'GPUScalar<float>::finalize' requested here
+  415 |         GPUScalar<float>::finalize();
+      |                           ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:133:70: note: forward declaration of template entity is here
+  133 |     static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
+      |                                                                      ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<float>::instances' is explicitly instantiated in another translation unit
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: warning: instantiation of variable 'GPUScalar<float>::ready' required here, but no definition is available [-Wundefined-var-template]
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:139:46: note: forward declaration of template entity is here
+  139 |     static std::unordered_map<size_t, Event> ready;
+      |                                              ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<float>::ready' is explicitly instantiated in another translation unit
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: warning: instantiation of variable 'GPUScalar<double>::instances' required here, but no definition is available [-Wundefined-var-template]
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:416:28: note: in instantiation of member function 'GPUScalar<double>::finalize' requested here
+  416 |         GPUScalar<double>::finalize();
+      |                            ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:133:70: note: forward declaration of template entity is here
+  133 |     static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
+      |                                                                      ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<double>::instances' is explicitly instantiated in another translation unit
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: warning: instantiation of variable 'GPUScalar<double>::ready' required here, but no definition is available [-Wundefined-var-template]
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:139:46: note: forward declaration of template entity is here
+  139 |     static std::unordered_map<size_t, Event> ready;
+      |                                              ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<double>::ready' is explicitly instantiated in another translation unit
+  176 |         ready.clear();
+      |         ^
+4 warnings generated.
+Warning #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
+          detected during:
+            instantiation of "XYZ<T>::XYZ(const T &, const T &, const T &) [with T=std::vector<double, std::allocator<double>>]" at line 175 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+            instantiation of "BuiltSolvers<Real> GpuSolverBuilder::build(const SimulationConfig &, const Mesh<Real> &) [with Real=double]" at line 224 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+Warning #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
+          detected during:
+            instantiation of "XYZ<T>::XYZ(const T &, const T &, const T &) [with T=std::vector<double, std::allocator<double>>]" at line 175 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+            instantiation of "BuiltSolvers<Real> GpuSolverBuilder::build(const SimulationConfig &, const Mesh<Real> &) [with Real=double]" at line 224 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+
+Warning #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
+          detected during:
+            instantiation of "XYZ<T>::XYZ(const T &, const T &, const T &) [with T=std::vector<double, std::allocator<double>>]" at line 175 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+            instantiation of "BuiltSolvers<Real> GpuSolverBuilder::build(const SimulationConfig &, const Mesh<Real> &) [with Real=double]" at line 224 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+
+4 warnings generated.
+Warning #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
+          detected during:
+            instantiation of "XYZ<T>::XYZ(const T &, const T &, const T &) [with T=std::vector<float, std::allocator<float>>]" at line 175 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+            instantiation of "BuiltSolvers<Real> GpuSolverBuilder::build(const SimulationConfig &, const Mesh<Real> &) [with Real=float]" at line 225 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+
+Warning #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
+          detected during:
+            instantiation of "XYZ<T>::XYZ(const T &, const T &, const T &) [with T=std::vector<float, std::allocator<float>>]" at line 175 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+            instantiation of "BuiltSolvers<Real> GpuSolverBuilder::build(const SimulationConfig &, const Mesh<Real> &) [with Real=float]" at line 225 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+
+Warning #20014-D: calling a __host__ function from a __host__ __device__ function is not allowed
+          detected during:
+            instantiation of "XYZ<T>::XYZ(const T &, const T &, const T &) [with T=std::vector<float, std::allocator<float>>]" at line 175 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+            instantiation of "BuiltSolvers<Real> GpuSolverBuilder::build(const SimulationConfig &, const Mesh<Real> &) [with Real=float]" at line 225 of /home/usr/Documents/TelAvivU/src/cfdSolver/setup/GpuSolverSetup.cu
+
+/home/usr/Documents/TelAvivU/src/math/XYZ.cuh(28): warning #20011-D: calling a __host__ function("std::vector<double, ::std::allocator<double> > ::vector(const ::std::vector<double, ::std::allocator<double> > &)") from a __host__ __device__ function("XYZ<    ::std::vector<double, ::std::allocator<double> > > ::XYZ") is not allowed
+
+/home/usr/Documents/TelAvivU/src/math/XYZ.cuh(28): warning #20011-D: calling a __host__ function("std::vector<double, ::std::allocator<double> > ::vector(const ::std::vector<double, ::std::allocator<double> > &)") from a __host__ __device__ function("XYZ<    ::std::vector<double, ::std::allocator<double> > > ::XYZ") is not allowed
+
+/home/usr/Documents/TelAvivU/src/math/XYZ.cuh(28): warning #20011-D: calling a __host__ function("std::vector<double, ::std::allocator<double> > ::vector(const ::std::vector<double, ::std::allocator<double> > &)") from a __host__ __device__ function("XYZ<    ::std::vector<double, ::std::allocator<double> > > ::XYZ") is not allowed
+
+/home/usr/Documents/TelAvivU/src/math/XYZ.cuh(28): warning #20011-D: calling a __host__ function("BoundaryCondition<double> ::BoundaryCondition(double, bool)") from a __host__ __device__ function("BoundaryCondition<double> ::BoundaryCondition [subobject]") is not allowed
+
+/home/usr/Documents/TelAvivU/src/poisson/BoundaryCondition.cuh(143): warning #20011-D: calling a __host__ function("AxisSegment<double,     ::UniformBoundary<double> ,     ::UniformBoundary<double> > ::AxisSegment(unsigned long, const     ::UniformBoundary<double>  &, const     ::UniformBoundary<double>  &)") from a __host__ __device__ function("AxisSegment<double,     ::UniformBoundary<double> ,     ::UniformBoundary<double> > ::AxisSegment [subobject]") is not allowed
+
+/home/usr/Documents/TelAvivU/src/math/XYZ.cuh(28): warning #20011-D: calling a __host__ function("std::vector<float, ::std::allocator<float> > ::vector(const ::std::vector<float, ::std::allocator<float> > &)") from a __host__ __device__ function("XYZ<    ::std::vector<float, ::std::allocator<float> > > ::XYZ") is not allowed
+
+/home/usr/Documents/TelAvivU/src/math/XYZ.cuh(28): warning #20011-D: calling a __host__ function("std::vector<float, ::std::allocator<float> > ::vector(const ::std::vector<float, ::std::allocator<float> > &)") from a __host__ __device__ function("XYZ<    ::std::vector<float, ::std::allocator<float> > > ::XYZ") is not allowed
+
+/home/usr/Documents/TelAvivU/src/math/XYZ.cuh(28): warning #20011-D: calling a __host__ function("std::vector<float, ::std::allocator<float> > ::vector(const ::std::vector<float, ::std::allocator<float> > &)") from a __host__ __device__ function("XYZ<    ::std::vector<float, ::std::allocator<float> > > ::XYZ") is not allowed
+
+/home/usr/Documents/TelAvivU/src/math/XYZ.cuh(28): warning #20011-D: calling a __host__ function("BoundaryCondition<float> ::BoundaryCondition(float, bool)") from a __host__ __device__ function("BoundaryCondition<float> ::BoundaryCondition [subobject]") is not allowed
+
+/home/usr/Documents/TelAvivU/src/poisson/BoundaryCondition.cuh(143): warning #20011-D: calling a __host__ function("AxisSegment<float,     ::UniformBoundary<float> ,     ::UniformBoundary<float> > ::AxisSegment(unsigned long, const     ::UniformBoundary<float>  &, const     ::UniformBoundary<float>  &)") from a __host__ __device__ function("AxisSegment<float,     ::UniformBoundary<float> ,     ::UniformBoundary<float> > ::AxisSegment [subobject]") is not allowed
+
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/DeviceData.cuh(253): warning #20011-D: calling a __host__ function("BoundaryCondition<double> ::BoundaryCondition(double, bool)") from a __host__ __device__ function("BoundaryCondition<double> ::BoundaryCondition [subobject]") is not allowed
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/usr/Documents/TelAvivU/src/poisson/BoundaryCondition.cuh(168): warning #20011-D: calling a __host__ function("AxisSegment<double,     ::UniformBoundary<double> ,     ::UniformBoundary<double> > ::AxisSegment(unsigned long, const     ::UniformBoundary<double>  &, const     ::UniformBoundary<double>  &)") from a __host__ __device__ function("AxisSegment<double,     ::UniformBoundary<double> ,     ::UniformBoundary<double> > ::AxisSegment [subobject]") is not allowed
+
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/DeviceData.cuh(253): warning #20011-D: calling a __host__ function("BoundaryCondition<float> ::BoundaryCondition(float, bool)") from a __host__ __device__ function("BoundaryCondition<float> ::BoundaryCondition [subobject]") is not allowed
+
+/home/usr/Documents/TelAvivU/src/poisson/BoundaryCondition.cuh(168): warning #20011-D: calling a __host__ function("AxisSegment<float,     ::UniformBoundary<float> ,     ::UniformBoundary<float> > ::AxisSegment(unsigned long, const     ::UniformBoundary<float>  &, const     ::UniformBoundary<float>  &)") from a __host__ __device__ function("AxisSegment<float,     ::UniformBoundary<float> ,     ::UniformBoundary<float> > ::AxisSegment [subobject]") is not allowed
+
+[ 24%] Linking CXX static library libCudaBandedLib.a
+[ 68%] Built target CudaBandedLib
+[ 69%] Building CUDA object CMakeFiles/cfdSolver.dir/src/cfdSolver/main.cu.o
+[ 70%] Linking CXX executable cfdSolver
+[ 70%] Built target cfdSolver
+[ 74%] Building CXX object CMakeFiles/run_unit_tests.dir/Tests/cfdSolver/test_checkpoint_io.cpp.o
+[ 74%] Building CXX object CMakeFiles/run_unit_tests.dir/Tests/GPUScalarCorruptionTest.cpp.o
+[ 74%] Building CXX object CMakeFiles/run_unit_tests.dir/Tests/WorkspaceContractTest.cpp.o
+[ 75%] Building CXX object CMakeFiles/run_unit_tests.dir/Tests/test.cpp.o
+In file included from /home/usr/Documents/TelAvivU/Tests/GPUScalarCorruptionTest.cpp:39:
+In file included from /home/usr/Documents/TelAvivU/src/poisson/Poisson.cuh:12:
+In file included from /home/usr/Documents/TelAvivU/src/deviceArrays/headers/sparse/BandedMat.h:11:
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: warning: instantiation of variable 'GPUScalar<float>::instances' required here, but no definition is available [-Wundefined-var-template]
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:415:27: note: in instantiation of member function 'GPUScalar<float>::finalize' requested here
+  415 |         GPUScalar<float>::finalize();
+      |                           ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:133:70: note: forward declaration of template entity is here
+  133 |     static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
+      |                                                                      ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<float>::instances' is explicitly instantiated in another translation unit
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: warning: instantiation of variable 'GPUScalar<float>::ready' required here, but no definition is available [-Wundefined-var-template]
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:139:46: note: forward declaration of template entity is here
+  139 |     static std::unordered_map<size_t, Event> ready;
+      |                                              ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<float>::ready' is explicitly instantiated in another translation unit
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: warning: instantiation of variable 'GPUScalar<double>::instances' required here, but no definition is available [-Wundefined-var-template]
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:416:28: note: in instantiation of member function 'GPUScalar<double>::finalize' requested here
+  416 |         GPUScalar<double>::finalize();
+      |                            ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:133:70: note: forward declaration of template entity is here
+  133 |     static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
+      |                                                                      ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<double>::instances' is explicitly instantiated in another translation unit
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: warning: instantiation of variable 'GPUScalar<double>::ready' required here, but no definition is available [-Wundefined-var-template]
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:139:46: note: forward declaration of template entity is here
+  139 |     static std::unordered_map<size_t, Event> ready;
+      |                                              ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<double>::ready' is explicitly instantiated in another translation unit
+  176 |         ready.clear();
+      |         ^
+In file included from /home/usr/Documents/TelAvivU/Tests/test.cpp:5:
+In file included from /home/usr/Documents/TelAvivU/src/poisson/Poisson.cuh:12:
+In file included from /home/usr/Documents/TelAvivU/src/deviceArrays/headers/sparse/BandedMat.h:11:
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: warning: instantiation of variable 'GPUScalar<float>::instances' required here, but no definition is available [-Wundefined-var-template]
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:415:27: note: in instantiation of member function 'GPUScalar<float>::finalize' requested here
+  415 |         GPUScalar<float>::finalize();
+      |                           ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:133:70: note: forward declaration of template entity is here
+  133 |     static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
+      |                                                                      ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<float>::instances' is explicitly instantiated in another translation unit
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: warning: instantiation of variable 'GPUScalar<float>::ready' required here, but no definition is available [-Wundefined-var-template]
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:139:46: note: forward declaration of template entity is here
+  139 |     static std::unordered_map<size_t, Event> ready;
+      |                                              ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<float>::ready' is explicitly instantiated in another translation unit
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: warning: instantiation of variable 'GPUScalar<double>::instances' required here, but no definition is available [-Wundefined-var-template]
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/wrapper/FortranBindings.hpp:416:28: note: in instantiation of member function 'GPUScalar<double>::finalize' requested here
+  416 |         GPUScalar<double>::finalize();
+      |                            ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:133:70: note: forward declaration of template entity is here
+  133 |     static std::unordered_map<size_t, std::unique_ptr<GPUScalar<T>>> instances;
+      |                                                                      ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:175:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<double>::instances' is explicitly instantiated in another translation unit
+  175 |         instances.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: warning: instantiation of variable 'GPUScalar<double>::ready' required here, but no definition is available [-Wundefined-var-template]
+  176 |         ready.clear();
+      |         ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:139:46: note: forward declaration of template entity is here
+  139 |     static std::unordered_map<size_t, Event> ready;
+      |                                              ^
+/home/usr/Documents/TelAvivU/src/deviceArrays/headers/Singleton.h:176:9: note: add an explicit instantiation declaration to suppress this warning if 'GPUScalar<double>::ready' is explicitly instantiated in another translation unit
+  176 |         ready.clear();
+      |         ^
+4 warnings generated.
+4 warnings generated.
+[ 77%] Linking CXX executable run_unit_tests
+[100%] Built target run_unit_tests
+[  3%] Built target gtest
+[  7%] Built target gtest_main
+[ 96%] Built target CudaBandedLib
+[ 98%] Building CXX object CMakeFiles/run_benchmarks.dir/Tests/BenchMark.cpp.o
+[100%] Linking CXX executable run_benchmarks
+[100%] Built target run_benchmarks
+Internal ctest changing into directory: /home/usr/Documents/TelAvivU/build-term
+Test project /home/usr/Documents/TelAvivU/build-term
+        Start   1: GPUScalarCorruption.ImmersedEqPrimeSolveCorruptsSharedConstantOne
+  1/119 Test   #1: GPUScalarCorruption.ImmersedEqPrimeSolveCorruptsSharedConstantOne .............................................................................................................................................................................................................................................................................   Passed    2.83 sec
+        Start   2: GramSchmidt.OutOfPlaceMatchesHost
+  2/119 Test   #2: GramSchmidt.OutOfPlaceMatchesHost .............................................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start   3: GramSchmidt.InPlaceMatchesHost
+  3/119 Test   #3: GramSchmidt.InPlaceMatchesHost ................................................................................................................................................................................................................................................................................................................   Passed    0.53 sec
+        Start   4: GramSchmidt.NearlyParallelColumnsMatchHost
+  4/119 Test   #4: GramSchmidt.NearlyParallelColumnsMatchHost ....................................................................................................................................................................................................................................................................................................   Passed    0.53 sec
+        Start   5: GramSchmidt.RepeatedCallsOnTheSameWorkspaceMatchHost
+  5/119 Test   #5: GramSchmidt.RepeatedCallsOnTheSameWorkspaceMatchHost ..........................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start   6: Handles.RejectsZeroHandles
+  6/119 Test   #6: Handles.RejectsZeroHandles ....................................................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start   7: Handles.ReportsItsSizeAndChecksIndices
+  7/119 Test   #7: Handles.ReportsItsSizeAndChecksIndices ........................................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start   8: Handles.WaitingForYourselfDoesNothing
+  8/119 Test   #8: Handles.WaitingForYourselfDoesNothing .........................................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start   9: Handles.OneWaitsForOne
+  9/119 Test   #9: Handles.OneWaitsForOne ........................................................................................................................................................................................................................................................................................................................   Passed    0.62 sec
+        Start  10: Handles.OneWaitsForAll
+ 10/119 Test  #10: Handles.OneWaitsForAll ........................................................................................................................................................................................................................................................................................................................   Passed    0.62 sec
+        Start  11: Handles.AllWaitForOne
+ 11/119 Test  #11: Handles.AllWaitForOne .........................................................................................................................................................................................................................................................................................................................   Passed    0.70 sec
+        Start  12: Handles.GroupWaitsForGroup
+ 12/119 Test  #12: Handles.GroupWaitsForGroup ....................................................................................................................................................................................................................................................................................................................   Passed    0.74 sec
+        Start  13: Handles.MarkIsWaitedForLater
+ 13/119 Test  #13: Handles.MarkIsWaitedForLater ..................................................................................................................................................................................................................................................................................................................   Passed    0.61 sec
+        Start  14: Handles.MarksInDifferentSlotsAreIndependent
+ 14/119 Test  #14: Handles.MarksInDifferentSlotsAreIndependent ...................................................................................................................................................................................................................................................................................................   Passed    0.72 sec
+        Start  15: Handles.WaitForMarkNeverMarkedOrOnYourselfDoesNothing
+ 15/119 Test  #15: Handles.WaitForMarkNeverMarkedOrOnYourselfDoesNothing .........................................................................................................................................................................................................................................................................................   Passed    0.53 sec
+        Start  16: ODETrajectory.CreatesLorenzCurve
+ 16/119 Test  #16: ODETrajectory.CreatesLorenzCurve ..............................................................................................................................................................................................................................................................................................................   Passed    0.79 sec
+        Start  17: ODELyapunov.ComputesLorenzLargestExponent
+ 17/119 Test  #17: ODELyapunov.ComputesLorenzLargestExponent .....................................................................................................................................................................................................................................................................................................   Passed    7.46 sec
+        Start  18: ODELyapunov.ComputesLorenzTopThreeExponents
+ 18/119 Test  #18: ODELyapunov.ComputesLorenzTopThreeExponents ...................................................................................................................................................................................................................................................................................................   Passed    7.77 sec
+        Start  19: ODELyapunov.ComputesLorenzTopThreeExponentsUnderPseudoNorms
+ 19/119 Test  #19: ODELyapunov.ComputesLorenzTopThreeExponentsUnderPseudoNorms ...................................................................................................................................................................................................................................................................................   Passed   14.84 sec
+        Start  20: ODELyapunov.ComputesLorenzAttractorDimension
+ 20/119 Test  #20: ODELyapunov.ComputesLorenzAttractorDimension ..................................................................................................................................................................................................................................................................................................   Passed    7.66 sec
+        Start  21: ODELyapunov.ConvergenceStudy
+ 21/119 Test  #21: ODELyapunov.ConvergenceStudy ..................................................................................................................................................................................................................................................................................................................***Not Run (Disabled)   0.00 sec
+        Start  22: ODELyapunov.ConvergenceSurface
+ 22/119 Test  #22: ODELyapunov.ConvergenceSurface ................................................................................................................................................................................................................................................................................................................***Not Run (Disabled)   0.00 sec
+        Start  23: AttractorDimension.KaplanYorkeFromKnownSpectra
+ 23/119 Test  #23: AttractorDimension.KaplanYorkeFromKnownSpectra ................................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start  24: BandedMatWrappersTest.BandedMatrixVectorProduct<float>
+ 24/119 Test  #24: BandedMatWrappersTest.BandedMatrixVectorProduct<float> ........................................................................................................................................................................................................................................................................................   Passed    0.45 sec
+        Start  25: BandedMatWrappersTest.BandedMatrixDenseMatrixProduct<float>
+ 25/119 Test  #25: BandedMatWrappersTest.BandedMatrixDenseMatrixProduct<float> ...................................................................................................................................................................................................................................................................................   Passed    0.45 sec
+        Start  26: BandedMatWrappersTest.VectorBandedMatrixProduct<float>
+ 26/119 Test  #26: BandedMatWrappersTest.VectorBandedMatrixProduct<float> ........................................................................................................................................................................................................................................................................................   Passed    0.47 sec
+        Start  27: BandedMatWrappersTest.DenseMatrixBandedMatrixProduct<float>
+ 27/119 Test  #27: BandedMatWrappersTest.DenseMatrixBandedMatrixProduct<float> ...................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  28: BandedMatWrappersTest.BandedMatrixVectorProduct<double>
+ 28/119 Test  #28: BandedMatWrappersTest.BandedMatrixVectorProduct<double> .......................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  29: BandedMatWrappersTest.BandedMatrixDenseMatrixProduct<double>
+ 29/119 Test  #29: BandedMatWrappersTest.BandedMatrixDenseMatrixProduct<double> ..................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  30: BandedMatWrappersTest.VectorBandedMatrixProduct<double>
+ 30/119 Test  #30: BandedMatWrappersTest.VectorBandedMatrixProduct<double> .......................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start  31: BandedMatWrappersTest.DenseMatrixBandedMatrixProduct<double>
+ 31/119 Test  #31: BandedMatWrappersTest.DenseMatrixBandedMatrixProduct<double> ..................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  32: WorkspaceContract.EigenDecompThomas
+ 32/119 Test  #32: WorkspaceContract.EigenDecompThomas ...........................................................................................................................................................................................................................................................................................................   Passed    0.60 sec
+        Start  33: WorkspaceContract.EigenDecomp3d
+ 33/119 Test  #33: WorkspaceContract.EigenDecomp3d ...............................................................................................................................................................................................................................................................................................................   Passed    0.58 sec
+        Start  34: AverageFlowTest.DirichletTemperatureWithConvOutMirror
+ 34/119 Test  #34: AverageFlowTest.DirichletTemperatureWithConvOutMirror .........................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  35: AverageFlowTest.MixedNeumannDirichletTemperatureWithoutConvOutMirror
+ 35/119 Test  #35: AverageFlowTest.MixedNeumannDirichletTemperatureWithoutConvOutMirror ..........................................................................................................................................................................................................................................................................   Passed    0.55 sec
+        Start  36: AverageFlowTest.ThrowsWhenOutputPathCannotBeOpened
+ 36/119 Test  #36: AverageFlowTest.ThrowsWhenOutputPathCannotBeOpened ............................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  37: BuoyancyForceZTest.MatchesUnsimplifiedFortranFormula
+ 37/119 Test  #37: BuoyancyForceZTest.MatchesUnsimplifiedFortranFormula ..........................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start  38: CheckpointIOTest.RoundTripAcrossGridSizes
+ 38/119 Test  #38: CheckpointIOTest.RoundTripAcrossGridSizes .....................................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  39: CheckpointIOTest.ReadThrowsWhenGridExtentsDoNotMatch
+ 39/119 Test  #39: CheckpointIOTest.ReadThrowsWhenGridExtentsDoNotMatch ..........................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  40: CheckpointIOTest.ReadThrowsWhenHeaderMagicIsInvalid
+ 40/119 Test  #40: CheckpointIOTest.ReadThrowsWhenHeaderMagicIsInvalid ...........................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start  41: CheckpointIOTest.ReadThrowsWhenFileIsTruncated
+ 41/119 Test  #41: CheckpointIOTest.ReadThrowsWhenFileIsTruncated ................................................................................................................................................................................................................................................................................................   Passed    0.53 sec
+        Start  42: CheckpointIOTest.ReadThrowsWhenFileDoesNotExist
+ 42/119 Test  #42: CheckpointIOTest.ReadThrowsWhenFileDoesNotExist ...............................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start  43: CheckpointIOTest.WriteThrowsWhenDirectoryDoesNotExist
+ 43/119 Test  #43: CheckpointIOTest.WriteThrowsWhenDirectoryDoesNotExist .........................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  44: SimulationConfigTest.RoundTripsRealSettings
+ 44/119 Test  #44: SimulationConfigTest.RoundTripsRealSettings ...................................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  45: SimulationConfigTest.MissingRequiredSectionThrowsClearError
+ 45/119 Test  #45: SimulationConfigTest.MissingRequiredSectionThrowsClearError ...................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  46: SimulationConfigTest.BadBoundaryKindThrowsClearError
+ 46/119 Test  #46: SimulationConfigTest.BadBoundaryKindThrowsClearError ..........................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  47: SimulationConfigTest.DefaultsApplyForMinimalConfig
+ 47/119 Test  #47: SimulationConfigTest.DefaultsApplyForMinimalConfig ............................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  48: DiagnosticsTest.KineticEnergyMatchesEkinemFormula
+ 48/119 Test  #48: DiagnosticsTest.KineticEnergyMatchesEkinemFormula .............................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  49: DiagnosticsTest.NusseltMatchesFormulaAndFinalCombination
+ 49/119 Test  #49: DiagnosticsTest.NusseltMatchesFormulaAndFinalCombination ......................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  50: DiagnosticsTest.NusseltMiddleMatchesFormulaAndFinalCombination
+ 50/119 Test  #50: DiagnosticsTest.NusseltMiddleMatchesFormulaAndFinalCombination ................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start  51: DiagnosticsTest.MaxRelativeDifferenceMatchesDist2DFormula
+ 51/119 Test  #51: DiagnosticsTest.MaxRelativeDifferenceMatchesDist2DFormula .....................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start  52: ElectromagneticForceTest.PotentialRightHandSide
+ 52/119 Test  #52: ElectromagneticForceTest.PotentialRightHandSide ...............................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  53: ElectromagneticForceTest.ApplyForceX
+ 53/119 Test  #53: ElectromagneticForceTest.ApplyForceX ..........................................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start  54: ElectromagneticForceTest.ApplyForceZ
+ 54/119 Test  #54: ElectromagneticForceTest.ApplyForceZ ..........................................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  55: ElectromagneticForceTest.SubtractReferenceValue
+ 55/119 Test  #55: ElectromagneticForceTest.SubtractReferenceValue ...............................................................................................................................................................................................................................................................................................   Passed    0.52 sec
+        Start  56: ElectromagneticForceKernelLaunchTest.PotentialRightHandSide
+ 56/119 Test  #56: ElectromagneticForceKernelLaunchTest.PotentialRightHandSide ...................................................................................................................................................................................................................................................................................   Passed    0.52 sec
+        Start  57: ElectromagneticForceKernelLaunchTest.SubtractReferenceValue
+ 57/119 Test  #57: ElectromagneticForceKernelLaunchTest.SubtractReferenceValue ...................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start  58: ElectromagneticForceKernelLaunchTest.ApplyForceX
+ 58/119 Test  #58: ElectromagneticForceKernelLaunchTest.ApplyForceX ..............................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  59: ElectromagneticForceKernelLaunchTest.ApplyForceZ
+ 59/119 Test  #59: ElectromagneticForceKernelLaunchTest.ApplyForceZ ..............................................................................................................................................................................................................................................................................................   Passed    0.46 sec
+        Start  60: ElementwiseOpsTest.SubtractTimeDerivative
+ 60/119 Test  #60: ElementwiseOpsTest.SubtractTimeDerivative .....................................................................................................................................................................................................................................................................................................   Passed    0.52 sec
+        Start  61: ElementwiseOpsTest.Scale
+ 61/119 Test  #61: ElementwiseOpsTest.Scale ......................................................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start  62: ElementwiseOpsTest.AddInto
+ 62/119 Test  #62: ElementwiseOpsTest.AddInto ....................................................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start  63: ElementwiseOpsTest.CorrectVelocity
+ 63/119 Test  #63: ElementwiseOpsTest.CorrectVelocity ............................................................................................................................................................................................................................................................................................................   Passed    0.54 sec
+        Start  64: ElementwiseOpsTest.AccumulateScaled
+ 64/119 Test  #64: ElementwiseOpsTest.AccumulateScaled ...........................................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  65: ElementwiseOpsKernelLaunchTest.SubtractTimeDerivative
+ 65/119 Test  #65: ElementwiseOpsKernelLaunchTest.SubtractTimeDerivative .........................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start  66: ElementwiseOpsKernelLaunchTest.Scale
+ 66/119 Test  #66: ElementwiseOpsKernelLaunchTest.Scale ..........................................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  67: ElementwiseOpsKernelLaunchTest.AddInto
+ 67/119 Test  #67: ElementwiseOpsKernelLaunchTest.AddInto ........................................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  68: ElementwiseOpsKernelLaunchTest.CorrectVelocity
+ 68/119 Test  #68: ElementwiseOpsKernelLaunchTest.CorrectVelocity ................................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  69: ElementwiseOpsKernelLaunchTest.AccumulateScaled
+ 69/119 Test  #69: ElementwiseOpsKernelLaunchTest.AccumulateScaled ...............................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start  70: MeshTest.ComputeAxisSpacingAcrossGridSizesAndStretchFactors
+ 70/119 Test  #70: MeshTest.ComputeAxisSpacingAcrossGridSizesAndStretchFactors ...................................................................................................................................................................................................................................................................................   Passed    0.53 sec
+        Start  71: MeshTest.EndpointsAreExactDomainBoundaries
+ 71/119 Test  #71: MeshTest.EndpointsAreExactDomainBoundaries ....................................................................................................................................................................................................................................................................................................   Passed    0.53 sec
+        Start  72: NusseltKernelLaunchTest.MatchesHostSummedNusseltCell
+ 72/119 Test  #72: NusseltKernelLaunchTest.MatchesHostSummedNusseltCell ..........................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  73: NusseltKernelLaunchTest.MiddleMatchesHostSummedNusseltMiddleCell
+ 73/119 Test  #73: NusseltKernelLaunchTest.MiddleMatchesHostSummedNusseltMiddleCell ..............................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start  74: FiniteDifferenceOperatorsTest.TemperatureAdvection
+ 74/119 Test  #74: FiniteDifferenceOperatorsTest.TemperatureAdvection ............................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  75: FiniteDifferenceOperatorsTest.VelocityXAdvection
+ 75/119 Test  #75: FiniteDifferenceOperatorsTest.VelocityXAdvection ..............................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start  76: FiniteDifferenceOperatorsTest.VelocityYAdvection
+ 76/119 Test  #76: FiniteDifferenceOperatorsTest.VelocityYAdvection ..............................................................................................................................................................................................................................................................................................   Passed    0.51 sec
+        Start  77: FiniteDifferenceOperatorsTest.VelocityZAdvection
+ 77/119 Test  #77: FiniteDifferenceOperatorsTest.VelocityZAdvection ..............................................................................................................................................................................................................................................................................................   Passed    0.53 sec
+        Start  78: FiniteDifferenceOperatorsTest.Divergence
+ 78/119 Test  #78: FiniteDifferenceOperatorsTest.Divergence ......................................................................................................................................................................................................................................................................................................   Passed    0.62 sec
+        Start  79: FiniteDifferenceOperatorsTest.PressureGradient
+ 79/119 Test  #79: FiniteDifferenceOperatorsTest.PressureGradient ................................................................................................................................................................................................................................................................................................   Passed    0.54 sec
+        Start  80: PaddingEquivalenceTest.VgrTmp
+ 80/119 Test  #80: PaddingEquivalenceTest.VgrTmp .................................................................................................................................................................................................................................................................................................................   Passed    0.54 sec
+        Start  81: PaddingEquivalenceTest.Nusselt
+ 81/119 Test  #81: PaddingEquivalenceTest.Nusselt ................................................................................................................................................................................................................................................................................................................   Passed    0.48 sec
+        Start  82: PaddingEquivalenceTest.VgrdVx
+ 82/119 Test  #82: PaddingEquivalenceTest.VgrdVx .................................................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start  83: PaddingEquivalenceTest.VgrdVy
+ 83/119 Test  #83: PaddingEquivalenceTest.VgrdVy .................................................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  84: PaddingEquivalenceTest.VgrdVz
+ 84/119 Test  #84: PaddingEquivalenceTest.VgrdVz .................................................................................................................................................................................................................................................................................................................   Passed    0.50 sec
+        Start  85: PaddingEquivalenceTest.FdDiv
+ 85/119 Test  #85: PaddingEquivalenceTest.FdDiv ..................................................................................................................................................................................................................................................................................................................   Passed    0.49 sec
+        Start  86: PaddingEquivalenceTest.Ekinem
+ 86/119 Test  #86: PaddingEquivalenceTest.Ekinem .................................................................................................................................................................................................................................................................................................................   Passed    0.54 sec
+        Start  87: CudaWrapper.tranpose
+ 87/119 Test  #87: CudaWrapper.tranpose ..........................................................................................................................................................................................................................................................................................................................   Passed    0.53 sec
+        Start  88: FortranWrapper.MultipleEigenSolversSideBySide
+ 88/119 Test  #88: FortranWrapper.MultipleEigenSolversSideBySide .................................................................................................................................................................................................................................................................................................   Passed    0.62 sec
+        Start  89: FortranWrapper.SmokeTestAlex
+ 89/119 Test  #89: FortranWrapper.SmokeTestAlex ..................................................................................................................................................................................................................................................................................................................   Passed    2.03 sec
+        Start  90: ImmersedEq.SolvesPrimes_3x2x1
+ 90/119 Test  #90: ImmersedEq.SolvesPrimes_3x2x1 .................................................................................................................................................................................................................................................................................................................   Passed    0.57 sec
+        Start  91: ImmersedEq.SolvesImmeresed_Generic
+ 91/119 Test  #91: ImmersedEq.SolvesImmeresed_Generic ............................................................................................................................................................................................................................................................................................................   Passed    0.59 sec
+        Start  92: KroneckerTripletTest.ProductMatchesMultOnIdentity
+ 92/119 Test  #92: KroneckerTripletTest.ProductMatchesMultOnIdentity .............................................................................................................................................................................................................................................................................................   Passed    0.54 sec
+        Start  93: LaplacianMath.fluxLaplacian
+ 93/119 Test  #93: LaplacianMath.fluxLaplacian ...................................................................................................................................................................................................................................................................................................................   Passed   37.27 sec
+        Start  94: LaplacianMath.laplacian
+ 94/119 Test  #94: LaplacianMath.laplacian .......................................................................................................................................................................................................................................................................................................................   Passed  128.51 sec
+        Start  95: ShiftedEigen.FluxLaplacian_SmallScale
+ 95/119 Test  #95: ShiftedEigen.FluxLaplacian_SmallScale .........................................................................................................................................................................................................................................................................................................   Passed    0.57 sec
+        Start  96: ThomasAxisAssignment.VxShapedAsymmetricGrid
+ 96/119 Test  #96: ThomasAxisAssignment.VxShapedAsymmetricGrid ...................................................................................................................................................................................................................................................................................................   Passed    0.54 sec
+        Start  97: ThomasAxisAssignment.VyShapedAsymmetricGrid
+ 97/119 Test  #97: ThomasAxisAssignment.VyShapedAsymmetricGrid ...................................................................................................................................................................................................................................................................................................   Passed    0.58 sec
+        Start  98: ThomasAxisAssignment.VyRealMeshUniformRhsStaysSymmetric
+ 98/119 Test  #98: ThomasAxisAssignment.VyRealMeshUniformRhsStaysSymmetric .......................................................................................................................................................................................................................................................................................   Passed    0.67 sec
+        Start  99: ThomasAxisAssignment.VyShapedSizeShiftBisection
+ 99/119 Test  #99: ThomasAxisAssignment.VyShapedSizeShiftBisection ...............................................................................................................................................................................................................................................................................................   Passed    0.73 sec
+        Start 100: ThomasAxisAssignment.VyRealMeshYZRoleSwapMatchesTranspose
+100/119 Test #100: ThomasAxisAssignment.VyRealMeshYZRoleSwapMatchesTranspose .....................................................................................................................................................................................................................................................................................   Passed    0.57 sec
+        Start 101: ThomasAxisAssignment.VyRealMeshXZRoleSwapMatchesTranspose
+101/119 Test #101: ThomasAxisAssignment.VyRealMeshXZRoleSwapMatchesTranspose .....................................................................................................................................................................................................................................................................................   Passed    0.56 sec
+        Start 102: ThomasAxisAssignment.VySquareDuctSmallNStaysSymmetric
+102/119 Test #102: ThomasAxisAssignment.VySquareDuctSmallNStaysSymmetric .........................................................................................................................................................................................................................................................................................   Passed    0.58 sec
+        Start 103: ThomasAxisAssignment.VyFortranPermutationMatchesCppForSamePhysicalProblem
+103/119 Test #103: ThomasAxisAssignment.VyFortranPermutationMatchesCppForSamePhysicalProblem .....................................................................................................................................................................................................................................................................   Passed    0.59 sec
+        Start 104: ThomasAxisAssignment.PotentialFortranPermutationMatchesCppForSamePhysicalProblem
+104/119 Test #104: ThomasAxisAssignment.PotentialFortranPermutationMatchesCppForSamePhysicalProblem ..............................................................................................................................................................................................................................................................   Passed    0.59 sec
+        Start 105: ThomasAxisAssignment.PotentialFortranPermutationMatchesCppWithAsymmetricBoundaryValues
+105/119 Test #105: ThomasAxisAssignment.PotentialFortranPermutationMatchesCppWithAsymmetricBoundaryValues ........................................................................................................................................................................................................................................................   Passed    0.54 sec
+        Start 106: ThomasAxisAssignment.PotentialYZRoleSwapMatchesTranspose
+106/119 Test #106: ThomasAxisAssignment.PotentialYZRoleSwapMatchesTranspose ......................................................................................................................................................................................................................................................................................   Passed    0.60 sec
+        Start 107: ThomasAxisAssignment.VxRealMeshXYRoleSwapMatchesTranspose
+107/119 Test #107: ThomasAxisAssignment.VxRealMeshXYRoleSwapMatchesTranspose .....................................................................................................................................................................................................................................................................................   Passed    0.59 sec
+        Start 108: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/field_snapshots  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 66-69 65-6C 64-5F 73-6E 61-70 73-68 6F-74 73-00 00-1B 27-13 00-00 00-00 18-00 00-00 00-00 00-00 18-00 00-00 00-00 00-00 69-67 73-00 00-00 00-00 00-01 00-00 00-00 00-00>
+108/119 Test #108: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/field_snapshots  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 66-69 65-6C 64-5F 73-6E 61-70 73-68 6F-74 73-00 00-1B 27-13 00-00 00-00 18-00 00-00 00-00 00-00 18-00 00-00 00-00 00-00 69-67 73-00 00-00 00-00 00-01 00-00 00-00 00-00> ...   Passed   18.89 sec
+        Start 109: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/gr_high  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 07-00 00-00 00-00 00-00 67-72 5F-68 69-67 68-00 61-70 73-68 6F-74 73-00 40-41 27-13 00-00 00-00 10-00 00-00 00-00 00-00 10-00 00-00 00-00 00-00 69-67 73-00 00-00 00-00 00-00 00-00 00-00 00-00>
+109/119 Test #109: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/gr_high  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 07-00 00-00 00-00 00-00 67-72 5F-68 69-67 68-00 61-70 73-68 6F-74 73-00 40-41 27-13 00-00 00-00 10-00 00-00 00-00 00-00 10-00 00-00 00-00 00-00 69-67 73-00 00-00 00-00 00-00 00-00 00-00 00-00> ...........   Passed   16.83 sec
+        Start 110: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/gr_low  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 06-00 00-00 00-00 00-00 67-72 5F-6C 6F-77 00-00 61-70 73-68 6F-74 73-00 40-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 67-72 5F-6C 6F-77 2E-63 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00>
+110/119 Test #110: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/gr_low  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 06-00 00-00 00-00 00-00 67-72 5F-6C 6F-77 00-00 61-70 73-68 6F-74 73-00 40-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 67-72 5F-6C 6F-77 2E-63 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> ............   Passed   16.43 sec
+        Start 111: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/grid_030  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 08-00 00-00 00-00 00-00 67-72 69-64 5F-30 33-30 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 11-00 00-00 00-00 00-00 11-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00>
+111/119 Test #111: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/grid_030  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 08-00 00-00 00-00 00-00 67-72 69-64 5F-30 33-30 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 11-00 00-00 00-00 00-00 11-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> ..........   Passed    7.24 sec
+        Start 112: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/grid_050  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 08-00 00-00 00-00 00-00 67-72 69-64 5F-30 35-30 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 11-00 00-00 00-00 00-00 11-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00>
+112/119 Test #112: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/grid_050  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 08-00 00-00 00-00 00-00 67-72 69-64 5F-30 35-30 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 11-00 00-00 00-00 00-00 11-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> ..........   Passed   35.08 sec
+        Start 113: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/grid_100  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 08-00 00-00 00-00 00-00 67-72 69-64 5F-31 30-30 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 11-00 00-00 00-00 00-00 11-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00>
+113/119 Test #113: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/grid_100  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 08-00 00-00 00-00 00-00 67-72 69-64 5F-31 30-30 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 11-00 00-00 00-00 00-00 11-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> ..........   Passed  444.49 sec
+        Start 114: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/ha_high  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 07-00 00-00 00-00 00-00 68-61 5F-68 69-67 68-00 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 10-00 00-00 00-00 00-00 10-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00>
+114/119 Test #114: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/ha_high  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 07-00 00-00 00-00 00-00 68-61 5F-68 69-67 68-00 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 10-00 00-00 00-00 00-00 10-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> ...........   Passed   19.68 sec
+        Start 115: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/ha_low  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 06-00 00-00 00-00 00-00 68-61 5F-6C 6F-77 00-00 00-70 73-68 6F-74 73-00 40-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 68-61 5F-6C 6F-77 2E-63 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00>
+115/119 Test #115: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/ha_low  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 06-00 00-00 00-00 00-00 68-61 5F-6C 6F-77 00-00 00-70 73-68 6F-74 73-00 40-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 68-61 5F-6C 6F-77 2E-63 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> ............   Passed   17.14 sec
+        Start 116: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/phys_baseline  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 0D-00 00-00 00-00 00-00 70-68 79-73 5F-62 61-73 65-6C 69-6E 65-00 73-00 B0-22 27-13 00-00 00-00 16-00 00-00 00-00 00-00 16-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00>
+116/119 Test #116: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/phys_baseline  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 0D-00 00-00 00-00 00-00 70-68 79-73 5F-62 61-73 65-6C 69-6E 65-00 73-00 B0-22 27-13 00-00 00-00 16-00 00-00 00-00 00-00 16-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> .....   Passed   17.22 sec
+        Start 117: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/pr_high  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 07-00 00-00 00-00 00-00 70-72 5F-68 69-67 68-00 65-6C 69-6E 65-00 73-00 B0-22 27-13 00-00 00-00 10-00 00-00 00-00 00-00 10-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00>
+117/119 Test #117: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/pr_high  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 07-00 00-00 00-00 00-00 70-72 5F-68 69-67 68-00 65-6C 69-6E 65-00 73-00 B0-22 27-13 00-00 00-00 10-00 00-00 00-00 00-00 10-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> ...........   Passed   17.08 sec
+        Start 118: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/pr_low  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 06-00 00-00 00-00 00-00 70-72 5F-6C 6F-77 00-00 65-6C 69-6E 65-00 73-00 40-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 70-72 5F-6C 6F-77 2E-63 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00>
+118/119 Test #118: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/pr_low  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 06-00 00-00 00-00 00-00 70-72 5F-6C 6F-77 00-00 65-6C 69-6E 65-00 73-00 40-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 70-72 5F-6C 6F-77 2E-63 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> ............   Passed   17.52 sec
+        Start 119: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/time_averaging  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 0E-00 00-00 00-00 00-00 74-69 6D-65 5F-61 76-65 72-61 67-69 6E-67 00-00 B0-22 27-13 00-00 00-00 17-00 00-00 00-00 00-00 17-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 01-00 00-00 00-00 00-00>
+119/119 Test #119: NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/time_averaging  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 0E-00 00-00 00-00 00-00 74-69 6D-65 5F-61 76-65 72-61 67-69 6E-67 00-00 B0-22 27-13 00-00 00-00 17-00 00-00 00-00 00-00 17-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 01-00 00-00 00-00 00-00> ....   Passed   22.78 sec
+
+100% tests passed, 0 tests failed out of 117
+
+Label Time Summary:
+unit    = 910.56 sec*proc (119 tests)
+
+Total Test time (real) = 910.95 sec
+
+The following tests did not run:
+	 21 - ODELyapunov.ConvergenceStudy (Disabled)
+	 22 - ODELyapunov.ConvergenceSurface (Disabled)
+Running main() from /home/usr/Documents/TelAvivU/build-term/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = Benchmark.ThomasOnly
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from Benchmark
+[ RUN      ] Benchmark.ThomasOnly
+
+==================================================
+Device Memory Status (Query Result: Success)
+==================================================
+Total Memory: 3.65 GB (3919642624 Bytes)
+Free Memory:  3.50 GB (3759538176 Bytes)
+Used Memory:  0.15 GB (160104448 Bytes)
+==================================================
+
+Buffers sized for N up to 525 (144703125 points)
+       N           N^3      Unif build+solve        Unif solve    ||L*x_unif - b||       Var build+solve         Var solve   (ms)
+-----------------------------------------------------------------------------------------------------------------------------
+       2             8                31.020             0.047           4.975e-16                32.101             0.041
+       4            64                 0.139             0.043           1.324e-15                 0.474             0.039
+       6           216                 0.091             0.040           6.730e-15                 0.539             0.042
+       8           512                 5.273             0.048           1.199e-14                 0.715             0.042
+      10          1000                 0.153             0.039           1.954e-14                 1.036             0.049
+      12          1728                 0.163             0.039           3.896e-14                 0.868             0.054
+      14          2744                 0.133             0.039           7.849e-14                 0.879             0.063
+      16          4096                 0.126             0.040           1.101e-13                 0.983             0.072
+      18          5832                 0.108             0.059           1.181e-13                 1.249             0.094
+      20          8000                 0.098             0.060           1.878e-13                 1.169             0.099
+      22         10648                 0.096             0.063           2.565e-13                 1.205             0.105
+      24         13824                 0.240             0.097           2.556e-13                 1.297             0.142
+      26         17576                 0.135             0.098           3.629e-13                 1.342             0.148
+      28         21952                 0.149             0.100           4.894e-13                 1.436             0.155
+      30         27000                 0.138             0.101           6.103e-13                 1.482             0.161
+      32         32768                 1.428             0.117           5.682e-13                 1.573             0.192
+      34         39304                 1.775             0.332           6.492e-13                 2.979             0.397
+      36         46656                 0.376             0.330           7.051e-13                 2.958             0.402
+      38         54872                 0.394             0.333           8.814e-13                 3.113             0.408
+      40         64000                 0.532             0.433           9.489e-13                 3.384             0.512
+      42         74088                 0.517             0.437           1.058e-12                 3.347             0.519
+      44         85184                 0.495             0.437           1.288e-12                 3.416             0.526
+      46         97336                 0.577             0.517           1.420e-12                 3.591             0.604
+      48        110592                 0.605             0.538           1.808e-12                 3.770             0.634
+      50        125000                 0.976             0.893           1.825e-12                 4.248             0.992
+      52        140608                 1.027             0.958           2.011e-12                 4.324             1.062
+      54        157464                 1.015             0.961           2.266e-12                 4.489             1.069
+      56        175616                 1.086             1.019           2.500e-12                 4.666             1.131
+      58        195112                 1.084             1.022           2.681e-12                 4.839             1.139
+      60        216000                 1.276             1.094           2.895e-12                 4.971             1.207
+      62        238328                 1.173             1.102           3.173e-12                 5.017             1.224
+      64        262144                 1.184             1.101           3.176e-12                 5.151             1.180
+      66        287496                 2.267             2.210           3.618e-12                 8.886             2.697
+      68        314432                 3.109             2.975           3.757e-12                 9.313             3.217
+      70        343000                 2.845             2.796           4.025e-12                 9.163             2.860
+      72        373248                 2.455             2.388           4.487e-12                 9.159             2.646
+      74        405224                 2.584             2.533           4.385e-12                 9.398             2.797
+      76        438976                 2.727             2.678           4.726e-12                 9.664             2.949
+      78        474552                 2.735             2.686           5.417e-12                 9.894             2.963
+      80        512000                 2.879             2.828           5.716e-12                10.141             3.120
+      82        551368                 3.714             3.586           5.827e-12                11.236             3.861
+      84        592704                 3.820             3.726           6.414e-12                11.647             4.066
+      86        636056                 3.996             3.906           6.963e-12                11.864             4.275
+      88        681472                 4.172             4.085           7.568e-12                12.159             4.479
+      90        729000                 5.050             4.975           7.790e-12                13.229             5.412
+      92        778688                 5.482             5.413           7.737e-12                13.854             5.872
+      94        830584                 5.672             5.600           8.823e-12                14.332             6.085
+      96        884736                 5.675             5.607           9.093e-12                14.360             6.130
+      98        941192                 8.155             8.066           9.630e-12                17.149             8.647
+     100       1000000                 8.336             8.252           9.978e-12                17.461             8.825
+     102       1061208                 9.009             8.929           1.133e-11                18.341             9.535
+     104       1124864                 9.291             9.186           1.107e-11                18.834             9.768
+     106       1191016                 9.430             9.319           1.148e-11                19.036             9.858
+     108       1259712                 9.995             9.906           1.174e-11                19.671            10.415
+     110       1331000                10.290            10.208           1.303e-11                20.195            10.767
+     112       1404928                10.837            10.770           1.307e-11                20.930            11.394
+     114       1481544                12.249            12.158           1.357e-11                22.601            12.721
+     116       1560896                12.938            12.826           1.443e-11                23.352            13.409
+     118       1643032                13.622            13.531           1.557e-11                24.163            14.070
+     120       1728000                13.748            13.598           1.571e-11                24.911            14.162
+     122       1815848                14.600            14.346           1.633e-11                25.643            14.903
+     124       1906624                14.982            14.829           1.642e-11                25.963            15.327
+     126       2000376                15.226            15.099           1.817e-11                26.362            15.613
+     128       2097152                15.492            15.388           1.836e-11                26.605            15.906
+     130       2197000                24.359            24.255           1.920e-11                41.505            25.007
+     132       2299968                25.450            25.360           1.957e-11                36.933            26.054
+     134       2406104                25.937            25.765           2.013e-11                37.423            26.512
+     136       2515456                26.911            26.812           2.063e-11                38.704            27.602
+     138       2628072                27.523            27.393           2.131e-11                39.387            28.158
+     140       2744000                28.486            28.367           2.219e-11                40.652            29.281
+     142       2863288                29.668            29.370           2.294e-11                42.002            30.222
+     144       2985984                30.395            30.077           2.364e-11                43.318            30.909
+     146       3112136                34.600            34.434           2.472e-11                47.683            35.195
+Residual check no longer fits in memory from N=148; timings continue without it.
+     148       3241792                35.644            35.473             skipped                48.511            36.232
+     150       3375000                36.175            35.996             skipped                50.039            36.940
+     152       3511808                37.138            36.983             skipped                50.467            37.924
+     154       3652264                38.247            38.128             skipped                51.731            39.056
+     156       3796416                39.479            39.250             skipped                52.891            40.239
+     158       3944312                40.471            40.313             skipped                54.199            41.344
+     160       4096000                41.192            41.019             skipped                54.883            41.958
+     162       4251528                50.667            50.506             skipped                64.483            51.599
+     164       4410944                52.083            51.918             skipped                65.779            52.846
+     166       4574296                52.966            52.847             skipped                67.153            53.793
+     168       4741632                54.564            54.466             skipped                68.774            55.509
+     170       4913000                55.599            55.472             skipped                69.994            56.493
+     172       5088448                56.782            56.663             skipped                71.434            57.813
+     174       5268024                58.307            58.120             skipped                72.898            59.198
+     176       5451776                59.923            59.714             skipped                74.586            60.903
+     178       5639752                66.295            66.164             skipped                81.625            67.451
+     180       5832000                68.226            68.060             skipped                83.830            69.624
+     182       6028568                69.504            69.327             skipped                85.035            70.766
+     184       6229504                71.006            70.857             skipped                86.870            72.458
+     186       6434856                72.393            72.240             skipped                88.185            73.643
+     188       6644672                74.073            73.940             skipped                90.091            75.391
+     190       6859000                76.694            76.538             skipped                92.584            77.674
+     192       7077888                76.811            76.602             skipped                92.894            78.077
+     194       7301384               105.913           105.728             skipped               122.764           107.317
+     196       7529536               107.995           107.873             skipped               124.816           109.379
+     198       7762392               110.394           110.256             skipped               127.125           111.755
+     200       8000000               112.356           112.158             skipped               129.720           113.805
+     201       8120601               113.581           113.417             skipped               130.645           114.896
+     202       8242408               114.854           114.642             skipped               132.045           116.282
+     203       8365427               116.192           116.026             skipped               133.356           117.486
+     204       8489664               116.862           116.744             skipped               134.378           118.337
+     205       8615125               118.667           118.343             skipped               135.776           119.748
+     206       8741816               119.344           119.127             skipped               136.820           120.729
+     207       8869743               120.921           120.770             skipped               138.296           122.185
+     208       8998912               121.078           120.931             skipped               138.686           122.712
+     209       9129329               132.319           132.165             skipped               150.270           133.889
+     210       9261000               133.723           133.533             skipped               152.058           135.445
+     211       9393931               134.740           134.643             skipped               152.982           136.376
+     212       9528128               135.639           135.444             skipped               154.154           137.478
+     213       9663597               137.450           137.254             skipped               155.936           139.147
+     214       9800344               138.809           138.594             skipped               157.322           140.534
+     215       9938375               140.240           140.056             skipped               158.634           141.761
+     216      10077696               140.873           140.700             skipped               159.767           142.796
+     217      10218313               142.407           142.176             skipped               161.136           144.136
+     218      10360232               143.826           143.672             skipped               162.754           145.715
+     219      10503459               145.406           145.233             skipped               164.420           147.181
+     220      10648000               146.386           146.184             skipped               165.685           148.491
+     221      10793861               148.369           148.185             skipped               167.300           150.073
+     222      10941048               149.455           149.231             skipped               168.521           151.138
+     223      11089567               151.126           150.824             skipped               170.123           152.682
+     224      11239424               150.981           150.803             skipped               170.480           153.249
+     225      11390625               174.366           174.126             skipped               193.690           176.459
+     226      11543176               176.112           175.831             skipped               195.550           178.035
+     227      11697083               177.860           177.492             skipped               197.478           179.807
+     228      11852352               179.265           179.008             skipped               198.883           181.258
+     229      12008989               180.771           180.563             skipped               200.273           182.705
+     230      12167000               182.352           182.185             skipped               202.208           184.284
+     231      12326391               184.426           184.198             skipped               204.111           186.389
+     232      12487168               185.464           185.286             skipped               205.180           187.354
+     233      12649337               187.712           187.617             skipped               207.675           189.609
+     234      12812904               188.409           188.215             skipped               208.610           190.729
+     235      12977875               190.449           190.287             skipped               210.799           192.688
+     236      13144256               191.583           191.405             skipped               212.106           194.045
+     237      13312053               194.194           193.974             skipped               214.311           196.033
+     238      13481272               195.350           195.135             skipped               216.116           197.686
+     239      13651919               197.333           197.149             skipped               217.835           199.504
+     240      13824000               197.606           197.448             skipped               218.688           200.399
+     241      13997521               214.125           213.907             skipped               234.360           215.657
+     242      14172488               215.118           214.935             skipped               235.960           217.282
+     243      14348907               217.446           217.167             skipped               237.992           219.224
+     244      14526784               218.759           218.472             skipped               239.895           221.104
+     245      14706125               221.387           221.220             skipped               241.529           222.738
+     246      14886936               222.563           222.322             skipped               243.473           224.594
+     247      15069223               224.646           224.418             skipped               245.640           226.571
+     248      15252992               225.636           225.381             skipped               247.250           228.216
+     249      15438249               228.981           228.870             skipped               249.451           230.326
+     250      15625000               230.029           229.817             skipped               251.431           232.153
+     251      15813251               232.685           232.466             skipped               253.439           234.137
+     252      16003008               233.333           233.041             skipped               255.306           235.890
+     253      16194277               235.683           235.516             skipped               257.411           237.915
+     254      16387064               237.558           237.240             skipped               259.367           239.752
+     255      16581375               240.860           240.529             skipped               262.616           242.925
+     256      16777216               239.958           239.756             skipped               261.852           242.671
+     257      16974593               320.657           320.423             skipped               361.469           338.076
+     258      17173512               323.204           322.606             skipped               365.154           340.943
+     259      17373979               325.800           325.350             skipped               367.072           343.294
+     260      17576000               327.583           327.211             skipped               370.070           346.127
+     261      17779581               330.523           330.327             skipped               373.534           348.593
+     262      17984728               332.904           332.627             skipped               375.411           351.470
+     263      18191447               335.593           335.296             skipped               377.984           353.880
+     264      18399744               337.155           336.902             skipped               380.654           356.609
+     265      18609625               340.422           340.226             skipped               383.608           359.248
+     266      18821096               343.081           342.790             skipped               387.594           362.339
+     267      19034163               345.619           345.397             skipped               389.156           364.530
+     268      19248832               347.545           347.297             skipped               392.281           367.603
+     269      19465109               351.287           351.070             skipped               396.068           371.011
+     270      19683000               336.714           336.395             skipped               364.128           339.533
+     271      19902511               339.119           338.961             skipped               366.862           342.061
+     272      20123648               339.977           339.746             skipped               368.859           343.779
+     273      20346417               364.544           364.234             skipped               392.900           367.404
+     274      20570824               366.430           366.388             skipped               395.196           369.740
+     275      20796875               369.642           369.379             skipped               397.805           372.499
+     276      21024576               371.449           371.189             skipped               400.288           374.990
+     277      21253933               374.673           374.542             skipped               403.353           377.776
+     278      21484952               377.311           377.014             skipped               406.538           380.678
+     279      21717639               380.473           380.192             skipped               409.154           383.660
+     280      21952000               381.561           381.284             skipped               411.177           385.662
+     281      22188041               385.454           385.122             skipped               414.765           388.655
+     282      22425768               388.509           388.141             skipped               418.209           391.934
+     283      22665187               391.227           390.939             skipped               420.675           394.476
+     284      22906304               393.556           393.126             skipped               423.477           397.420
+     285      23149125               396.888           396.687             skipped               426.856           400.474
+     286      23393656               399.551           399.153             skipped               429.270           402.932
+     287      23639903               402.956           402.480             skipped               432.767           406.100
+     288      23887872               403.074           402.904             skipped               433.873           407.480
+     289      24137569               453.043           452.643             skipped               482.529           456.694
+     290      24389000               455.323           454.922             skipped               486.092           458.544
+     291      24642171               458.864           458.884             skipped               489.033           462.669
+     292      24897088               461.045           460.840             skipped               492.592           464.952
+     293      25153757               465.711           465.441             skipped               496.463           468.684
+     294      25412184               468.766           468.412             skipped               500.119           471.631
+     295      25672375               471.185           471.131             skipped               502.344           475.283
+     296      25934336               473.129           472.857             skipped               505.184           477.705
+     297      26198073               477.929           477.883             skipped               508.949           481.171
+     298      26463592               480.268           479.946             skipped               511.757           484.662
+     299      26730899               484.423           484.427             skipped               517.545           488.317
+     300      27000000               486.187           485.698             skipped               518.233           490.374
+     301      27270901               491.436           490.552             skipped               521.971           495.011
+     302      27543608               493.305           493.164             skipped               527.520           498.559
+     303      27818127               498.103           497.232             skipped               531.459           501.317
+     304      28094464               498.222           497.940             skipped               531.089           503.429
+     305      28372625               531.323           530.847             skipped               564.746           534.264
+     306      28652616               533.780           533.360             skipped               565.397           537.713
+     307      28934443               538.800           538.721             skipped               569.839           541.023
+     308      29218112               540.132           539.321             skipped               572.250           544.480
+     309      29503629               544.396           545.002             skipped               578.918           548.702
+     310      29791000               548.021           547.251             skipped               580.396           551.902
+     311      30080231               551.888           551.719             skipped               585.335           555.613
+     312      30371328               553.234           552.429             skipped               586.460           558.737
+     313      30664297               559.680           559.584             skipped               592.082           563.415
+     314      30959144               561.161           560.786             skipped               594.670           566.251
+     315      31255875               566.813           565.927             skipped               600.849           570.004
+     316      31554496               569.532           568.341             skipped               602.566           573.885
+     317      31855013               572.569           572.932             skipped               606.356           577.139
+     318      32157432               577.089           578.558             skipped               610.073           581.086
+     319      32461759               582.486           581.186             skipped               617.746           585.191
+     320      32768000               580.315           580.158             skipped               617.110           586.443
+     321      33076161               706.790           707.048             skipped               741.945           711.652
+     322      33386248               710.840           711.300             skipped               746.365           717.651
+     323      33698267               717.996           715.795             skipped               753.873           720.708
+     324      34012224               717.567           718.527             skipped               756.231           723.291
+     325      34328125               725.273           724.060             skipped               759.043           730.216
+     326      34645976               727.258           728.518             skipped               765.085           733.335
+     327      34965783               735.694           733.663             skipped               769.492           736.994
+     328      35287552               734.849           736.159             skipped               772.204           740.745
+     329      35611289               742.300           743.263             skipped               779.467           747.397
+     330      35937000               747.782           746.223             skipped               784.911           752.430
+     331      36264691               751.695           750.190             skipped               788.299           755.386
+     332      36594368               756.620           754.395             skipped               795.040           760.925
+     333      36926037               759.700           759.434             skipped               798.103           766.142
+     334      37259704               764.589           764.743             skipped               800.238           771.055
+     335      37595375               770.024           769.345             skipped               805.533           776.074
+     336      37933056               771.298           770.579             skipped               810.504           777.627
+     337      38272753               815.829           816.799             skipped               855.097           821.854
+     338      38614472               819.471           819.347             skipped               858.004           825.949
+     339      38958219               824.519           825.338             skipped               861.901           830.945
+     340      39304000               831.299           829.176             skipped               869.167           835.015
+     341      39651821               837.088           838.152             skipped               872.773           840.718
+     342      40001688               841.115           840.946             skipped               879.467           844.263
+     343      40353607               845.053           845.995             skipped               882.441           851.885
+     344      40707584               848.382           847.899             skipped               886.362           855.819
+     345      41063625               854.046           854.793             skipped               891.835           858.611
+     346      41421736               858.138           858.572             skipped               899.559           865.657
+     347      41781923               863.462           865.257             skipped               902.567           871.587
+     348      42144192               871.558           868.317             skipped               909.486           875.363
+     349      42508549               876.823           876.473             skipped               913.147           879.567
+     350      42875000               878.360           878.354             skipped               920.103           886.581
+     351      43243551               886.803           885.396             skipped               927.648           892.570
+     352      43614208               886.098           886.650             skipped               929.213           894.209
+     353      43986977               976.885           978.293             skipped              1016.333           982.202
+     354      44361864               979.680           979.501             skipped              1019.016           987.393
+     355      44738875               989.492           987.193             skipped              1027.045           992.946
+     356      45118016               989.061           991.324             skipped              1031.669           996.345
+     357      45499293               997.949           999.056             skipped              1038.985          1002.643
+     358      45882712              1005.648          1001.448             skipped              1042.231          1009.339
+     359      46268279              1010.200          1010.366             skipped              1050.722          1015.342
+     360      46656000              1014.093          1012.229             skipped              1054.109          1019.726
+     361      47045881              1023.409          1021.207             skipped              1060.944          1027.222
+     362      47437928              1028.074          1024.108             skipped              1067.910          1031.730
+     363      47832147              1032.826          1031.261             skipped              1072.504          1039.395
+     364      48228544              1035.896          1037.062             skipped              1079.565          1042.957
+     365      48627125              1043.396          1043.547             skipped              1084.322          1050.096
+     366      49027896              1049.716          1048.868             skipped              1090.952          1055.877
+     367      49430863              1055.827          1054.998             skipped              1096.486          1060.315
+     368      49836032              1054.116          1056.447             skipped              1099.572          1063.753
+     369      50243409              1113.338          1113.111             skipped              1155.730          1119.352
+     370      50653000              1118.962          1119.670             skipped              1160.975          1124.865
+     371      51064811              1124.310          1125.604             skipped              1167.486          1131.232
+     372      51478848              1128.936          1128.898             skipped              1172.146          1136.155
+     373      51895117              1140.643          1140.497             skipped              1179.947          1143.504
+     374      52313624              1145.385          1141.387             skipped              1186.094          1149.600
+     375      52734375              1151.559          1150.147             skipped              1192.638          1156.217
+     376      53157376              1152.089          1151.799             skipped              1195.460          1159.952
+     377      53582633              1160.099          1161.034             skipped              1204.660          1167.861
+     378      54010152              1168.799          1167.059             skipped              1210.120          1174.188
+     379      54439939              1172.882          1173.401             skipped              1217.518          1181.509
+     380      54872000              1179.546          1179.493             skipped              1222.524          1185.977
+     381      55306341              1187.028          1184.739             skipped              1229.129          1193.167
+     382      55742968              1194.216          1192.187             skipped              1235.722          1198.879
+     383      56181887              1199.139          1197.587             skipped              1243.210          1205.986
+     384      56623104              1201.909          1200.037             skipped              1244.540          1209.311
+     385      57066625              1418.104          1415.966             skipped              1460.527          1422.528
+     386      57512456              1423.324          1420.468             skipped              1466.738          1429.473
+     387      57960603              1432.294          1431.912             skipped              1476.142          1437.428
+     388      58411072              1435.106          1436.364             skipped              1481.810          1443.825
+     389      58863869              1445.655          1446.009             skipped              1490.774          1452.103
+     390      59319000              1450.927          1451.963             skipped              1498.249          1459.433
+     391      59776471              1459.465          1458.459             skipped              1504.897          1466.403
+     392      60236288              1463.540          1461.910             skipped              1511.402          1472.598
+     393      60698457              1476.796          1475.516             skipped              1522.154          1483.094
+     394      61162984              1481.396          1482.873             skipped              1528.978          1489.702
+     395      61629875              1490.416          1488.809             skipped              1536.600          1496.788
+     396      62099136              1496.850          1494.637             skipped              1544.073          1503.444
+     397      62570773              1503.403          1505.227             skipped              1552.191          1513.610
+     398      63044792              1513.168          1512.228             skipped              1559.869          1520.178
+     399      63521199              1520.664          1519.501             skipped              1568.060          1528.653
+     400      64000000              1522.385          1523.210             skipped              1572.289          1532.507
+     401      64481201              1537.350          1536.339             skipped              1583.494          1542.807
+     402      64964808              1543.135          1543.951             skipped              1591.247          1551.142
+     403      65450827              1552.951          1552.842             skipped              1600.476          1559.739
+     404      65939264              1558.378          1556.716             skipped              1605.494          1565.558
+     405      66430125              1567.914          1567.467             skipped              1614.688          1574.061
+     406      66923416              1573.481          1573.591             skipped              1622.138          1580.723
+     407      67419143              1583.603          1582.294             skipped              1630.214          1589.965
+     408      67917312              1585.344          1586.057             skipped              1637.393          1595.746
+     409      68417929              1598.491          1598.287             skipped              1645.258          1605.338
+     410      68921000              1604.173          1604.621             skipped              1653.902          1613.374
+     411      69426531              1613.733          1612.764             skipped              1663.219          1622.360
+     412      69934528              1619.629          1618.868             skipped              1670.664          1628.553
+     413      70444997              1629.108          1628.941             skipped              1679.321          1637.864
+     414      70957944              1636.405          1635.921             skipped              1686.187          1645.555
+     415      71473375              1644.875          1644.227             skipped              1696.199          1653.930
+     416      71991296              1648.591          1647.227             skipped              1699.324          1657.880
+     417      72511713              1855.902          1855.766             skipped              1904.570          1862.357
+     418      73034632              1867.980          1867.303             skipped              1917.921          1876.660
+     419      73560059              1873.674          1872.266             skipped              1922.650          1880.074
+     420      74088000              1878.475          1878.879             skipped              1931.778          1887.866
+     421      74618461              1891.656          1890.039             skipped              1942.188          1899.027
+     422      75151448              1899.602          1898.909             skipped              1949.234          1907.361
+     423      75686967              1913.106          1913.556             skipped              1964.732          1920.871
+     424      76225024              1912.407          1912.322             skipped              1966.855          1923.472
+     425      76765625              2065.699          2065.014             skipped              2117.035          2074.941
+     426      77308776              2072.158          2071.311             skipped              2123.151          2080.466
+     427      77854483              2083.692          2082.520             skipped              2133.122          2091.744
+     428      78402752              2091.375          2089.550             skipped              2143.756          2100.503
+     429      78953589              2100.482          2100.483             skipped              2153.022          2110.754
+     430      79507000              2112.090          2110.707             skipped              2164.262          2121.336
+     431      80062991              2122.214          2121.433             skipped              2175.197          2131.079
+     432      80621568              2128.085          2126.880             skipped              2183.372          2139.536
+     433      81182737              2223.274          2221.297             skipped              2273.296          2229.972
+     434      81746504              2232.962          2232.516             skipped              2285.097          2240.675
+     435      82312875              2248.521          2246.701             skipped              2298.850          2254.167
+     436      82881856              2249.508          2248.919             skipped              2304.339          2259.545
+     437      83453453              2262.403          2261.878             skipped              2314.199          2269.724
+     438      84027672              2275.131          2274.471             skipped              2327.593          2282.831
+     439      84604519              2284.684          2282.606             skipped              2335.896          2291.370
+     440      85184000              2288.546          2288.032             skipped              2345.171          2300.722
+     441      85766121              2303.871          2303.969             skipped              2358.035          2312.835
+     442      86350888              2314.604          2312.589             skipped              2368.439          2322.984
+     443      86938307              2329.981          2328.407             skipped              2384.515          2338.053
+     444      87528384              2332.018          2331.995             skipped              2388.944          2343.226
+     445      88121125              2345.621          2344.895             skipped              2401.424          2355.283
+     446      88716536              2356.735          2354.570             skipped              2411.648          2365.889
+     447      89314623              2366.193          2365.376             skipped              2422.558          2376.758
+     448      89915392              2372.246          2371.857             skipped              2430.626          2385.106
+     449      90518849              2555.693          2555.394             skipped              2609.364          2563.976
+     450      91125000              2567.434          2565.676             skipped              2621.977          2575.622
+     451      91733851              2579.458          2577.172             skipped              2633.775          2586.878
+     452      92345408              2586.599          2585.089             skipped              2643.873          2596.459
+     453      92959677              2600.999          2599.750             skipped              2656.799          2609.417
+     454      93576664              2611.786          2610.041             skipped              2668.140          2620.601
+     455      94196375              2623.587          2622.733             skipped              2679.924          2632.372
+     456      94818816              2628.994          2628.020             skipped              2689.824          2641.882
+     457      95443993              2646.672          2645.268             skipped              2702.811          2655.716
+     458      96071912              2657.631          2655.498             skipped              2715.597          2667.327
+     459      96702579              2668.436          2667.294             skipped              2726.392          2678.492
+     460      97336000              2677.882          2676.840             skipped              2738.023          2689.127
+     461      97972181              2693.197          2691.554             skipped              2751.740          2702.895
+     462      98611128              2703.700          2701.701             skipped              2763.038          2713.409
+     463      99252847              2715.501          2713.799             skipped              2775.685          2726.527
+     464      99897344              2717.747          2717.933             skipped              2781.572          2733.451
+     465     100544625              2834.573          2833.528             skipped              2891.216          2843.873
+     466     101194696              2845.381          2844.603             skipped              2906.060          2855.720
+     467     101847563              2857.926          2857.169             skipped              2916.885          2867.750
+     468     102503232              2867.514          2866.135             skipped              2929.184          2879.165
+     469     103161709              2883.672          2882.447             skipped              2942.305          2893.585
+     470     103823000              2893.330          2892.502             skipped              2953.517          2904.103
+     471     104487111              2908.447          2907.106             skipped              2966.853          2917.245
+     472     105154048              2913.666          2912.366             skipped              2977.129          2927.718
+     473     105823817              2932.137          2930.538             skipped              2993.722          2941.636
+     474     106496424              2943.377          2941.763             skipped              3005.047          2954.415
+     475     107171875              2956.802          2956.071             skipped              3019.189          2967.935
+     476     107850176              2966.536          2964.413             skipped              3028.869          2978.395
+     477     108531333              2979.290          2978.408             skipped              3043.658          2992.714
+     478     109215352              2991.119          2990.782             skipped              3055.434          3004.863
+     479     109902239              3006.383          3003.608             skipped              3069.275          3018.437
+     480     110592000              3009.543          3008.159             skipped              3076.361          3026.385
+     481     111284641              3231.665          3230.308             skipped              3294.174          3242.159
+     482     111980168              3244.315          3242.132             skipped              3307.099          3255.659
+     483     112678587              3260.082          3258.606             skipped              3321.496          3270.243
+     484     113379904              3268.313          3267.463             skipped              3333.707          3281.638
+     485     114084125              3286.529          3284.043             skipped              3347.840          3296.665
+     486     114791256              3297.028          3296.592             skipped              3361.510          3309.439
+     487     115501303              3312.811          3311.076             skipped              3376.140          3323.953
+     488     116214272              3317.612          3317.810             skipped              3387.682          3334.956
+     489     116930169              3340.579          3338.599             skipped              3404.751          3352.664
+     490     117649000              3355.157          3352.842             skipped              3419.587          3367.260
+     491     118370771              3369.985          3368.217             skipped              3435.723          3383.067
+     492     119095488              3376.195          3374.578             skipped              3443.833          3391.266
+     493     119823157              3393.073          3391.976             skipped              3459.294          3406.437
+     494     120553784              3405.295          3404.201             skipped              3473.356          3421.067
+     495     121287375              3420.966          3418.863             skipped              3489.095          3435.315
+     496     122023936              3423.687          3424.124             skipped              3496.152          3444.118
+     497     122763473              3563.005          3561.200             skipped              3627.799          3574.868
+     498     123505992              3573.692          3572.334             skipped              3640.137          3586.301
+     499     124251499              3588.363          3587.856             skipped              3654.808          3601.025
+     500     125000000              3598.824          3597.856             skipped              3666.433          3613.758
+     501     125751501              3617.550          3616.339             skipped              3683.305          3629.973
+     502     126506008              3633.950          3630.831             skipped              3702.104          3648.354
+     503     127263527              3646.866          3644.944             skipped              3713.090          3659.846
+     504     128024064              3652.464          3652.281             skipped              3725.511          3671.404
+     505     128787625              3676.117          3672.781             skipped              3742.876          3688.996
+     506     129554216              3689.948          3688.384             skipped              3762.257          3708.064
+     507     130323843              3703.679          3702.315             skipped              3773.599          3718.547
+     508     131096512              3714.263          3712.375             skipped              3786.072          3731.400
+     509     131872229              3735.168          3733.249             skipped              3809.404          3753.653
+     510     132651000              3744.662          3743.793             skipped              3817.304          3762.444
+     511     133432831              3760.383          3758.515             skipped              3833.150          3777.906
+     512     134217728              3765.629          3764.717             skipped              3838.478          3786.292
+     513     135005697              4512.913          4509.870             skipped              4593.603          4524.964
+     514     135796744              4526.248          4526.170             skipped              4611.158          4542.433
+     515     136590875              4545.451          4545.698             skipped              4629.710          4561.054
+     516     137388096              4559.846          4558.687             skipped              4645.314          4576.053
+     517     138188413              4581.563          4581.098             skipped              4665.866          4596.795
+     518     138991832              4597.403          4595.181             skipped              4682.811          4612.630
+     519     139798359              4617.482          4615.865             skipped              4700.985          4631.939
+     520     140608000              4625.101          4624.767             skipped              4714.989          4646.175
+     521     141420761              4652.780          4651.007             skipped              4738.300          4667.454
+     522     142236648              4668.034          4666.660             skipped              4753.895          4684.291
+     523     143055667              4688.600          4684.874             skipped              4773.595          4703.167
+     524     143877824              4701.077          4699.274             skipped              4789.475          4719.152
+     525     144703125              4721.470          4720.050             skipped              4809.671          4739.008
+[       OK ] Benchmark.ThomasOnly (3859673 ms)
+[----------] 1 test from Benchmark (3859673 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (3859673 ms total)
+[  PASSED  ] 1 test.

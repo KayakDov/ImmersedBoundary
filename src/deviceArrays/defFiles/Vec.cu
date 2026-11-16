@@ -429,15 +429,13 @@ Vec<T> GpuArray<T>::vec(size_t offset, size_t ld, size_t size) {
 }
 
 /**
- * Declared in GpuArray.h but never defined until now -- row()/diag()'s own
- * const overloads (just below) call through to this same offset/ld/size
- * constructor via their non-const selves, which is how the non-const vec()
- * above ends up implicitly instantiated for every type in
- * INSTANTIATE_VEC_CORE without a separate instantiation line for it. The
- * const overload had no such caller anywhere in this file, so it was never
- * instantiated for any type -- an undefined reference the moment anything
- * outside this translation unit (e.g. ODE/Norm.h's NormRows::measure)
- * called vec() on a const GpuArray.
+ * Const overload of vec().
+ *
+ * vec(), row() and diag() are defined in this file but called from others (ODE/Norm.h,
+ * ODE/LyapunovExponent.h, SquareMat.cu, Eigen.cu, Tensor.cu), so INSTANTIATE_VEC_CORE at the
+ * bottom of this file explicitly instantiates both overloads of each. An implicit instantiation is
+ * not enough: an optimized build may inline it into its callers here and keep no copy for other
+ * files, which then fail to link.
  */
 template<typename T>
 Vec<T> GpuArray<T>::vec(size_t offset, size_t ld, size_t size) const {
@@ -623,7 +621,11 @@ void Vec<T>::mult(
 
 #define INSTANTIATE_VEC_CORE(T) \
 template class Vec<T>; \
+template Vec<T> GpuArray<T>::row(size_t); \
 template Vec<T> GpuArray<T>::row(size_t) const; \
+template Vec<T> GpuArray<T>::diag(int32_t); \
+template Vec<T> GpuArray<T>::diag(int32_t) const; \
+template Vec<T> GpuArray<T>::vec(size_t, size_t, size_t); \
 template Vec<T> GpuArray<T>::vec(size_t, size_t, size_t) const;
 
 INSTANTIATE_VEC_CORE(float)

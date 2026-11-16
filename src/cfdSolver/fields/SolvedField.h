@@ -9,6 +9,7 @@
 #define CFDSOLVER_SOLVEDFIELD_H
 
 #include <memory>
+#include <stdexcept>
 #include "GpuField.h"
 #include "solvers/EigenDecomp/EigenDecompSolver.h"
 #include "deviceArrays/headers/SimpleArray.h"
@@ -30,7 +31,10 @@
  * device buffer for the solver's right-hand side. Before each solve, a
  * device-to-device copy preserves the RHS: the eigensolver's GEMM steps
  * require distinct input and output allocations. Both buffers remain on
- * the GPU and are allocated once for this field's lifetime.
+ * the GPU and are allocated once for this field's lifetime. Nothing reads
+ * the right-hand-side buffer after a solve, so buildFieldSolver() also
+ * gives it to the solver as its workspace, which saves the solver a
+ * field-sized allocation of its own.
  *
  * Owns its handles through a std::unique_ptr<Handles> rather than by
  * value. Handles (like Handle) is deliberately neither copyable nor
@@ -54,21 +58,29 @@ public:
     static constexpr size_t workingHandle = 3;
 
     /**
-     * @brief Constructs a SolvedField over an existing buffer, solver, and
-     * heap-owned handles.
+     * @brief Constructs a SolvedField over an existing buffer, right-hand-side
+     * buffer, solver, and heap-owned handles.
      * @param buffer The field's data, shared between kernel access and the
      * solver.
+     * @param rightHandSide The solver's input. solve() refills it from buffer
+     * before every solve, so the solver may also have been given its memory as
+     * the solver's workspace, in which case each solve overwrites it.
      * @param solver The eigendecomposition solver for this field's
      * Laplacian/Helmholtz operator.
      * @param hands The field's handles (numHandles of them), already
      * heap-allocated by the caller (e.g. via std::make_unique<Handles>(...))
      * so that only the owning pointer, never the non-movable Handles
      * itself, needs to move.
+     * @throws std::invalid_argument If rightHandSide is not the same size as
+     * buffer, or is the same allocation.
      */
-    SolvedField(GpuField<Real> buffer, std::unique_ptr<EigenDecompSolver<Real>> solver, std::unique_ptr<Handles> hands)
+    SolvedField(GpuField<Real> buffer, GpuField<Real> rightHandSide,
+                std::unique_ptr<EigenDecompSolver<Real>> solver, std::unique_ptr<Handles> hands)
         : buffer_(std::move(buffer)), solver_(std::move(solver)), hands_(std::move(hands)),
-          rightHandSide_(GpuField<Real>::allocate(buffer_.nx(), buffer_.ny(), buffer_.nz(),
-                                                  buffer_.gpuIndex(), handle())) {}
+          rightHandSide_(std::move(rightHandSide)) {
+        if (rightHandSide_.size() != buffer_.size() || rightHandSide_.pointer().get() == buffer_.pointer().get())
+            throw std::invalid_argument("SolvedField: rightHandSide must be a separate allocation the size of buffer.");
+    }
 
     /**
      * @brief The view the stencil kernels read and write -- the field's
@@ -112,7 +124,7 @@ private:
     GpuField<Real> buffer_;
     std::unique_ptr<EigenDecompSolver<Real>> solver_;
     std::unique_ptr<Handles> hands_;
-    GpuField<Real> rightHandSide_; ///< Persistent, disjoint solver input; never transferred to the host.
+    GpuField<Real> rightHandSide_; ///< Persistent, disjoint solver input; never transferred to the host. May also be the solver's workspace.
 };
 
 #endif //CFDSOLVER_SOLVEDFIELD_H

@@ -110,8 +110,10 @@ public:
      *   2. Applies forward transform to f to obtain f̃.
      *   3. Solves diagonal system to obtain ũ.
      *   4. Applies inverse transform to obtain x (the output).
-     * @param x Output buffer for the solution.
-     * @param b Right-hand-side vector (will be overwritten).
+     * @param x Output buffer for the solution. Also used as scratch before the solution is written.
+     * Must not be the same memory as b or as the workspace (sizeOfB).
+     * @param b Right-hand-side vector. Not modified, unless its memory was also given to the solver
+     * as its workspace (sizeOfB), which callers may do when they no longer need b after the solve.
      * @param hand
      */
     virtual void solve(SimpleArray<T> &x, const SimpleArray<T> &b, Handle &hand) const = 0;

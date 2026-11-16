@@ -1,0 +1,120 @@
+GPUScalarCorruption.ImmersedEqPrimeSolveCorruptsSharedConstantOne 1 2.82509
+GramSchmidt.OutOfPlaceMatchesHost 1 0.499955
+GramSchmidt.InPlaceMatchesHost 1 0.526302
+GramSchmidt.NearlyParallelColumnsMatchHost 1 0.52889
+GramSchmidt.RepeatedCallsOnTheSameWorkspaceMatchHost 1 0.483094
+Handles.RejectsZeroHandles 1 0.496358
+Handles.ReportsItsSizeAndChecksIndices 1 0.49797
+Handles.WaitingForYourselfDoesNothing 1 0.504067
+Handles.OneWaitsForOne 1 0.624339
+Handles.OneWaitsForAll 1 0.622995
+Handles.AllWaitForOne 1 0.696048
+Handles.GroupWaitsForGroup 1 0.736834
+Handles.MarkIsWaitedForLater 1 0.608986
+Handles.MarksInDifferentSlotsAreIndependent 1 0.718892
+Handles.WaitForMarkNeverMarkedOrOnYourselfDoesNothing 1 0.531482
+ODETrajectory.CreatesLorenzCurve 1 0.789147
+ODELyapunov.ComputesLorenzLargestExponent 1 7.45692
+ODELyapunov.ComputesLorenzTopThreeExponents 1 7.76577
+ODELyapunov.ComputesLorenzTopThreeExponentsUnderPseudoNorms 1 14.8376
+ODELyapunov.ComputesLorenzAttractorDimension 1 7.661
+ODELyapunov.ConvergenceStudy 0 0
+ODELyapunov.ConvergenceSurface 0 0
+AttractorDimension.KaplanYorkeFromKnownSpectra 1 0.477788
+BandedMatWrappersTest.BandedMatrixVectorProduct<float> 1 0.453145
+BandedMatWrappersTest.BandedMatrixDenseMatrixProduct<float> 1 0.451884
+BandedMatWrappersTest.VectorBandedMatrixProduct<float> 1 0.471918
+BandedMatWrappersTest.DenseMatrixBandedMatrixProduct<float> 1 0.514257
+BandedMatWrappersTest.BandedMatrixVectorProduct<double> 1 0.512851
+BandedMatWrappersTest.BandedMatrixDenseMatrixProduct<double> 1 0.506842
+BandedMatWrappersTest.VectorBandedMatrixProduct<double> 1 0.482955
+BandedMatWrappersTest.DenseMatrixBandedMatrixProduct<double> 1 0.489786
+WorkspaceContract.EigenDecompThomas 1 0.597163
+WorkspaceContract.EigenDecomp3d 1 0.581405
+AverageFlowTest.DirichletTemperatureWithConvOutMirror 1 0.513059
+AverageFlowTest.MixedNeumannDirichletTemperatureWithoutConvOutMirror 1 0.551776
+AverageFlowTest.ThrowsWhenOutputPathCannotBeOpened 1 0.493508
+BuoyancyForceZTest.MatchesUnsimplifiedFortranFormula 1 0.496308
+CheckpointIOTest.RoundTripAcrossGridSizes 1 0.486638
+CheckpointIOTest.ReadThrowsWhenGridExtentsDoNotMatch 1 0.509026
+CheckpointIOTest.ReadThrowsWhenHeaderMagicIsInvalid 1 0.482473
+CheckpointIOTest.ReadThrowsWhenFileIsTruncated 1 0.532564
+CheckpointIOTest.ReadThrowsWhenFileDoesNotExist 1 0.475213
+CheckpointIOTest.WriteThrowsWhenDirectoryDoesNotExist 1 0.485649
+SimulationConfigTest.RoundTripsRealSettings 1 0.491757
+SimulationConfigTest.MissingRequiredSectionThrowsClearError 1 0.491414
+SimulationConfigTest.BadBoundaryKindThrowsClearError 1 0.513568
+SimulationConfigTest.DefaultsApplyForMinimalConfig 1 0.506097
+DiagnosticsTest.KineticEnergyMatchesEkinemFormula 1 0.511935
+DiagnosticsTest.NusseltMatchesFormulaAndFinalCombination 1 0.487256
+DiagnosticsTest.NusseltMiddleMatchesFormulaAndFinalCombination 1 0.478401
+DiagnosticsTest.MaxRelativeDifferenceMatchesDist2DFormula 1 0.504973
+ElectromagneticForceTest.PotentialRightHandSide 1 0.509178
+ElectromagneticForceTest.ApplyForceX 1 0.500077
+ElectromagneticForceTest.ApplyForceZ 1 0.509213
+ElectromagneticForceTest.SubtractReferenceValue 1 0.515581
+ElectromagneticForceKernelLaunchTest.PotentialRightHandSide 1 0.51784
+ElectromagneticForceKernelLaunchTest.SubtractReferenceValue 1 0.502463
+ElectromagneticForceKernelLaunchTest.ApplyForceX 1 0.509751
+ElectromagneticForceKernelLaunchTest.ApplyForceZ 1 0.455711
+ElementwiseOpsTest.SubtractTimeDerivative 1 0.516519
+ElementwiseOpsTest.Scale 1 0.478223
+ElementwiseOpsTest.AddInto 1 0.502043
+ElementwiseOpsTest.CorrectVelocity 1 0.539187
+ElementwiseOpsTest.AccumulateScaled 1 0.507827
+ElementwiseOpsKernelLaunchTest.SubtractTimeDerivative 1 0.48263
+ElementwiseOpsKernelLaunchTest.Scale 1 0.512534
+ElementwiseOpsKernelLaunchTest.AddInto 1 0.512971
+ElementwiseOpsKernelLaunchTest.CorrectVelocity 1 0.488097
+ElementwiseOpsKernelLaunchTest.AccumulateScaled 1 0.484707
+MeshTest.ComputeAxisSpacingAcrossGridSizesAndStretchFactors 1 0.532061
+MeshTest.EndpointsAreExactDomainBoundaries 1 0.528816
+NusseltKernelLaunchTest.MatchesHostSummedNusseltCell 1 0.508109
+NusseltKernelLaunchTest.MiddleMatchesHostSummedNusseltMiddleCell 1 0.502723
+FiniteDifferenceOperatorsTest.TemperatureAdvection 1 0.50598
+FiniteDifferenceOperatorsTest.VelocityXAdvection 1 0.501026
+FiniteDifferenceOperatorsTest.VelocityYAdvection 1 0.511357
+FiniteDifferenceOperatorsTest.VelocityZAdvection 1 0.529912
+FiniteDifferenceOperatorsTest.Divergence 1 0.619133
+FiniteDifferenceOperatorsTest.PressureGradient 1 0.542666
+PaddingEquivalenceTest.VgrTmp 1 0.539552
+PaddingEquivalenceTest.Nusselt 1 0.47967
+PaddingEquivalenceTest.VgrdVx 1 0.497369
+PaddingEquivalenceTest.VgrdVy 1 0.485495
+PaddingEquivalenceTest.VgrdVz 1 0.499752
+PaddingEquivalenceTest.FdDiv 1 0.490839
+PaddingEquivalenceTest.Ekinem 1 0.539205
+CudaWrapper.tranpose 1 0.533924
+FortranWrapper.MultipleEigenSolversSideBySide 1 0.622101
+FortranWrapper.SmokeTestAlex 1 2.02913
+ImmersedEq.SolvesPrimes_3x2x1 1 0.569017
+ImmersedEq.SolvesImmeresed_Generic 1 0.585799
+KroneckerTripletTest.ProductMatchesMultOnIdentity 1 0.538079
+LaplacianMath.fluxLaplacian 1 37.2664
+LaplacianMath.laplacian 1 128.507
+ShiftedEigen.FluxLaplacian_SmallScale 1 0.566027
+ThomasAxisAssignment.VxShapedAsymmetricGrid 1 0.537051
+ThomasAxisAssignment.VyShapedAsymmetricGrid 1 0.581191
+ThomasAxisAssignment.VyRealMeshUniformRhsStaysSymmetric 1 0.668062
+ThomasAxisAssignment.VyShapedSizeShiftBisection 1 0.727923
+ThomasAxisAssignment.VyRealMeshYZRoleSwapMatchesTranspose 1 0.56865
+ThomasAxisAssignment.VyRealMeshXZRoleSwapMatchesTranspose 1 0.556965
+ThomasAxisAssignment.VySquareDuctSmallNStaysSymmetric 1 0.583173
+ThomasAxisAssignment.VyFortranPermutationMatchesCppForSamePhysicalProblem 1 0.590917
+ThomasAxisAssignment.PotentialFortranPermutationMatchesCppForSamePhysicalProblem 1 0.588279
+ThomasAxisAssignment.PotentialFortranPermutationMatchesCppWithAsymmetricBoundaryValues 1 0.541355
+ThomasAxisAssignment.PotentialYZRoleSwapMatchesTranspose 1 0.601157
+ThomasAxisAssignment.VxRealMeshXYRoleSwapMatchesTranspose 1 0.590776
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/field_snapshots  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 66-69 65-6C 64-5F 73-6E 61-70 73-68 6F-74 73-00 00-1B 27-13 00-00 00-00 18-00 00-00 00-00 00-00 18-00 00-00 00-00 00-00 69-67 73-00 00-00 00-00 00-01 00-00 00-00 00-00> 1 18.8942
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/gr_high  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 07-00 00-00 00-00 00-00 67-72 5F-68 69-67 68-00 61-70 73-68 6F-74 73-00 40-41 27-13 00-00 00-00 10-00 00-00 00-00 00-00 10-00 00-00 00-00 00-00 69-67 73-00 00-00 00-00 00-00 00-00 00-00 00-00> 1 16.8325
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/gr_low  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 06-00 00-00 00-00 00-00 67-72 5F-6C 6F-77 00-00 61-70 73-68 6F-74 73-00 40-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 67-72 5F-6C 6F-77 2E-63 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> 1 16.4269
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/grid_030  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 08-00 00-00 00-00 00-00 67-72 69-64 5F-30 33-30 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 11-00 00-00 00-00 00-00 11-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> 1 7.2374
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/grid_050  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 08-00 00-00 00-00 00-00 67-72 69-64 5F-30 35-30 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 11-00 00-00 00-00 00-00 11-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> 1 35.0752
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/grid_100  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 08-00 00-00 00-00 00-00 67-72 69-64 5F-31 30-30 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 11-00 00-00 00-00 00-00 11-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> 1 444.495
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/ha_high  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 07-00 00-00 00-00 00-00 68-61 5F-68 69-67 68-00 00-70 73-68 6F-74 73-00 60-42 27-13 00-00 00-00 10-00 00-00 00-00 00-00 10-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> 1 19.68
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/ha_low  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 06-00 00-00 00-00 00-00 68-61 5F-6C 6F-77 00-00 00-70 73-68 6F-74 73-00 40-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 68-61 5F-6C 6F-77 2E-63 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> 1 17.1397
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/phys_baseline  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 0D-00 00-00 00-00 00-00 70-68 79-73 5F-62 61-73 65-6C 69-6E 65-00 73-00 B0-22 27-13 00-00 00-00 16-00 00-00 00-00 00-00 16-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> 1 17.2198
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/pr_high  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 07-00 00-00 00-00 00-00 70-72 5F-68 69-67 68-00 65-6C 69-6E 65-00 73-00 B0-22 27-13 00-00 00-00 10-00 00-00 00-00 00-00 10-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> 1 17.0833
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/pr_low  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 06-00 00-00 00-00 00-00 70-72 5F-6C 6F-77 00-00 65-6C 69-6E 65-00 73-00 40-57 27-13 00-00 00-00 0F-00 00-00 00-00 00-00 70-72 5F-6C 6F-77 2E-63 70-70 2E-6A 73-6F 6E-00 00-00 00-00 00-00 00-00> 1 17.5243
+NonRedundantConfigurations/GoldenValueTest.MatchesFortranReference/time_averaging  # GetParam() = 72-byte object <20-57 27-13 00-00 00-00 0E-00 00-00 00-00 00-00 74-69 6D-65 5F-61 76-65 72-61 67-69 6E-67 00-00 B0-22 27-13 00-00 00-00 17-00 00-00 00-00 00-00 17-00 00-00 00-00 00-00 70-70 2E-6A 73-6F 6E-00 01-00 00-00 00-00 00-00> 1 22.7763
+---

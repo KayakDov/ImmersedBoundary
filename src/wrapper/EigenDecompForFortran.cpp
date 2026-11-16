@@ -34,7 +34,8 @@
  * @param isStaggered True if using a staggered grid discretization.
  * @param thomas True to utilize the Thomas algorithm solver for the Z dimension.
  * @param sizeOfBForX Allocated device array for X-axis intermediate calculations.
- * @param sizeOfBForRHS Allocated device array for RHS intermediate calculations.
+ * @param sizeOfBForRHS Allocated device array for the RHS. solve() refills it before every solve,
+ * so it is also given to the 3D and Thomas solvers as their workspace, and each solve overwrites it.
  * @param sizeOfBForBAdj Allocated device array for boundary correction adjustments.
  */
 template<typename Real>
@@ -64,8 +65,8 @@ EigenDecompForFortran<Real>::EigenDecompForFortran(
                 eds = std::make_unique<EigenDecomp2d<Real>>(boundaryHost.forDevice(), hands_);
             else
                 eds = thomas ?
-                    std::make_unique<EigenDecompThomas<Real, SegZType>>(boundaryHost, hands_, helmholtzShift) :
-                    std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), hands_, helmholtzShift);
+                    std::make_unique<EigenDecompThomas<Real, SegZType>>(boundaryHost, hands_, b, helmholtzShift) :
+                    std::make_unique<EigenDecomp3d<Real>>(boundaryHost.forDevice(), hands_, b, helmholtzShift);
         }
     );
     hands_.waitFor({0, 1, 2}, {3});
